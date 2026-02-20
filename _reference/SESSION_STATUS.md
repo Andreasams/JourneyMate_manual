@@ -6,10 +6,10 @@
 
 ## Current Status
 
-**Phase:** Phase 2 — Bundle.md Audit (starting)
-**Last completed task:** Task 1A — MASTER_STATE_MAP.md (Phase 1 complete)
-**Next task:** Task 2A — Create BUNDLE_STANDARD.md, then Task 2B — Audit all 13 BUNDLE.md files
-**Blocked on:** Nothing — ready to start
+**Phase:** Phase 3 pending user review
+**Last completed task:** Phase 2 — Bundle.md Audit (all tasks complete 2026-02-20)
+**Next task:** User reviews `_reference/BUNDLE_AUDIT_REPORT.md` → resolves 5 known issues → Phase 3 begins
+**Blocked on:** User review of BUNDLE_AUDIT_REPORT.md before Phase 3 can start
 
 ---
 
@@ -20,7 +20,7 @@
 | Phase 0A | ✅ Complete | `CLAUDE.md` created |
 | Phase 0B | ✅ Complete | `journey_mate/` Flutter project scaffolded, `flutter analyze` 0 issues |
 | Phase 1 | ✅ Complete | `_reference/MASTER_STATE_MAP.md` — all 43 FFAppState variables mapped |
-| Phase 2 | 🔄 Starting | `_reference/BUNDLE_STANDARD.md` + audit of 13 BUNDLE.md files |
+| Phase 2 | ✅ Complete | `_reference/BUNDLE_STANDARD.md` + `_reference/BUNDLE_AUDIT_REPORT.md` + all 14 BUNDLE.md files patched |
 | Phase 3 | ⏳ Not started | BuildShip gap analysis |
 | Phase 3.5 | ⏳ Not started | Master task list (requires user approval) |
 | Phase 4 | ⏳ Not started | Flutter foundation (theme, router, API service, translation, analytics) |
@@ -57,6 +57,29 @@
 | `_reference/BUILDSHIP_API_REFERENCE.md` | Feedback session |
 | `_reference/IMPLEMENTATION_PLAN.txt` | Feedback session |
 | `_reference/SESSION_STATUS.md` | This session |
+| `_reference/BUNDLE_STANDARD.md` | Phase 2 Task 2A |
+| `_reference/BUNDLE_AUDIT_REPORT.md` | Phase 2 Task 2B-3 |
+
+---
+
+## Phase 2 output summary (2026-02-20)
+
+| Output | Status |
+|--------|--------|
+| `_reference/BUNDLE_STANDARD.md` | ✅ Created — 10-section standard, minimum bars, examples |
+| All 14 BUNDLE.md files — Riverpod State section | ✅ Patched — provider reads/writes tables added |
+| `02_business_profile/BUNDLE.md` — pubspec fix | ✅ Fixed — `provider:` → `flutter_riverpod:` |
+| `07_settings/missing_place/BUNDLE_missing_place.md` | ✅ Deepened — MissingLocationFormWidget internals |
+| `07_settings/contact_us/BUNDLE_contact_us.md` | ✅ Deepened — ContactUsFormWidget internals |
+| `07_settings/share_feedback/BUNDLE_share_feedback.md` | ✅ Deepened — FeedbackFormWidget internals |
+| `_reference/BUNDLE_AUDIT_REPORT.md` | ✅ Created — 5 known issues requiring user decision |
+
+**5 known issues in BUNDLE_AUDIT_REPORT.md requiring user decision before Phase 3:**
+1. `05_contact_details/` directory name mismatch (rename to `05_business_information`?)
+2. ContactUs Subject field — free-text (FF) vs dropdown (JSX)
+3. FeedbackForm topic sent as localized string — verify BuildShip accepts this
+4. Welcome page `pageName: 'homepage'` — confirm intended analytics value
+5. 3 form endpoints undocumented in BUILDSHIP_API_REFERENCE.md (`/missingplace`, `/contact`, `/feedbackform`)
 
 ---
 
@@ -71,11 +94,20 @@
 
 ---
 
-## Phase 2: What the next session must do
+## Phase 2: COMPLETE ✅
 
-**Task 2A:** Create `_reference/BUNDLE_STANDARD.md` (the standard template all BUNDLE.md files must follow)
+Phase 2 tasks are finished. See `_reference/BUNDLE_AUDIT_REPORT.md` for per-file findings.
 
-**Task 2B:** Audit each of these 13 files against the standard, cross-reference with MASTER_STATE_MAP.md and BUILDSHIP_API_REFERENCE.md:
+**What the next session must do first:** Review BUNDLE_AUDIT_REPORT.md → resolve 5 known issues
+(listed above in Phase 2 output summary) → then proceed to Phase 3 (BuildShip gap analysis).
+
+---
+
+## Phase 2 original task list (for reference only)
+
+**Task 2A:** Create `_reference/BUNDLE_STANDARD.md` (the standard template all BUNDLE.md files must follow) ✅
+
+**Task 2B:** Audit each of these 14 files against the standard, cross-reference with MASTER_STATE_MAP.md and BUILDSHIP_API_REFERENCE.md: ✅
 
 | # | Page | BUNDLE.md path | GAP_ANALYSIS path |
 |---|------|---------------|-------------------|
