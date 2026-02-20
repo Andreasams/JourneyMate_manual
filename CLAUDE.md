@@ -22,6 +22,9 @@ from FlutterFlow and applying the v2 design from `shared/app_theme.dart`.
 
 This is the single canonical folder. All work happens here.
 
+**GitHub repo:** `https://github.com/Andreasams/JourneyMate_manual`
+(Not `JourneyMate` — that is the old JSX/FlutterFlow project. This is the clean Flutter rebuild.)
+
 ---
 
 ## File structure — always maintain this

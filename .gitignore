@@ -1,0 +1,19 @@
+# Flutter/Dart
+journey_mate/.dart_tool/
+journey_mate/.flutter-plugins
+journey_mate/.flutter-plugins-dependencies
+journey_mate/build/
+journey_mate/.packages
+journey_mate/pubspec.lock
+
+# FlutterFlow export - track but mark read-only
+# _flutterflow_export/ is included in git
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
