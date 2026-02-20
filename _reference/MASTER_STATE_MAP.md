@@ -19,13 +19,13 @@ Generated: Phase 1 of JourneyMate migration
 
 ### `CityID`
 - **Type:** `int`
-- **Default:** `17`
-- **Persistent:** Yes — `FlutterSecureStorage` (`ff_CityID`)
+- **Default:** `17` (Copenhagen)
+- **Persistent:** Yes in FlutterFlow — NOT needed in new app
 - **Pages that READ it:** `search_results_list_view` (custom widget), search action files
 - **Pages that WRITE it:** `welcome_page_widget` (when city selected), `get_user_preference` (custom action)
-- **Category:** Global
-- **Riverpod target:** `cityIdProvider` (persisted StateNotifierProvider, backed by SharedPreferences)
-- **Migration notes:** Default city 17 must be preserved. On first launch use 17 until user selects a different city.
+- **Category:** Constant (not a provider)
+- **Riverpod target:** **None.** Use `const int kDefaultCityId = 17` in `app_constants.dart`. Pass directly to API calls.
+- **Migration notes:** ⚠️ **USER CONFIRMED:** City selection is NOT implemented in v1. Copenhagen (17) is the only city. Do not build a cityIdProvider, do not build city-switching UI. Pass `'17'` as the `city_id` string to the search API call.
 
 ---
 
@@ -254,13 +254,14 @@ Generated: Phase 1 of JourneyMate migration
 ---
 
 ### `foodDrinkTypes`
-- **Type:** `List<dynamic>`
+- **Type:** `List<dynamic>` (array of `FoodDrinkItem` — food/drink dietary options with has_vegan, has_halal etc. flags)
 - **Default:** `[]`
 - **Persistent:** No
-- **Pages that READ it:** None found
-- **Pages that WRITE it:** None found
-- **Category:** Unused/Legacy → drop in migration
-- **Migration notes:** Not used anywhere. Was likely a precursor to `filtersForUserLanguage`. Do not migrate.
+- **Pages that READ it:** Used indirectly through filter logic (not directly in page widgets, but stored for use by UnifiedFiltersWidget and menu filtering)
+- **Pages that WRITE it:** `get_filters_with_update` (custom action) — populated from `GET_FILTERS_FOR_SEARCH` BuildShip endpoint
+- **Category:** Session-shared
+- **Riverpod target:** `filterProvider` — field `foodDrinkTypes`
+- **Migration notes:** ⚠️ CORRECTION from initial analysis. This IS used — populated by GET_FILTERS_FOR_SEARCH which returns both `filters` (hierarchical filter tree) and `foodDrinkTypes` (food/drink type dietary flags). See BUILDSHIP_API_REFERENCE.md for exact FoodDrinkItem shape.
 
 ---
 
@@ -417,10 +418,8 @@ local widget state (`ConsumerStatefulWidget`).
 ### `restaurantIsFavorited`
 - **Type:** `bool`
 - **Default:** `false`
-- **Category:** Page-local (business profile — favorite button state)
-- **Pages that READ/WRITE it:** `business_profile_widget` only
-- **Migration:** Local `bool _isFavorited` in `BusinessProfilePage` state
-- **Migration notes:** Favoriting is not yet backed by a real API. This is UI-only state.
+- **Category:** **Future feature — DO NOT IMPLEMENT**
+- **Migration notes:** ⚠️ **USER CONFIRMED:** Favoriting is a future feature. Do not implement the button, state, or any related UI in the current migration. Skip entirely.
 
 ---
 
@@ -444,10 +443,9 @@ These variables exist in FFAppState but are not meaningfully used in any page wi
 | `isClosed` | `bool` | Not referenced anywhere. Legacy. |
 | `BusinessFeatureButtonsCount` | `int` | Not referenced anywhere. Legacy. |
 | `emptyLocation` | `LatLng?` | Placeholder LatLng(0,0). Not used. |
-| `foodDrinkTypes` | `List<dynamic>` | Not read or written by any page. |
-| `activeSelectedTitleId` | `int` | Used only inside `filter_titles_row` widget — local widget state in FlutterFlow context. Migrate as local state in filter widget. |
+| `activeSelectedTitleId` | `int` | ⚠️ DESIGN CHANGE: In v2, filter UI is a bottom sheet (not inline overlay). Track selected tab as `int _selectedTabIndex` local state inside the filter bottom sheet widget. |
 
-> **Note on `activeSelectedTitleId`:** It IS used in `filter_titles_row.dart` to track which filter column header is active. Migrate as local state in `FilterTitlesRow` widget, not as a provider.
+> **Note on `foodDrinkTypes`:** ⚠️ CORRECTION — `foodDrinkTypes` IS used. It is populated by the `GET_FILTERS_FOR_SEARCH` BuildShip endpoint (returned as `foodDrinkTypes: FoodDrinkItem[]`). Migrate to `filterProvider` alongside `filtersForUserLanguage`. See BUILDSHIP_API_REFERENCE.md.
 
 ---
 
@@ -459,12 +457,16 @@ These variables exist in FFAppState but are not meaningfully used in any page wi
 | `translationsCacheProvider` | `translationsCache` | Yes — SecureStorage |
 | `searchStateProvider` | `searchResults`, `searchResultsCount`, `hasActiveSearch`, `currentSearchText`, `filtersUsedForSearch`, `currentFilterSessionId`, `previousActiveFilters`, `previousSearchText`, `previousFilterSessionId`, `currentRefinementSequence`, `lastRefinementTime` | No |
 | `businessProvider` | `mostRecentlyViewedBusiness`, `mostRecentlyViewedBusinesMenuItems`, `filtersOfSelectedBusiness`, `openingHours`, `availableDietaryPreferences`, `availableDietaryRestrictions` | No |
-| `filterProvider` | `filtersForUserLanguage`, `filterLookupMap` | No |
+| `filterProvider` | `filtersForUserLanguage`, `filterLookupMap`, `foodDrinkTypes` | No |
 | `localizationProvider` | `userCurrencyCode`, `exchangeRate` | currencyCode via SharedPreferences |
 | `locationProvider` | `locationStatus` | No |
 | `analyticsProvider` | `sessionStartTime`, `menuSessionData` | No |
 | `accessibilityProvider` | `fontScale`, `isBoldTextEnabled` | No |
 
-**Page-local state (NOT in providers):** `CityPickerIsOpen`, `filterOverlayOpen`, `mostRecentlyViewedBusinessSelectedCategoryID`, `mostRecentlyViewedBusinessSelectedMenuID`, `selectedDietaryPreferenceId`, `excludedAllergyIds`, `selectedDietaryRestrictionId`, `restaurantIsFavorited`, `visibleItemCount`, `activeSelectedTitleId`
+**Page-local state (NOT in providers):** `CityPickerIsOpen`, `filterOverlayOpen`, `mostRecentlyViewedBusinessSelectedCategoryID`, `mostRecentlyViewedBusinessSelectedMenuID`, `selectedDietaryPreferenceId`, `excludedAllergyIds`, `selectedDietaryRestrictionId`, `visibleItemCount`, `activeSelectedTitleId` (→ local tab index in filter bottom sheet)
 
-**Not migrated (unused):** `BusinessIsOpen`, `isClosed`, `BusinessFeatureButtonsCount`, `emptyLocation`, `foodDrinkTypes`
+**Future feature — skip entirely:** `restaurantIsFavorited`
+
+**Not migrated (unused):** `BusinessIsOpen`, `isClosed`, `BusinessFeatureButtonsCount`, `emptyLocation`
+
+**Constant (not a provider):** `CityID` → `const int kDefaultCityId = 17` in `app_constants.dart`

@@ -25,6 +25,21 @@ This is the single canonical folder. All work happens here.
 **GitHub repo:** `https://github.com/Andreasams/JourneyMate_manual`
 (Not `JourneyMate` — that is the old JSX/FlutterFlow project. This is the clean Flutter rebuild.)
 
+**Implementation plan:** `_reference/IMPLEMENTATION_PLAN.txt` — the master migration plan for this project.
+
+---
+
+## When the user gives feedback — update documents immediately
+
+**This is a standing procedure.** Whenever the user provides corrections, clarifications, or new context during a session:
+
+1. **Identify which documents are affected** (CLAUDE.md, MASTER_STATE_MAP.md, BUNDLE.md, GAP_ANALYSIS.md, BUILDSHIP_API_REFERENCE.md, etc.)
+2. **Update those documents immediately** — before continuing any other work
+3. **Commit the updates** with message `docs: update [file] based on user feedback`
+4. **Then continue** with the task at hand
+
+Do not leave feedback in code comments or conversation only. It must land in the reference documents where future sessions will find it.
+
 ---
 
 ## File structure — always maintain this
@@ -234,6 +249,22 @@ Commit after:
 - Completing a task or phase
 - Before trying something risky
 - At end of each session
+
+---
+
+## Known product decisions (confirmed by user)
+
+These decisions have been explicitly confirmed and must not be re-debated:
+
+- **CityID is always 17 (Copenhagen).** City selection is not implemented in v1. CityID does not need a StateNotifierProvider or persistence — use a plain `const int kDefaultCityId = 17` constant and pass it directly to API calls. Do not build city-switching UI.
+
+- **`restaurantIsFavorited` is a future feature.** Do not implement. No favorite button, no favorite state, no related UI.
+
+- **Filter panel is now a bottom sheet, not a modal overlay.** The `filterOverlayOpen` / `activeSelectedTitleId` approach from FlutterFlow is replaced. In the new design, tapping "Filter" opens a `showModalBottomSheet`. Which tab is selected inside that sheet is local state in the bottom sheet widget itself. Do not build the 3-column inline overlay from FlutterFlow.
+
+- **`foodDrinkTypes`** is populated from the `GET_FILTERS_FOR_SEARCH` BuildShip endpoint (returned as `foodDrinkTypes: FoodDrinkItem[]`). Store it in `filterProvider` alongside `filtersForUserLanguage`. It is NOT unused — it was just not referenced directly in page widgets (used indirectly through filter logic).
+
+- **BuildShip API reference:** All 9 endpoints are documented in `_reference/BUILDSHIP_API_REFERENCE.md` with exact inputs and outputs. Always read this before touching API service code.
 
 ---
 
