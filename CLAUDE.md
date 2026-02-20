@@ -173,8 +173,8 @@ AND its source in `_flutterflow_export/lib/custom_code/`.
 ## Tech stack
 
 - **Flutter 3.x** (currently 3.41.x)
-- **Riverpod 2.x** (`flutter_riverpod`) — state management for ALL state. No FFAppState, no Provider.
-- **go_router 12.x** — routing
+- **Riverpod 3.x** (`flutter_riverpod: ^3.2.1`) — state management for ALL state. No FFAppState, no Provider.
+- **go_router 17.x** (`go_router: ^17.1.0`) — routing
 - **BuildShip REST API** — all backend including auth. No direct Supabase SDK calls.
 - **FlutterSecureStorage** — session token, sensitive preferences
 - **SharedPreferences** — user language, currency, city preferences
@@ -192,10 +192,12 @@ Every FFAppState variable has been mapped to a Riverpod provider in `_reference/
 Refer to `_reference/PROVIDERS_REFERENCE.md` for the canonical list of providers.
 
 **Key rules:**
-- Global persisted state → `StateNotifierProvider` backed by SharedPreferences/SecureStorage
-- Session-shared state → `StateNotifierProvider` at app scope
+- Global persisted state → `NotifierProvider` or `AsyncNotifierProvider` backed by SharedPreferences/SecureStorage
+- Session-shared state → `NotifierProvider` at app scope
 - Page-local state → local `ConsumerStatefulWidget` state (NOT a provider)
 - No `FFAppState` references anywhere in `journey_mate/`
+- **Use Riverpod 3.x API** — `Notifier`/`AsyncNotifier` classes, not the deprecated `StateNotifier` pattern
+- **⚠️ shared/ MASTER_README files use Riverpod 2.x patterns** (`StateNotifierProvider`, `StateNotifier`) — these were written before the version was confirmed. When implementing providers in Phase 5 or widgets in Phase 7, translate their code examples to Riverpod 3.x: `StateNotifierProvider<X, S>` → `NotifierProvider<X, S>`, `extends StateNotifier<S>` → `extends Notifier<S>` with `S build()` instead of a constructor.
 
 ---
 
@@ -313,7 +315,7 @@ Commit after:
 
 These decisions have been explicitly confirmed and must not be re-debated:
 
-- **CityID is always 17 (Copenhagen).** City selection is not implemented in v1. CityID does not need a StateNotifierProvider or persistence — use a plain `const int kDefaultCityId = 17` constant and pass it directly to API calls. Do not build city-switching UI.
+- **CityID is always 17 (Copenhagen).** City selection is not implemented in v1. CityID does not need a provider or persistence — use a plain `const int kDefaultCityId = 17` constant and pass it directly to API calls. Do not build city-switching UI.
 
 - **`restaurantIsFavorited` is a future feature.** Do not implement. No favorite button, no favorite state, no related UI.
 

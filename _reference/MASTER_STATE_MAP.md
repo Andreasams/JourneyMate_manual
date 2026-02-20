@@ -9,7 +9,7 @@ Generated: Phase 1 of JourneyMate migration
 ## Category Definitions
 
 - **Global** — Persists across sessions. Stored in SecureStorage or SharedPreferences. Provider scope: app-level.
-- **Session-shared** — Lives for the duration of one app session. Used by 2+ pages. Provider scope: app-level StateNotifierProvider.
+- **Session-shared** — Lives for the duration of one app session. Used by 2+ pages. Provider scope: app-level NotifierProvider (Riverpod 3.x).
 - **Page-local** — Was only ever set and read on one page (FFAppState used for FlutterFlow limitations). Migrate to local ConsumerStatefulWidget state.
 - **Unused/Legacy** — Not meaningfully used in any widget or action. Do not migrate; simply drop.
 
@@ -36,7 +36,7 @@ Generated: Phase 1 of JourneyMate migration
 - **Pages that READ it:** `business_profile_widget`, `contact_us_widget`, `share_feedback_widget`, `missing_place_widget`, `language_selector_button`, `currency_selector_button`, `unified_filters_widget`, `dish_expanded_info_sheet_widget`, `view_all_gallery_widget`, `modal_submit_erroneous_info_widget`, `contact_detail_widget`, `business_information_widget`
 - **Pages that WRITE it:** `get_translations_with_update` (custom action)
 - **Category:** Global
-- **Riverpod target:** `translationsCacheProvider` (persisted StateNotifierProvider, backed by SecureStorage)
+- **Riverpod target:** `translationsCacheProvider` (persisted NotifierProvider, backed by SecureStorage)
 - **Migration notes:** Critical — used everywhere for dynamic translations. Must be loaded before any page renders translated text.
 
 ---

@@ -7,7 +7,7 @@
 ## Current Status
 
 **Phase:** Phase 3 ready to begin
-**Last completed task:** Phase 2 — Bundle.md Audit fully complete, all 5 known issues resolved (2026-02-20)
+**Last completed task:** Phase 2 complete + dependency housekeeping (all deps updated to latest, 2026-02-20)
 **Next task:** Phase 3 — BuildShip gap analysis → write `_reference/BUILDSHIP_REQUIREMENTS.md`
 **Blocked on:** Nothing — Phase 3 can start immediately
 
@@ -101,6 +101,8 @@
 9. **Welcome page analytics pageName = `'welcomePage'`** — corrected from inconsistent `'homepage'`; BuildShip + Supabase update required
 10. **3 form endpoints use `supabaseInsertObject`** — simple direct Supabase REST POST; no server logic; documented as #10–12 in BUILDSHIP_API_REFERENCE.md
 11. **`pages/05_business_information/`** — renamed from `05_contact_details/`
+12. **Riverpod 3.x** — project uses `flutter_riverpod: ^3.2.1`. Use `Notifier`/`AsyncNotifier` classes, NOT the old `StateNotifier` pattern (deprecated in 3.x). All provider implementations in Phase 5 must use Riverpod 3.x API.
+13. **go_router 17.x** — project uses `go_router: ^17.1.0`. Phase 4 routing must be implemented against this version.
 
 ---
 
