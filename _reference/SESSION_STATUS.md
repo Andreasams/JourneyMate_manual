@@ -6,10 +6,10 @@
 
 ## Current Status
 
-**Phase:** Phase 3 ready to begin
-**Last completed task:** Phase 2 complete + dependency housekeeping (all deps updated to latest, 2026-02-20)
-**Next task:** Phase 3 — BuildShip gap analysis → write `_reference/BUILDSHIP_REQUIREMENTS.md`
-**Blocked on:** Nothing — Phase 3 can start immediately
+**Phase:** Phase 3.5 — User executes BuildShip/Supabase changes
+**Last completed task:** Phase 3 complete — `_reference/BUILDSHIP_REQUIREMENTS.md` written (2026-02-20)
+**Next task:** Phase 3.5 — User executes changes per `_reference/BUILDSHIP_REQUIREMENTS.md`, then Phase 4 begins
+**Blocked on:** User must execute CRITICAL search node changes (Sections 1–3) before Search page work begins
 
 ---
 
@@ -21,8 +21,8 @@
 | Phase 0B | ✅ Complete | `journey_mate/` Flutter project scaffolded, `flutter analyze` 0 issues |
 | Phase 1 | ✅ Complete | `_reference/MASTER_STATE_MAP.md` — all 43 FFAppState variables mapped |
 | Phase 2 | ✅ Complete | `_reference/BUNDLE_STANDARD.md` + `_reference/BUNDLE_AUDIT_REPORT.md` + all 14 BUNDLE.md files patched |
-| Phase 3 | ⏳ Not started | BuildShip gap analysis |
-| Phase 3.5 | ⏳ Not started | Master task list (requires user approval) |
+| Phase 3 | ✅ Complete | `_reference/BUILDSHIP_REQUIREMENTS.md` — 15 sections, all 12 endpoints + all GAP_ANALYSIS flags |
+| Phase 3.5 | ⏳ Waiting on user | User executes BuildShip/Supabase changes per BUILDSHIP_REQUIREMENTS.md |
 | Phase 4 | ⏳ Not started | Flutter foundation (theme, router, API service, translation, analytics) |
 | Phase 4.5 | ⏳ Not started | Codemagic CI/CD |
 | Phase 5 | ⏳ Not started | Riverpod providers |
@@ -59,6 +59,7 @@
 | `_reference/SESSION_STATUS.md` | This session |
 | `_reference/BUNDLE_STANDARD.md` | Phase 2 Task 2A |
 | `_reference/BUNDLE_AUDIT_REPORT.md` | Phase 2 Task 2B-3 |
+| `_reference/BUILDSHIP_REQUIREMENTS.md` | Phase 3 |
 
 ---
 
@@ -103,14 +104,71 @@
 11. **`pages/05_business_information/`** — renamed from `05_contact_details/`
 12. **Riverpod 3.x** — project uses `flutter_riverpod: ^3.2.1`. Use `Notifier`/`AsyncNotifier` classes, NOT the old `StateNotifier` pattern (deprecated in 3.x). All provider implementations in Phase 5 must use Riverpod 3.x API.
 13. **go_router 17.x** — project uses `go_router: ^17.1.0`. Phase 4 routing must be implemented against this version.
+14. **`sortBy: 'newest'` uses `BusinessInfo.created_at`** — column already exists (`TIMESTAMPTZ NOT NULL DEFAULT NOW()`). No new `date_added` column needed. Search node uses `created_at DESC` for newest sort.
+15. **Match categorization is server-side (BuildShip)** — not client-side. Partial match = exactly 1 filter missing. Other places = 2+ filters missing. `filtersUsedForSearch` is the user's active need set; the Typesense `filters` param is a separate concept.
+16. **Analytics node has 36 valid event types** — not 30 as `BUILDSHIP_API_REFERENCE.md` previously stated. Source of truth is the node script `_reference/_buildship/POST_ANALYTICS_TO_SUPABASE.txt`. Update the reference doc.
+17. **`/feedbackform` has a `page NOT NULL` gap** — `zUserFormShareFeedback.page` is `NOT NULL` but BuildShip inputs for `/feedbackform` do not include `page`. User must check whether the BuildShip `supabaseInsertObject` node injects a hardcoded value; if not, Flutter v2 must send `page`.
+18. **`business_hours` is CONFIRMED ABSENT from `get_business_complete_info` RPC output** — not just uncertain. User must run `SELECT get_business_complete_info(1, 'da')` to find where hours data lives and update the RPC if needed.
+19. **Station sort uses station name string** — `selectedStation` is a string (e.g. `"Nørreport"`), not a station ID. BuildShip looks up coordinates from `FilterTrainStation` table by matching the `name` column.
+
+---
+
+## Phase 3: COMPLETE ✅ (2026-02-20)
+
+**Deliverable:** `_reference/BUILDSHIP_REQUIREMENTS.md`
+
+**What was produced:**
+- 15 sections covering all 12 BuildShip endpoints + all GAP_ANALYSIS flags
+- 3 CRITICAL actions (search node: match categorisation + pagination, sorting, onlyOpen filter)
+- 2 HIGH verifications (business profile RPC: hours confirmed absent, payment/facilities)
+- 4 MEDIUM verifications (analytics 36-event list + pageName, feedbackform `page` gap, form endpoint test inserts, languageCode param name)
+- 1 LOW data task (insert translation keys per page — Search page: 17 keys × 7 languages)
+- 5 Flutter-only notes (no server action needed)
+
+**5 items resolved as no-action-needed:**
+- `FilterTrainStation`: 64 stations confirmed populated
+- `date_added`: use existing `BusinessInfo.created_at`
+- `hasDetailData`: Flutter checks `item_modifier_groups` emptiness
+- `UserFeedbackCall`: obsolete — do not port
+- `MenuItemsCall` field: use `$.menu_items[:].*` not `$.dishes[:].*`
+
+**Known open issues requiring user action before Phase 4:**
+- `/feedbackform` `page NOT NULL` column — Section 7 of BUILDSHIP_REQUIREMENTS.md
+- `business_hours` absent from RPC — Section 4 of BUILDSHIP_REQUIREMENTS.md
+- `languageCode` vs `language_code` param mismatch — Section 8 of BUILDSHIP_REQUIREMENTS.md
+
+---
+
+## Phase 3.5 — User action required before Phase 4 begins
+
+**Recommended order of execution:**
+
+1. **CRITICAL — Do these first (one BuildShip session):**
+   - Update `/search` node: match categorisation + pagination (Section 1)
+   - Update `/search` node: sortBy / sortOrder (Section 2)
+   - Update `/search` node: onlyOpen filter (Section 3)
+
+2. **HIGH — Business profile verification:**
+   - Run `SELECT get_business_complete_info(1, 'da')` and inspect full output (Section 4)
+   - Document payment_options and facilities (Section 5)
+
+3. **MEDIUM — Verification tasks (can run in parallel with early Flutter work):**
+   - Update `BUILDSHIP_API_REFERENCE.md` with confirmed URLs + 36-event list (Section 6)
+   - Investigate feedbackform `page` NOT NULL in BuildShip (Section 7)
+   - POST test inserts to all 3 form endpoints (Section 7)
+   - Confirm analytics RPC accepts `page_viewed` (Section 9)
+   - Confirm `languageCode` vs `language_code` param (Section 8)
+
+4. **LOW — Data setup (start before or during Search page work):**
+   - INSERT Search page translation keys (Section 9 — 17 keys × 7 languages)
+
+**Phase 4 can begin** once the CRITICAL search node changes are deployed.
 
 ---
 
 ## Phase 2: COMPLETE ✅
 
 Phase 2 tasks are finished. See `_reference/BUNDLE_AUDIT_REPORT.md` for per-file findings.
-
-**What the next session must do first:** Phase 3 — write `_reference/BUILDSHIP_REQUIREMENTS.md` (BuildShip gap analysis). Read IMPLEMENTATION_PLAN.txt for Phase 3 task definition before starting.
 
 ---
 
@@ -144,7 +202,11 @@ Phase 2 tasks are finished. See `_reference/BUNDLE_AUDIT_REPORT.md` for per-file
 
 ## Open questions for user
 
-None. Phase 3 can start immediately.
+| Question | Location | Status |
+|----------|----------|--------|
+| `/feedbackform` `page NOT NULL` — does BuildShip inject a hardcoded value, or must Flutter send it? | Section 7 of BUILDSHIP_REQUIREMENTS.md | ⚠️ Open — user to check BuildShip dashboard |
+| `business_hours` — where does hours data live in the profile RPC? What format? | Section 4 of BUILDSHIP_REQUIREMENTS.md | ⚠️ Open — user to run `SELECT get_business_complete_info(1, 'da')` |
+| `languageCode` vs `language_code` — which does BuildShip accept for Business Profile and Menu? | Section 8 of BUILDSHIP_REQUIREMENTS.md | ⚠️ Open — user to verify in BuildShip |
 
 ---
 
