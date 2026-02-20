@@ -2,6 +2,12 @@
 
 Read this file before touching anything. It defines how every session must work.
 
+**FIRST ACTION IN EVERY SESSION:**
+1. Read this file completely
+2. Read `_reference/SESSION_STATUS.md` — it tells you exactly where the project is and what to do next
+3. Read `_reference/BUILDSHIP_API_REFERENCE.md` — the exact API contract for all BuildShip endpoints
+4. Then read any phase-specific files listed in SESSION_STATUS.md
+
 ---
 
 ## What this project is
@@ -26,6 +32,55 @@ This is the single canonical folder. All work happens here.
 (Not `JourneyMate` — that is the old JSX/FlutterFlow project. This is the clean Flutter rebuild.)
 
 **Implementation plan:** `_reference/IMPLEMENTATION_PLAN.txt` — the master migration plan for this project.
+
+---
+
+## Session handover — how to end a session cleanly
+
+**Before ending any session** (whether the user says "let's continue in a new chat", or you reach a natural phase boundary, or the context is getting large), do the following:
+
+### Step 1: Update SESSION_STATUS.md
+
+`_reference/SESSION_STATUS.md` is the handover document. Every new session reads it first. Update it to reflect the current state:
+
+```markdown
+## Current Status
+- Phase: X
+- Last completed task: [task name + what was done]
+- Next task: [exact task name from IMPLEMENTATION_PLAN]
+- Blocked on: [anything waiting for user action, or "nothing"]
+
+## Files changed this session
+- [list of files created or modified]
+
+## Decisions made this session
+- [any new decisions not yet in CLAUDE.md or design docs]
+
+## What the next session must do first
+- [exact first steps, e.g. "Read pages/01_search/BUNDLE.md then start Task 2B audit for search page"]
+
+## Open questions for user
+- [anything needing user input before next task can proceed]
+```
+
+### Step 2: Update CLAUDE.md if new decisions were made
+
+Any decision made during the session that is not yet in CLAUDE.md must be added to the **Known product decisions** section before closing.
+
+### Step 3: Commit
+
+```
+git add _reference/SESSION_STATUS.md CLAUDE.md
+git commit -m "docs: end-of-session handover update"
+```
+
+### How to start a new session from a handover
+
+The user pastes this into the new chat:
+
+> "Working directory: C:\Users\Rikke\Documents\JourneyMate-Organized. Read CLAUDE.md and then SESSION_STATUS.md and tell me what we're picking up."
+
+That is sufficient. The new session reads CLAUDE.md → SESSION_STATUS.md → picks up exactly where we left off.
 
 ---
 
@@ -110,6 +165,8 @@ For any widget, page, or feature:
 
 For every custom widget/action/function a page uses, also read its `shared/` MASTER_README
 AND its source in `_flutterflow_export/lib/custom_code/`.
+
+**For any API call:** Always read `_reference/BUILDSHIP_API_REFERENCE.md` first — it documents the exact inputs and outputs for all 9 BuildShip endpoints. The raw BuildShip node scripts are in `_reference/_buildship/` if you need to go deeper. Never guess API shapes.
 
 ---
 
