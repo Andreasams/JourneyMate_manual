@@ -413,3 +413,118 @@ None from page level. `ContactUsFormWidget` calls the BuildShip `/contact` endpo
 | Variable | Type | Purpose |
 |----------|------|---------|
 | `_pageStartTime` | `DateTime` | Analytics duration calculation on dispose |
+
+---
+
+## Custom Widget Internals — ContactUsFormWidget
+
+> Source: `_flutterflow_export/lib/custom_code/widgets/contact_us_form_widget.dart`
+
+### Constructor signature
+```dart
+ContactUsFormWidget({
+  double? width,
+  double? height,
+  required String currentLanguage,    // FFLocalizations.of(context).languageCode
+  required dynamic translationsCache, // FFAppState().translationsCache
+})
+```
+
+### Form fields
+| Field | Type | Required | Validation | Max lines |
+|-------|------|----------|------------|-----------|
+| Name | Text input | Yes | Not empty | 1 |
+| Contact | Text input | Yes | Not empty | 1 |
+| Subject | Text input | Yes | Not empty | 1 |
+| Message | Textarea | Yes | Not empty AND length ≥ 10 chars | 6 |
+
+The "contact" field accepts either email or phone (single free-text field — no email format
+validation, no regex). All four fields are required with red `*` asterisk. Error messages
+appear below each field (red, 12px). Errors clear immediately on any text change.
+
+**Note on Subject:** The existing FlutterFlow implementation uses a free-text input for Subject
+(not a dropdown). The JSX design anticipates a subject dropdown — this is a gap between
+FlutterFlow source and v2 design.
+
+### API call
+- **Endpoint:** `POST https://wvb8ww.buildship.run/contact`
+- **Request body:**
+  ```json
+  {
+    "name": "...",
+    "contact": "...",
+    "subject": "...",
+    "message": "...",
+    "languageCode": "en"
+  }
+  ```
+- **Response:** `{ "success": true }` or `{ "success": false, "error": "..." }`
+- **Trigger:** User taps submit button (after successful validation)
+- **Loading state:** Submit button replaced by `CircularProgressIndicator` (white, 20×20px, 2px stroke)
+
+### Success handling
+- `_isSubmitted` set to `true`
+- Submit button replaced by green success box:
+  - `Icons.check_circle_outline` (green, 32px)
+  - `contact_form_success_message` (green, 15px, w500)
+  - `contact_form_success_navigate_away` (green 80% opacity, 13px, w400)
+- No retry — form is done. User must navigate away manually.
+
+### Error handling
+- `_submissionError` set to error string
+- Error box shown + retry button below:
+  - `Icons.error_outline` (red, 32px)
+  - `contact_form_error_submission` (red, 15px, w500)
+  - Submit button reappears below the error box for retry
+
+### Internal translation keys (all via `getTranslations(currentLanguage, key, translationsCache)`)
+| Key | Used for |
+|-----|----------|
+| `contact_form_title_main` | Section heading (20px, w500) |
+| `contact_form_subtitle_main` | Description paragraph (15px, w300) |
+| `contact_form_title_name` | Name field label (required *) |
+| `contact_form_hint_name` | Name placeholder |
+| `contact_form_error_name_required` | Validation: name empty |
+| `contact_form_title_contact` | Contact field label (required *) |
+| `contact_form_subtitle_contact` | Contact helper (email or phone) |
+| `contact_form_hint_contact` | Contact placeholder |
+| `contact_form_error_contact_required` | Validation: contact empty |
+| `contact_form_title_subject` | Subject field label (required *) |
+| `contact_form_subtitle_subject` | Subject helper text |
+| `contact_form_hint_subject` | Subject placeholder |
+| `contact_form_error_subject_required` | Validation: subject empty |
+| `contact_form_title_message` | Message field label (required *) |
+| `contact_form_subtitle_message` | Message helper text |
+| `contact_form_hint_message` | Message placeholder |
+| `contact_form_error_message_required` | Validation: message empty |
+| `contact_form_error_message_too_short` | Validation: message < 10 chars |
+| `contact_form_button_submit` | Submit button label |
+| `contact_form_success_message` | Success state: main message |
+| `contact_form_success_navigate_away` | Success state: sub-message |
+| `contact_form_error_submission` | Error state: error message |
+
+### Analytics events
+`markUserEngaged()` is called in `_handleSubmit()` on every submit attempt (before validation).
+No `trackAnalyticsEvent()` calls inside this widget — analytics are tracked at the page level only.
+
+### Styling constants
+| Property | Value |
+|----------|-------|
+| Text field background | `#F2F3F5` |
+| Submit button color | `#E9874B` (orange) |
+| Success color | `#249689` (green) |
+| Error color | `Colors.red` |
+| Submit button size | 200×40px, radius 8px |
+| Text field radius | 8px |
+| Bottom padding | 140px (for keyboard clearance) |
+| Section spacing | 24px |
+
+### Language change support
+`didUpdateWidget()` is overridden — if `currentLanguage` or `translationsCache` changes,
+`setState()` is called to re-render all translated strings immediately.
+
+### Design gap — Subject field
+The FlutterFlow implementation uses a free-text subject input. The v2 JSX design
+anticipates a subject dropdown with predefined options. Phase 3 implementation should
+use a free-text field (matching FlutterFlow) unless the BuildShip `/contact` endpoint
+documentation specifies expected subject values.

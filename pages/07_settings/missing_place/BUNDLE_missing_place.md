@@ -393,3 +393,102 @@ None from page level. `MissingLocationFormWidget` calls the BuildShip `/missingp
 | Variable | Type | Purpose |
 |----------|------|---------|
 | `_pageStartTime` | `DateTime` | Analytics duration calculation on dispose |
+
+---
+
+## Custom Widget Internals — MissingLocationFormWidget
+
+> Source: `_flutterflow_export/lib/custom_code/widgets/missing_location_form_widget.dart`
+
+### Constructor signature
+```dart
+MissingLocationFormWidget({
+  double? width,
+  double? height,
+  required String currentLanguage,    // FFLocalizations.of(context).languageCode
+  required dynamic translationsCache, // FFAppState().translationsCache
+})
+```
+
+### Form fields
+| Field | Type | Required | Validation | Max lines |
+|-------|------|----------|------------|-----------|
+| Business name | Text input | Yes | Not empty | 1 |
+| Business address | Text input | Yes | Not empty | 1 |
+| Message | Textarea | Yes | Not empty AND length ≥ 10 chars | 6 |
+
+All three fields display a red `*` asterisk next to their label when required. Error messages
+appear below the field (red, 12px). Errors clear immediately on any text change.
+
+### API call
+- **Endpoint:** `POST https://wvb8ww.buildship.run/missingplace`
+- **Request body:**
+  ```json
+  {
+    "businessName": "...",
+    "businessAddress": "...",
+    "message": "...",
+    "languageCode": "en"
+  }
+  ```
+- **Response:** `{ "success": true }` or `{ "success": false, "error": "..." }`
+- **Trigger:** User taps submit button (after successful validation)
+- **Loading state:** Submit button replaced by `CircularProgressIndicator` (white, 20×20px, 2px stroke)
+
+### Success handling
+- `_isSubmitted` set to `true`
+- Submit button replaced by green success box (border + light background):
+  - `Icons.check_circle_outline` (green, 32px)
+  - `missing_location_success_message` (green, 15px, w500)
+  - `missing_location_success_navigate_away` (green 80% opacity, 13px, w400)
+- No retry — form is done. User must navigate away manually.
+
+### Error handling
+- `_submissionError` set to error string
+- Submit button replaced by red error box + retry button below:
+  - `Icons.error_outline` (red, 32px)
+  - `missing_location_error_submission` (red, 15px, w500)
+  - Submit button reappears below the error box for retry
+
+### Internal translation keys (all via `getTranslations(currentLanguage, key, translationsCache)`)
+| Key | Used for |
+|-----|----------|
+| `missing_location_title_main` | Section heading (20px, w500) |
+| `missing_location_subtitle_main_1` | First description paragraph (15px, w300) |
+| `missing_location_subtitle_main_2` | Second description paragraph (15px, w300) |
+| `missing_location_title_business_name` | Business name field label |
+| `missing_location_hint_business_name` | Business name placeholder text |
+| `missing_location_error_name_required` | Validation: name empty |
+| `missing_location_title_business_address` | Address field label |
+| `missing_location_subtitle_business_address` | Address helper text |
+| `missing_location_hint_business_address` | Address placeholder text |
+| `missing_location_error_address_required` | Validation: address empty |
+| `missing_location_title_message` | Message field label |
+| `missing_location_subtitle_message` | Message helper text |
+| `missing_location_hint_message` | Message placeholder text |
+| `missing_location_error_message_required` | Validation: message empty |
+| `missing_location_error_message_too_short` | Validation: message < 10 chars |
+| `missing_location_button_submit` | Submit button label |
+| `missing_location_success_message` | Success state: main message |
+| `missing_location_success_navigate_away` | Success state: sub-message |
+| `missing_location_error_submission` | Error state: error message |
+
+### Analytics events
+`markUserEngaged()` is called in `_handleSubmit()` on every submit attempt (before validation).
+No `trackAnalyticsEvent()` calls inside this widget — analytics are tracked at the page level only.
+
+### Styling constants
+| Property | Value |
+|----------|-------|
+| Text field background | `#F2F3F5` |
+| Submit button color | `#E9874B` (orange) |
+| Success color | `#249689` (green) |
+| Error color | `Colors.red` |
+| Submit button size | 200×40px, radius 8px |
+| Text field radius | 8px |
+| Bottom padding | 140px (for keyboard clearance) |
+| Section spacing | 24px |
+
+### Language change support
+`didUpdateWidget()` is overridden — if `currentLanguage` or `translationsCache` changes,
+`setState()` is called to re-render all translated strings immediately.

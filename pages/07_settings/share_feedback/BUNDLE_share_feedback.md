@@ -468,3 +468,144 @@ None from page level. `FeedbackFormWidget` calls the BuildShip `/feedbackform` e
 | Variable | Type | Purpose |
 |----------|------|---------|
 | `_pageStartTime` | `DateTime` | Analytics duration calculation on dispose |
+
+---
+
+## Custom Widget Internals — FeedbackFormWidget
+
+> Source: `_flutterflow_export/lib/custom_code/widgets/feedback_form_widget.dart`
+
+### Constructor signature
+```dart
+FeedbackFormWidget({
+  double? width,
+  double? height,
+  required String currentLanguage,    // FFLocalizations.of(context).languageCode
+  required dynamic translationsCache, // FFAppState().translationsCache
+  String? pageName,                   // 'shareFeedback' — context identifier, NOT sent to API
+})
+```
+
+**`pageName` note:** This prop is received and stored as `widget.pageName` but is NOT
+currently included in the API request body. It is available for future use to route
+feedback to different handlers based on the originating page context.
+
+### Form fields
+| Field | Type | Required | Validation | Notes |
+|-------|------|----------|------------|-------|
+| Topic | Chip buttons (Wrap) | Yes | Must select one | 7 options, animated 200ms |
+| Message | Textarea (6 lines) | Yes | Not empty AND ≥ 10 chars | |
+| "Contact me" checkbox | Checkbox | No | Boolean, default false | Makes Name + Contact required |
+| Name | Text input (1 line) | Conditional | Required only if checkbox checked | Shows required * when checked |
+| Contact info | Text input (1 line) | Conditional | Required only if checkbox checked | Email or phone |
+
+### Topic options (7, localized via translation keys)
+| Translation key | Default label (approximate) |
+|----------------|---------------------------|
+| `feedback_topic_wrong_info` | Wrong info |
+| `feedback_topic_app_ideas` | App ideas |
+| `feedback_topic_bug` | Bug |
+| `feedback_topic_missing_place` | Missing place |
+| `feedback_topic_suggestion` | Suggestion |
+| `feedback_topic_praise` | Praise |
+| `feedback_topic_other` | Other |
+
+Topic buttons use `Wrap` layout with 8px horizontal spacing. Selected topic color: `#EE8B60`.
+Unselected: `#F2F3F5` background with grey border. Both animate via `AnimatedContainer` (200ms).
+
+### API call
+- **Endpoint:** `POST https://wvb8ww.buildship.run/feedbackform`
+- **Request body:**
+  ```json
+  {
+    "topic": "Wrong info",           // Localized label string of selected topic
+    "message": "...",
+    "allowContact": false,           // true if checkbox checked
+    "name": "..." ,                  // null if not provided
+    "contact": "...",                // null if not provided
+    "languageCode": "en"
+  }
+  ```
+- **Response:** `{ "success": true }` or `{ "success": false, "error": "..." }`
+- **Trigger:** User taps submit button (after successful validation)
+- **Loading state:** Submit button replaced by `CircularProgressIndicator` (white, 20×20px, 2px stroke)
+- **Important:** `topic` is sent as the **localized label string** (not a key). If the user's
+  language changes between topic selection and submission, the sent topic label will reflect
+  the language active at selection time.
+
+### Success handling
+- `_isSubmitted` set to `true`
+- Submit button replaced by green success box:
+  - `Icons.check_circle_outline` (green, 32px)
+  - `feedback_form_success_message` (green, 15px, w500)
+  - `feedback_form_success_navigate_away` (green 80% opacity, 13px, w400)
+
+### Error handling
+- `_submissionError` set to error string
+- Error box + retry button below:
+  - `Icons.error_outline` (red, 32px)
+  - `feedback_form_error_submission` (red, 15px, w500)
+  - Submit button reappears below the error box for retry
+
+### Internal translation keys (all via `getTranslations(currentLanguage, key, translationsCache)`)
+| Key | Used for |
+|-----|----------|
+| `feedback_form_title_main` | Section heading (20px, w500) |
+| `feedback_form_subtitle_main` | Description paragraph (15px, w300) |
+| `feedback_form_title_topic` | Topic section label (required *) |
+| `feedback_form_subtitle_topic` | Topic helper text |
+| `feedback_topic_wrong_info` | Topic chip label |
+| `feedback_topic_app_ideas` | Topic chip label |
+| `feedback_topic_bug` | Topic chip label |
+| `feedback_topic_missing_place` | Topic chip label |
+| `feedback_topic_suggestion` | Topic chip label |
+| `feedback_topic_praise` | Topic chip label |
+| `feedback_topic_other` | Topic chip label |
+| `feedback_form_error_topic_required` | Validation: no topic selected |
+| `feedback_form_title_message` | Message field label (required *) |
+| `feedback_form_subtitle_message` | Message helper text |
+| `feedback_form_hint_message` | Message placeholder |
+| `feedback_form_error_message_required` | Validation: message empty |
+| `feedback_form_error_message_too_short` | Validation: message < 10 chars |
+| `feedback_form_title_contact_consent` | Checkbox section label |
+| `feedback_form_subtitle_contact_consent` | Checkbox description (with checkbox inline) |
+| `feedback_form_title_name` | Name field label (required * when checkbox checked) |
+| `feedback_form_hint_name` | Name placeholder |
+| `feedback_form_error_name_required` | Validation: name empty (when checkbox) |
+| `feedback_form_title_contact_info` | Contact field label (required * when checkbox) |
+| `feedback_form_subtitle_contact_info` | Contact helper (email or phone) |
+| `feedback_form_hint_contact_info` | Contact placeholder |
+| `feedback_form_error_contact_required` | Validation: contact empty (when checkbox) |
+| `feedback_form_button_submit` | Submit button label |
+| `feedback_form_success_message` | Success state: main message |
+| `feedback_form_success_navigate_away` | Success state: sub-message |
+| `feedback_form_error_submission` | Error state: error message |
+
+### Analytics events
+`markUserEngaged()` is called in three places:
+1. `_handleTopicSelected()` — when user taps any topic chip
+2. `_handleContactRequiredChanged()` — when user toggles "Contact me" checkbox
+3. `_handleSubmit()` — on every submit attempt (before validation)
+
+No `trackAnalyticsEvent()` calls inside this widget — analytics are tracked at the page level only.
+
+### Styling constants
+| Property | Value |
+|----------|-------|
+| Text field background | `#F2F3F5` |
+| Submit button color | `#E9874B` (orange) |
+| Selected topic color | `#EE8B60` (selected chip bg) |
+| Unselected topic color | `#F2F3F5` (unselected chip bg) |
+| Unselected topic text | `#242629` |
+| Topic border (unselected) | `Colors.grey[500]` |
+| Topic button height | 32px, radius 8px |
+| Success color | `#249689` (green) |
+| Error color | `Colors.red` |
+| Submit button size | 200×40px, radius 8px |
+| Checkbox active color | `#E9874B` (orange, matches submit) |
+| Bottom padding | 140px (for keyboard clearance) |
+| Section spacing | 24px |
+
+### Language change support
+`didUpdateWidget()` is overridden — if `currentLanguage` or `translationsCache` changes,
+`setState()` is called to re-render all translated strings (including topic labels).
