@@ -325,6 +325,72 @@ expandable_text_toggled, social_link_clicked, share_button_clicked, business_con
 
 ---
 
+## 10. SUBMIT MISSING PLACE (`/missingplace`)
+
+**Purpose:** User reports a restaurant that is missing from the app.
+
+**BuildShip mechanism:** `supabaseInsertObject` node — direct Supabase table insert.
+No server-side transformation or validation. The input object becomes the inserted row.
+
+**Inputs (from Flutter):**
+| Field | Type | Notes |
+|-------|------|-------|
+| `businessName` | `string` | Required — validated non-empty in widget before send |
+| `businessAddress` | `string` | Required — validated non-empty in widget before send |
+| `message` | `string` | Required — validated non-empty AND ≥ 10 chars in widget |
+| `languageCode` | `string` | BCP-47 code of user's active language |
+
+**Response:** Array of inserted rows (`Prefer: return=representation`):
+```json
+[{ ...inserted row }]
+```
+Widget treats any `response.statusCode == 200` as success regardless of body.
+Non-200 → error state shown with retry.
+
+---
+
+## 11. SUBMIT CONTACT US (`/contact`)
+
+**Purpose:** User sends a support or general enquiry message.
+
+**BuildShip mechanism:** `supabaseInsertObject` node — direct Supabase table insert.
+
+**Inputs (from Flutter):**
+| Field | Type | Notes |
+|-------|------|-------|
+| `name` | `string` | Required — validated non-empty |
+| `contact` | `string` | Required — validated non-empty (free-text: email or phone) |
+| `subject` | `string` | Required — validated non-empty (free-text, not a dropdown) |
+| `message` | `string` | Required — validated non-empty AND ≥ 10 chars |
+| `languageCode` | `string` | BCP-47 code of user's active language |
+
+**Response:** Same pattern as `/missingplace` — array of inserted rows.
+
+---
+
+## 12. SUBMIT FEEDBACK (`/feedbackform`)
+
+**Purpose:** User submits app feedback with an optional topic tag and contact consent.
+
+**BuildShip mechanism:** `supabaseInsertObject` node — direct Supabase table insert.
+
+**Inputs (from Flutter):**
+| Field | Type | Notes |
+|-------|------|-------|
+| `topic` | `string` | Required — the **localized label string** of the selected topic chip (e.g. "Bug" or "Fejl"). Stored directly as a `text` field in Supabase. Foreign-language strings are fine. |
+| `message` | `string` | Required — validated non-empty AND ≥ 10 chars |
+| `allowContact` | `boolean` | Whether the user consented to be contacted |
+| `name` | `string?` | Optional — only sent if `allowContact = true` and field filled |
+| `contact` | `string?` | Optional — only sent if `allowContact = true` and field filled (email or phone) |
+| `languageCode` | `string` | BCP-47 code of user's active language |
+
+**Note on `pageName`:** `FeedbackFormWidget` receives a `pageName` prop (`'shareFeedback'`) but does
+NOT currently include it in the request body. It is available for future routing if needed.
+
+**Response:** Same pattern as `/missingplace` — array of inserted rows.
+
+---
+
 ## Summary table
 
 | # | Endpoint | Flutter inputs | Key output fields |
@@ -337,4 +403,8 @@ expandable_text_toggled, social_link_clicked, share_button_clicked, business_con
 | 6 | GET_FILTER_DESCRIPTIONS | businessId, languageCode | filterDescriptions [{filter_id, description}] |
 | 7 | GET_SINGLE_MENU_ITEM | menuItemId, languageCode | full menu item object |
 | 8 | GET_UI_TRANSLATIONS | languageCode | Map<String, String> key-value pairs |
+| 9 | POST_ANALYTICS | eventType, deviceId, sessionId, userId, eventData, timestamp | success bool |
+| 10 | SUBMIT_MISSING_PLACE (`/missingplace`) | businessName, businessAddress, message, languageCode | inserted row array |
+| 11 | SUBMIT_CONTACT (`/contact`) | name, contact, subject, message, languageCode | inserted row array |
+| 12 | SUBMIT_FEEDBACK (`/feedbackform`) | topic, message, allowContact, name?, contact?, languageCode | inserted row array |
 | 9 | POST_ANALYTICS | eventType, deviceId, sessionId, userId, eventData, timestamp | success bool |

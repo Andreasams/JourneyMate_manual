@@ -106,7 +106,7 @@ if (FFAppState().userLanguageCode != null && FFAppState().userLanguageCode != ''
 **Analytics Events:**
 - Event name: `page_viewed`
 - Event data:
-  - `pageName`: `'homepage'` (also called `'welcomepage'` in some events)
+  - `pageName`: `'welcomePage'` (corrected — was inconsistently `'homepage'`/`'welcomepage'`; BuildShip + Supabase updated accordingly)
   - `durationSeconds`: Calculated from `pageStartTime`
 
 **Navigation Logic:**
@@ -278,7 +278,7 @@ The FlutterFlow implementation uses **5 translation keys**:
 **Implementation:**
 - Records `pageStartTime` on initState
 - Tracks `page_viewed` event on dispose
-- Event data: `pageName: 'homepage'`, `durationSeconds`
+- Event data: `pageName: 'welcomePage'`, `durationSeconds`
 
 **Not in JSX:** JSX doesn't document analytics
 
@@ -351,12 +351,11 @@ No features explicitly marked as "not in current scope" by user.
 
 ## Known Issues
 
-### Issue 1: Page Name Inconsistency
+### Issue 1: Page Name Inconsistency — RESOLVED
 
-⚠️ **Analytics event page name inconsistency:**
-- Some events use `'homepage'`
-- Some events use `'welcomepage'`
-- **Solution:** Standardize to one name (likely `'welcomePage'` to match route name)
+✅ **Standardized to `'welcomePage'`** (confirmed by user, 2026-02-20).
+- All occurrences in BUNDLE_welcome_page.md and this file updated.
+- BuildShip handler and Supabase analytics table require matching update.
 
 **Code Reference:** WelcomePageWidget analytics tracking
 

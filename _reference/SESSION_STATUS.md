@@ -6,10 +6,10 @@
 
 ## Current Status
 
-**Phase:** Phase 3 pending user review
-**Last completed task:** Phase 2 — Bundle.md Audit (all tasks complete 2026-02-20)
-**Next task:** User reviews `_reference/BUNDLE_AUDIT_REPORT.md` → resolves 5 known issues → Phase 3 begins
-**Blocked on:** User review of BUNDLE_AUDIT_REPORT.md before Phase 3 can start
+**Phase:** Phase 3 ready to begin
+**Last completed task:** Phase 2 — Bundle.md Audit fully complete, all 5 known issues resolved (2026-02-20)
+**Next task:** Phase 3 — BuildShip gap analysis → write `_reference/BUILDSHIP_REQUIREMENTS.md`
+**Blocked on:** Nothing — Phase 3 can start immediately
 
 ---
 
@@ -38,7 +38,7 @@
 |------|---------|
 | `CLAUDE.md` | All session rules, decisions, procedures |
 | `_reference/SESSION_STATUS.md` | This file — current project state |
-| `_reference/BUILDSHIP_API_REFERENCE.md` | All 9 BuildShip endpoints — exact inputs/outputs |
+| `_reference/BUILDSHIP_API_REFERENCE.md` | All 12 BuildShip endpoints — exact inputs/outputs |
 | `_reference/MASTER_STATE_MAP.md` | All FFAppState vars → Riverpod mapping |
 | `_reference/IMPLEMENTATION_PLAN.txt` | Full migration plan |
 | `DESIGN_SYSTEM_flutter.md` | All design tokens |
@@ -72,14 +72,19 @@
 | `07_settings/missing_place/BUNDLE_missing_place.md` | ✅ Deepened — MissingLocationFormWidget internals |
 | `07_settings/contact_us/BUNDLE_contact_us.md` | ✅ Deepened — ContactUsFormWidget internals |
 | `07_settings/share_feedback/BUNDLE_share_feedback.md` | ✅ Deepened — FeedbackFormWidget internals |
-| `_reference/BUNDLE_AUDIT_REPORT.md` | ✅ Created — 5 known issues requiring user decision |
+| `_reference/BUNDLE_AUDIT_REPORT.md` | ✅ Created — all 5 known issues now resolved |
+| `_reference/BUILDSHIP_API_REFERENCE.md` | ✅ Updated — endpoints #10, #11, #12 added (`/missingplace`, `/contact`, `/feedbackform`) |
+| `pages/05_business_information/` | ✅ Renamed from `05_contact_details/` (git mv) |
+| `pages/06_welcome_onboarding/BUNDLE_welcome_page.md` | ✅ pageName corrected to `'welcomePage'` |
+| `pages/06_welcome_onboarding/GAP_ANALYSIS_welcome_page.md` | ✅ pageName corrected to `'welcomePage'` |
+| `CLAUDE.md` | ✅ 5 new product decisions added; paths updated |
 
-**5 known issues in BUNDLE_AUDIT_REPORT.md requiring user decision before Phase 3:**
-1. `05_contact_details/` directory name mismatch (rename to `05_business_information`?)
-2. ContactUs Subject field — free-text (FF) vs dropdown (JSX)
-3. FeedbackForm topic sent as localized string — verify BuildShip accepts this
-4. Welcome page `pageName: 'homepage'` — confirm intended analytics value
-5. 3 form endpoints undocumented in BUILDSHIP_API_REFERENCE.md (`/missingplace`, `/contact`, `/feedbackform`)
+**5 known issues — ALL RESOLVED (2026-02-20):**
+1. ✅ `05_contact_details/` renamed to `05_business_information/` via `git mv`
+2. ✅ ContactUs Subject: free-text confirmed (match FlutterFlow, not JSX dropdown)
+3. ✅ FeedbackForm topic: localized string is fine — `supabaseInsertObject` does no string-matching; goes straight to `text` column
+4. ✅ Welcome page pageName: corrected to `'welcomePage'`; BuildShip + Supabase update required separately
+5. ✅ 3 form endpoints: added as #10, #11, #12 in BUILDSHIP_API_REFERENCE.md (all use `supabaseInsertObject` node)
 
 ---
 
@@ -91,6 +96,11 @@
 4. **foodDrinkTypes IS used** — populated by GET_FILTERS_FOR_SEARCH, stored in filterProvider
 5. **No direct Supabase** — all API through BuildShip
 6. **GitHub repo:** `Andreasams/JourneyMate_manual`
+7. **ContactUs Subject is free-text** — match FlutterFlow (no dropdown)
+8. **FeedbackForm topic is localized label string** — goes straight to Supabase `text` column via `supabaseInsertObject`; no mapping needed
+9. **Welcome page analytics pageName = `'welcomePage'`** — corrected from inconsistent `'homepage'`; BuildShip + Supabase update required
+10. **3 form endpoints use `supabaseInsertObject`** — simple direct Supabase REST POST; no server logic; documented as #10–12 in BUILDSHIP_API_REFERENCE.md
+11. **`pages/05_business_information/`** — renamed from `05_contact_details/`
 
 ---
 
@@ -98,8 +108,7 @@
 
 Phase 2 tasks are finished. See `_reference/BUNDLE_AUDIT_REPORT.md` for per-file findings.
 
-**What the next session must do first:** Review BUNDLE_AUDIT_REPORT.md → resolve 5 known issues
-(listed above in Phase 2 output summary) → then proceed to Phase 3 (BuildShip gap analysis).
+**What the next session must do first:** Phase 3 — write `_reference/BUILDSHIP_REQUIREMENTS.md` (BuildShip gap analysis). Read IMPLEMENTATION_PLAN.txt for Phase 3 task definition before starting.
 
 ---
 
@@ -133,7 +142,7 @@ Phase 2 tasks are finished. See `_reference/BUNDLE_AUDIT_REPORT.md` for per-file
 
 ## Open questions for user
 
-None currently. Phase 2 can start immediately.
+None. Phase 3 can start immediately.
 
 ---
 

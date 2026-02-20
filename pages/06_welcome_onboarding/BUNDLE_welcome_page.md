@@ -223,7 +223,8 @@ FFButtonWidget(
 - **Purpose:** Track page view with duration
 - **Parameters:**
   - Event name: `'page_viewed'`
-  - Event data: `{ 'pageName': 'homepage', 'durationSeconds': calculated }`
+  - Event data: `{ 'pageName': 'welcomePage', 'durationSeconds': calculated }`
+  - **Note:** Value corrected from `'homepage'` — requires matching update in BuildShip handler + Supabase analytics table
 
 ---
 
@@ -317,7 +318,7 @@ if ((_model.searchAPIResult?.succeeded ?? true)) {
 1. Track analytics:
    ```dart
    await actions.trackAnalyticsEvent('page_viewed', {
-     'pageName': 'homepage', // or 'welcomepage'
+     'pageName': 'welcomePage', // corrected from 'homepage' — update BuildShip + Supabase
      'durationSeconds': calculated,
    });
    ```
@@ -332,7 +333,7 @@ if ((_model.searchAPIResult?.succeeded ?? true)) {
 
 **Triggered:** On page dispose
 **Event Data:**
-- `pageName`: `'homepage'` (note: inconsistency - sometimes `'welcomepage'`)
+- `pageName`: `'welcomePage'` (corrected — standardized from inconsistent `'homepage'`/`'welcomepage'`)
 - `durationSeconds`: Time spent on page
 
 **User Type Tracking:**
@@ -431,13 +432,11 @@ if ((_model.searchAPIResult?.succeeded ?? true)) {
 
 ## Known Issues
 
-### Issue 1: Analytics Page Name Inconsistency
+### Issue 1: Analytics Page Name — RESOLVED
 
-⚠️ **Inconsistent page name in analytics:**
-- Sometimes uses `'homepage'`
-- Sometimes uses `'welcomepage'`
-
-**Resolution:** Standardize to `'welcomePage'` (matches route name).
+✅ **Standardized to `'welcomePage'`** (matches route name).
+- All occurrences in this file updated.
+- BuildShip handler and Supabase analytics table require matching update (confirmed by user, 2026-02-20).
 
 ### Issue 2: Optimistic API Error Handling
 

@@ -28,12 +28,15 @@
 - Fixed `provider: ^6.1.5` → `flutter_riverpod: ^2.x` in `02_business_profile/BUNDLE.md`
 - Added local state tables to menu, gallery, contact-details, welcome, and app-settings files
 
-### Known issues requiring user decision
-1. **`05_contact_details/` directory name mismatch** — directory is named `05_contact_details` but contains `BusinessInformationWidget`. Consider renaming to `05_business_information` before Phase 3 to avoid confusion.
-2. **ContactUsFormWidget Subject field** — FlutterFlow uses free-text input; JSX design anticipates a dropdown. Implementer must choose: match FlutterFlow (free text) or implement dropdown (requires new BuildShip work). See per-file entry below.
-3. **FeedbackFormWidget topic sent as localized string** — The `/feedbackform` API receives the topic as the displayed label (e.g. "Wrong info") not a stable key. If the BuildShip endpoint does string-matching on topic, language changes could cause misrouting. Verify with BuildShip team.
-4. **Analytics pageName inconsistency** — `BUNDLE_welcome_page.md` documents `pageName: 'homepage'` but the analytics event type is `page_viewed`. Verify this is the intended `pageName` value vs. `'welcomePage'`.
-5. **Settings Hub (07_settings/BUNDLE.md)** — ⭐⭐⭐ quality. Needs richer analytics section and edge cases before Phase 3. Acceptable as a nav hub but flagged.
+### Known issues — ALL RESOLVED (2026-02-20)
+
+| # | Issue | Resolution |
+|---|-------|------------|
+| 1 | `05_contact_details/` directory name mismatch | ✅ **Renamed** → `05_business_information/` via `git mv` |
+| 2 | ContactUs Subject field — free-text vs dropdown | ✅ **Free-text** confirmed (match FlutterFlow, not JSX dropdown) |
+| 3 | FeedbackForm topic as localized string | ✅ **Confirmed fine** — topic is a `text` column in Supabase; BuildShip node is a simple `supabaseInsertObject` (no string-matching); foreign-language values are fine |
+| 4 | Welcome page `pageName: 'homepage'` | ✅ **Corrected to `'welcomePage'`** — all occurrences updated in BUNDLE_welcome_page.md and GAP_ANALYSIS_welcome_page.md; BuildShip + Supabase update required separately |
+| 5 | 3 form endpoints undocumented in API reference | ✅ **Documented** — added as endpoints #10, #11, #12 in BUILDSHIP_API_REFERENCE.md; all use `supabaseInsertObject` BuildShip node (direct Supabase REST POST, no server logic) |
 
 ---
 
@@ -128,7 +131,8 @@
 
 ---
 
-### 5 — `pages/05_contact_details/BUNDLE_information_page.md` — ⭐⭐⭐⭐ NEAR-PASS
+### 5 — `pages/05_business_information/BUNDLE_information_page.md` — ⭐⭐⭐⭐ NEAR-PASS
+*(Directory renamed from `05_contact_details` → `05_business_information` — confirmed 2026-02-20)*
 
 | Section | Status | Notes |
 |---------|--------|-------|
@@ -146,7 +150,7 @@
 
 **Actions taken:** Added Riverpod State section and local state table.
 **Known issues:**
-- Directory named `05_contact_details` but widget is `BusinessInformationWidget` → **user decision required** on rename
+- ~~Directory named `05_contact_details` but widget is `BusinessInformationWidget`~~ → **✅ RESOLVED: renamed to `05_business_information/`**
 - Analytics section thin: `business_contact_toggled` event (from ContactDetailWidget) not documented
 - Edge cases section missing (acceptable for Phase 3 since this is a display-only page)
 
@@ -170,7 +174,7 @@
 
 **Actions taken:** Added Riverpod State section.
 **Known issues:**
-- `pageName: 'homepage'` vs expected `'welcomePage'` — verify intended analytics page name
+- ~~`pageName: 'homepage'`~~ → **✅ RESOLVED: corrected to `'welcomePage'`** in BUNDLE and GAP_ANALYSIS (2026-02-20); BuildShip + Supabase update required separately
 - SearchAPI error handling is optimistic (assumes success) — known issue, low priority
 
 ---
@@ -325,7 +329,7 @@
 - Added full Custom Widget Internals section from FF source (4 fields, API, translations, analytics, styling)
 
 **Known issues:**
-- Subject field is free-text in FlutterFlow; JSX design anticipates dropdown → **user decision required** on implementation approach
+- ~~Subject field is free-text in FlutterFlow; JSX design anticipates dropdown~~ → **✅ RESOLVED: free-text confirmed** (match FlutterFlow; 2026-02-20)
 
 ---
 
@@ -352,8 +356,8 @@
 - Fixed: `markUserEngaged()` was missing from back button action (fixed 2026-02-19 per BUNDLE)
 
 **Known issues:**
-- Topic is sent as localized label string (not key) → verify BuildShip `/feedbackform` does not string-match on English topic names
-- `pageName` prop unused in API body → confirm this is intentional
+- ~~Topic as localized label string~~ → **✅ RESOLVED: confirmed fine** — `supabaseInsertObject` node does no string-matching; topic goes straight to `text` column; foreign-language values OK (2026-02-20)
+- `pageName` prop unused in API body → confirmed intentional (prop available for future routing)
 
 ---
 
@@ -368,12 +372,12 @@ from `MASTER_STATE_MAP.md` (e.g. `searchStateProvider`, `businessProvider`, `tra
 defined in Phase 5 when providers are implemented. Phase 3 implementers should update these
 names once Phase 5 is complete.
 
-### API endpoint mismatches vs BUILDSHIP_API_REFERENCE.md
+### API endpoint mismatches vs BUILDSHIP_API_REFERENCE.md — ALL RESOLVED
 | BUNDLE reference | API Reference | Status |
 |-----------------|---------------|--------|
-| `POST /missingplace` | Not in BUILDSHIP_API_REFERENCE.md | ⚠️ Undocumented endpoint — sourced directly from FF widget source |
-| `POST /contact` | Not in BUILDSHIP_API_REFERENCE.md | ⚠️ Undocumented endpoint — sourced directly from FF widget source |
-| `POST /feedbackform` | Not in BUILDSHIP_API_REFERENCE.md | ⚠️ Undocumented endpoint — sourced directly from FF widget source |
+| `POST /missingplace` | #10 in API Reference ✅ | **Added this session** — `supabaseInsertObject` node |
+| `POST /contact` | #11 in API Reference ✅ | **Added this session** — `supabaseInsertObject` node |
+| `POST /feedbackform` | #12 in API Reference ✅ | **Added this session** — `supabaseInsertObject` node |
 | `SEARCH` | #1 in API Reference ✅ | |
 | `GET_BUSINESS_PROFILE` | #2 in API Reference ✅ | |
 | `GET_RESTAURANT_MENU` | #3 in API Reference ✅ | |
@@ -383,23 +387,21 @@ names once Phase 5 is complete.
 | `GET_UI_TRANSLATIONS` | #8 in API Reference ✅ | |
 | `POST_ANALYTICS` | #9 in API Reference ✅ | |
 
-**Action required:** The 3 form submission endpoints (`/missingplace`, `/contact`, `/feedbackform`)
-are NOT documented in `BUILDSHIP_API_REFERENCE.md`. They were discovered from FF widget source code.
-Add them as endpoints #10, #11, #12 in BUILDSHIP_API_REFERENCE.md before Phase 3 begins.
+All 12 endpoints now documented in `BUILDSHIP_API_REFERENCE.md`. No outstanding API mismatches.
 
 ### Analytics event types vs BUILDSHIP_API_REFERENCE.md valid list
 All documented event types across the 14 files match the 36 valid event types in
 BUILDSHIP_API_REFERENCE.md Section 9. No invalid event type names found.
 
-### Known issues requiring user decision
+### Known issues requiring user decision — ALL RESOLVED (2026-02-20)
 
-| # | Issue | File(s) | Options |
-|---|-------|---------|---------|
-| 1 | Directory name mismatch | `05_contact_details/` | Rename to `05_business_information/` or leave as-is |
-| 2 | ContactUs Subject field | `07_settings/contact_us/BUNDLE_contact_us.md` | Free-text (match FF) or dropdown (match JSX) |
-| 3 | FeedbackForm topic as localized string | `07_settings/share_feedback/BUNDLE_share_feedback.md` | Verify BuildShip accepts localized strings or switch to key |
-| 4 | Welcome page `pageName: 'homepage'` | `06_welcome_onboarding/BUNDLE_welcome_page.md` | Confirm intended analytics page name |
-| 5 | 3 form endpoints undocumented in API ref | BUILDSHIP_API_REFERENCE.md | Add `/missingplace`, `/contact`, `/feedbackform` to API reference |
+| # | Issue | Resolution |
+|---|-------|------------|
+| 1 | Directory name mismatch | ✅ Renamed to `05_business_information/` |
+| 2 | ContactUs Subject field | ✅ Free-text (match FlutterFlow) |
+| 3 | FeedbackForm topic as localized string | ✅ Confirmed fine — direct Supabase insert, no string-matching |
+| 4 | Welcome page `pageName: 'homepage'` | ✅ Corrected to `'welcomePage'`; BuildShip + Supabase update required |
+| 5 | 3 form endpoints undocumented | ✅ Added as #10, #11, #12 in BUILDSHIP_API_REFERENCE.md |
 
 ---
 
@@ -410,9 +412,16 @@ BUILDSHIP_API_REFERENCE.md Section 9. No invalid event type names found.
 - ✅ Custom widget internals for 3 form pages (sourced from FF)
 - ✅ Correct package name (flutter_riverpod not provider)
 
+**5 known issues — ALL RESOLVED (2026-02-20):**
+- ✅ `05_contact_details/` renamed to `05_business_information/`
+- ✅ ContactUs Subject: free-text confirmed
+- ✅ FeedbackForm topic: localized string confirmed fine
+- ✅ Welcome pageName: corrected to `'welcomePage'`
+- ✅ 3 form endpoints: documented as #10–12 in BUILDSHIP_API_REFERENCE.md
+
 **Before Phase 3 can start:**
-- [ ] User reviews this report and resolves the 5 known issues above
+- [x] User reviewed this report and resolved all 5 known issues ✅
 - [ ] Phase 3 gap analysis (`_reference/BUILDSHIP_REQUIREMENTS.md`) must be written
 - [ ] Phase 3.5 master task list must be approved
 
-**Phase 2 is complete.** Awaiting user review.
+**Phase 2 is complete. Phase 3 can begin.**

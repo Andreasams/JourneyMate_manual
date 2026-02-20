@@ -116,7 +116,7 @@ JourneyMate-Organized/
     02_business_profile/
     03_menu_full_page/
     04_gallery_full_page/
-    05_contact_details/
+    05_business_information/
     06_welcome_onboarding/
     07_settings/
   shared/
@@ -166,7 +166,7 @@ For any widget, page, or feature:
 For every custom widget/action/function a page uses, also read its `shared/` MASTER_README
 AND its source in `_flutterflow_export/lib/custom_code/`.
 
-**For any API call:** Always read `_reference/BUILDSHIP_API_REFERENCE.md` first — it documents the exact inputs and outputs for all 9 BuildShip endpoints. The raw BuildShip node scripts are in `_reference/_buildship/` if you need to go deeper. Never guess API shapes.
+**For any API call:** Always read `_reference/BUILDSHIP_API_REFERENCE.md` first — it documents the exact inputs and outputs for all 12 BuildShip endpoints. The raw BuildShip node scripts are in `_reference/_buildship/` if you need to go deeper. Never guess API shapes.
 
 ---
 
@@ -235,7 +235,7 @@ Before implementing any page:
 | 7.3 | Business Profile | pages/02_business_profile/BUNDLE.md |
 | 7.4 | Menu Full Page | pages/03_menu_full_page/BUNDLE.md |
 | 7.5 | Gallery Full Page | pages/04_gallery_full_page/BUNDLE.md |
-| 7.6 | Contact Details | pages/05_contact_details/BUNDLE_information_page.md |
+| 7.6 | Business Information | pages/05_business_information/BUNDLE_information_page.md |
 | 7.7 | Settings Main | pages/07_settings/settings_main/BUNDLE.md |
 | 7.8 | Localization | pages/07_settings/localization/ |
 | 7.9 | Location Sharing | pages/07_settings/location_sharing/ |
@@ -321,7 +321,15 @@ These decisions have been explicitly confirmed and must not be re-debated:
 
 - **`foodDrinkTypes`** is populated from the `GET_FILTERS_FOR_SEARCH` BuildShip endpoint (returned as `foodDrinkTypes: FoodDrinkItem[]`). Store it in `filterProvider` alongside `filtersForUserLanguage`. It is NOT unused — it was just not referenced directly in page widgets (used indirectly through filter logic).
 
-- **BuildShip API reference:** All 9 endpoints are documented in `_reference/BUILDSHIP_API_REFERENCE.md` with exact inputs and outputs. Always read this before touching API service code.
+- **BuildShip API reference:** All 12 endpoints are documented in `_reference/BUILDSHIP_API_REFERENCE.md` with exact inputs and outputs. Always read this before touching API service code. (Endpoints 1–9 use custom BuildShip logic; endpoints 10–12 use `supabaseInsertObject` — direct Supabase REST POST with no server-side transformation.)
+
+- **ContactUs Subject field is free-text.** Do not implement a dropdown. Match FlutterFlow: single `TextFormField`, free-text, non-empty validation. The JSX design shows a dropdown but FlutterFlow is the ground truth.
+
+- **FeedbackForm topic is sent as the localized label string** (e.g. `"Bug"` or `"Fejl"`), not a stable key. This goes straight into a `text` column in Supabase via `supabaseInsertObject`. Foreign-language values are fine. Do not attempt to map to an English key before sending.
+
+- **Welcome page analytics `pageName` is `'welcomePage'`** (corrected from `'homepage'` / `'welcomepage'`). This requires a matching update in the BuildShip handler and Supabase analytics table (user to manage separately). Flutter code must send `'welcomePage'`.
+
+- **`pages/05_contact_details/` has been renamed to `pages/05_business_information/`** via `git mv`. Update any cross-references that still use the old path. BUNDLE.md filename inside the folder is still `BUNDLE_information_page.md`.
 
 ---
 
