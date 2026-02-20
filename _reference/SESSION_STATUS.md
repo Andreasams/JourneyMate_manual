@@ -6,10 +6,10 @@
 
 ## Current Status
 
-**Phase:** Phase 3.5 — User executes BuildShip/Supabase changes
-**Last completed task:** Phase 3 complete — `_reference/BUILDSHIP_REQUIREMENTS.md` written (2026-02-20)
-**Next task:** Phase 3.5 — User executes changes per `_reference/BUILDSHIP_REQUIREMENTS.md`, then Phase 4 begins
-**Blocked on:** User must execute CRITICAL search node changes (Sections 1–3) before Search page work begins
+**Phase:** Phase 4 — Flutter foundation
+**Last completed task:** Phase 3.5 complete — all BuildShip/Supabase changes executed and verified (2026-02-20)
+**Next task:** Phase 4 — Flutter foundation (theme, router, API service, translation infrastructure, analytics service)
+**Blocked on:** `category: 'all'` node addition pending (minor 2-line change — add `| 'all'` to TypeScript type and merge with `selectedFilters.length === 0` branch). Phase 4 can start without it.
 
 ---
 
@@ -22,7 +22,7 @@
 | Phase 1 | ✅ Complete | `_reference/MASTER_STATE_MAP.md` — all 43 FFAppState variables mapped |
 | Phase 2 | ✅ Complete | `_reference/BUNDLE_STANDARD.md` + `_reference/BUNDLE_AUDIT_REPORT.md` + all 14 BUNDLE.md files patched |
 | Phase 3 | ✅ Complete | `_reference/BUILDSHIP_REQUIREMENTS.md` — 15 sections, all 12 endpoints + all GAP_ANALYSIS flags |
-| Phase 3.5 | ⏳ Waiting on user | User executes BuildShip/Supabase changes per BUILDSHIP_REQUIREMENTS.md |
+| Phase 3.5 | ✅ Complete | All BuildShip/Supabase changes executed and verified |
 | Phase 4 | ⏳ Not started | Flutter foundation (theme, router, API service, translation, analytics) |
 | Phase 4.5 | ⏳ Not started | Codemagic CI/CD |
 | Phase 5 | ⏳ Not started | Riverpod providers |
@@ -109,7 +109,16 @@
 16. **Analytics node has 36 valid event types** — not 30 as `BUILDSHIP_API_REFERENCE.md` previously stated. Source of truth is the node script `_reference/_buildship/POST_ANALYTICS_TO_SUPABASE.txt`. Update the reference doc.
 17. **`/feedbackform` has a `page NOT NULL` gap** — `zUserFormShareFeedback.page` is `NOT NULL` but BuildShip inputs for `/feedbackform` do not include `page`. User must check whether the BuildShip `supabaseInsertObject` node injects a hardcoded value; if not, Flutter v2 must send `page`.
 18. **`business_hours` is CONFIRMED ABSENT from `get_business_complete_info` RPC output** — not just uncertain. User must run `SELECT get_business_complete_info(1, 'da')` to find where hours data lives and update the RPC if needed.
-19. **Station sort uses station name string** — `selectedStation` is a string (e.g. `"Nørreport"`), not a station ID. BuildShip looks up coordinates from `FilterTrainStation` table by matching the `name` column.
+19. **Station sort uses station ID number** — `selectedStation` is a numeric ID (not a name string). IDs ≥ 10000 have 10000 subtracted internally (actual ID = value - 10000). BuildShip looks up coordinates from `FilterTrainStation` by `train_station_id`. Station names are not unique across Danish cities.
+20. **`business_hours` IS present in RPC output** — returned as top-level key alongside `open_windows`. Format: JSONB object keyed by day string `"0"` (Monday) through `"6"` (Sunday), each with up to 5 opening/closing time pairs (HH:MM:SS strings), cutoff fields (kitchen_close etc.), and `by_appointment_only`.
+21. **`open_windows` IS present in RPC output** — pre-computed flat array `[{day, open, close}]` in minutes since midnight. `day` 0=Monday...6=Sunday. Used by BuildShip search for `onlyOpen` filter and travels in Typesense documents. Overnight slots are split into two entries.
+22. **Payment options and facilities are in `business_profile.filters`** — NOT separate fields. The `filters` array from `business_x_filter` contains all filter types including payment (filter_category_id 21: MobilePay, cash, card) and card specifics (filter_category_id 423: VISA, MasterCard, Dankort). Each client widget applies its own display/exclusion logic.
+23. **`feedbackform` `page` column is injected by BuildShip** — hardcoded as `"page": "shareFeedback"`. Flutter does NOT send `page`. Resolved: no Flutter change needed.
+24. **`contact` form `page` column** — BuildShip injects hardcoded `"page": "contact"`. Flutter does NOT send `page`.
+25. **Flutter sends `language_code` (snake_case) to BuildShip** — for all endpoints. What BuildShip does internally with the variable name is irrelevant. The external API parameter is `language_code`.
+26. **Translation table is `ui_translations`** — renamed from `flutterflowtranslations`. All new keys have been inserted. The `GET_UI_TRANSLATIONS` BuildShip node queries `ui_translations`.
+27. **`onlyOpen` uses pre-computed `open_windows`** — Typesense cannot filter on `business_hours` (stored as `type: object` with `index: false`). Instead, `get_business_hours_for_typesense()` pre-computes `open_windows: [{day, open, close}]` which is stored in the Typesense document. BuildShip JS filters on `open_windows` after Typesense returns results, before match categorisation.
+28. **`category: 'all'` pending node addition** — Minor 2-line change to add `'all'` as a 4th category value. When `'all'`: no bucketing, all results with match metadata returned as flat sorted list. Flutter renders section headers client-side. `nextCategory` always null. Use for initial search loads where total results ≤ 250. Current node handles `filtersUsedForSearch.length === 0` as flat list already; `'all'` extends this to when filters ARE active.
 
 ---
 
@@ -139,30 +148,26 @@
 
 ---
 
-## Phase 3.5 — User action required before Phase 4 begins
+## Phase 3.5: COMPLETE ✅ (2026-02-20)
 
-**Recommended order of execution:**
+All BuildShip/Supabase changes executed and verified:
 
-1. **CRITICAL — Do these first (one BuildShip session):**
-   - Update `/search` node: match categorisation + pagination (Section 1)
-   - Update `/search` node: sortBy / sortOrder (Section 2)
-   - Update `/search` node: onlyOpen filter (Section 3)
+| Item | Status | Resolution |
+|------|--------|-----------|
+| Search node: match categorisation + pagination | ✅ Done | Node updated; `per_page: 250`, JS pagination |
+| Search node: sortBy / sortOrder | ✅ Done | 6 sort options; `selectedStation` is numeric ID |
+| Search node: onlyOpen filter | ✅ Done | Uses pre-computed `open_windows` via BuildShip JS |
+| `get_business_complete_info` RPC: business hours | ✅ Done | Returns `business_hours` + `open_windows` in response |
+| `get_business_complete_info` RPC: payment/facilities | ✅ Done | In `business_profile.filters` array (no separate field) |
+| `BUILDSHIP_API_REFERENCE.md` update | ✅ Done | 36 events, confirmed URLs, all endpoint shapes updated |
+| `/feedbackform` `page NOT NULL` | ✅ Resolved | BuildShip injects `"shareFeedback"` hardcoded |
+| Form endpoint test inserts | ✅ Done | All 3 endpoints confirmed live |
+| Analytics `page_viewed` | ✅ Confirmed | Present in RPC and node validation list |
+| `language_code` param | ✅ Resolved | Flutter sends `language_code` (snake_case) to all endpoints |
+| Translation keys: `ui_translations` | ✅ Done | All keys inserted; table renamed from `flutterflowtranslations` |
 
-2. **HIGH — Business profile verification:**
-   - Run `SELECT get_business_complete_info(1, 'da')` and inspect full output (Section 4)
-   - Document payment_options and facilities (Section 5)
-
-3. **MEDIUM — Verification tasks (can run in parallel with early Flutter work):**
-   - Update `BUILDSHIP_API_REFERENCE.md` with confirmed URLs + 36-event list (Section 6)
-   - Investigate feedbackform `page` NOT NULL in BuildShip (Section 7)
-   - POST test inserts to all 3 form endpoints (Section 7)
-   - Confirm analytics RPC accepts `page_viewed` (Section 9)
-   - Confirm `languageCode` vs `language_code` param (Section 8)
-
-4. **LOW — Data setup (start before or during Search page work):**
-   - INSERT Search page translation keys (Section 9 — 17 keys × 7 languages)
-
-**Phase 4 can begin** once the CRITICAL search node changes are deployed.
+**Pending (minor, not blocking Phase 4):**
+- Add `category: 'all'` to search node — 2-line TypeScript change (see decision #28 above)
 
 ---
 
@@ -202,11 +207,10 @@ Phase 2 tasks are finished. See `_reference/BUNDLE_AUDIT_REPORT.md` for per-file
 
 ## Open questions for user
 
-| Question | Location | Status |
-|----------|----------|--------|
-| `/feedbackform` `page NOT NULL` — does BuildShip inject a hardcoded value, or must Flutter send it? | Section 7 of BUILDSHIP_REQUIREMENTS.md | ⚠️ Open — user to check BuildShip dashboard |
-| `business_hours` — where does hours data live in the profile RPC? What format? | Section 4 of BUILDSHIP_REQUIREMENTS.md | ⚠️ Open — user to run `SELECT get_business_complete_info(1, 'da')` |
-| `languageCode` vs `language_code` — which does BuildShip accept for Business Profile and Menu? | Section 8 of BUILDSHIP_REQUIREMENTS.md | ⚠️ Open — user to verify in BuildShip |
+None. All Phase 3.5 items resolved.
+
+One pending design decision:
+- **`category: 'all'` node addition** — Minor change to search node TypeScript. Add `| 'all'` to the `category` type and merge with the `selectedFilters.length === 0` branch. Recommend doing this before implementing the Search page Flutter pagination logic.
 
 ---
 
