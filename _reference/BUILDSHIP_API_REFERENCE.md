@@ -23,7 +23,7 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 | `sortOrder` | `string` | `'asc'` or `'desc'`. Default: `'desc'`. |
 | `selectedStation` | `number` | Station filter ID (numeric). Required when `sortBy='station'`. IDs ≥ 10000 have 10000 offset applied internally. Looked up in `FilterTrainStation` by `train_station_id`. |
 | `onlyOpen` | `boolean` | When `true`, filter out closed businesses using pre-computed `open_windows`. Applied before categorisation. Default: `false`. |
-| `category` | `string` | Which match tier to return: `'full'`, `'partial'`, `'other'`. **Pending addition:** `'all'` — returns all results as flat sorted list without bucketing. Default: `'full'`. |
+| `category` | `string` | Which match tier to return: `'full'`, `'partial'`, `'other'`, `'all'`. `'all'` returns all results as a flat sorted list without bucketing (match metadata still added per document). Default: `'all'`. |
 | `page` | `number` | 1-indexed page within the requested category. Default: `1`. |
 | `pageSize` | `number` | Results per page. Recommended: `20`. Default: `20`. |
 
@@ -43,8 +43,7 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 - `'full'`: `matchCount === filtersUsedForSearch.length` (all needs met)
 - `'partial'`: exactly 1 need missing
 - `'other'`: 2+ needs missing
-- When `filtersUsedForSearch` is empty: skip bucketing — all results returned as flat list
-- `'all'` (pending): same flat-list behaviour regardless of filter state; Flutter renders section headers from match metadata client-side
+- When `filtersUsedForSearch` is empty OR `category === 'all'`: skip bucketing — all results returned as flat list with match metadata; Flutter renders section headers client-side
 
 **Output:**
 ```json
@@ -61,7 +60,7 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
   }
 }
 ```
-`nextCategory` is non-null only when current category is exhausted: `'full'→'partial'`, `'partial'→'other'`, `'other'→null`. Always `null` for `'all'`.
+`nextCategory` is non-null only when a specific category is exhausted: `'full'→'partial'`, `'partial'→'other'`, `'other'→null`. Always `null` when `category === 'all'`.
 
 **Each document includes:**
 - `business_id`, `business_name`, `street`, `neighbourhood_name`, `postal_code`, `postal_city`

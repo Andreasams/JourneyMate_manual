@@ -9,7 +9,7 @@
 **Phase:** Phase 4 — Flutter foundation
 **Last completed task:** Phase 3.5 complete — all BuildShip/Supabase changes executed and verified (2026-02-20)
 **Next task:** Phase 4 — Flutter foundation (theme, router, API service, translation infrastructure, analytics service)
-**Blocked on:** `category: 'all'` node addition pending (minor 2-line change — add `| 'all'` to TypeScript type and merge with `selectedFilters.length === 0` branch). Phase 4 can start without it.
+**Blocked on:** Nothing — Phase 4 can start immediately.
 
 ---
 
@@ -118,7 +118,7 @@
 25. **Flutter sends `language_code` (snake_case) to BuildShip** — for all endpoints. What BuildShip does internally with the variable name is irrelevant. The external API parameter is `language_code`.
 26. **Translation table is `ui_translations`** — renamed from `flutterflowtranslations`. All new keys have been inserted. The `GET_UI_TRANSLATIONS` BuildShip node queries `ui_translations`.
 27. **`onlyOpen` uses pre-computed `open_windows`** — Typesense cannot filter on `business_hours` (stored as `type: object` with `index: false`). Instead, `get_business_hours_for_typesense()` pre-computes `open_windows: [{day, open, close}]` which is stored in the Typesense document. BuildShip JS filters on `open_windows` after Typesense returns results, before match categorisation.
-28. **`category: 'all'` pending node addition** — Minor 2-line change to add `'all'` as a 4th category value. When `'all'`: no bucketing, all results with match metadata returned as flat sorted list. Flutter renders section headers client-side. `nextCategory` always null. Use for initial search loads where total results ≤ 250. Current node handles `filtersUsedForSearch.length === 0` as flat list already; `'all'` extends this to when filters ARE active.
+28. **`category: 'all'` is live — and is now the default** — Added to search node. When `category === 'all'` OR `filtersUsedForSearch.length === 0`: no bucketing, all results with match metadata returned as flat sorted list. `nextCategory` always null. Default changed from `'full'` to `'all'`. Flutter renders section headers client-side from `matchCount`/`missedFilters`. Use `category: 'full'/'partial'/'other'` only when explicitly paginating through a specific tier.
 
 ---
 
@@ -166,8 +166,7 @@ All BuildShip/Supabase changes executed and verified:
 | `language_code` param | ✅ Resolved | Flutter sends `language_code` (snake_case) to all endpoints |
 | Translation keys: `ui_translations` | ✅ Done | All keys inserted; table renamed from `flutterflowtranslations` |
 
-**Pending (minor, not blocking Phase 4):**
-- Add `category: 'all'` to search node — 2-line TypeScript change (see decision #28 above)
+**All items complete including `category: 'all'` addition (default now `'all'`).**
 
 ---
 
@@ -207,10 +206,7 @@ Phase 2 tasks are finished. See `_reference/BUNDLE_AUDIT_REPORT.md` for per-file
 
 ## Open questions for user
 
-None. All Phase 3.5 items resolved.
-
-One pending design decision:
-- **`category: 'all'` node addition** — Minor change to search node TypeScript. Add `| 'all'` to the `category` type and merge with the `selectedFilters.length === 0` branch. Recommend doing this before implementing the Search page Flutter pagination logic.
+None. All Phase 3 and Phase 3.5 items resolved. Phase 4 can begin immediately.
 
 ---
 
