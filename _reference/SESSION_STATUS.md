@@ -204,6 +204,44 @@ Phase 2 tasks are finished. See `_reference/BUNDLE_AUDIT_REPORT.md` for per-file
 
 ---
 
+## Phase 4 — pre-implementation notes
+
+Phase 4 was attempted in a different directory (JourneyMate, not JourneyMate-Organized) and
+revealed several concrete gotchas. The next session starting Phase 4 here should expect these:
+
+**Flutter 3.x breaking change — `CardThemeData` not `CardTheme`:**
+In `ThemeData`, the `cardTheme` property requires `CardThemeData(...)`, not `CardTheme(...)`.
+Using the old name compiles but causes a type error at runtime. Fix immediately if it appears.
+
+**`AppLifecycleObserver` — import `flutter/widgets.dart`, not `flutter/foundation.dart`:**
+`WidgetsBindingObserver` and `AppLifecycleState` live in `flutter/widgets.dart`.
+Importing only `flutter/foundation.dart` causes "extends non-class" and "undefined class" errors
+that are confusing because `debugPrint` (from foundation) still resolves. Always use
+`flutter/widgets.dart` for anything involving `WidgetsBindingObserver`.
+
+**`UncontrolledProviderScope` — required pattern for pre-created `ProviderContainer`:**
+`AppLifecycleObserver` lives outside the widget tree and needs to write to Riverpod providers.
+The correct pattern is: create `ProviderContainer()` before `runApp`, register
+`AppLifecycleObserver(container: container)` with `WidgetsBinding.instance.addObserver`,
+then wrap the app in `UncontrolledProviderScope(container: container, child: ...)`.
+Do NOT use `ProviderScope` when passing a pre-created container.
+
+**`TextScaler.linear()` — `textScaleFactor` is deprecated:**
+Clamping text scale in the `MaterialApp` builder must use:
+`MediaQuery.copyWith(textScaler: TextScaler.linear(scale.clamp(0.8, 1.0)))`
+Not the old `textScaleFactor` property (deprecated in Flutter 3.x).
+
+**Riverpod code gen — do NOT use:**
+`pubspec.yaml` has `riverpod_annotation` and `riverpod_generator` but the confirmed approach
+is manual `NotifierProvider`/`AsyncNotifierProvider`. Do not use `@riverpod` annotations
+or run `build_runner`. Write all providers by hand.
+
+**`google_fonts` IS used:**
+`pubspec.yaml` confirms `google_fonts: ^8.0.2`. Use `GoogleFonts.roboto(...)` for typography.
+Ignore any notes from other sessions that said "system fonts" — those applied to a different project.
+
+---
+
 ## Open questions for user
 
 None. All Phase 3 and Phase 3.5 items resolved. Phase 4 can begin immediately.

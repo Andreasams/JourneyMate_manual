@@ -13,12 +13,12 @@ Read this file before touching anything. It defines how every session must work.
 ## What this project is
 
 JourneyMate is a restaurant discovery app being migrated from a FlutterFlow export into clean,
-production-ready Flutter code using Riverpod 2.x for state management.
+production-ready Flutter code using Riverpod 3.x for state management.
 
-**We are in Phase 3: Flutter migration.** The JSX design phase is complete. The FlutterFlow
-export is the ground truth for all functionality. BUNDLE.md files per page are the
-implementation specs. The new Flutter project (`journey_mate/`) is built by copying behavior
-from FlutterFlow and applying the v2 design from `shared/app_theme.dart`.
+**Check `_reference/SESSION_STATUS.md` for the current phase.** The FlutterFlow export is the
+ground truth for all functionality. BUNDLE.md files per page are the implementation specs.
+The new Flutter project (`journey_mate/`) is built by copying behavior from FlutterFlow and
+applying the v2 design from `DESIGN_SYSTEM_flutter.md` and `shared/app_theme.dart`.
 
 ---
 
@@ -197,6 +197,7 @@ Refer to `_reference/PROVIDERS_REFERENCE.md` for the canonical list of providers
 - Page-local state → local `ConsumerStatefulWidget` state (NOT a provider)
 - No `FFAppState` references anywhere in `journey_mate/`
 - **Use Riverpod 3.x API** — `Notifier`/`AsyncNotifier` classes, not the deprecated `StateNotifier` pattern
+- **Do NOT use `@riverpod` code generation** — write providers manually. `riverpod_annotation` and `riverpod_generator` are in pubspec but are not used. The confirmed approach is hand-written `NotifierProvider`/`AsyncNotifierProvider`.
 - **⚠️ shared/ MASTER_README files use Riverpod 2.x patterns** (`StateNotifierProvider`, `StateNotifier`) — these were written before the version was confirmed. When implementing providers in Phase 5 or widgets in Phase 7, translate their code examples to Riverpod 3.x: `StateNotifierProvider<X, S>` → `NotifierProvider<X, S>`, `extends StateNotifier<S>` → `extends Notifier<S>` with `S build()` instead of a constructor.
 
 ---
