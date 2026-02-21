@@ -2764,6 +2764,55 @@ const Map<String, Map<String, String>> kStaticTranslations = {
     'no': 'Noe gikk galt. Vennligst prøv igjen.',
     'sv': 'Något gick fel. Vänligen försök igen.',
   },
+
+  // Batch 7: FilterTitlesRow (3 keys)
+  'filter_location': {
+    'en': 'Location',
+    'da': 'Placering',
+    'de': 'Standort',
+    'fr': 'Lieu',
+    'it': 'Posizione',
+    'no': 'Plassering',
+    'sv': 'Plats',
+  },
+  'filter_type': {
+    'en': 'Type',
+    'da': 'Type',
+    'de': 'Typ',
+    'fr': 'Type',
+    'it': 'Tipo',
+    'no': 'Type',
+    'sv': 'Typ',
+  },
+  'filter_preferences': {
+    'en': 'Needs',
+    'da': 'Behov',
+    'de': 'Bedürfnisse',
+    'fr': 'Besoins',
+    'it': 'Esigenze',
+    'no': 'Behov',
+    'sv': 'Behov',
+  },
+
+  // Batch 7: LanguageSelectorButton (2 keys)
+  'settings_language_label': {
+    'en': 'Language',
+    'da': 'Sprog',
+    'de': 'Sprache',
+    'fr': 'Langue',
+    'it': 'Lingua',
+    'no': 'Språk',
+    'sv': 'Språk',
+  },
+  'settings_select_language_title': {
+    'en': 'Select Language',
+    'da': 'Vælg sprog',
+    'de': 'Sprache auswählen',
+    'fr': 'Sélectionner la langue',
+    'it': 'Seleziona lingua',
+    'no': 'Velg språk',
+    'sv': 'Välj språk',
+  },
 };
 
 // ============================================================

@@ -710,3 +710,102 @@ VALUES
 
   -- FeedbackFormWidget (31 keys) -- Truncated to stay within message limits
   -- See BATCH6_TRANSLATION_KEYS.sql for full content
+
+-- ============================================================
+-- Batch 7: FilterTitlesRow + LanguageSelectorButton
+-- 5 keys × 7 languages = 35 rows
+-- Added: 2026-02-21 (Session #8 - Phase 7 Batch 7)
+-- ============================================================
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  -- FilterTitlesRow (3 keys)
+  ('restrictions_title', 'en', 'Restrictions', 'ui'),
+  ('restrictions_title', 'da', 'Restriktioner', 'ui'),
+  ('restrictions_title', 'de', 'Einschränkungen', 'ui'),
+  ('restrictions_title', 'fr', 'Restrictions', 'ui'),
+  ('restrictions_title', 'it', 'Restrizioni', 'ui'),
+  ('restrictions_title', 'no', 'Restriksjoner', 'ui'),
+  ('restrictions_title', 'sv', 'Restriktioner', 'ui'),
+
+  ('preferences_title', 'en', 'Preferences', 'ui'),
+  ('preferences_title', 'da', 'Præferencer', 'ui'),
+  ('preferences_title', 'de', 'Vorlieben', 'ui'),
+  ('preferences_title', 'fr', 'Préférences', 'ui'),
+  ('preferences_title', 'it', 'Preferenze', 'ui'),
+  ('preferences_title', 'no', 'Preferanser', 'ui'),
+  ('preferences_title', 'sv', 'Preferenser', 'ui'),
+
+  ('allergens_title', 'en', 'Allergens', 'ui'),
+  ('allergens_title', 'da', 'Allergener', 'ui'),
+  ('allergens_title', 'de', 'Allergene', 'ui'),
+  ('allergens_title', 'fr', 'Allergènes', 'ui'),
+  ('allergens_title', 'it', 'Allergeni', 'ui'),
+  ('allergens_title', 'no', 'Allergener', 'ui'),
+  ('allergens_title', 'sv', 'Allergener', 'ui'),
+
+  -- LanguageSelectorButton (2 keys)
+  ('settings_language_label', 'en', 'Language', 'ui'),
+  ('settings_language_label', 'da', 'Sprog', 'ui'),
+  ('settings_language_label', 'de', 'Sprache', 'ui'),
+  ('settings_language_label', 'fr', 'Langue', 'ui'),
+  ('settings_language_label', 'it', 'Lingua', 'ui'),
+  ('settings_language_label', 'no', 'Språk', 'ui'),
+  ('settings_language_label', 'sv', 'Språk', 'ui'),
+
+  ('settings_select_language_title', 'en', 'Select Language', 'ui'),
+  ('settings_select_language_title', 'da', 'Vælg sprog', 'ui'),
+  ('settings_select_language_title', 'de', 'Sprache auswählen', 'ui'),
+  ('settings_select_language_title', 'fr', 'Sélectionner la langue', 'ui'),
+  ('settings_select_language_title', 'it', 'Seleziona lingua', 'ui'),
+  ('settings_select_language_title', 'no', 'Velg språk', 'ui'),
+  ('settings_select_language_title', 'sv', 'Välj språk', 'ui');
+
+
+-- Batch 7: FilterTitlesRow (3 keys)
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  ('filter_location', 'en', 'Location', 'ui'),
+  ('filter_location', 'da', 'Placering', 'ui'),
+  ('filter_location', 'de', 'Standort', 'ui'),
+  ('filter_location', 'fr', 'Lieu', 'ui'),
+  ('filter_location', 'it', 'Posizione', 'ui'),
+  ('filter_location', 'no', 'Plassering', 'ui'),
+  ('filter_location', 'sv', 'Plats', 'ui'),
+
+  ('filter_type', 'en', 'Type', 'ui'),
+  ('filter_type', 'da', 'Type', 'ui'),
+  ('filter_type', 'de', 'Typ', 'ui'),
+  ('filter_type', 'fr', 'Type', 'ui'),
+  ('filter_type', 'it', 'Tipo', 'ui'),
+  ('filter_type', 'no', 'Type', 'ui'),
+  ('filter_type', 'sv', 'Typ', 'ui'),
+
+  ('filter_preferences', 'en', 'Needs', 'ui'),
+  ('filter_preferences', 'da', 'Behov', 'ui'),
+  ('filter_preferences', 'de', 'Bedürfnisse', 'ui'),
+  ('filter_preferences', 'fr', 'Besoins', 'ui'),
+  ('filter_preferences', 'it', 'Esigenze', 'ui'),
+  ('filter_preferences', 'no', 'Behov', 'ui'),
+  ('filter_preferences', 'sv', 'Behov', 'ui')
+;
+
+-- Batch 7: LanguageSelectorButton (2 keys)
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  ('settings_language_label', 'en', 'Language', 'ui'),
+  ('settings_language_label', 'da', 'Sprog', 'ui'),
+  ('settings_language_label', 'de', 'Sprache', 'ui'),
+  ('settings_language_label', 'fr', 'Langue', 'ui'),
+  ('settings_language_label', 'it', 'Lingua', 'ui'),
+  ('settings_language_label', 'no', 'Språk', 'ui'),
+  ('settings_language_label', 'sv', 'Språk', 'ui'),
+
+  ('settings_select_language_title', 'en', 'Select Language', 'ui'),
+  ('settings_select_language_title', 'da', 'Vælg sprog', 'ui'),
+  ('settings_select_language_title', 'de', 'Sprache auswählen', 'ui'),
+  ('settings_select_language_title', 'fr', 'Sélectionner la langue', 'ui'),
+  ('settings_select_language_title', 'it', 'Seleziona lingua', 'ui'),
+  ('settings_select_language_title', 'no', 'Velg språk', 'ui'),
+  ('settings_select_language_title', 'sv', 'Välj språk', 'ui')
+;

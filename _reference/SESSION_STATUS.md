@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (15/29 complete)
-**Last completed task:** Batch 6 — ContactUsFormWidget + FeedbackFormWidget + NavBarWidget complete (2026-02-21 Session #7)
-**Next task:** Batch 7 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (18/29 complete)
+**Last completed task:** Batch 7 — FilterTitlesRow + CategoryDescriptionSheet + LanguageSelectorButton complete (2026-02-21 Session #8)
+**Next task:** Batch 8 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
@@ -427,7 +427,10 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 13 | ContactUsFormWidget | ⭐⭐⭐ Medium | ✅ Complete | #7 | 550 |
 | 14 | FeedbackFormWidget | ⭐⭐⭐⭐ Medium-High | ✅ Complete | #7 | 680 |
 | 15 | NavBarWidget | ⭐⭐⭐ Medium | ✅ Complete | #7 | 300 |
-| 16-29 | [Remaining 14 widgets] | Various | ⏳ Pending | #8-11 | — |
+| 16 | FilterTitlesRow | ⭐⭐ Low | ✅ Complete | #8 | 147 |
+| 17 | CategoryDescriptionSheet | ⭐⭐ Low | ✅ Complete | #8 | 177 |
+| 18 | LanguageSelectorButton | ⭐⭐ Low | ✅ Complete | #8 | 308 |
+| 19-29 | [Remaining 11 widgets] | Various | ⏳ Pending | #9-12 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -524,6 +527,24 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - Fixed searchStateProvider.updateSearchResults signature (positional args, not named)
 - Added GoogleFonts import to contact_us_form_widget.dart
 - Used ignore comment for use_build_context_synchronously lint (valid mounted check)
+
+**Files Changed Session #8:**
+- `journey_mate/lib/widgets/shared/filter_titles_row.dart` (created, 147 lines)
+- `journey_mate/lib/widgets/shared/category_description_sheet.dart` (created, 177 lines)
+- `journey_mate/lib/widgets/shared/language_selector_button.dart` (created, 308 lines)
+- `journey_mate/lib/services/translation_service.dart` (5 keys added: 3 FilterTitlesRow + 2 LanguageSelectorButton)
+- `_reference/NEW_TRANSLATION_KEYS.sql` (35 SQL INSERT statements appended: 5 keys × 7 languages)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
+**Decisions Made Session #8:**
+- FilterTitlesRow uses exact column widths: 36%/33%/31% (no rounding)
+- FilterTitlesRow displays 3 tabs: Location, Type, Needs (filter_location, filter_type, filter_preferences)
+  - **⚠️ CORRECTION:** Initial implementation used wrong keys (restrictions_title, preferences_title, allergens_title). User provided actual Supabase data showing correct keys are filter_location, filter_type, filter_preferences. Widget code, translation_service.dart, and SQL corrected mid-session.
+- CategoryDescriptionSheet requires scrollController prop (used inside DraggableScrollableSheet)
+- LanguageSelectorButton shows language names in native form (Dansk, not Danish)
+- LanguageSelectorButton reloads translations + filters on language change
+- Removed unused imports to pass flutter analyze
+- Translation keys: filter_location, filter_type, filter_preferences (3), settings_language_label, settings_select_language_title (2) = 5 keys total
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
