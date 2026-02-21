@@ -955,30 +955,26 @@ Before marking a widget complete, verify:
 
 ## Widget Implementation Order (Remaining Widgets)
 
-**Widgets Complete:** 18/29 (62%)
+**Widgets Complete:** 26/34 (76%)
 
-### Remaining Widgets (11 total):
+### Remaining Widgets (8 total):
 
-**Priority 1 — Business/Menu Components:**
-- BusinessHoursWidget (⭐⭐ Low)
-- MenuItemCard (⭐⭐⭐ Medium)
-- DietaryBadgesRow (⭐⭐ Low)
+**Priority 1 — Massive Solo Session:**
+- ItemBottomSheet (⭐⭐⭐⭐⭐ Extreme) — SOLO SESSION (item_detail_sheet.dart, 1,765 lines)
 
-**Priority 2 — Filter Components:**
-- UnifiedFiltersWidget (⭐⭐⭐⭐ High) — Complex filter state
-- FilterChipRow (⭐⭐ Low)
+**Priority 2 — JSX Design Widgets (Not in FlutterFlow):**
+- BusinessHoursWidget (⭐⭐ Low) — Compact hours display (uses daysDayOpeningHour() function)
+- ErroneousInfoFormWidget (⭐⭐⭐ Medium) — Modal for reporting incorrect business info (JSX design)
+- MenuItemCard (⭐⭐⭐ Medium) — Individual menu item card component (JSX concept)
 
-**Priority 3 — Search/Results Components:**
-- SearchBarWidget (⭐⭐⭐ Medium)
-- BusinessCardWidget (⭐⭐⭐ Medium)
-- SectionHeaderRow (⭐ Very Low)
+**Priority 3 — Critical FlutterFlow Widgets:**
+- CurrencySelectorButton (⭐⭐⭐ Medium) — Settings & Welcome pages (currency dropdown)
+- DietaryPreferencesFilterWidgets (⭐⭐⭐ Medium) — Menu filtering (Vegan/Vegetarian/Pescetarian)
+- SearchResultsListView (⭐⭐⭐⭐ High) — Search page main display (670 lines)
+- SelectedFiltersBtns (⭐⭐⭐⭐ High) — Search page filter chips (722 lines)
 
-**Priority 4 — Massive Solo Sessions:**
-- **MenuDishesListView** (⭐⭐⭐⭐⭐ Extreme) — SOLO SESSION REQUIRED (~1,500+ lines)
-- **FilterOverlayWidget** (⭐⭐⭐⭐⭐ Extreme) — SOLO SESSION REQUIRED (~1,200+ lines)
-
-**Priority 5 — Miscellaneous:**
-- ItemBottomSheet (⭐⭐⭐⭐ High) — Depends on MenuDishesListView
+**⚠️ User Rejection:**
+- ~~DietaryBadgesRow~~ — User confirmed NOT interested. Do not implement. Remove from all plans.
 
 ---
 

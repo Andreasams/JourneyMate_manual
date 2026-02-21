@@ -17,7 +17,11 @@
       "mcp__plugin_github_github__get_file_contents",
       "Bash(_reference/PHASE7_LESSONS_LEARNED.md:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(cat:*)",
+      "Bash(/tmp/widget_audit_summary.md:*)",
+      "Bash(git reset:*)",
+      "Bash(git restore:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

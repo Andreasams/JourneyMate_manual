@@ -6,10 +6,18 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (26/29 complete)
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (26/34 complete)
 **Last completed task:** Batch 11 — MenuDishesListView complete (2026-02-21 Session #12 - SOLO SESSION)
-**Next task:** Batch 12 (3 widgets) — ItemBottomSheet, BusinessHoursWidget, DietaryBadgesRow
+**Next task:** Batch 12+ — 8 remaining widgets: ItemBottomSheet, BusinessHoursWidget, ErroneousInfoFormWidget, MenuItemCard, CurrencySelectorButton, DietaryPreferencesFilterWidgets, SearchResultsListView, SelectedFiltersBtns
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
+
+**⚠️ Widget Count Correction (2026-02-21):**
+- Original plan: 29 widgets (incomplete - missing widgets from MASTER_README folder + JSX design concepts)
+- Corrected plan: 34 widgets (removed ONLY DietaryBadgesRow per user request)
+- 5 widgets in MASTER_README but not in original 29: CurrencySelectorButton, DietaryPreferencesFilterWidgets, ErroneousInfoFormWidget, SearchResultsListView, SelectedFiltersBtns
+- 1 JSX design widget not in MASTER_README yet: MenuItemCard
+- User clarification: Keep ErroneousInfoFormWidget (JSX modal), Keep MenuItemCard (JSX concept), REMOVE ONLY DietaryBadgesRow
+- Final count: 26 implemented + 8 remaining = 34 widgets total
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
 - **For widgets:** 3 widgets per session (except menu_dishes_list_view and filter_overlay_widget — solo sessions)
@@ -438,7 +446,14 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 24 | DietaryRestrictionsFilterWidget | ⭐⭐⭐⭐⭐ High | ✅ Complete | #10 | 543 |
 | 25 | UnifiedFiltersWidget | ⭐⭐⭐⭐ High | ✅ Complete | #11 | 1,032 |
 | 26 | MenuDishesListView | ⭐⭐⭐⭐⭐ Extreme | ✅ Complete | #12 | 1,991 |
-| 27-29 | [Remaining 3 widgets] | Various | ⏳ Pending | #13-14 | — |
+| 27 | ItemBottomSheet (item_detail_sheet) | ⭐⭐⭐⭐⭐ Extreme | ⏳ Pending | #13 SOLO | — |
+| 28 | BusinessHoursWidget (JSX - not in FlutterFlow) | ⭐⭐ Low | ⏳ Pending | #14 | — |
+| 29 | ErroneousInfoFormWidget (JSX modal) | ⭐⭐⭐ Medium | ⏳ Pending | #14 | — |
+| 30 | MenuItemCard (JSX concept) | ⭐⭐⭐ Medium | ⏳ Pending | #15 | — |
+| 31 | CurrencySelectorButton | ⭐⭐⭐ Medium | ⏳ Pending | #15 | — |
+| 32 | DietaryPreferencesFilterWidgets | ⭐⭐⭐ Medium | ⏳ Pending | #16 | — |
+| 33 | SearchResultsListView | ⭐⭐⭐⭐ High | ⏳ Pending | #16 | — |
+| 34 | SelectedFiltersBtns | ⭐⭐⭐⭐ High | ⏳ Pending | #17 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
