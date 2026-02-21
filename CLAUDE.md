@@ -391,6 +391,8 @@ These decisions have been explicitly confirmed and must not be re-debated:
 
 - **LSApplicationQueriesSchemes includes 12 map apps** — Exact list from FlutterFlow: comgooglemaps, baidumap, iosamap, waze, yandexmaps, yandexnavi, citymapper, mapswithme, osmandmaps, dgis, qqmap, here-location. Required for map_launcher feature in contact_details_widget.dart "Open in Maps" button.
 
+- **User engagement tracking is AUTOMATIC via ActivityScope** — FlutterFlow uses manual `markUserEngaged()` calls in 44+ files (writes timestamp to SharedPreferences). The new Flutter app uses a SUPERIOR pattern: `ActivityScope` widget wraps the entire app (see `main.dart:41`) and automatically detects ALL user interactions (tap, scroll, keyboard, navigation) via `Listener` widget. Calls `AnalyticsService.instance.engagementTracker.markUserActive()` automatically. **Phase 7 migration rule:** When porting widgets from FlutterFlow source, REMOVE all `markUserEngaged()` calls and their import (`/custom_code/actions/mark_user_engaged.dart`). Do NOT replace with anything — ActivityScope handles it. This applies to ALL 29 widgets and 12 pages.
+
 ---
 
 ## What not to do

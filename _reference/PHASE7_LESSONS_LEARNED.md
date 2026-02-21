@@ -118,6 +118,54 @@ Lessons learned document HOW to work within the system, not how to work around i
 
 ---
 
+## Migration Rules from FlutterFlow (ALWAYS APPLY)
+
+### ✅ User Engagement Tracking: REMOVE markUserEngaged()
+
+**FlutterFlow Pattern (44+ files):**
+```dart
+import '/custom_code/actions/mark_user_engaged.dart';
+
+Future<void> onButtonTap() async {
+  await markUserEngaged(); // ← Manual call in every widget
+  // ... actual logic
+}
+```
+
+**New Flutter App Pattern (AUTOMATIC):**
+```dart
+// NO manual calls needed!
+// ActivityScope wraps entire app in main.dart:41
+// Automatically detects ALL interactions (tap, scroll, keyboard)
+Future<void> onButtonTap() async {
+  // ... actual logic (engagement tracked automatically)
+}
+```
+
+**Migration Rule:**
+1. ✅ **REMOVE** all `markUserEngaged()` calls from FlutterFlow source
+2. ✅ **REMOVE** the import: `import '/custom_code/actions/mark_user_engaged.dart'`
+3. ✅ **DO NOT REPLACE** with anything — ActivityScope handles it automatically
+
+**Why This Is Better:**
+- ✅ Zero manual calls needed (can't forget to add tracking)
+- ✅ Catches ALL interactions automatically (tap, scroll, keyboard, navigation)
+- ✅ More accurate (ActivityScope wraps entire app, sees everything)
+- ✅ Cleaner widget code (no boilerplate)
+- ✅ Direct method call (no SharedPreferences overhead)
+
+**Implementation Details:**
+- `ActivityScope` widget wraps app (`journey_mate/lib/widgets/activity_scope.dart`)
+- Uses `Listener` widget with `onPointerDown`, `onPointerMove`, `onPointerSignal`
+- Calls `AnalyticsService.instance.engagementTracker.markUserActive()` automatically
+- Engagement tracker manages 30-minute session timeout and 60-second flush
+
+**Applies To:** ALL 29 widgets and ALL 12 pages in Phase 7.
+
+**Reference:** See CLAUDE.md decision #31 for full rationale.
+
+---
+
 ### Session #1: PaymentOptionsWidget (2026-02-21)
 
 **Widget:** `payment_options_widget.dart` (⭐ Very Low complexity)
