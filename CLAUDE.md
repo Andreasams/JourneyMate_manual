@@ -212,6 +212,51 @@ distinction by checking stored language preference via `getUserPreference('user_
 
 ---
 
+## Phase 7 — Page Implementation Protocol
+
+**⚠️ CRITICAL: Before starting ANY Phase 7 work, you MUST:**
+
+1. **Read the Phase 7 Session Protocol:**
+   - Location: `_reference/PHASE7_LESSONS_LEARNED.md`
+   - **SESSION SCOPE RULE (MANDATORY):** Each Claude Code session MUST work on ONLY ONE aspect at a time:
+     - **For widgets:** 3 widgets per session (batch implementation)
+     - **Exception:** `menu_dishes_list_view` and `filter_overlay_widget` are massive files — MUST be solo sessions
+     - **For pages:** 1 page per session (NEVER multiple pages)
+   - This document contains:
+     - Session workflow (start → implementation → verification → end)
+     - Lessons learned from all completed widgets/pages
+     - Translation patterns discovered
+     - Common pitfalls & solutions
+     - Design token quick reference
+     - Widget complexity guide
+     - Implementation order recommendations
+   - **Append to this file at end of EVERY session** with lessons learned
+
+2. **Read the Phase 7 Implementation Plan:**
+   - Location: `C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md`
+   - This 500+ line document contains:
+     - Complete Phase 7 workflow (Preliminary Task: 29 widgets → 12 pages in strict order)
+     - Per-page implementation guidelines with complexity ratings
+     - Code review checklist (run after each page)
+     - Translation key management protocol (Phase 6B)
+     - Session handover protocol
+   - **Do NOT skip this.** Every page implementation depends on this plan.
+
+3. **Understand the strict dependency order:**
+   - Preliminary Task: Build all 29 shared widgets FIRST (in batches of 3)
+   - Then pages in this exact order: Welcome → Search → Business Profile → Menu/Gallery/Info → Settings pages
+   - Do NOT skip ahead. Each page depends on previous pages' routing, state patterns, and reusable components.
+
+4. **Follow the session workflow:**
+   - Pre-implementation: Read PHASE7_LESSONS_LEARNED.md + Phase 7 plan + foundation docs + BUNDLE.md
+   - Implementation: Build per BUNDLE.md checklist with design tokens
+   - Post-implementation: flutter analyze, code review, Phase 6B translation keys, commit, SESSION_STATUS update
+   - **Session end:** Append lessons learned to PHASE7_LESSONS_LEARNED.md
+
+**The Phase 7 protocol documents are the single source of truth for all implementations.** Each separate Claude Code instance must reference them.
+
+---
+
 ## Page implementation workflow (repeat for EVERY page)
 
 Before implementing any page:
