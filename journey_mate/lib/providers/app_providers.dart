@@ -193,7 +193,10 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
   }
 
   /// Update filter metrics after a filter change
-  void updateMenuSessionFilterMetrics(int currentResultCount) {
+  ///
+  /// [currentResultCount] - Number of results after filter change
+  /// [hasActiveFilters] - Whether any filters are currently active
+  void updateMenuSessionFilterMetrics(int currentResultCount, bool hasActiveFilters) {
     final currentData = state.menuSessionData;
     if (currentData == null) return;
 
@@ -201,8 +204,7 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
     final newInteractions = currentData.filterInteractions + 1;
 
     // Track if any filter has ever been active
-    final hasFilters = currentResultCount >= 0; // Assuming 0+ means filters were applied
-    final everHadActive = currentData.everHadFiltersActive || hasFilters;
+    final everHadActive = currentData.everHadFiltersActive || hasActiveFilters;
 
     // Track zero and low result counts
     int newZeroCount = currentData.zeroResultCount;

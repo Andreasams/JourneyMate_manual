@@ -189,7 +189,7 @@ void main() {
     test('updateMenuSessionFilterMetrics() tracks interactions', () {
       container.read(analyticsProvider.notifier).startMenuSession(100);
 
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(5);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(5, true);
 
       final menuData = container.read(analyticsProvider).menuSessionData!;
       expect(menuData.filterInteractions, 1);
@@ -199,9 +199,9 @@ void main() {
     test('updateMenuSessionFilterMetrics() tracks zero results', () {
       container.read(analyticsProvider.notifier).startMenuSession(100);
 
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(0);
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(10);
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(0);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(0, true);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(10, true);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(0, true);
 
       final menuData = container.read(analyticsProvider).menuSessionData!;
       expect(menuData.zeroResultCount, 2);
@@ -211,10 +211,10 @@ void main() {
     test('updateMenuSessionFilterMetrics() tracks low results (1-2)', () {
       container.read(analyticsProvider.notifier).startMenuSession(100);
 
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(1);
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(2);
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(3); // Not low
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(1);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(1, true);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(2, true);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(3, true); // Not low
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(1, true);
 
       final menuData = container.read(analyticsProvider).menuSessionData!;
       expect(menuData.lowResultCount, 3);
@@ -229,11 +229,25 @@ void main() {
         false,
       );
 
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(5);
+      // Call with no filters active - should remain false
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(100, false);
+      expect(
+        container.read(analyticsProvider).menuSessionData!.everHadFiltersActive,
+        false,
+      );
 
+      // Call with filters active - should become true
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(5, true);
       expect(
         container.read(analyticsProvider).menuSessionData!.everHadFiltersActive,
         true,
+      );
+
+      // Once set to true, should remain true even if filters cleared
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(100, false);
+      expect(
+        container.read(analyticsProvider).menuSessionData!.everHadFiltersActive,
+        true, // Still true - it's "ever had" not "currently has"
       );
     });
 
@@ -249,9 +263,9 @@ void main() {
       container.read(analyticsProvider.notifier).recordCategoryViewed(10); // Duplicate
       container.read(analyticsProvider.notifier).updateDeepestScroll(45);
       container.read(analyticsProvider.notifier).updateDeepestScroll(80);
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(0);
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(1);
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(10);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(0, true);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(1, true);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(10, true);
       container.read(analyticsProvider.notifier).incrementFilterReset();
 
       final menuData = container.read(analyticsProvider).menuSessionData!;
@@ -279,7 +293,7 @@ void main() {
       container.read(analyticsProvider.notifier).recordCategoryViewed(5);
       container.read(analyticsProvider.notifier).updateDeepestScroll(50);
       container.read(analyticsProvider.notifier).incrementFilterReset();
-      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(10);
+      container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(10, true);
 
       // State should still be null
       expect(container.read(analyticsProvider).menuSessionData, null);
