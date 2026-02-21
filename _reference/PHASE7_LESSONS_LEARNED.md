@@ -676,3 +676,168 @@ Based on complexity and dependencies:
 **End of PHASE7_LESSONS_LEARNED.md**
 
 **Next session:** Read this file completely before starting any work!
+
+---
+
+## Session #6: OpeningHoursAndWeekdays + ContactDetailsWidget + ImageGalleryOverlaySwipableWidget (2026-02-21)
+
+**Widgets:** Batch 5 (3 widgets)
+**Completed By:** Claude Code Session #6
+**Status:** ✅ Complete, 0 issues
+
+### What Went Well
+1. OpeningHoursAndWeekdays translation system with 23 keys worked smoothly
+2. ContactDetailsWidget map_launcher and url_launcher integration was straightforward
+3. Language-adaptive layout logic was well-documented in FlutterFlow source
+4. Flutter 3.x patterns (context.mounted, null-aware spread) applied correctly
+5. All 11 flutter analyze issues fixed efficiently
+
+### Challenges & Solutions
+
+1. **Challenge:** Language-adaptive column width logic for OpeningHoursAndWeekdays
+   **Solution:** Created helper method `_getWeekdayColumnWidth(languageCode)` with CJK/Polish/Finnish/default cases:
+   ```dart
+   double _getWeekdayColumnWidth(String languageCode) {
+     // CJK languages use shorter characters
+     if (['zh', 'ja', 'ko'].contains(languageCode)) return 75.0;
+     // Polish/Finnish use longer weekday names
+     if (['pl', 'fi'].contains(languageCode)) return 125.0;
+     // Default for most European languages
+     return 85.0;
+   }
+   ```
+
+2. **Challenge:** Copy-to-clipboard dialogs with 1-second auto-dismiss in ContactDetailsWidget
+   **Solution:** Used `showDialog` + `Future.delayed(Duration(seconds: 1))` + `context.mounted` check before `Navigator.pop`:
+   ```dart
+   await _showCopyDialog(context, text, label);
+   await Future.delayed(const Duration(seconds: 1));
+   if (context.mounted) {
+     Navigator.of(context, rootNavigator: true).pop();
+   }
+   ```
+
+3. **Challenge:** Flutter analyzer wanted null-aware pattern for optional map entries
+   **Solution:** Used null-aware spread operator `...?` instead of collection-if:
+   ```dart
+   // ❌ BEFORE (lint warning)
+   if (note != null) 'note': note,
+   
+   // ✅ AFTER (no warning)
+   ...?note != null ? {'note': note} : null,
+   ```
+
+4. **Challenge:** `use_build_context_synchronously` warnings after async operations
+   **Solution:** Changed `mounted` checks to `context.mounted` (Flutter 3.x best practice):
+   ```dart
+   // ❌ BEFORE
+   if (mounted) {
+     await _showCopiedConfirmation(context);
+   }
+   
+   // ✅ AFTER
+   if (context.mounted) {
+     await _showCopiedConfirmation(context);
+   }
+   ```
+
+5. **Challenge:** Unused imports triggering flutter analyze warnings
+   **Solution:** Removed unused `app_colors.dart` and `app_spacing.dart` imports when only `app_typography.dart` was needed
+
+### Key Takeaways for Next Sessions
+
+1. **Language-adaptive layout pattern:**
+   When building widgets that display language-dependent text (day names, month names, etc.), always check if column widths need to vary by language:
+   ```dart
+   double _getColumnWidth(String lang) {
+     if (['zh', 'ja', 'ko'].contains(lang)) return narrowWidth;
+     if (['pl', 'fi'].contains(lang)) return wideWidth;
+     return defaultWidth;
+   }
+   ```
+
+2. **External package integration (map_launcher, url_launcher):**
+   - Always check availability before launching:
+     ```dart
+     final availableMaps = await MapLauncher.installedMaps;
+     if (availableMaps.isNotEmpty && context.mounted) {
+       await availableMaps.first.showMarker(...);
+     }
+     
+     final uri = Uri.parse(url);
+     if (await canLaunchUrl(uri)) {
+       await launchUrl(uri);
+     }
+     ```
+   - Wrap in try-catch for robust error handling
+   - Check `context.mounted` before showing error dialogs
+
+3. **Wrapper widget pattern (ImageGalleryOverlaySwipableWidget):**
+   - Thin wrappers can be < 100 lines
+   - Delegate all logic to composed widget
+   - Only handle onClose callbacks or navigation
+   - Use placeholder UI when underlying widget doesn't exist yet
+
+4. **Null-aware spread operator pattern (Flutter 3.x):**
+   When adding optional entries to a map literal, prefer `...?` over collection-if to satisfy linter:
+   ```dart
+   Map<String, dynamic> data = {
+     'required_field': value,
+     ...?optionalValue != null ? {'optional_field': optionalValue} : null,
+   };
+   ```
+
+5. **context.mounted vs mounted:**
+   After ANY async operation (Future.delayed, API call, file I/O), always check `context.mounted` (not `mounted`) before using BuildContext:
+   ```dart
+   await someAsyncOperation();
+   if (context.mounted) {
+     Navigator.pop(context);
+     ScaffoldMessenger.of(context).showSnackBar(...);
+   }
+   ```
+
+### Files Created/Modified
+- ✅ Created: opening_hours_and_weekdays.dart (~392 lines)
+- ✅ Created: contact_details_widget.dart (~693 lines)
+- ✅ Created: image_gallery_overlay_swipable_widget.dart (~70 lines)
+- ✅ Updated: translation_service.dart (36 keys: 23 + 13)
+- ✅ Updated: NEW_TRANSLATION_KEYS.sql (252 translations: 161 + 91)
+
+### Widget-Specific Notes
+
+**OpeningHoursAndWeekdays:**
+- Parses complex `openingHours` JSON structure (7 days × 5 slots × 2 cutoffs per slot)
+- Responsive wrapping: cutoff times move to next line when `textScaleFactor >= 1.1` or bold text enabled
+- Translation keys use descriptive names: `day_monday_cap`, `cutoff_type_kitchen_close`, etc.
+- Does NOT use Riverpod (pure StatefulWidget with props)
+
+**ContactDetailsWidget:**
+- Composes OpeningHoursAndWeekdays (dependency satisfied in same batch)
+- 6 conditional contact methods: phone, email, website, reservation, Instagram, Facebook
+- Uses businessProvider (read-only) for current business data
+- Uses accessibilityProvider (read-only) for bold text setting
+- All icons from Feather Icons (consistent with design system)
+
+**ImageGalleryOverlaySwipableWidget:**
+- Placeholder implementation (ImageGalleryWidget from custom_widgets not yet available)
+- Shows temporary UI with category name, image count, and close button
+- Will be replaced when ImageGalleryWidget is implemented in a future batch
+
+### Translation Keys Added
+
+**OpeningHoursAndWeekdays (23 keys × 7 languages = 161 translations):**
+- 7 weekday names: `day_monday_cap` through `day_sunday_cap`
+- 2 status labels: `status_closed`, `status_by_appointment_only`
+- 8 cutoff types: `cutoff_type_kitchen_close`, `cutoff_type_last_order`, etc.
+- 6 general labels: `opening_hours_title`, `open_label`, `until_label`, etc.
+
+**ContactDetailsWidget (13 keys × 7 languages = 91 translations):**
+- 3 section headers: `contact_details_address`, `contact_details_opening_hours`, `contact_details_contact_information`
+- 7 contact method labels: `contact_details_phone`, `contact_details_email`, `contact_details_website`, etc.
+- 3 action labels: `contact_details_tap_to_call`, `contact_details_tap_to_email`, `contact_details_view_on_instagram`, `contact_details_view_on_facebook`
+
+**Total:** 36 keys × 7 languages = 252 SQL INSERT statements appended to NEW_TRANSLATION_KEYS.sql
+
+---
+
