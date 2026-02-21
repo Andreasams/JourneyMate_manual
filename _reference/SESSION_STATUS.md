@@ -6,10 +6,34 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — COMPLETE ✅ (34/34 widgets, 100%)
-**Last completed task:** Batch 15 — SearchResultsListView, SelectedFiltersBtns (2026-02-22 Session #16)
+**Phase:** Phase 7 Preliminary Task — COMPLETE ✅ (34/34 widgets, 100%) + Widget Consistency Review Complete
+**Last completed task:** Widget Consistency Review — All 34 widgets verified, 3 issues fixed (2026-02-22)
 **Next task:** Phase 7.1 — Welcome/Onboarding Page implementation (first of 12 pages)
-**Blocked on:** Nothing — all shared widgets complete, ready for page implementation
+**Blocked on:** Nothing — all shared widgets complete, quality verified, ready for page implementation
+
+## Files changed this session (Consistency Review - 2026-02-22)
+- `journey_mate/lib/widgets/shared/menu_item_card.dart` (fixed price formatting + color token)
+- `_reference/SESSION_STATUS.md` (CurrencySelectorButton complexity → High + status update)
+- `_reference/PHASE7_LESSONS_LEARNED.md` (added post-implementation review results)
+
+## Decisions made this session
+- MenuItemCard uses centralized price_formatter.dart (eliminates duplication)
+- AppColors.error preferred over AppColors.red for semantic clarity (both valid)
+- CurrencySelectorButton complexity is High (478 lines, complex overlay logic)
+- ItemBottomSheet lint warnings acceptable (context.mounted used correctly)
+- All 34 widgets production-ready, minimal issues found
+
+## What the next session must do first
+- Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
+- Read `C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md` (Phase 7 implementation plan)
+- Read `DESIGN_SYSTEM_flutter.md` for design tokens
+- Read `pages/06_welcome_onboarding/BUNDLE_welcome_page.md` for first page implementation
+- Implement Welcome/Onboarding page per Phase 7 workflow
+
+## Open questions for user
+- None
+
+---
 
 **⚠️ Widget Count Correction (2026-02-21):**
 - Original plan: 29 widgets (incomplete - missing widgets from MASTER_README folder + JSX design concepts)
@@ -450,7 +474,7 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 28 | BusinessHoursWidget (JSX - not in FlutterFlow) | ⭐⭐ Low | ⏸️ Deferred | — | — |
 | 29 | ErroneousInfoFormWidget (JSX modal) | ⭐⭐⭐ Medium | ✅ Complete | #14 | 510 |
 | 30 | MenuItemCard (JSX concept) | ⭐⭐⭐ Medium | ✅ Complete | #15 | 210 |
-| 31 | CurrencySelectorButton | ⭐⭐⭐ Medium | ✅ Complete | #14 | 478 |
+| 31 | CurrencySelectorButton | ⭐⭐⭐⭐ High | ✅ Complete | #14 | 478 |
 | 32 | DietaryPreferencesFilterWidgets | ⭐⭐⭐ Medium | ✅ Complete | #15 | 350 |
 | 33 | SearchResultsListView | ⭐⭐⭐⭐ High | ✅ Complete | #16 | 617 |
 | 34 | SelectedFiltersBtns | ⭐⭐⭐⭐ High | ✅ Complete | #16 | 736 |

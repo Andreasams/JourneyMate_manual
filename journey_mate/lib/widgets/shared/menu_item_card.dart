@@ -4,6 +4,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
+import '../../services/custom_functions/price_formatter.dart';
 
 /// Pure display component for individual menu items within MenuDishesListView.
 ///
@@ -91,7 +92,14 @@ class MenuItemCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: AppSpacing.sm),
                     child: Text(
-                      _formatPrice(price!, currencyCode!),
+                      // Using centralized price formatter for consistency
+                      convertAndFormatPrice(
+                            price!,
+                            currencyCode!,
+                            1.0, // No conversion needed (display in original currency)
+                            currencyCode!,
+                          ) ??
+                          '${price!.round()} ${currencyCode!}',
                       style: AppTypography.label.copyWith(
                         color: AppColors.accent,
                       ),
@@ -141,7 +149,7 @@ class MenuItemCard extends StatelessWidget {
                         Icon(
                           Icons.warning_amber_rounded,
                           size: 16,
-                          color: AppColors.red,
+                          color: AppColors.error,
                         ),
                         const SizedBox(width: AppSpacing.xs),
                         Text(
@@ -150,7 +158,7 @@ class MenuItemCard extends StatelessWidget {
                             'menu_contains_allergens',
                           ).replaceAll('{count}', '${allergenIds.length}'),
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.red,
+                            color: AppColors.error,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -200,25 +208,4 @@ class MenuItemCard extends StatelessWidget {
     );
   }
 
-  /// Formats price with currency symbol
-  String _formatPrice(double priceValue, String currency) {
-    // Simple formatting - integrate with convertAndFormatPrice if needed
-    final code = currency.toUpperCase();
-
-    // Currency-specific formatting
-    switch (code) {
-      case 'DKK':
-      case 'SEK':
-      case 'NOK':
-        return '${priceValue.round()} kr.';
-      case 'EUR':
-        return '€${priceValue.toStringAsFixed(2)}';
-      case 'USD':
-        return '\$${priceValue.toStringAsFixed(2)}';
-      case 'GBP':
-        return '£${priceValue.toStringAsFixed(1)}';
-      default:
-        return '${priceValue.round()} $currency';
-    }
-  }
 }
