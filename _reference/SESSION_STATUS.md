@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (6/29 complete)
-**Last completed task:** Batch 3 (Solo) — MenuCategoriesRows complete (2026-02-21 Session #4)
-**Next task:** Batch 4 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (12/29 complete)
+**Last completed task:** Batch 5 — OpeningHoursAndWeekdays + ContactDetailsWidget + ImageGalleryOverlaySwipableWidget complete (2026-02-21 Session #6)
+**Next task:** Batch 6 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
@@ -350,7 +350,13 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 4 | ExpandableTextWidget | ⭐⭐ Low | ✅ Complete | #3 | 240 |
 | 5 | BusinessFeatureButtons | ⭐⭐⭐ Medium-High | ✅ Complete | #3 | 849 |
 | 6 | MenuCategoriesRows | ⭐⭐ Low (EXTREME lines) | ✅ Complete | #4 | 1,106 |
-| 7-29 | [Remaining 23 widgets] | Various | ⏳ Pending | #5-11 | — |
+| 7 | PackageCoursesDisplay | ⭐⭐⭐ Medium | ✅ Complete | #5 | 571 |
+| 8 | PackageBottomSheet | ⭐⭐⭐⭐ Medium-High | ✅ Complete | #5 | 1,019 |
+| 9 | GalleryTabWidget | ⭐⭐⭐ Medium | ✅ Complete | #5 | 617 |
+| 10 | OpeningHoursAndWeekdays | ⭐⭐⭐ Medium | ✅ Complete | #6 | 392 |
+| 11 | ContactDetailsWidget | ⭐⭐⭐ Medium | ✅ Complete | #6 | 693 |
+| 12 | ImageGalleryOverlaySwipableWidget | ⭐ Very Low | ✅ Complete | #6 | 70 |
+| 13-29 | [Remaining 17 widgets] | Various | ⏳ Pending | #7-11 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -402,6 +408,29 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 **Files Changed Session #4:**
 - `journey_mate/lib/widgets/shared/menu_categories_rows.dart` (created, 1,106 lines)
 - `_reference/SESSION_STATUS.md` (this file updated)
+
+**Files Changed Session #5:**
+- `journey_mate/lib/widgets/shared/package_courses_display.dart` (created, 571 lines)
+- `journey_mate/lib/widgets/shared/package_bottom_sheet.dart` (created, 1,019 lines)
+- `journey_mate/lib/widgets/shared/gallery_tab_widget.dart` (created, 617 lines)
+- `journey_mate/lib/services/custom_functions/price_formatter.dart` (created, 118 lines)
+- `_reference/PHASE7_LESSONS_LEARNED.md` (Session #5 appended)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
+**Files Changed Session #6:**
+- `journey_mate/lib/widgets/shared/opening_hours_and_weekdays.dart` (created, 392 lines)
+- `journey_mate/lib/widgets/shared/contact_details_widget.dart` (created, 693 lines)
+- `journey_mate/lib/widgets/shared/image_gallery_overlay_swipable_widget.dart` (created, 70 lines)
+- `journey_mate/lib/services/translation_service.dart` (36 keys added: 23 for OpeningHoursAndWeekdays, 13 for ContactDetailsWidget)
+- `_reference/NEW_TRANSLATION_KEYS.sql` (161 SQL INSERT statements appended)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
+**Decisions Made Session #6:**
+- OpeningHoursAndWeekdays implemented as StatefulWidget (matches FlutterFlow pattern)
+- ContactDetailsWidget uses context.mounted instead of mounted for async operations (Flutter 3.x best practice)
+- ImageGalleryOverlaySwipableWidget is a placeholder (ImageGalleryWidget from custom_widgets not yet implemented)
+- Removed unused imports (app_colors, app_spacing) from opening_hours_and_weekdays.dart
+- Used null-aware spread operator pattern for optional map entries (`...?note != null ? {'note': note} : null`)
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`

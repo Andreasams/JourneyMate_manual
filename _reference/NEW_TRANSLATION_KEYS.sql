@@ -215,3 +215,312 @@ VALUES
 -- END OF ExpandableTextWidget KEYS
 -- Total: 14 INSERT statements (2 keys × 7 languages)
 -- ============================================================
+
+-- ============================================================
+-- Widget: OpeningHoursAndWeekdays (Phase 7 Batch 5)
+-- Total: 161 INSERT statements (23 keys × 7 languages)
+-- ============================================================
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  -- Weekday names (7 keys × 7 languages = 49 statements)
+  ('day_monday_cap', 'en', 'Monday', 'ui'),
+  ('day_monday_cap', 'da', 'Mandag', 'ui'),
+  ('day_monday_cap', 'de', 'Montag', 'ui'),
+  ('day_monday_cap', 'fr', 'Lundi', 'ui'),
+  ('day_monday_cap', 'it', 'Lunedì', 'ui'),
+  ('day_monday_cap', 'no', 'Mandag', 'ui'),
+  ('day_monday_cap', 'sv', 'Måndag', 'ui'),
+
+  ('day_tuesday_cap', 'en', 'Tuesday', 'ui'),
+  ('day_tuesday_cap', 'da', 'Tirsdag', 'ui'),
+  ('day_tuesday_cap', 'de', 'Dienstag', 'ui'),
+  ('day_tuesday_cap', 'fr', 'Mardi', 'ui'),
+  ('day_tuesday_cap', 'it', 'Martedì', 'ui'),
+  ('day_tuesday_cap', 'no', 'Tirsdag', 'ui'),
+  ('day_tuesday_cap', 'sv', 'Tisdag', 'ui'),
+
+  ('day_wednesday_cap', 'en', 'Wednesday', 'ui'),
+  ('day_wednesday_cap', 'da', 'Onsdag', 'ui'),
+  ('day_wednesday_cap', 'de', 'Mittwoch', 'ui'),
+  ('day_wednesday_cap', 'fr', 'Mercredi', 'ui'),
+  ('day_wednesday_cap', 'it', 'Mercoledì', 'ui'),
+  ('day_wednesday_cap', 'no', 'Onsdag', 'ui'),
+  ('day_wednesday_cap', 'sv', 'Onsdag', 'ui'),
+
+  ('day_thursday_cap', 'en', 'Thursday', 'ui'),
+  ('day_thursday_cap', 'da', 'Torsdag', 'ui'),
+  ('day_thursday_cap', 'de', 'Donnerstag', 'ui'),
+  ('day_thursday_cap', 'fr', 'Jeudi', 'ui'),
+  ('day_thursday_cap', 'it', 'Giovedì', 'ui'),
+  ('day_thursday_cap', 'no', 'Torsdag', 'ui'),
+  ('day_thursday_cap', 'sv', 'Torsdag', 'ui'),
+
+  ('day_friday_cap', 'en', 'Friday', 'ui'),
+  ('day_friday_cap', 'da', 'Fredag', 'ui'),
+  ('day_friday_cap', 'de', 'Freitag', 'ui'),
+  ('day_friday_cap', 'fr', 'Vendredi', 'ui'),
+  ('day_friday_cap', 'it', 'Venerdì', 'ui'),
+  ('day_friday_cap', 'no', 'Fredag', 'ui'),
+  ('day_friday_cap', 'sv', 'Fredag', 'ui'),
+
+  ('day_saturday_cap', 'en', 'Saturday', 'ui'),
+  ('day_saturday_cap', 'da', 'Lørdag', 'ui'),
+  ('day_saturday_cap', 'de', 'Samstag', 'ui'),
+  ('day_saturday_cap', 'fr', 'Samedi', 'ui'),
+  ('day_saturday_cap', 'it', 'Sabato', 'ui'),
+  ('day_saturday_cap', 'no', 'Lørdag', 'ui'),
+  ('day_saturday_cap', 'sv', 'Lördag', 'ui'),
+
+  ('day_sunday_cap', 'en', 'Sunday', 'ui'),
+  ('day_sunday_cap', 'da', 'Søndag', 'ui'),
+  ('day_sunday_cap', 'de', 'Sonntag', 'ui'),
+  ('day_sunday_cap', 'fr', 'Dimanche', 'ui'),
+  ('day_sunday_cap', 'it', 'Domenica', 'ui'),
+  ('day_sunday_cap', 'no', 'Søndag', 'ui'),
+  ('day_sunday_cap', 'sv', 'Söndag', 'ui'),
+
+  -- Status labels (2 keys × 7 languages = 14 statements)
+  ('hours_closed', 'en', 'Closed', 'ui'),
+  ('hours_closed', 'da', 'Lukket', 'ui'),
+  ('hours_closed', 'de', 'Geschlossen', 'ui'),
+  ('hours_closed', 'fr', 'Fermé', 'ui'),
+  ('hours_closed', 'it', 'Chiuso', 'ui'),
+  ('hours_closed', 'no', 'Stengt', 'ui'),
+  ('hours_closed', 'sv', 'Stängt', 'ui'),
+
+  ('hours_by_appointment', 'en', 'By appointment', 'ui'),
+  ('hours_by_appointment', 'da', 'Efter aftale', 'ui'),
+  ('hours_by_appointment', 'de', 'Nach Vereinbarung', 'ui'),
+  ('hours_by_appointment', 'fr', 'Sur rendez-vous', 'ui'),
+  ('hours_by_appointment', 'it', 'Su appuntamento', 'ui'),
+  ('hours_by_appointment', 'no', 'Etter avtale', 'ui'),
+  ('hours_by_appointment', 'sv', 'Efter överenskommelse', 'ui'),
+
+  -- Cutoff type labels (8 keys × 7 languages = 56 statements)
+  ('hours_kitchen', 'en', 'Kitchen', 'ui'),
+  ('hours_kitchen', 'da', 'Køkken', 'ui'),
+  ('hours_kitchen', 'de', 'Küche', 'ui'),
+  ('hours_kitchen', 'fr', 'Cuisine', 'ui'),
+  ('hours_kitchen', 'it', 'Cucina', 'ui'),
+  ('hours_kitchen', 'no', 'Kjøkken', 'ui'),
+  ('hours_kitchen', 'sv', 'Kök', 'ui'),
+
+  ('hours_last_order', 'en', 'Last order', 'ui'),
+  ('hours_last_order', 'da', 'Sidste ordre', 'ui'),
+  ('hours_last_order', 'de', 'Letzte Bestellung', 'ui'),
+  ('hours_last_order', 'fr', 'Dernière commande', 'ui'),
+  ('hours_last_order', 'it', 'Ultimo ordine', 'ui'),
+  ('hours_last_order', 'no', 'Siste bestilling', 'ui'),
+  ('hours_last_order', 'sv', 'Sista beställning', 'ui'),
+
+  ('hours_last_arrival', 'en', 'Last arrival', 'ui'),
+  ('hours_last_arrival', 'da', 'Sidste ankomst', 'ui'),
+  ('hours_last_arrival', 'de', 'Letzte Ankunft', 'ui'),
+  ('hours_last_arrival', 'fr', 'Dernière arrivée', 'ui'),
+  ('hours_last_arrival', 'it', 'Ultimo arrivo', 'ui'),
+  ('hours_last_arrival', 'no', 'Siste ankomst', 'ui'),
+  ('hours_last_arrival', 'sv', 'Sista ankomst', 'ui'),
+
+  ('hours_last_booking', 'en', 'Last booking', 'ui'),
+  ('hours_last_booking', 'da', 'Sidste booking', 'ui'),
+  ('hours_last_booking', 'de', 'Letzte Buchung', 'ui'),
+  ('hours_last_booking', 'fr', 'Dernière réservation', 'ui'),
+  ('hours_last_booking', 'it', 'Ultima prenotazione', 'ui'),
+  ('hours_last_booking', 'no', 'Siste bestilling', 'ui'),
+  ('hours_last_booking', 'sv', 'Sista bokning', 'ui'),
+
+  ('hours_first_seating', 'en', 'First seating', 'ui'),
+  ('hours_first_seating', 'da', 'Første servering', 'ui'),
+  ('hours_first_seating', 'de', 'Erste Sitzung', 'ui'),
+  ('hours_first_seating', 'fr', 'Premier service', 'ui'),
+  ('hours_first_seating', 'it', 'Primo turno', 'ui'),
+  ('hours_first_seating', 'no', 'Første servering', 'ui'),
+  ('hours_first_seating', 'sv', 'Första sittning', 'ui'),
+
+  ('hours_second_seating', 'en', 'Second seating', 'ui'),
+  ('hours_second_seating', 'da', 'Anden servering', 'ui'),
+  ('hours_second_seating', 'de', 'Zweite Sitzung', 'ui'),
+  ('hours_second_seating', 'fr', 'Deuxième service', 'ui'),
+  ('hours_second_seating', 'it', 'Secondo turno', 'ui'),
+  ('hours_second_seating', 'no', 'Andre servering', 'ui'),
+  ('hours_second_seating', 'sv', 'Andra sittning', 'ui'),
+
+  ('hours_third_seating', 'en', 'Third seating', 'ui'),
+  ('hours_third_seating', 'da', 'Tredje servering', 'ui'),
+  ('hours_third_seating', 'de', 'Dritte Sitzung', 'ui'),
+  ('hours_third_seating', 'fr', 'Troisième service', 'ui'),
+  ('hours_third_seating', 'it', 'Terzo turno', 'ui'),
+  ('hours_third_seating', 'no', 'Tredje servering', 'ui'),
+  ('hours_third_seating', 'sv', 'Tredje sittning', 'ui'),
+
+  ('hours_call_for_hours', 'en', 'Call for hours', 'ui'),
+  ('hours_call_for_hours', 'da', 'Ring for tider', 'ui'),
+  ('hours_call_for_hours', 'de', 'Anrufen für Öffnungszeiten', 'ui'),
+  ('hours_call_for_hours', 'fr', 'Appeler pour les horaires', 'ui'),
+  ('hours_call_for_hours', 'it', 'Chiamare per gli orari', 'ui'),
+  ('hours_call_for_hours', 'no', 'Ring for åpningstider', 'ui'),
+  ('hours_call_for_hours', 'sv', 'Ring för öppettider', 'ui'),
+
+  -- General labels (6 keys × 7 languages = 42 statements)
+  ('key_opening_hours', 'en', 'Opening hours', 'ui'),
+  ('key_opening_hours', 'da', 'Åbningstider', 'ui'),
+  ('key_opening_hours', 'de', 'Öffnungszeiten', 'ui'),
+  ('key_opening_hours', 'fr', 'Horaires d''ouverture', 'ui'),
+  ('key_opening_hours', 'it', 'Orari di apertura', 'ui'),
+  ('key_opening_hours', 'no', 'Åpningstider', 'ui'),
+  ('key_opening_hours', 'sv', 'Öppettider', 'ui'),
+
+  ('key_open', 'en', 'Open', 'ui'),
+  ('key_open', 'da', 'Åben', 'ui'),
+  ('key_open', 'de', 'Geöffnet', 'ui'),
+  ('key_open', 'fr', 'Ouvert', 'ui'),
+  ('key_open', 'it', 'Aperto', 'ui'),
+  ('key_open', 'no', 'Åpen', 'ui'),
+  ('key_open', 'sv', 'Öppet', 'ui'),
+
+  ('key_until', 'en', 'Until', 'ui'),
+  ('key_until', 'da', 'Indtil', 'ui'),
+  ('key_until', 'de', 'Bis', 'ui'),
+  ('key_until', 'fr', 'Jusqu''à', 'ui'),
+  ('key_until', 'it', 'Fino a', 'ui'),
+  ('key_until', 'no', 'Til', 'ui'),
+  ('key_until', 'sv', 'Till', 'ui'),
+
+  ('key_and', 'en', 'and', 'ui'),
+  ('key_and', 'da', 'og', 'ui'),
+  ('key_and', 'de', 'und', 'ui'),
+  ('key_and', 'fr', 'et', 'ui'),
+  ('key_and', 'it', 'e', 'ui'),
+  ('key_and', 'no', 'og', 'ui'),
+  ('key_and', 'sv', 'och', 'ui'),
+
+  ('key_from', 'en', 'From', 'ui'),
+  ('key_from', 'da', 'Fra', 'ui'),
+  ('key_from', 'de', 'Von', 'ui'),
+  ('key_from', 'fr', 'De', 'ui'),
+  ('key_from', 'it', 'Da', 'ui'),
+  ('key_from', 'no', 'Fra', 'ui'),
+  ('key_from', 'sv', 'Från', 'ui'),
+
+  ('key_to', 'en', 'To', 'ui'),
+  ('key_to', 'da', 'Til', 'ui'),
+  ('key_to', 'de', 'Bis', 'ui'),
+  ('key_to', 'fr', 'À', 'ui'),
+  ('key_to', 'it', 'A', 'ui'),
+  ('key_to', 'no', 'Til', 'ui'),
+  ('key_to', 'sv', 'Till', 'ui');
+
+-- ============================================================
+-- END OF OpeningHoursAndWeekdays KEYS
+-- Total: 161 INSERT statements (23 keys × 7 languages)
+-- ============================================================
+-- Widget: ContactDetailsWidget (Phase 7 Batch 5)
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  -- Section headers
+  ('contact_details_address', 'en', 'Address', 'ui'),
+  ('contact_details_address', 'da', 'Adresse', 'ui'),
+  ('contact_details_address', 'de', 'Adresse', 'ui'),
+  ('contact_details_address', 'fr', 'Adresse', 'ui'),
+  ('contact_details_address', 'it', 'Indirizzo', 'ui'),
+  ('contact_details_address', 'no', 'Adresse', 'ui'),
+  ('contact_details_address', 'sv', 'Adress', 'ui'),
+
+  ('contact_details_opening_hours', 'en', 'Opening Hours', 'ui'),
+  ('contact_details_opening_hours', 'da', 'Åbningstider', 'ui'),
+  ('contact_details_opening_hours', 'de', 'Öffnungszeiten', 'ui'),
+  ('contact_details_opening_hours', 'fr', 'Horaires d''ouverture', 'ui'),
+  ('contact_details_opening_hours', 'it', 'Orari di apertura', 'ui'),
+  ('contact_details_opening_hours', 'no', 'Åpningstider', 'ui'),
+  ('contact_details_opening_hours', 'sv', 'Öppettider', 'ui'),
+
+  ('contact_details_contact_information', 'en', 'Contact Information', 'ui'),
+  ('contact_details_contact_information', 'da', 'Kontaktinformation', 'ui'),
+  ('contact_details_contact_information', 'de', 'Kontaktinformationen', 'ui'),
+  ('contact_details_contact_information', 'fr', 'Informations de contact', 'ui'),
+  ('contact_details_contact_information', 'it', 'Informazioni di contatto', 'ui'),
+  ('contact_details_contact_information', 'no', 'Kontaktinformasjon', 'ui'),
+  ('contact_details_contact_information', 'sv', 'Kontaktinformation', 'ui'),
+
+  -- Contact method labels
+  ('contact_details_phone', 'en', 'Phone', 'ui'),
+  ('contact_details_phone', 'da', 'Telefon', 'ui'),
+  ('contact_details_phone', 'de', 'Telefon', 'ui'),
+  ('contact_details_phone', 'fr', 'Téléphone', 'ui'),
+  ('contact_details_phone', 'it', 'Telefono', 'ui'),
+  ('contact_details_phone', 'no', 'Telefon', 'ui'),
+  ('contact_details_phone', 'sv', 'Telefon', 'ui'),
+
+  ('contact_details_email', 'en', 'Email', 'ui'),
+  ('contact_details_email', 'da', 'E-mail', 'ui'),
+  ('contact_details_email', 'de', 'E-Mail', 'ui'),
+  ('contact_details_email', 'fr', 'E-mail', 'ui'),
+  ('contact_details_email', 'it', 'E-mail', 'ui'),
+  ('contact_details_email', 'no', 'E-post', 'ui'),
+  ('contact_details_email', 'sv', 'E-post', 'ui'),
+
+  ('contact_details_website', 'en', 'Website', 'ui'),
+  ('contact_details_website', 'da', 'Hjemmeside', 'ui'),
+  ('contact_details_website', 'de', 'Webseite', 'ui'),
+  ('contact_details_website', 'fr', 'Site web', 'ui'),
+  ('contact_details_website', 'it', 'Sito web', 'ui'),
+  ('contact_details_website', 'no', 'Nettside', 'ui'),
+  ('contact_details_website', 'sv', 'Webbplats', 'ui'),
+
+  ('contact_details_reservations', 'en', 'Reservations', 'ui'),
+  ('contact_details_reservations', 'da', 'Reservationer', 'ui'),
+  ('contact_details_reservations', 'de', 'Reservierungen', 'ui'),
+  ('contact_details_reservations', 'fr', 'Réservations', 'ui'),
+  ('contact_details_reservations', 'it', 'Prenotazioni', 'ui'),
+  ('contact_details_reservations', 'no', 'Reservasjoner', 'ui'),
+  ('contact_details_reservations', 'sv', 'Reservationer', 'ui'),
+
+  ('contact_details_instagram', 'en', 'Instagram', 'ui'),
+  ('contact_details_instagram', 'da', 'Instagram', 'ui'),
+  ('contact_details_instagram', 'de', 'Instagram', 'ui'),
+  ('contact_details_instagram', 'fr', 'Instagram', 'ui'),
+  ('contact_details_instagram', 'it', 'Instagram', 'ui'),
+  ('contact_details_instagram', 'no', 'Instagram', 'ui'),
+  ('contact_details_instagram', 'sv', 'Instagram', 'ui'),
+
+  ('contact_details_facebook', 'en', 'Facebook', 'ui'),
+  ('contact_details_facebook', 'da', 'Facebook', 'ui'),
+  ('contact_details_facebook', 'de', 'Facebook', 'ui'),
+  ('contact_details_facebook', 'fr', 'Facebook', 'ui'),
+  ('contact_details_facebook', 'it', 'Facebook', 'ui'),
+  ('contact_details_facebook', 'no', 'Facebook', 'ui'),
+  ('contact_details_facebook', 'sv', 'Facebook', 'ui'),
+
+  -- Action labels
+  ('contact_details_tap_to_call', 'en', 'Tap to call', 'ui'),
+  ('contact_details_tap_to_call', 'da', 'Tryk for at ringe', 'ui'),
+  ('contact_details_tap_to_call', 'de', 'Zum Anrufen tippen', 'ui'),
+  ('contact_details_tap_to_call', 'fr', 'Appuyez pour appeler', 'ui'),
+  ('contact_details_tap_to_call', 'it', 'Tocca per chiamare', 'ui'),
+  ('contact_details_tap_to_call', 'no', 'Trykk for å ringe', 'ui'),
+  ('contact_details_tap_to_call', 'sv', 'Tryck för att ringa', 'ui'),
+
+  ('contact_details_tap_to_email', 'en', 'Tap to email', 'ui'),
+  ('contact_details_tap_to_email', 'da', 'Tryk for at sende e-mail', 'ui'),
+  ('contact_details_tap_to_email', 'de', 'Zum E-Mailen tippen', 'ui'),
+  ('contact_details_tap_to_email', 'fr', 'Appuyez pour envoyer un e-mail', 'ui'),
+  ('contact_details_tap_to_email', 'it', 'Tocca per inviare un''e-mail', 'ui'),
+  ('contact_details_tap_to_email', 'no', 'Trykk for å sende e-post', 'ui'),
+  ('contact_details_tap_to_email', 'sv', 'Tryck för att skicka e-post', 'ui'),
+
+  ('contact_details_view_on_instagram', 'en', 'View on Instagram', 'ui'),
+  ('contact_details_view_on_instagram', 'da', 'Se på Instagram', 'ui'),
+  ('contact_details_view_on_instagram', 'de', 'Auf Instagram anzeigen', 'ui'),
+  ('contact_details_view_on_instagram', 'fr', 'Voir sur Instagram', 'ui'),
+  ('contact_details_view_on_instagram', 'it', 'Visualizza su Instagram', 'ui'),
+  ('contact_details_view_on_instagram', 'no', 'Se på Instagram', 'ui'),
+  ('contact_details_view_on_instagram', 'sv', 'Visa på Instagram', 'ui'),
+
+  ('contact_details_view_on_facebook', 'en', 'View on Facebook', 'ui'),
+  ('contact_details_view_on_facebook', 'da', 'Se på Facebook', 'ui'),
+  ('contact_details_view_on_facebook', 'de', 'Auf Facebook anzeigen', 'ui'),
+  ('contact_details_view_on_facebook', 'fr', 'Voir sur Facebook', 'ui'),
+  ('contact_details_view_on_facebook', 'it', 'Visualizza su Facebook', 'ui'),
+  ('contact_details_view_on_facebook', 'no', 'Se på Facebook', 'ui'),
+  ('contact_details_view_on_facebook', 'sv', 'Visa på Facebook', 'ui');
