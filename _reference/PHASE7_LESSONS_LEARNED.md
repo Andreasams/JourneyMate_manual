@@ -319,7 +319,155 @@ Lessons learned document HOW to work within the system, not how to work around i
 
 ---
 
-### Session #3: [Widget/Page Name] (YYYY-MM-DD)
+### Session #4: MenuCategoriesRows (2026-02-21)
+
+**Widget:** MenuCategoriesRows (6/29 widgets)
+**Completed By:** Claude Code Session #4
+**Duration:** ~4 hours
+**Lines of Code:** 1,106 lines (reduced from 1,250 via state management simplification)
+**Status:** ✅ Complete, 0 issues
+
+#### What Went Well
+
+1. **Widget-local state pattern discovery:**
+   - Initially attempted widget-local Notifier (following FlutterFlow's BLoC pattern)
+   - Realized Riverpod 3.x Notifiers REQUIRE providers and are for shared state
+   - Successfully migrated to plain State variables with setState() for truly widget-local state
+   - This is simpler and more appropriate than creating unnecessary providers
+
+2. **All 7 algorithms preserved unchanged:**
+   - Menu transformation (150 lines)
+   - Display configuration detection (25 lines)
+   - Auto-scroll to visible item (65 lines)
+   - Selection change handling (40 lines)
+   - Visible selection processing (30 lines)
+   - GlobalKey management (~50 lines)
+   - Type safety helpers (25 lines)
+   - All algorithms are BLoC-agnostic and copied directly
+
+3. **Design token translation was clean:**
+   - FlutterFlow `Color(0xFFEE8B60)` → `AppColors.accent`
+   - FlutterFlow `Color(0xFFf2f3f5)` → `AppColors.bgSurface`
+   - FlutterFlow `8.0` spacing → `AppSpacing.sm`
+   - FlutterFlow `16.0` padding → `AppSpacing.lg`
+   - FlutterFlow `8.0` radius → `AppRadius.chip`
+
+4. **Translation migration worked perfectly:**
+   - Removed `languageCode` and `translationsCache` props
+   - Used `td(ref, key)` for dynamic translations via `translationsCacheProvider`
+   - Multi-course header translations already exist in `kStaticTranslations`
+
+#### Challenges & Solutions
+
+1. **Challenge:** Widget-local Notifier pattern doesn't work in Riverpod 3.x
+   - FlutterFlow uses `MenuCategoryCubit extends Cubit<State>` locally
+   - Tried `MenuCategoryNotifier extends Notifier<State>` as widget field
+   - **Problem:** `_notifier.state` is `@protected` and only accessible inside Notifier class
+   - **Problem:** `_notifier.dispose()` method doesn't exist on Notifier
+   - **Solution:** Use plain State variables in ConsumerStatefulWidget:
+     ```dart
+     // Widget-local state (no Notifier needed)
+     List<Menu> _menus = [];
+     String _selectedMenuId = '';
+     String _selectedCategoryId = '';
+
+     // Update with setState()
+     setState(() {
+       _selectedMenuId = menuId;
+       _selectedCategoryId = categoryId;
+     });
+     ```
+
+2. **Challenge:** `dynamic?` type warning
+   - FlutterFlow code has `final dynamic? visibleSelection`
+   - **Solution:** Changed to `final dynamic visibleSelection` (dynamic is already nullable)
+
+3. **Challenge:** Unnecessary underscore warnings in separatorBuilder
+   - FlutterFlow uses `(_, __) =>` for unused lambda parameters
+   - **Solution:** Changed to `(_, _) =>` (analyzer prefers single underscore for second param)
+
+#### Translation Patterns Discovered
+
+1. **Widget-local state in Riverpod 3.x:**
+   ```dart
+   // ❌ WRONG: Notifier needs provider
+   class _MyWidgetState extends ConsumerState<MyWidget> {
+     late final MyNotifier _notifier;
+
+     @override
+     Widget build(BuildContext context) {
+       return Text(_notifier.state.value); // ❌ Can't access .state
+     }
+   }
+
+   // ✅ CORRECT: Use plain State variables
+   class _MyWidgetState extends ConsumerState<MyWidget> {
+     String _value = '';
+
+     void _update(String newValue) {
+       setState(() => _value = newValue);
+     }
+
+     @override
+     Widget build(BuildContext context) {
+       return Text(_value); // ✅ Works perfectly
+     }
+   }
+   ```
+
+2. **When to use Notifier vs State variables:**
+   - **Notifier + Provider:** State is shared across multiple widgets/pages
+   - **State variables:** State is 100% scoped to single widget instance
+   - **ConsumerStatefulWidget:** Needs to READ providers but has local state
+
+3. **BLoC → Widget-local state migration:**
+   - Remove `Cubit`/`Notifier` class entirely
+   - Convert state class fields to plain State variables
+   - Replace `emit(newState)` with `setState(() => _field = value)`
+   - Remove `_cubit.close()` from dispose (State variables need no cleanup)
+
+#### Key Takeaways for Next Sessions
+
+1. **Riverpod 3.x widget-local state pattern:**
+   - DO NOT create widget-local Notifier classes
+   - Use plain State variables in ConsumerStatefulWidget
+   - Only use Notifier when state needs to be shared via provider
+   - This is simpler than BLoC's widget-local Cubit pattern
+
+2. **Large widget migration strategy:**
+   - Read entire FlutterFlow file first (understand structure)
+   - Identify truly widget-local state vs. shared state
+   - Copy algorithms unchanged (they're framework-agnostic)
+   - Only translate state management wrapper code
+   - Design tokens last (mechanical search-replace)
+
+3. **Frame callback safety:**
+   - Always check `if (!mounted) return;` after frame callbacks
+   - Critical for widgets that may be disposed during async operations
+
+4. **GlobalKey position calculation:**
+   - Null-check `itemKey?.currentContext` before accessing
+   - Null-check RenderBox casts
+   - Wrap in try-catch for robustness
+
+5. **Multiple ScrollControllers:**
+   - Store in widget State, not in Notifier
+   - Dispose in correct order (notifier first if exists, then controllers)
+
+6. **Complex widgets are ⭐⭐ Low complexity if:**
+   - Algorithms are portable (no framework coupling)
+   - State is widget-local (no provider dependencies)
+   - UI is simple (basic buttons and lists)
+   - Line count doesn't indicate difficulty
+
+#### Files Created/Modified
+
+- ✅ Created: `journey_mate/lib/widgets/shared/menu_categories_rows.dart` (1,106 lines)
+- ✅ Updated: `_reference/SESSION_STATUS.md`
+
+---
+
+### Session #5: [Widget/Page Name] (YYYY-MM-DD)
 
 **Widget/Page:**
 **Completed By:**
