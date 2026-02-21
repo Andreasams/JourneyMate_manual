@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (29/34 complete, 85%)
-**Last completed task:** Batch 13 — ErroneousInfoFormWidget, CurrencySelectorButton (2026-02-21 Session #14)
-**Next task:** Batch 14 — 5 remaining widgets: BusinessHoursWidget (deferred - no source), MenuItemCard, DietaryPreferencesFilterWidgets, SearchResultsListView, SelectedFiltersBtns
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (31/34 complete, 91%)
+**Last completed task:** Batch 14 — MenuItemCard, DietaryPreferencesFilterWidgets (2026-02-22 Session #15)
+**Next task:** Batch 15 — 3 remaining widgets: BusinessHoursWidget (deferred - no source), SearchResultsListView, SelectedFiltersBtns
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Widget Count Correction (2026-02-21):**
@@ -40,7 +40,7 @@
 | Phase 5 | ✅ Complete | All 8 Riverpod providers + 70 tests + PROVIDERS_REFERENCE.md |
 | Phase 6A | ✅ Complete | Translation service with 191 static keys from FlutterFlow |
 | Phase 6B | 🔄 Ongoing | Per-page translation key additions (runs parallel with Phase 7) |
-| Phase 7 | 🔄 In Progress | Preliminary Task: 1/29 widgets complete (PaymentOptionsWidget) |
+| Phase 7 | 🔄 In Progress | Preliminary Task: 31/34 widgets complete |
 | Phase 8 | ⏳ Not started | Integration polish + 100% dynamic translation migration |
 
 ---
@@ -449,9 +449,9 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 27 | ItemBottomSheet (item_detail_sheet) | ⭐⭐⭐⭐⭐ Extreme | ✅ Complete | #13 | 1,780 |
 | 28 | BusinessHoursWidget (JSX - not in FlutterFlow) | ⭐⭐ Low | ⏸️ Deferred | — | — |
 | 29 | ErroneousInfoFormWidget (JSX modal) | ⭐⭐⭐ Medium | ✅ Complete | #14 | 510 |
-| 30 | MenuItemCard (JSX concept) | ⭐⭐⭐ Medium | ⏳ Pending | #15 | — |
+| 30 | MenuItemCard (JSX concept) | ⭐⭐⭐ Medium | ✅ Complete | #15 | 210 |
 | 31 | CurrencySelectorButton | ⭐⭐⭐ Medium | ✅ Complete | #14 | 478 |
-| 32 | DietaryPreferencesFilterWidgets | ⭐⭐⭐ Medium | ⏳ Pending | #15 | — |
+| 32 | DietaryPreferencesFilterWidgets | ⭐⭐⭐ Medium | ✅ Complete | #15 | 350 |
 | 33 | SearchResultsListView | ⭐⭐⭐⭐ High | ⏳ Pending | #15 | — |
 | 34 | SelectedFiltersBtns | ⭐⭐⭐⭐ High | ⏳ Pending | #15 | — |
 
@@ -706,6 +706,27 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - All design tokens applied (AppColors, AppSpacing, AppRadius, AppTypography)
 - Translation keys: 13 ErroneousInfo keys + 11 Currency keys = 24 keys × 7 languages = 168 SQL statements
 - flutter analyze: 0 issues in both new widgets (2 pre-existing issues in item_bottom_sheet.dart from Session #13)
+
+**Files Changed Session #15:**
+- `journey_mate/lib/widgets/shared/menu_item_card.dart` (created, ~210 lines)
+- `journey_mate/lib/widgets/shared/dietary_preferences_filter_widgets.dart` (created, ~350 lines)
+- `journey_mate/lib/services/translation_service.dart` (2 keys added)
+- `_reference/NEW_TRANSLATION_KEYS.sql` (14 SQL INSERT statements appended)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
+**Decisions Made Session #15:**
+- MenuItemCard is pure StatelessWidget (no provider dependencies)
+- MenuItemCard design derived from JSX spec + MenuDishesListView patterns (no FlutterFlow source)
+- MenuItemCard dietary badge icons: Vegan (eco), Vegetarian (spa), Pescetarian (set_meal)
+- DietaryPreferencesFilterWidgets uses ConsumerStatefulWidget with businessProvider/filterProvider reads
+- Preserved allergen conflict validation logic from FlutterFlow
+- Removed all markUserEngaged() calls (ActivityScope handles engagement automatically)
+- Used td(ref, key) for dietary preference translations (dynamic Supabase keys)
+- Analytics tracking with required deviceId, sessionId, userId, timestamp parameters
+- All design tokens applied (AppColors.accent for selected, AppColors.bgInput for unselected)
+- WidgetStateProperty used (not MaterialStateProperty - Flutter 3.x)
+- Translation keys: 2 keys × 7 languages = 14 SQL statements
+- flutter analyze: 0 issues in both new widgets (2 pre-existing issues in item_bottom_sheet.dart remain)
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`

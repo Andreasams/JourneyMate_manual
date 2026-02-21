@@ -1089,3 +1089,28 @@ VALUES
 -- END OF CurrencySelectorButton KEYS
 -- Total: 77 INSERT statements (11 keys × 7 languages)
 -- ============================================================
+
+-- ============================================================
+-- Batch 14: MenuItemCard + DietaryPreferencesFilterWidgets (Phase 7 Session #15)
+-- Added: 2026-02-22
+-- Total: 2 keys × 7 languages = 14 statements
+-- ============================================================
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  ('menu_contains_allergens', 'en', 'Contains {count} allergen(s)', 'ui'),
+  ('menu_contains_allergens', 'da', 'Indeholder {count} allergen(er)', 'ui'),
+  ('menu_contains_allergens', 'de', 'Enthält {count} Allergen(e)', 'ui'),
+  ('menu_contains_allergens', 'fr', 'Contient {count} allergène(s)', 'ui'),
+  ('menu_contains_allergens', 'it', 'Contiene {count} allergene/i', 'ui'),
+  ('menu_contains_allergens', 'no', 'Inneholder {count} allergen(er)', 'ui'),
+  ('menu_contains_allergens', 'sv', 'Innehåller {count} allergen(er)', 'ui'),
+
+  ('filter_preference_allergen_conflict', 'en', 'This preference conflicts with your allergen exclusions', 'ui'),
+  ('filter_preference_allergen_conflict', 'da', 'Denne præference er i konflikt med dine allergen udelukkelser', 'ui'),
+  ('filter_preference_allergen_conflict', 'de', 'Diese Präferenz steht im Konflikt mit Ihren Allergenausschlüssen', 'ui'),
+  ('filter_preference_allergen_conflict', 'fr', 'Cette préférence est en conflit avec vos exclusions d\'allergènes', 'ui'),
+  ('filter_preference_allergen_conflict', 'it', 'Questa preferenza è in conflitto con le tue esclusioni di allergeni', 'ui'),
+  ('filter_preference_allergen_conflict', 'no', 'Denne preferansen er i konflikt med dine allergenuteslutninger', 'ui'),
+  ('filter_preference_allergen_conflict', 'sv', 'Denna preferens är i konflikt med dina allergiuteslutningar', 'ui')
+;

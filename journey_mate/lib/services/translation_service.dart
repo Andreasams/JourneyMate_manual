@@ -3080,6 +3080,30 @@ const Map<String, Map<String, String>> kStaticTranslations = {
     'no': 'Sveitsiske franc',
     'sv': 'Schweiziska franc',
   },
+
+  // ============================================================
+  // Phase 7 Batch 14: MenuItemCard + DietaryPreferencesFilterWidgets (2 keys)
+  // Added: 2026-02-22
+  // ============================================================
+
+  'menu_contains_allergens': {
+    'en': 'Contains {count} allergen(s)',
+    'da': 'Indeholder {count} allergen(er)',
+    'de': 'Enthält {count} Allergen(e)',
+    'fr': 'Contient {count} allergène(s)',
+    'it': 'Contiene {count} allergene/i',
+    'no': 'Inneholder {count} allergen(er)',
+    'sv': 'Innehåller {count} allergen(er)',
+  },
+  'filter_preference_allergen_conflict': {
+    'en': 'This preference conflicts with your allergen exclusions',
+    'da': 'Denne præference er i konflikt med dine allergen udelukkelser',
+    'de': 'Diese Präferenz steht im Konflikt mit Ihren Allergenausschlüssen',
+    'fr': 'Cette préférence est en conflit avec vos exclusions d\'allergènes',
+    'it': 'Questa preferenza è in conflitto con le tue esclusioni di allergeni',
+    'no': 'Denne preferansen er i konflikt med dine allergenuteslutninger',
+    'sv': 'Denna preferens är i konflikt med dina allergiuteslutningar',
+  },
 };
 
 // ============================================================
