@@ -104,9 +104,8 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
 
   /// End the current session
   void endSession() {
-    state = state.copyWithNullableMenuSession(
-      sessionId: null,
-      sessionStartTime: null,
+    state = state.copyWithNullable(
+      clearSession: true,
       clearMenuSession: true,
     );
   }
@@ -126,7 +125,7 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
   /// End the menu session and send analytics
   /// Note: Actual analytics sending is handled by AnalyticsService
   void endMenuSession(int businessId) {
-    state = state.copyWithNullableMenuSession(clearMenuSession: true);
+    state = state.copyWithNullable(clearMenuSession: true);
   }
 
   /// Increment item click count

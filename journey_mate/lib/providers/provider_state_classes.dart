@@ -143,18 +143,19 @@ class AnalyticsState {
     );
   }
 
-  /// Special copyWith for nullable menuSessionData reset
-  AnalyticsState copyWithNullableMenuSession({
+  /// Special copyWith for nullable field resets
+  AnalyticsState copyWithNullable({
     String? deviceId,
     String? sessionId,
     DateTime? sessionStartTime,
     MenuSessionData? menuSessionData,
+    bool clearSession = false,
     bool clearMenuSession = false,
   }) {
     return AnalyticsState(
       deviceId: deviceId ?? this.deviceId,
-      sessionId: sessionId ?? this.sessionId,
-      sessionStartTime: sessionStartTime ?? this.sessionStartTime,
+      sessionId: clearSession ? null : (sessionId ?? this.sessionId),
+      sessionStartTime: clearSession ? null : (sessionStartTime ?? this.sessionStartTime),
       menuSessionData: clearMenuSession ? null : (menuSessionData ?? this.menuSessionData),
     );
   }
@@ -233,6 +234,37 @@ class SearchState {
       previousFilterSessionId: previousFilterSessionId ?? this.previousFilterSessionId,
       currentRefinementSequence: currentRefinementSequence ?? this.currentRefinementSequence,
       lastRefinementTime: lastRefinementTime ?? this.lastRefinementTime,
+    );
+  }
+
+  /// Special copyWith for nullable field resets
+  SearchState copyWithNullable({
+    dynamic searchResults,
+    int? searchResultsCount,
+    bool? hasActiveSearch,
+    String? currentSearchText,
+    List<int>? filtersUsedForSearch,
+    String? currentFilterSessionId,
+    List<int>? previousActiveFilters,
+    String? previousSearchText,
+    String? previousFilterSessionId,
+    int? currentRefinementSequence,
+    DateTime? lastRefinementTime,
+    bool clearResults = false,
+    bool clearRefinementTime = false,
+  }) {
+    return SearchState(
+      searchResults: clearResults ? null : (searchResults ?? this.searchResults),
+      searchResultsCount: searchResultsCount ?? this.searchResultsCount,
+      hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
+      currentSearchText: currentSearchText ?? this.currentSearchText,
+      filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
+      currentFilterSessionId: currentFilterSessionId ?? this.currentFilterSessionId,
+      previousActiveFilters: previousActiveFilters ?? this.previousActiveFilters,
+      previousSearchText: previousSearchText ?? this.previousSearchText,
+      previousFilterSessionId: previousFilterSessionId ?? this.previousFilterSessionId,
+      currentRefinementSequence: currentRefinementSequence ?? this.currentRefinementSequence,
+      lastRefinementTime: clearRefinementTime ? null : (lastRefinementTime ?? this.lastRefinementTime),
     );
   }
 }

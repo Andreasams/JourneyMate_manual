@@ -102,9 +102,9 @@ class SearchStateNotifier extends Notifier<SearchState> {
 
   /// Reset refinement sequence to 0
   void resetRefinementSequence() {
-    state = state.copyWith(
+    state = state.copyWithNullable(
       currentRefinementSequence: 0,
-      lastRefinementTime: null,
+      clearRefinementTime: true,
     );
   }
 
@@ -130,10 +130,10 @@ class SearchStateNotifier extends Notifier<SearchState> {
 
   /// Mark search as inactive (results cleared)
   void markSearchInactive() {
-    state = state.copyWith(
+    state = state.copyWithNullable(
       hasActiveSearch: false,
-      searchResults: null,
       searchResultsCount: 0,
+      clearResults: true,
     );
   }
 }
