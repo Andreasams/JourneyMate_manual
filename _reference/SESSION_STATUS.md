@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (27/34 complete)
-**Last completed task:** Batch 12+ — ItemBottomSheet complete (2026-02-21 Session #13 - SOLO SESSION)
-**Next task:** Batch 13 — 7 remaining widgets: BusinessHoursWidget, ErroneousInfoFormWidget, MenuItemCard, CurrencySelectorButton, DietaryPreferencesFilterWidgets, SearchResultsListView, SelectedFiltersBtns
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (29/34 complete, 85%)
+**Last completed task:** Batch 13 — ErroneousInfoFormWidget, CurrencySelectorButton (2026-02-21 Session #14)
+**Next task:** Batch 14 — 5 remaining widgets: BusinessHoursWidget (deferred - no source), MenuItemCard, DietaryPreferencesFilterWidgets, SearchResultsListView, SelectedFiltersBtns
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Widget Count Correction (2026-02-21):**
@@ -447,13 +447,13 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 25 | UnifiedFiltersWidget | ⭐⭐⭐⭐ High | ✅ Complete | #11 | 1,032 |
 | 26 | MenuDishesListView | ⭐⭐⭐⭐⭐ Extreme | ✅ Complete | #12 | 1,991 |
 | 27 | ItemBottomSheet (item_detail_sheet) | ⭐⭐⭐⭐⭐ Extreme | ✅ Complete | #13 | 1,780 |
-| 28 | BusinessHoursWidget (JSX - not in FlutterFlow) | ⭐⭐ Low | ⏳ Pending | #14 | — |
-| 29 | ErroneousInfoFormWidget (JSX modal) | ⭐⭐⭐ Medium | ⏳ Pending | #14 | — |
+| 28 | BusinessHoursWidget (JSX - not in FlutterFlow) | ⭐⭐ Low | ⏸️ Deferred | — | — |
+| 29 | ErroneousInfoFormWidget (JSX modal) | ⭐⭐⭐ Medium | ✅ Complete | #14 | 510 |
 | 30 | MenuItemCard (JSX concept) | ⭐⭐⭐ Medium | ⏳ Pending | #15 | — |
-| 31 | CurrencySelectorButton | ⭐⭐⭐ Medium | ⏳ Pending | #15 | — |
-| 32 | DietaryPreferencesFilterWidgets | ⭐⭐⭐ Medium | ⏳ Pending | #16 | — |
-| 33 | SearchResultsListView | ⭐⭐⭐⭐ High | ⏳ Pending | #16 | — |
-| 34 | SelectedFiltersBtns | ⭐⭐⭐⭐ High | ⏳ Pending | #17 | — |
+| 31 | CurrencySelectorButton | ⭐⭐⭐ Medium | ✅ Complete | #14 | 478 |
+| 32 | DietaryPreferencesFilterWidgets | ⭐⭐⭐ Medium | ⏳ Pending | #15 | — |
+| 33 | SearchResultsListView | ⭐⭐⭐⭐ High | ⏳ Pending | #15 | — |
+| 34 | SelectedFiltersBtns | ⭐⭐⭐⭐ High | ⏳ Pending | #15 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -678,6 +678,34 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - All design tokens applied (AppColors, AppSpacing, AppTypography, AppRadius)
 - Translation keys: All from kStaticTranslations map (info_header_*, price_*, modifier_*, menu_*, lang_name_*)
 - flutter analyze: 2 info-level warnings (acceptable - correct context.mounted usage after async)
+
+**Files Changed Session #14:**
+- `journey_mate/lib/widgets/shared/erroneous_info_form_widget.dart` (created, 510 lines)
+- `journey_mate/lib/widgets/shared/currency_selector_button.dart` (created, 478 lines)
+- `journey_mate/lib/services/api_service.dart` (added Endpoint #13: postErroneousInfo)
+- `journey_mate/lib/services/translation_service.dart` (24 keys added: 13 ErroneousInfo + 11 Currency)
+- `_reference/NEW_TRANSLATION_KEYS.sql` (168 SQL INSERT statements appended: 91 ErroneousInfo + 77 Currency)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
+**Decisions Made Session #14:**
+- BusinessHoursWidget deferred (no FlutterFlow source or MASTER_README exists; OpeningHoursAndWeekdays already complete from Session #6)
+- Batch #13 completed with 2 widgets instead of 3
+- ErroneousInfoFormWidget uses ConsumerStatefulWidget with local form state (no provider for form validation)
+- ErroneousInfoFormWidget implements 3-state UI pattern (default/success/error) matching MissingLocationFormWidget
+- Form validation: minimum 10 characters, real-time error clearing on user input
+- API Endpoint #13 added to api_service.dart: `POST /erroneousinfo`
+- CurrencySelectorButton uses ConsumerStatefulWidget with local overlay state (GlobalKey + RenderBox positioning)
+- CurrencySelectorButton supports 11 currencies: DKK, USD, GBP, EUR, SEK, NOK, PLN, JPY, CNY, UAH, CHF
+- Exchange rates fetched from BuildShip API `/exchangerate?to_currency={code}` (DKK is base 1:1)
+- Language change detection implemented with smart fallback logic (preserves user currency choice across language switches)
+- Overlay positioning preserved exactly from FlutterFlow (4px gap between button and overlay)
+- Removed all markUserEngaged() calls (ActivityScope handles engagement automatically)
+- Used context.mounted checks after all async operations (Flutter 3.x pattern)
+- Fixed analytics catchError to return ApiCallResponse.failure() (required by return type)
+- Used .withValues(alpha:) instead of deprecated .withOpacity() (Flutter 3.x pattern)
+- All design tokens applied (AppColors, AppSpacing, AppRadius, AppTypography)
+- Translation keys: 13 ErroneousInfo keys + 11 Currency keys = 24 keys × 7 languages = 168 SQL statements
+- flutter analyze: 0 issues in both new widgets (2 pre-existing issues in item_bottom_sheet.dart from Session #13)
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
