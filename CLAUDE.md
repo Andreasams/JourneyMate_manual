@@ -334,6 +334,8 @@ These decisions have been explicitly confirmed and must not be re-debated:
 
 - **`pages/05_contact_details/` has been renamed to `pages/05_business_information/`** via `git mv`. Update any cross-references that still use the old path. BUNDLE.md filename inside the folder is still `BUNDLE_information_page.md`.
 
+- **Translation migration path: 100% Supabase end goal** — Phase 6A creates temporary hardcoded `kStaticTranslations` map (191 FlutterFlow keys) as scaffolding for Phase 7 page implementation. Phase 6B appends new keys to both hardcoded map AND SQL file. Phase 8 (end of project) runs SQL to insert ALL keys into Supabase `ui_translations`, then app switches to `td()` for everything and deletes hardcoded map. **Ultimate goal: 0% hardcoded translations, 100% dynamic from Supabase BuildShip API.** Single source of truth for all languages. The hardcoded map in `translation_service.dart` is TEMPORARY and will be retired after Phase 7 SQL migration completes.
+
 ---
 
 ## What not to do
