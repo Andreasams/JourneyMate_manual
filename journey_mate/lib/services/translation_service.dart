@@ -2044,6 +2044,25 @@ const Map<String, Map<String, String>> kStaticTranslations = {
     'no': 'Noe gikk galt. Vennligst prøv igjen.',
     'sv': 'Något gick fel. Försök igen.',
   },
+  // Batch 2: ExpandableTextWidget (2 keys)
+  'expandable_show_more': {
+    'en': 'Show more',
+    'da': 'Vis mere',
+    'de': 'Mehr anzeigen',
+    'fr': 'Afficher plus',
+    'it': 'Mostra di più',
+    'no': 'Vis mer',
+    'sv': 'Visa mer',
+  },
+  'expandable_show_less': {
+    'en': 'Show less',
+    'da': 'Vis mindre',
+    'de': 'Weniger anzeigen',
+    'fr': 'Afficher moins',
+    'it': 'Mostra meno',
+    'no': 'Vis mindre',
+    'sv': 'Visa mindre',
+  },
 };
 
 // ============================================================

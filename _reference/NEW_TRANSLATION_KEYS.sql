@@ -187,3 +187,31 @@ VALUES
 -- END OF MissingLocationFormWidget KEYS
 -- Total: 126 INSERT statements (18 keys × 7 languages)
 -- ============================================================
+
+-- ============================================================
+-- ExpandableTextWidget Keys (2 keys × 7 languages = 14 rows)
+-- Added: 2026-02-21 (Session #3 - Phase 7 Batch 2)
+-- ============================================================
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  ('expandable_show_more', 'en', 'Show more', 'ui'),
+  ('expandable_show_more', 'da', 'Vis mere', 'ui'),
+  ('expandable_show_more', 'de', 'Mehr anzeigen', 'ui'),
+  ('expandable_show_more', 'fr', 'Afficher plus', 'ui'),
+  ('expandable_show_more', 'it', 'Mostra di più', 'ui'),
+  ('expandable_show_more', 'no', 'Vis mer', 'ui'),
+  ('expandable_show_more', 'sv', 'Visa mer', 'ui'),
+
+  ('expandable_show_less', 'en', 'Show less', 'ui'),
+  ('expandable_show_less', 'da', 'Vis mindre', 'ui'),
+  ('expandable_show_less', 'de', 'Weniger anzeigen', 'ui'),
+  ('expandable_show_less', 'fr', 'Afficher moins', 'ui'),
+  ('expandable_show_less', 'it', 'Mostra meno', 'ui'),
+  ('expandable_show_less', 'no', 'Vis mindre', 'ui'),
+  ('expandable_show_less', 'sv', 'Visa mindre', 'ui');
+
+-- ============================================================
+-- END OF ExpandableTextWidget KEYS
+-- Total: 14 INSERT statements (2 keys × 7 languages)
+-- ============================================================

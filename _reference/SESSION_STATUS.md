@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (3/29 complete)
-**Last completed task:** FilterDescriptionSheet + MissingLocationFormWidget complete (2026-02-21 Session #2)
-**Next task:** Batch 2 — BusinessFeatureButtons + MenuCategoriesRows + ExpandableTextWidget (3 widgets)
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (5/29 complete)
+**Last completed task:** Batch 2 — BusinessFeatureButtons + ExpandableTextWidget complete (2026-02-21 Session #3)
+**Next task:** Batch 3 (Solo) — MenuCategoriesRows (⭐⭐⭐⭐⭐ EXTREME complexity, 1,250 lines, BLoC→Riverpod migration)
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
@@ -347,7 +347,9 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 1 | PaymentOptionsWidget | ⭐ Very Low | ✅ Complete | #1 | 567 |
 | 2 | FilterDescriptionSheet | ⭐⭐ Low | ✅ Complete | #2 | 165 |
 | 3 | MissingLocationFormWidget | ⭐⭐ Low | ✅ Complete | #2 | 487 |
-| 4-29 | [Remaining 26 widgets] | Various | ⏳ Pending | #3-11 | — |
+| 4 | ExpandableTextWidget | ⭐⭐ Low | ✅ Complete | #3 | 240 |
+| 5 | BusinessFeatureButtons | ⭐⭐⭐ Medium-High | ✅ Complete | #3 | 849 |
+| 6-29 | [Remaining 24 widgets] | Various | ⏳ Pending | #4-11 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -389,14 +391,22 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - `_reference/NEW_TRANSLATION_KEYS.sql` (created, 126 SQL INSERT statements)
 - `_reference/SESSION_STATUS.md` (this file updated)
 
+**Files Changed Session #3:**
+- `journey_mate/lib/widgets/shared/expandable_text_widget.dart` (created, 240 lines)
+- `journey_mate/lib/widgets/shared/business_feature_buttons.dart` (created, 849 lines)
+- `journey_mate/lib/services/translation_service.dart` (2 keys added)
+- `_reference/NEW_TRANSLATION_KEYS.sql` (14 SQL INSERT statements appended)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
 2. Read `DESIGN_SYSTEM_flutter.md` for design tokens
-3. Implement Batch 2: BusinessFeatureButtons + MenuCategoriesRows + ExpandableTextWidget (3 widgets)
-4. Run `flutter analyze` — MUST return 0 issues
-5. Append lessons learned to PHASE7_LESSONS_LEARNED.md (if relevant)
-6. Update SESSION_STATUS.md
-7. Commit
+3. Dedicate FULL session to MenuCategoriesRows (⭐⭐⭐⭐⭐ EXTREME: 1,250 lines, BLoC→Riverpod migration)
+4. DO NOT batch MenuCategoriesRows with other widgets (solo session required)
+5. Run `flutter analyze` — MUST return 0 issues
+6. Append lessons learned to PHASE7_LESSONS_LEARNED.md (if relevant)
+7. Update SESSION_STATUS.md
+8. Commit
 
 ---
 
