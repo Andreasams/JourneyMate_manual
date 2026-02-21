@@ -211,7 +211,115 @@ Lessons learned document HOW to work within the system, not how to work around i
 
 ---
 
-### Session #2: [Widget/Page Name] (YYYY-MM-DD)
+### Session #2: FilterDescriptionSheet + MissingLocationFormWidget (2026-02-21)
+
+**Widgets:** FilterDescriptionSheet (165 lines) + MissingLocationFormWidget (487 lines)
+**Completed By:** Claude Code Session #2
+**Duration:** ~3 hours
+**Status:** ✅ Complete, 0 issues
+
+#### What Went Well
+
+1. **FilterDescriptionSheet was straightforward:**
+   - Simple StatefulWidget (no Riverpod needed) - same pattern as Session #1
+   - Clear FlutterFlow source with minimal FlutterFlow-specific code
+   - Design token translation was 1:1 (no ambiguous colors)
+
+2. **MissingLocationFormWidget followed established patterns:**
+   - ConsumerStatefulWidget for API access
+   - 3-state rendering pattern (default/success/error) was clear
+   - Validation logic translated cleanly from FlutterFlow
+
+3. **Translation key management worked well:**
+   - Added 18 keys to kStaticTranslations with all 7 languages
+   - Generated 126 SQL INSERT statements automatically
+   - Descriptive key names make keys self-documenting
+
+#### Challenges & Solutions
+
+1. **Challenge:** Used non-existent `currentLanguageProvider`
+   - FlutterFlow passes `currentLanguage` as prop; assumed Riverpod had equivalent provider
+   - PROVIDERS_REFERENCE.md has no language provider
+   - **Solution:** Use `Localizations.localeOf(context).languageCode` (same pattern as `ts()` helper)
+   - **Pattern for future:** Any widget needing language code for API calls should use locale from context
+
+2. **Challenge:** `.withOpacity()` deprecation warnings in Flutter 3.x
+   - FlutterFlow code uses `.withOpacity(0.5)` for alpha transparency
+   - Flutter 3.x deprecated this in favor of `.withValues(alpha: 0.5)`
+   - **Solution:** Search-replace all `.withOpacity(` → `.withValues(alpha:`
+   - **Pattern for future:** Always use `.withValues(alpha:)` for color transparency in Flutter 3.x
+
+3. **Challenge:** FlutterFlow colors don't match design system
+   - FlutterFlow: #E9874B (button), #249689 (success)
+   - Design system: #e8751a (AppColors.accent), #1a9456 (AppColors.success)
+   - **Solution:** Use design system colors + add code comment explaining deviation
+   - **Pattern for future:** Design system compliance > pixel-perfect FlutterFlow match (already established in Session #1)
+
+#### Translation Patterns Discovered
+
+1. **No language provider exists** — use `Localizations.localeOf(context).languageCode` for API calls
+2. **Translation helper for ConsumerWidgets:**
+   ```dart
+   // Import translation_service.dart
+   import '../../services/translation_service.dart';
+
+   // Use ts(context, key) for static keys
+   Text(ts(context, 'missing_location_title_main'))
+   ```
+
+3. **Phase 6B key naming:**
+   - Descriptive snake_case: `'missing_location_title_business_name'`
+   - Prefixed by widget/page: `'missing_location_*'`
+   - Grouped logically: titles, subtitles, hints, errors, status
+
+#### Key Takeaways for Next Sessions
+
+1. **Language code access pattern:**
+   ```dart
+   final locale = Localizations.localeOf(context);
+   final languageCode = locale.languageCode;
+   ```
+   Do NOT assume `currentLanguageProvider` exists.
+
+2. **Flutter 3.x color transparency:**
+   Always use `.withValues(alpha: 0.5)`, NEVER `.withOpacity(0.5)`.
+
+3. **Form validation pattern:**
+   - Validate all fields in one method that returns bool
+   - Clear all errors first, then set new errors
+   - Real-time error clearing: onChanged clears that field's error
+   - Example in MissingLocationFormWidget is reusable
+
+4. **3-state UI pattern (default/success/error):**
+   ```dart
+   Widget _buildSubmitArea() {
+     if (_isSubmitted) return _buildSuccessMessage();
+     if (_submissionError != null) return _buildErrorMessage();
+     return _buildSubmitButton();
+   }
+   ```
+
+5. **Design system color decisions are final:**
+   - Document deviation in code comment
+   - Do NOT try to match FlutterFlow colors exactly
+   - AppColors.* always takes precedence
+
+6. **StatefulWidget vs ConsumerStatefulWidget decision:**
+   - No provider reads? → StatefulWidget (FilterDescriptionSheet)
+   - Needs provider access? → ConsumerStatefulWidget (MissingLocationFormWidget)
+   - Don't force ConsumerWidget if not needed
+
+#### Files Created/Modified
+
+- ✅ Created: `journey_mate/lib/widgets/shared/filter_description_sheet.dart` (165 lines)
+- ✅ Created: `journey_mate/lib/widgets/shared/missing_location_form_widget.dart` (487 lines)
+- ✅ Updated: `journey_mate/lib/services/translation_service.dart` (18 keys added)
+- ✅ Created: `_reference/NEW_TRANSLATION_KEYS.sql` (126 SQL statements)
+- ✅ Updated: `_reference/SESSION_STATUS.md`
+
+---
+
+### Session #3: [Widget/Page Name] (YYYY-MM-DD)
 
 **Widget/Page:**
 **Completed By:**
