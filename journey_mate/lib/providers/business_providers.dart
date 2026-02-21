@@ -78,4 +78,36 @@ class BusinessNotifier extends Notifier<BusinessState> {
     }
     return null;
   }
+
+  // ============================================================
+  // DIETARY FILTER MANAGEMENT (for UnifiedFiltersWidget)
+  // ============================================================
+
+  /// Set selected dietary restrictions (multi-select)
+  void setDietaryRestrictions(List<int> ids) {
+    state = state.copyWith(selectedDietaryRestrictionIds: ids);
+  }
+
+  /// Set selected dietary preference (single-select, nullable)
+  void setDietaryPreference(int? id) {
+    if (id == null) {
+      state = state.copyWithNullable(clearPreference: true);
+    } else {
+      state = state.copyWith(selectedDietaryPreferenceId: id);
+    }
+  }
+
+  /// Set excluded allergen IDs (multi-exclude)
+  void setExcludedAllergies(List<int> ids) {
+    state = state.copyWith(excludedAllergyIds: ids);
+  }
+
+  /// Clear all dietary filters (restrictions + preference + allergens)
+  void clearDietaryFilters() {
+    state = state.copyWithNullable(
+      selectedDietaryRestrictionIds: [],
+      excludedAllergyIds: [],
+      clearPreference: true,
+    );
+  }
 }

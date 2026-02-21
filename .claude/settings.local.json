@@ -9,7 +9,15 @@
       "Bash(ls:*)",
       "Bash(git rm:*)",
       "Bash(flutter test:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(test:*)",
+      "Bash(done)",
+      "Bash(\"C:\\\\Users\\\\Rikke\\\\Documents\\\\JourneyMate-Organized\\\\_reference\\\\NEW_TRANSLATION_KEYS.sql\":*)",
+      "mcp__plugin_github_github__get_file_contents",
+      "Bash(_reference/PHASE7_LESSONS_LEARNED.md:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(xargs:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

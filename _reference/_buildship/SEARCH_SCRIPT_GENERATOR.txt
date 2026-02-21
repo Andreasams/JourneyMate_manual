@@ -1,3 +1,6 @@
+URL: https://wvb8ww.buildship.run/search
+---
+
 /**
  * =============================================================================
  * OPTIMIZED TYPESENSE SEARCH NODE — v2

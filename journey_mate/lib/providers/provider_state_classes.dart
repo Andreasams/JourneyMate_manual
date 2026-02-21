@@ -282,6 +282,11 @@ class BusinessState {
   final List<int> availableDietaryPreferences; // Filter IDs
   final List<int> availableDietaryRestrictions; // Filter IDs
 
+  // Dietary filter selections (for UnifiedFiltersWidget)
+  final List<int> selectedDietaryRestrictionIds; // Multi-select restrictions
+  final int? selectedDietaryPreferenceId; // Single-select preference
+  final List<int> excludedAllergyIds; // Multi-exclude allergens
+
   const BusinessState({
     required this.currentBusiness,
     required this.menuItems,
@@ -289,6 +294,9 @@ class BusinessState {
     required this.openingHours,
     required this.availableDietaryPreferences,
     required this.availableDietaryRestrictions,
+    required this.selectedDietaryRestrictionIds,
+    this.selectedDietaryPreferenceId,
+    required this.excludedAllergyIds,
   });
 
   factory BusinessState.initial() {
@@ -299,6 +307,9 @@ class BusinessState {
       openingHours: null,
       availableDietaryPreferences: [],
       availableDietaryRestrictions: [],
+      selectedDietaryRestrictionIds: [],
+      selectedDietaryPreferenceId: null,
+      excludedAllergyIds: [],
     );
   }
 
@@ -309,6 +320,9 @@ class BusinessState {
     dynamic openingHours,
     List<int>? availableDietaryPreferences,
     List<int>? availableDietaryRestrictions,
+    List<int>? selectedDietaryRestrictionIds,
+    int? selectedDietaryPreferenceId,
+    List<int>? excludedAllergyIds,
   }) {
     return BusinessState(
       currentBusiness: currentBusiness ?? this.currentBusiness,
@@ -317,6 +331,35 @@ class BusinessState {
       openingHours: openingHours ?? this.openingHours,
       availableDietaryPreferences: availableDietaryPreferences ?? this.availableDietaryPreferences,
       availableDietaryRestrictions: availableDietaryRestrictions ?? this.availableDietaryRestrictions,
+      selectedDietaryRestrictionIds: selectedDietaryRestrictionIds ?? this.selectedDietaryRestrictionIds,
+      selectedDietaryPreferenceId: selectedDietaryPreferenceId ?? this.selectedDietaryPreferenceId,
+      excludedAllergyIds: excludedAllergyIds ?? this.excludedAllergyIds,
+    );
+  }
+
+  /// Special copyWith for nullable preference ID
+  BusinessState copyWithNullable({
+    dynamic currentBusiness,
+    dynamic menuItems,
+    List<int>? businessFilterIds,
+    dynamic openingHours,
+    List<int>? availableDietaryPreferences,
+    List<int>? availableDietaryRestrictions,
+    List<int>? selectedDietaryRestrictionIds,
+    int? selectedDietaryPreferenceId,
+    List<int>? excludedAllergyIds,
+    bool clearPreference = false,
+  }) {
+    return BusinessState(
+      currentBusiness: currentBusiness ?? this.currentBusiness,
+      menuItems: menuItems ?? this.menuItems,
+      businessFilterIds: businessFilterIds ?? this.businessFilterIds,
+      openingHours: openingHours ?? this.openingHours,
+      availableDietaryPreferences: availableDietaryPreferences ?? this.availableDietaryPreferences,
+      availableDietaryRestrictions: availableDietaryRestrictions ?? this.availableDietaryRestrictions,
+      selectedDietaryRestrictionIds: selectedDietaryRestrictionIds ?? this.selectedDietaryRestrictionIds,
+      selectedDietaryPreferenceId: clearPreference ? null : (selectedDietaryPreferenceId ?? this.selectedDietaryPreferenceId),
+      excludedAllergyIds: excludedAllergyIds ?? this.excludedAllergyIds,
     );
   }
 }

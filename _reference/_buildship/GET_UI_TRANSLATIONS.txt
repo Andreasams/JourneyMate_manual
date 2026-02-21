@@ -1,3 +1,6 @@
+URL: https://wvb8ww.buildship.run/languageText
+---
+
 /**
  * @node getLanguageText
  * @description Fetches all UI translations for a specified language from the

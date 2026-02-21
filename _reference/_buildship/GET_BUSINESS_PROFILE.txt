@@ -1,3 +1,6 @@
+URL: https://wvb8ww.buildship.run/getBusinessProfile
+---
+
 import { createClient } from '@supabase/supabase-js';
 
 // --- Type Definitions ---

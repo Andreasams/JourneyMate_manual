@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (24/29 complete)
-**Last completed task:** Batch 9 — RestaurantListShimmerWidget + AllergiesFilterWidget + DietaryRestrictionsFilterWidget complete (2026-02-21 Session #10)
-**Next task:** Batch 10 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (25/29 complete)
+**Last completed task:** Batch 10 — UnifiedFiltersWidget complete (2026-02-21 Session #11)
+**Next task:** Batch 11 (1 widget) — MenuDishesListView (SOLO SESSION - Extreme complexity, ~2,400 lines)
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
@@ -436,7 +436,8 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 22 | RestaurantListShimmerWidget | ⭐ Very Low | ✅ Complete | #10 | 222 |
 | 23 | AllergiesFilterWidget | ⭐⭐⭐ Medium | ✅ Complete | #10 | 296 |
 | 24 | DietaryRestrictionsFilterWidget | ⭐⭐⭐⭐⭐ High | ✅ Complete | #10 | 543 |
-| 25-29 | [Remaining 5 widgets] | Various | ⏳ Pending | #11-13 | — |
+| 25 | UnifiedFiltersWidget | ⭐⭐⭐⭐ High | ✅ Complete | #11 | 1,032 |
+| 26-29 | [Remaining 4 widgets] | Various | ⏳ Pending | #12-15 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -588,6 +589,27 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - Both filter widgets use identical visual styling (AppColors.accent/bgInput, AppRadius.button)
 - All 3 widgets use design tokens (no raw colors, no magic numbers)
 - Single underscore for unused separatorBuilder parameters (not double underscore)
+
+**Files Changed Session #11:**
+- `journey_mate/lib/providers/provider_state_classes.dart` (added 3 dietary filter fields to BusinessState + copyWithNullable)
+- `journey_mate/lib/providers/business_providers.dart` (added 4 dietary filter management methods)
+- `journey_mate/lib/widgets/shared/unified_filters_widget.dart` (created, 1,032 lines)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
+**Decisions Made Session #11:**
+- UnifiedFiltersWidget uses ConsumerStatefulWidget (needs businessProvider reads/writes)
+- Added 3 fields to BusinessState: selectedDietaryRestrictionIds (List<int>), selectedDietaryPreferenceId (int?), excludedAllergyIds (List<int>)
+- Added 4 methods to BusinessNotifier: setDietaryRestrictions(), setDietaryPreference(), setExcludedAllergies(), clearDietaryFilters()
+- BusinessState.copyWithNullable() method added for nullable preference ID handling
+- Preserved all 7 algorithms unchanged from FlutterFlow (dietary mappings, auto-selection, item count calculation)
+- Used ApiService.instance.postAnalytics() directly for fire-and-forget analytics (no await)
+- Removed markUserEngaged() calls (ActivityScope handles engagement automatically)
+- Used td(ref, key) for all translations (no new keys needed - all exist in Supabase)
+- Fixed catchError callback to return ApiCallResponse.failure() (required by return type)
+- Removed unused app_providers.dart import (translationsCacheProvider accessed via td() helper)
+- Used context.mounted instead of mounted after async operations (Flutter 3.x pattern)
+- All design tokens applied (AppColors, AppSpacing, AppRadius)
+- Widget-local state for scroll controllers and menu data cache (not Notifier classes)
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`

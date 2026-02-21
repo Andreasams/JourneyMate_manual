@@ -1,3 +1,7 @@
+URL: https://wvb8ww.buildship.run/filterDescriptions
+
+----
+
 import { createClient } from '@supabase/supabase-js';
 
 // --- Type Definitions ---
