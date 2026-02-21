@@ -3104,6 +3104,17 @@ const Map<String, Map<String, String>> kStaticTranslations = {
     'no': 'Denne preferansen er i konflikt med dine allergenuteslutninger',
     'sv': 'Denna preferens är i konflikt med dina allergiuteslutningar',
   },
+
+  // SelectedFiltersBtns (Phase 7 Batch 15)
+  'search_clear_all': {
+    'en': 'Clear all',
+    'da': 'Ryd alle',
+    'de': 'Alle löschen',
+    'fr': 'Tout effacer',
+    'it': 'Cancella tutto',
+    'no': 'Fjern alle',
+    'sv': 'Rensa alla',
+  },
 };
 
 // ============================================================

@@ -21,7 +21,10 @@
       "Bash(cat:*)",
       "Bash(/tmp/widget_audit_summary.md:*)",
       "Bash(git reset:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(/tmp/phase7_widget_session_template.txt:*)",
+      "Bash(\"_reference/NEW_TRANSLATION_KEYS.sql\":*)",
+      "Bash(_reference/NEW_TRANSLATION_KEYS.sql:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

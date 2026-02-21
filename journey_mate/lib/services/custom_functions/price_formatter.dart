@@ -111,3 +111,59 @@ String? convertAndFormatPrice(
   // Build output string based on symbol placement
   return isPrefix ? '$symbol$formattedPrice' : '$formattedPrice $symbol';
 }
+
+/// Converts and formats a price range with currency conversion.
+///
+/// Used to display price ranges (e.g., "100-200 kr.") in the user's preferred currency.
+///
+/// Args:
+///   minPrice: Minimum price in original currency
+///   maxPrice: Maximum price in original currency
+///   originalCurrencyCode: ISO 4217 currency code of the original price
+///   exchangeRate: Exchange rate from original to target currency
+///   targetCurrencyCode: ISO 4217 currency code for output
+///
+/// Returns:
+///   Formatted price range string (e.g., "100-200 kr.")
+String? convertAndFormatPriceRange(
+  double minPrice,
+  double maxPrice,
+  String originalCurrencyCode,
+  double exchangeRate,
+  String targetCurrencyCode,
+) {
+  final formattedMin = convertAndFormatPrice(
+    minPrice,
+    originalCurrencyCode,
+    exchangeRate,
+    targetCurrencyCode,
+  );
+
+  final formattedMax = convertAndFormatPrice(
+    maxPrice,
+    originalCurrencyCode,
+    exchangeRate,
+    targetCurrencyCode,
+  );
+
+  if (formattedMin == null || formattedMax == null) return null;
+
+  // Extract numeric parts (remove symbols and spaces)
+  final minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,]'), '');
+  final maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,]'), '');
+
+  // Extract symbol from either formatted price
+  final symbol = formattedMin.contains(RegExp(r'[^\d\s,.-]'))
+      ? formattedMin.replaceAll(RegExp(r'[\d\s,.-]'), '').trim()
+      : '';
+
+  // Check if symbol is prefix or suffix
+  final isPrefix = formattedMin.startsWith(symbol);
+
+  // Build range string
+  if (isPrefix) {
+    return '$symbol$minNumeric-$maxNumeric';
+  } else {
+    return '$minNumeric-$maxNumeric $symbol';
+  }
+}

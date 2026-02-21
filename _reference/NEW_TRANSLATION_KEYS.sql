@@ -1114,3 +1114,15 @@ VALUES
   ('filter_preference_allergen_conflict', 'no', 'Denne preferansen er i konflikt med dine allergenuteslutninger', 'ui'),
   ('filter_preference_allergen_conflict', 'sv', 'Denna preferens är i konflikt med dina allergiuteslutningar', 'ui')
 ;
+
+-- SelectedFiltersBtns (Phase 7 Batch 15)
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  ('search_clear_all', 'en', 'Clear all', 'ui'),
+  ('search_clear_all', 'da', 'Ryd alle', 'ui'),
+  ('search_clear_all', 'de', 'Alle löschen', 'ui'),
+  ('search_clear_all', 'fr', 'Tout effacer', 'ui'),
+  ('search_clear_all', 'it', 'Cancella tutto', 'ui'),
+  ('search_clear_all', 'no', 'Fjern alle', 'ui'),
+  ('search_clear_all', 'sv', 'Rensa alla', 'ui')
+;
