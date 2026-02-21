@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (26/34 complete)
-**Last completed task:** Batch 11 — MenuDishesListView complete (2026-02-21 Session #12 - SOLO SESSION)
-**Next task:** Batch 12+ — 8 remaining widgets: ItemBottomSheet, BusinessHoursWidget, ErroneousInfoFormWidget, MenuItemCard, CurrencySelectorButton, DietaryPreferencesFilterWidgets, SearchResultsListView, SelectedFiltersBtns
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (27/34 complete)
+**Last completed task:** Batch 12+ — ItemBottomSheet complete (2026-02-21 Session #13 - SOLO SESSION)
+**Next task:** Batch 13 — 7 remaining widgets: BusinessHoursWidget, ErroneousInfoFormWidget, MenuItemCard, CurrencySelectorButton, DietaryPreferencesFilterWidgets, SearchResultsListView, SelectedFiltersBtns
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Widget Count Correction (2026-02-21):**
@@ -446,7 +446,7 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 24 | DietaryRestrictionsFilterWidget | ⭐⭐⭐⭐⭐ High | ✅ Complete | #10 | 543 |
 | 25 | UnifiedFiltersWidget | ⭐⭐⭐⭐ High | ✅ Complete | #11 | 1,032 |
 | 26 | MenuDishesListView | ⭐⭐⭐⭐⭐ Extreme | ✅ Complete | #12 | 1,991 |
-| 27 | ItemBottomSheet (item_detail_sheet) | ⭐⭐⭐⭐⭐ Extreme | ⏳ Pending | #13 SOLO | — |
+| 27 | ItemBottomSheet (item_detail_sheet) | ⭐⭐⭐⭐⭐ Extreme | ✅ Complete | #13 | 1,780 |
 | 28 | BusinessHoursWidget (JSX - not in FlutterFlow) | ⭐⭐ Low | ⏳ Pending | #14 | — |
 | 29 | ErroneousInfoFormWidget (JSX modal) | ⭐⭐⭐ Medium | ⏳ Pending | #14 | — |
 | 30 | MenuItemCard (JSX concept) | ⭐⭐⭐ Medium | ⏳ Pending | #15 | — |
@@ -648,6 +648,36 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - All design tokens applied (AppColors, AppSpacing, AppTypography, AppRadius)
 - Translation keys: 5 keys total (menu_no_dishes, menu_multi_course_singular/plural, price_from, price_per_person) - all exist in Supabase
 - flutter analyze: 0 issues (fixed all 11 initial issues)
+
+**Files Changed Session #13:**
+- `journey_mate/lib/widgets/shared/item_bottom_sheet.dart` (created, 1,780 lines - SOLO SESSION)
+- `journey_mate/lib/services/custom_functions/allergen_formatter.dart` (created, 109 lines)
+- `journey_mate/lib/services/custom_functions/dietary_formatter.dart` (created, 99 lines)
+- `journey_mate/lib/services/custom_functions/currency_name_formatter.dart` (created, 72 lines)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
+**Decisions Made Session #13:**
+- ItemBottomSheet uses ConsumerStatefulWidget (needs localization/translations providers for language/currency switching)
+- 10 local state variables for self-contained language/currency switching (temporary overrides don't affect parent state)
+- Language data caching (_languageDataCache) enables instant re-switching without API calls
+- All 6 algorithms ported exactly from FlutterFlow (1,764 lines → 1,780 lines)
+  1. Safe data extraction helpers (_getStringValue, _getBoolValue, _getListValue, _getIntListValue)
+  2. Modifier group sorting (Variation → Option → Ingredient → Add-on) with constraint text generation
+  3. Price calculation with currency conversion (base price + "From" prefix + "per person" suffix)
+  4. Allergen display (convertAllergiesToString with isBeverage flag)
+  5. Dietary preferences display (convertDietaryPreferencesToString with isBeverage flag)
+  6. Dynamic menu options generation (12+ business rules for language/currency options)
+- Menu logic rules implemented exactly per FlutterFlow lines 402-508
+  - Language: English→Danish, Danish→English, Other→3 authentic languages
+  - Currency: USD/GBP→DKK, English+DKK→USD+GBP, Other→DKK
+  - Priority: Always offer return to app language if viewing different language
+- Removed all markUserEngaged() calls (ActivityScope handles engagement automatically)
+- Used context.mounted after all async operations (Flutter 3.x pattern)
+- Created 3 stub custom function files (allergen_formatter, dietary_formatter, currency_name_formatter)
+- Each custom function file includes getTranslations() helper for translation cache access
+- All design tokens applied (AppColors, AppSpacing, AppTypography, AppRadius)
+- Translation keys: All from kStaticTranslations map (info_header_*, price_*, modifier_*, menu_*, lang_name_*)
+- flutter analyze: 2 info-level warnings (acceptable - correct context.mounted usage after async)
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
