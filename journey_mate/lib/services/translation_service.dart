@@ -17,6 +17,32 @@ import '../providers/app_providers.dart';
 //
 // ⚠️ TEMPORARY: This map will be migrated to Supabase in Phase 8
 // Ultimate goal: 100% dynamic translations from BuildShip API
+//
+// -------------------------------------------------------------
+// HOW TO ADD NEW KEYS (Phase 6B — during page implementation):
+// -------------------------------------------------------------
+// 1. Add new entry to this map with descriptive name:
+//    'key_search_empty_state_title': {
+//      'en': 'No results found',
+//      'da': 'Ingen resultater fundet',
+//      'de': 'Keine Ergebnisse gefunden',
+//      'fr': 'Aucun résultat trouvé',
+//      'it': 'Nessun risultato trovato',
+//      'no': 'Ingen resultater funnet',
+//      'sv': 'Inga resultat hittades',
+//    },
+//
+// 2. After adding all keys for a page, generate SQL:
+//    INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+//    VALUES
+//      ('key_search_empty_state_title', 'en', 'No results found', 'ui'),
+//      ('key_search_empty_state_title', 'da', 'Ingen resultater fundet', 'ui'),
+//      ... (all 7 languages)
+//    ;
+//
+// 3. Append SQL to: _reference/NEW_TRANSLATION_KEYS.sql
+//
+// 4. In Phase 8: Run SQL file → switch all ts() to td() → delete this map
 // ============================================================
 
 const Map<String, Map<String, String>> kStaticTranslations = {

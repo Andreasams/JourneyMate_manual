@@ -6,10 +6,10 @@
 
 ## Current Status
 
-**Phase:** Phase 6 — Translation infrastructure
-**Last completed task:** Phase 5 complete — All 8 Riverpod providers implemented with 70 passing tests (2026-02-21)
-**Next task:** Phase 6 — Translation infrastructure (td/ts helpers, full translation key set)
-**Blocked on:** Nothing — Phase 6 can start immediately.
+**Phase:** Phase 6B → Phase 7 — Per-page translation additions + page implementation
+**Last completed task:** Phase 6A complete — Translation service with 191 static keys (2026-02-21)
+**Next task:** Phase 7 — Page implementation (start with Welcome/Onboarding page)
+**Blocked on:** Nothing — Phase 7 can start immediately.
 
 **Execution order change:** Phase 4.5 (Codemagic CI/CD) is POSTPONED until after Phase 5 (not skipped). Execution order is now: Phase 4 → Phase 5 → Phase 4.5 → Phase 6 → Phase 7 → Phase 8.
 
@@ -28,9 +28,10 @@
 | Phase 4 | ✅ Complete | Flutter foundation (theme, router, API service, translation, analytics) |
 | Phase 4.5 | 🔄 Postponed | Codemagic CI/CD (postponed until after Phase 5) |
 | Phase 5 | ✅ Complete | All 8 Riverpod providers + 70 tests + PROVIDERS_REFERENCE.md |
-| Phase 6 | ⏳ Not started | Translation infrastructure |
+| Phase 6A | ✅ Complete | Translation service with 191 static keys from FlutterFlow |
+| Phase 6B | 🔄 Ongoing | Per-page translation key additions (runs parallel with Phase 7) |
 | Phase 7 | ⏳ Not started | Page implementation (12 pages) |
-| Phase 8 | ⏳ Not started | Integration polish |
+| Phase 8 | ⏳ Not started | Integration polish + 100% dynamic translation migration |
 
 ---
 
@@ -293,9 +294,114 @@ Ignore any notes from other sessions that said "system fonts" — those applied 
 
 ---
 
+## Phase 6A: COMPLETE ✅ (2026-02-21)
+
+**Deliverable:** Complete translation infrastructure with all 191 FlutterFlow keys
+
+**What was produced:**
+- ✅ `journey_mate/lib/services/translation_service.dart` (~1,900 lines)
+  - All 191 static translation keys ported from FlutterFlow
+  - 7 languages: en, da, de, fr, it, no, sv
+  - `ts(context, key)` helper using BuildContext for automatic locale detection
+  - `td(ref, key)` helper reading from translationsCacheProvider
+  - Debug logging for missing keys in both helpers
+- ✅ `journey_mate/lib/main.dart` updated
+  - Loads translations in user's stored language (or defaults to 'en')
+  - Reads from SharedPreferences 'user_language_code'
+- ✅ `CLAUDE.md` decision #28
+  - Documents 100% Supabase end goal
+  - Marks hardcoded map as TEMPORARY
+- ✅ flutter analyze: 0 issues
+- ✅ Key count verified: 191 keys match FlutterFlow source
+
+**Translation API:**
+- **Static keys** (191 FlutterFlow keys): `ts(context, 'xn0d16r3')` → "Search"
+- **Dynamic keys** (294 Supabase keys): `td(ref, 'key_search')` → from BuildShip API
+
+**⚠️ TEMPORARY Architecture:**
+The `kStaticTranslations` map in translation_service.dart is scaffolding for Phase 7.
+Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip API.
+
+---
+
+## Phase 6B/7/8 Workflow — Translation Key Management
+
+### Phase 6B (ongoing during Phase 7 page implementation)
+
+**For each page implemented in Phase 7:**
+
+1. **While building the page:**
+   - Use `ts(context, key)` for FlutterFlow keys already in `kStaticTranslations`
+   - Use `td(ref, key)` for dynamic keys already in Supabase (allergens, dietary, etc.)
+   - Any NEW hardcoded UI text → add temporary placeholder in code
+
+2. **After page is complete:**
+   - Identify all new hardcoded strings that need translation
+   - Add new keys to `kStaticTranslations` map with descriptive names:
+     - FlutterFlow keys: `'05aeogb1'` (8-char format)
+     - New v2 keys: `'key_search_empty_state_title'` (descriptive snake_case)
+   - Add all 7 language translations for each new key
+   - Generate SQL INSERT statements for new keys
+   - Append SQL to `_reference/NEW_TRANSLATION_KEYS.sql`
+
+3. **Key naming convention:**
+   ```dart
+   // FlutterFlow keys (already in map)
+   'xn0d16r3': { 'en': 'Search', 'da': 'Søg', ... }
+
+   // New Phase 6B keys (add as needed)
+   'key_search_empty_state_title': {
+     'en': 'No results found',
+     'da': 'Ingen resultater fundet',
+     ...
+   }
+   ```
+
+4. **SQL format for NEW_TRANSLATION_KEYS.sql:**
+   ```sql
+   -- Page: Search (Phase 7.2)
+   INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+   VALUES
+     ('key_search_empty_state_title', 'en', 'No results found', 'ui'),
+     ('key_search_empty_state_title', 'da', 'Ingen resultater fundet', 'ui'),
+     -- ... all 7 languages
+   ;
+   ```
+
+### Phase 8 (after all pages complete)
+
+**Final migration to 100% dynamic translations:**
+
+1. **Verify Supabase has all keys:**
+   - Run `NEW_TRANSLATION_KEYS.sql` to insert all Phase 6B keys into `ui_translations`
+   - Verify count: 191 FlutterFlow + Phase 6B new keys = total expected
+   - Check: `SELECT COUNT(*) FROM ui_translations WHERE translation_key LIKE 'key_%'`
+
+2. **Switch app to 100% dynamic:**
+   - Replace all `ts(context, key)` calls with `td(ref, key)` across all pages
+   - Verify `translationsCacheProvider` loads all keys on startup
+   - Test app in English and Danish to confirm all text appears
+
+3. **Remove hardcoded translations:**
+   - Delete `kStaticTranslations` map from `translation_service.dart`
+   - Delete or deprecate `ts()` helper (or make it alias to `td()`)
+   - Update file header to remove TEMPORARY warnings
+   - Run `flutter analyze` — must pass
+
+4. **Verify end state:**
+   - ✅ 100% of translations in Supabase `ui_translations` table
+   - ✅ 0% hardcoded text in app
+   - ✅ Single translation API: `td(ref, key)` for everything
+   - ✅ `kStaticTranslations` deleted
+   - ✅ All languages load from BuildShip API (`https://wvb8ww.buildship.run/languageText`)
+
+**Result:** Pure, fully dynamic translation system with single source of truth in Supabase.
+
+---
+
 ## Open questions for user
 
-None. Phase 5 complete. Phase 6 can begin immediately.
+None. Phase 6A complete. Phase 7 can begin immediately with Welcome/Onboarding page.
 
 ---
 
