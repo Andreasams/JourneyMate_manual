@@ -11,6 +11,8 @@
 **Next task:** Phase 5 — Riverpod providers (implement all state management from MASTER_STATE_MAP.md)
 **Blocked on:** Nothing — Phase 5 can start immediately.
 
+**Execution order change:** Phase 4.5 (Codemagic CI/CD) is POSTPONED until after Phase 5 (not skipped). Execution order is now: Phase 4 → Phase 5 → Phase 4.5 → Phase 6 → Phase 7 → Phase 8.
+
 ---
 
 ## Phases complete
@@ -24,8 +26,8 @@
 | Phase 3 | ✅ Complete | `_reference/BUILDSHIP_REQUIREMENTS.md` — 15 sections, all 12 endpoints + all GAP_ANALYSIS flags |
 | Phase 3.5 | ✅ Complete | All BuildShip/Supabase changes executed and verified |
 | Phase 4 | ✅ Complete | Flutter foundation (theme, router, API service, translation, analytics) |
-| Phase 4.5 | ⏳ Not started | Codemagic CI/CD |
-| Phase 5 | ⏳ Not started | Riverpod providers |
+| Phase 4.5 | 🔄 Postponed | Codemagic CI/CD (postponed until after Phase 5) |
+| Phase 5 | ⏳ In progress | Riverpod providers |
 | Phase 6 | ⏳ Not started | Translation infrastructure |
 | Phase 7 | ⏳ Not started | Page implementation (12 pages) |
 | Phase 8 | ⏳ Not started | Integration polish |
