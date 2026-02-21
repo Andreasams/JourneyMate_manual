@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (25/29 complete)
-**Last completed task:** Batch 10 — UnifiedFiltersWidget complete (2026-02-21 Session #11)
-**Next task:** Batch 11 (1 widget) — MenuDishesListView (SOLO SESSION - Extreme complexity, ~2,400 lines)
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (26/29 complete)
+**Last completed task:** Batch 11 — MenuDishesListView complete (2026-02-21 Session #12 - SOLO SESSION)
+**Next task:** Batch 12 (3 widgets) — ItemBottomSheet, BusinessHoursWidget, DietaryBadgesRow
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
@@ -437,7 +437,8 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 23 | AllergiesFilterWidget | ⭐⭐⭐ Medium | ✅ Complete | #10 | 296 |
 | 24 | DietaryRestrictionsFilterWidget | ⭐⭐⭐⭐⭐ High | ✅ Complete | #10 | 543 |
 | 25 | UnifiedFiltersWidget | ⭐⭐⭐⭐ High | ✅ Complete | #11 | 1,032 |
-| 26-29 | [Remaining 4 widgets] | Various | ⏳ Pending | #12-15 | — |
+| 26 | MenuDishesListView | ⭐⭐⭐⭐⭐ Extreme | ✅ Complete | #12 | 1,991 |
+| 27-29 | [Remaining 3 widgets] | Various | ⏳ Pending | #13-14 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -610,6 +611,28 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - Used context.mounted instead of mounted after async operations (Flutter 3.x pattern)
 - All design tokens applied (AppColors, AppSpacing, AppRadius)
 - Widget-local state for scroll controllers and menu data cache (not Notifier classes)
+
+**Files Changed Session #12:**
+- `journey_mate/lib/widgets/shared/menu_dishes_list_view.dart` (created, 1,991 lines - SOLO SESSION)
+- `journey_mate/lib/services/api_service.dart` (imported for analytics)
+- `journey_mate/lib/services/custom_functions/price_formatter.dart` (imported for price conversion)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
+**Decisions Made Session #12:**
+- MenuDishesListView uses ConsumerStatefulWidget (needs provider reads for menu data, filters, translations)
+- Preserved all 6 algorithms exactly from FlutterFlow (data processing, filtering, scroll tracking, pricing, index mapping, analytics)
+- Critical allergen override exception implemented: items with can-be-made types bypass allergen filtering
+- Three-stage dietary filter: restrictions (AND), preferences (OR), allergens (NOT) with override
+- Two-zone scroll detection: top zone (-0.1 to 0.3) prioritized over bottom zone (0.7 to 1.1)
+- Variation pricing calculates effective price and "From" prefix logic correctly
+- All 14 state variables kept as widget-local State variables (NOT Notifier classes) per Session #4 lesson
+- Removed all 4 markUserEngaged() calls (ActivityScope handles engagement automatically)
+- Fixed analytics tracking: replaced AnalyticsService.trackEvent() with ApiService.instance.postAnalytics()
+- Converted _MenuItem from StatelessWidget to ConsumerWidget for td(ref, key) translation access
+- Used convertAndFormatPrice() from price_formatter.dart for currency conversion
+- All design tokens applied (AppColors, AppSpacing, AppTypography, AppRadius)
+- Translation keys: 5 keys total (menu_no_dishes, menu_multi_course_singular/plural, price_from, price_per_person) - all exist in Supabase
+- flutter analyze: 0 issues (fixed all 11 initial issues)
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
