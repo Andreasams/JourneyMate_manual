@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'services/analytics_service.dart';
 import 'providers/app_providers.dart';
+import 'providers/settings_providers.dart';
 import 'widgets/app_lifecycle_observer.dart';
 import 'widgets/activity_scope.dart';
 
@@ -16,9 +17,12 @@ void main() async {
   // ⚠️ CRITICAL: Create ProviderContainer BEFORE runApp
   final container = ProviderContainer();
 
-  // Initialize providers
+  // Initialize providers (order: Analytics → Accessibility → Localization → Translations → Location)
   await container.read(analyticsProvider.notifier).initialize();
   await container.read(accessibilityProvider.notifier).loadFromPreferences();
+  await container.read(localizationProvider.notifier).loadFromPreferences();
+  await container.read(translationsCacheProvider.notifier).loadTranslations('en');
+  await container.read(locationProvider.notifier).checkPermission();
 
   // Register lifecycle observer
   final appObserver = AppLifecycleObserver(container: container);
