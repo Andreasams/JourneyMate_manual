@@ -89,6 +89,35 @@ Every Phase 7 session MUST follow this workflow:
 
 ---
 
+## 🚨 CRITICAL RULE: Lessons Learned MUST NOT Contradict Established Rules
+
+**Lessons learned are for sharing NEW patterns and solutions WITHIN the established constraints.**
+
+**❌ NEVER document lessons learned that:**
+- Contradict or weaken existing rules in CLAUDE.md
+- Suggest skipping steps from the standard workflow (e.g., "skip reading BUNDLE.md, just read FlutterFlow")
+- Recommend breaking design system compliance (e.g., "raw hex colors are fine for simple widgets")
+- Propose shortcuts that bypass verification (e.g., "don't run flutter analyze for small changes")
+- Conflict with phase protocols or design documents
+
+**✅ VALID lessons learned examples:**
+- "MaterialStateProperty → WidgetStateProperty (Flutter 3.x)" — technical update within Flutter
+- "Use AppColors.accent even if FlutterFlow color doesn't match exactly" — reinforces design token rule
+- "SizedBox > Container for layout-only constraints" — best practice within Flutter analyzer guidance
+- "Complex filter logic requires reading both MASTER_README and FlutterFlow source" — additive workflow insight
+
+**⚠️ INVALID lessons learned examples:**
+- "Skip BUNDLE.md and just implement from FlutterFlow to save time" — breaks three-source rule
+- "Don't worry about design tokens for one-off widgets" — breaks design system compliance
+- "flutter analyze is too slow, just commit and fix later" — breaks verification requirement
+- "Hardcoded strings are fine, we'll translate later" — breaks translation protocol
+
+**If you think a rule should change, that's a user decision (update CLAUDE.md), NOT a lesson learned.**
+
+Lessons learned document HOW to work within the system, not how to work around it.
+
+---
+
 ### Session #1: PaymentOptionsWidget (2026-02-21)
 
 **Widget:** `payment_options_widget.dart` (⭐ Very Low complexity)
