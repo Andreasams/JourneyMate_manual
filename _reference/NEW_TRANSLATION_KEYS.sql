@@ -978,3 +978,114 @@ VALUES
 -- END OF ErroneousInfoFormWidget KEYS
 -- Total: 91 INSERT statements (13 keys × 7 languages)
 -- ============================================================
+
+-- ============================================================
+-- CurrencySelectorButton Keys (11 keys × 7 languages = 77 rows)
+-- Added: 2026-02-21 (Session #14 - Phase 7 Batch 13)
+-- ============================================================
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  -- DKK
+  ('currency_dkk_cap', 'en', 'Danish Krone', 'ui'),
+  ('currency_dkk_cap', 'da', 'Danske kroner', 'ui'),
+  ('currency_dkk_cap', 'de', 'Dänische Krone', 'ui'),
+  ('currency_dkk_cap', 'fr', 'Couronne danoise', 'ui'),
+  ('currency_dkk_cap', 'it', 'Corona danese', 'ui'),
+  ('currency_dkk_cap', 'no', 'Danske kroner', 'ui'),
+  ('currency_dkk_cap', 'sv', 'Danska kronor', 'ui'),
+
+  -- USD
+  ('currency_usd_cap', 'en', 'US Dollar', 'ui'),
+  ('currency_usd_cap', 'da', 'Amerikanske dollars', 'ui'),
+  ('currency_usd_cap', 'de', 'US-Dollar', 'ui'),
+  ('currency_usd_cap', 'fr', 'Dollar américain', 'ui'),
+  ('currency_usd_cap', 'it', 'Dollaro statunitense', 'ui'),
+  ('currency_usd_cap', 'no', 'Amerikanske dollar', 'ui'),
+  ('currency_usd_cap', 'sv', 'Amerikansk dollar', 'ui'),
+
+  -- GBP
+  ('currency_gbp_cap', 'en', 'British Pound', 'ui'),
+  ('currency_gbp_cap', 'da', 'Britiske pund', 'ui'),
+  ('currency_gbp_cap', 'de', 'Britisches Pfund', 'ui'),
+  ('currency_gbp_cap', 'fr', 'Livre sterling', 'ui'),
+  ('currency_gbp_cap', 'it', 'Sterlina britannica', 'ui'),
+  ('currency_gbp_cap', 'no', 'Britiske pund', 'ui'),
+  ('currency_gbp_cap', 'sv', 'Brittiskt pund', 'ui'),
+
+  -- EUR
+  ('currency_eur_cap', 'en', 'Euro', 'ui'),
+  ('currency_eur_cap', 'da', 'Euro', 'ui'),
+  ('currency_eur_cap', 'de', 'Euro', 'ui'),
+  ('currency_eur_cap', 'fr', 'Euro', 'ui'),
+  ('currency_eur_cap', 'it', 'Euro', 'ui'),
+  ('currency_eur_cap', 'no', 'Euro', 'ui'),
+  ('currency_eur_cap', 'sv', 'Euro', 'ui'),
+
+  -- SEK
+  ('currency_sek_cap', 'en', 'Swedish Krona', 'ui'),
+  ('currency_sek_cap', 'da', 'Svenske kroner', 'ui'),
+  ('currency_sek_cap', 'de', 'Schwedische Krone', 'ui'),
+  ('currency_sek_cap', 'fr', 'Couronne suédoise', 'ui'),
+  ('currency_sek_cap', 'it', 'Corona svedese', 'ui'),
+  ('currency_sek_cap', 'no', 'Svenske kroner', 'ui'),
+  ('currency_sek_cap', 'sv', 'Svenska kronor', 'ui'),
+
+  -- NOK
+  ('currency_nok_cap', 'en', 'Norwegian Krone', 'ui'),
+  ('currency_nok_cap', 'da', 'Norske kroner', 'ui'),
+  ('currency_nok_cap', 'de', 'Norwegische Krone', 'ui'),
+  ('currency_nok_cap', 'fr', 'Couronne norvégienne', 'ui'),
+  ('currency_nok_cap', 'it', 'Corona norvegese', 'ui'),
+  ('currency_nok_cap', 'no', 'Norske kroner', 'ui'),
+  ('currency_nok_cap', 'sv', 'Norska kronor', 'ui'),
+
+  -- PLN
+  ('currency_pln_cap', 'en', 'Polish Złoty', 'ui'),
+  ('currency_pln_cap', 'da', 'Polske złoty', 'ui'),
+  ('currency_pln_cap', 'de', 'Polnischer Złoty', 'ui'),
+  ('currency_pln_cap', 'fr', 'Złoty polonais', 'ui'),
+  ('currency_pln_cap', 'it', 'Złoty polacco', 'ui'),
+  ('currency_pln_cap', 'no', 'Polske złoty', 'ui'),
+  ('currency_pln_cap', 'sv', 'Polska złoty', 'ui'),
+
+  -- JPY
+  ('currency_jpy_cap', 'en', 'Japanese Yen', 'ui'),
+  ('currency_jpy_cap', 'da', 'Japanske yen', 'ui'),
+  ('currency_jpy_cap', 'de', 'Japanischer Yen', 'ui'),
+  ('currency_jpy_cap', 'fr', 'Yen japonais', 'ui'),
+  ('currency_jpy_cap', 'it', 'Yen giapponese', 'ui'),
+  ('currency_jpy_cap', 'no', 'Japanske yen', 'ui'),
+  ('currency_jpy_cap', 'sv', 'Japanska yen', 'ui'),
+
+  -- CNY
+  ('currency_cny_cap', 'en', 'Chinese Yuan', 'ui'),
+  ('currency_cny_cap', 'da', 'Kinesiske yuan', 'ui'),
+  ('currency_cny_cap', 'de', 'Chinesischer Yuan', 'ui'),
+  ('currency_cny_cap', 'fr', 'Yuan chinois', 'ui'),
+  ('currency_cny_cap', 'it', 'Yuan cinese', 'ui'),
+  ('currency_cny_cap', 'no', 'Kinesiske yuan', 'ui'),
+  ('currency_cny_cap', 'sv', 'Kinesiska yuan', 'ui'),
+
+  -- UAH
+  ('currency_uah_cap', 'en', 'Ukrainian Hryvnia', 'ui'),
+  ('currency_uah_cap', 'da', 'Ukrainske hryvnia', 'ui'),
+  ('currency_uah_cap', 'de', 'Ukrainische Hrywnja', 'ui'),
+  ('currency_uah_cap', 'fr', 'Hryvnia ukrainienne', 'ui'),
+  ('currency_uah_cap', 'it', 'Grivna ucraina', 'ui'),
+  ('currency_uah_cap', 'no', 'Ukrainske hryvnia', 'ui'),
+  ('currency_uah_cap', 'sv', 'Ukrainska hryvnia', 'ui'),
+
+  -- CHF
+  ('currency_chf_cap', 'en', 'Swiss Franc', 'ui'),
+  ('currency_chf_cap', 'da', 'Schweiziske franc', 'ui'),
+  ('currency_chf_cap', 'de', 'Schweizer Franken', 'ui'),
+  ('currency_chf_cap', 'fr', 'Franc suisse', 'ui'),
+  ('currency_chf_cap', 'it', 'Franco svizzero', 'ui'),
+  ('currency_chf_cap', 'no', 'Sveitsiske franc', 'ui'),
+  ('currency_chf_cap', 'sv', 'Schweiziska franc', 'ui');
+
+-- ============================================================
+-- END OF CurrencySelectorButton KEYS
+-- Total: 77 INSERT statements (11 keys × 7 languages)
+-- ============================================================
