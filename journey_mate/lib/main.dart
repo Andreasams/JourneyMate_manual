@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'services/analytics_service.dart';
 import 'providers/app_providers.dart';
@@ -21,7 +22,12 @@ void main() async {
   await container.read(analyticsProvider.notifier).initialize();
   await container.read(accessibilityProvider.notifier).loadFromPreferences();
   await container.read(localizationProvider.notifier).loadFromPreferences();
-  await container.read(translationsCacheProvider.notifier).loadTranslations('en');
+
+  // Load translations in user's stored language (or default to 'en')
+  final prefs = await SharedPreferences.getInstance();
+  final storedLanguage = prefs.getString('user_language_code') ?? 'en';
+  await container.read(translationsCacheProvider.notifier).loadTranslations(storedLanguage);
+
   await container.read(locationProvider.notifier).checkPermission();
 
   // Register lifecycle observer
