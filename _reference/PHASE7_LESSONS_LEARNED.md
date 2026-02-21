@@ -56,14 +56,36 @@ Every Phase 7 session MUST follow this workflow:
 
 ### 4. Session End
 - Mark task(s) as completed
-- **Append lessons learned to THIS FILE** (see template below)
+- **Append lessons learned to THIS FILE IF you discovered something useful** (see guidelines below)
 - Update SESSION_STATUS.md
 - Commit with descriptive message
 - Inform user of completion + next steps
 
 ---
 
-## Lessons Learned (Append After Each Session)
+## Lessons Learned (Append ONLY When Relevant)
+
+**⚠️ IMPORTANT: Do NOT append lessons learned for every session. Only add entries when you:**
+- Discovered a new pattern or approach that future sessions should follow
+- Encountered a challenge with a non-obvious solution
+- Found a pitfall that future sessions should avoid
+- Identified a design token mapping that wasn't straightforward
+- Made a decision that affects future widget/page implementations
+
+**✅ DO append lessons learned when:**
+- First widget in a complexity tier (sets pattern for similar widgets)
+- Complex widgets with non-trivial state management
+- Widgets that required reading multiple FlutterFlow files
+- Pages with new patterns not seen in previous pages
+- Any session where you learned something that would help the next session
+
+**❌ DO NOT append lessons learned when:**
+- Simple widget that followed existing patterns exactly
+- No issues encountered, no decisions made
+- Everything worked as expected with zero surprises
+- Widget/page was straightforward translation with no challenges
+
+**If no lessons learned:** Just update the widget progress table in SESSION_STATUS.md and commit. Empty sections are worse than no entry.
 
 ---
 

@@ -45,10 +45,13 @@
 |------|---------|
 | `CLAUDE.md` | All session rules, decisions, procedures |
 | `_reference/SESSION_STATUS.md` | This file — current project state |
+| `_reference/PHASE7_LESSONS_LEARNED.md` | **Phase 7 only:** Session protocol + lessons from all widget/page implementations |
+| `C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md` | **Phase 7 only:** Complete Phase 7 implementation plan (500+ lines) |
 | `_reference/BUILDSHIP_API_REFERENCE.md` | All 12 BuildShip endpoints — exact inputs/outputs |
 | `_reference/MASTER_STATE_MAP.md` | All FFAppState vars → Riverpod mapping |
 | `_reference/IMPLEMENTATION_PLAN.txt` | Full migration plan |
 | `DESIGN_SYSTEM_flutter.md` | All design tokens |
+| `_reference/PROVIDERS_REFERENCE.md` | All 8 Riverpod providers — usage patterns |
 
 ---
 
