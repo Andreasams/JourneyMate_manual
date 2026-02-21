@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (1/29 complete)
-**Last completed task:** PaymentOptionsWidget complete + PHASE7_LESSONS_LEARNED.md protocol created (2026-02-21)
-**Next task:** Batch 1 continuation — FilterDescriptionSheet + MissingLocationFormWidget (2 more widgets)
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (3/29 complete)
+**Last completed task:** FilterDescriptionSheet + MissingLocationFormWidget complete (2026-02-21 Session #2)
+**Next task:** Batch 2 — BusinessFeatureButtons + MenuCategoriesRows + ExpandableTextWidget (3 widgets)
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
@@ -345,9 +345,9 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | # | Widget | Complexity | Status | Session | Lines of Code |
 |---|--------|-----------|--------|---------|---------------|
 | 1 | PaymentOptionsWidget | ⭐ Very Low | ✅ Complete | #1 | 567 |
-| 2 | FilterDescriptionSheet | ⭐⭐ Low | ⏳ Next | #2 | — |
-| 3 | MissingLocationFormWidget | ⭐⭐ Low | ⏳ Next | #2 | — |
-| 4-29 | [Remaining 26 widgets] | Various | ⏳ Pending | #3-10 | — |
+| 2 | FilterDescriptionSheet | ⭐⭐ Low | ✅ Complete | #2 | 165 |
+| 3 | MissingLocationFormWidget | ⭐⭐ Low | ✅ Complete | #2 | 487 |
+| 4-29 | [Remaining 26 widgets] | Various | ⏳ Pending | #3-11 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -382,12 +382,19 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - `CLAUDE.md` (updated Phase 7 section)
 - `_reference/SESSION_STATUS.md` (this file)
 
+**Files Changed Session #2:**
+- `journey_mate/lib/widgets/shared/filter_description_sheet.dart` (created, 165 lines)
+- `journey_mate/lib/widgets/shared/missing_location_form_widget.dart` (created, 487 lines)
+- `journey_mate/lib/services/translation_service.dart` (18 keys added)
+- `_reference/NEW_TRANSLATION_KEYS.sql` (created, 126 SQL INSERT statements)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
 2. Read `DESIGN_SYSTEM_flutter.md` for design tokens
-3. Implement FilterDescriptionSheet + MissingLocationFormWidget (Batch 1 continuation)
+3. Implement Batch 2: BusinessFeatureButtons + MenuCategoriesRows + ExpandableTextWidget (3 widgets)
 4. Run `flutter analyze` — MUST return 0 issues
-5. Append lessons learned to PHASE7_LESSONS_LEARNED.md
+5. Append lessons learned to PHASE7_LESSONS_LEARNED.md (if relevant)
 6. Update SESSION_STATUS.md
 7. Commit
 
