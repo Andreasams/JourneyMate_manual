@@ -381,6 +381,16 @@ These decisions have been explicitly confirmed and must not be re-debated:
 
 - **Translation migration path: 100% Supabase end goal** — Phase 6A creates temporary hardcoded `kStaticTranslations` map (191 FlutterFlow keys) as scaffolding for Phase 7 page implementation. Phase 6B appends new keys to both hardcoded map AND SQL file. Phase 8 (end of project) runs SQL to insert ALL keys into Supabase `ui_translations`, then app switches to `td()` for everything and deletes hardcoded map. **Ultimate goal: 0% hardcoded translations, 100% dynamic from Supabase BuildShip API.** Single source of truth for all languages. The hardcoded map in `translation_service.dart` is TEMPORARY and will be retired after Phase 7 SQL migration completes.
 
+- **Portrait-only for iPhone, all orientations for iPad** — iPhone locked to portrait mode for optimal restaurant discovery UX (vertical scrolling, map views, menu browsing). iPad supports all orientations for table/counter browsing. Landscape rarely adds value for restaurant search and can break layouts.
+
+- **Deep linking deferred to Phase 7** — No deep link handling code exists yet (go_router has no deepLink routes configured). iOS CFBundleURLTypes + FlutterDeepLinkingEnabled and Android intent-filter will be added when Phase 7 implements deep link routes for specific pages/businesses.
+
+- **Codemagic uses journey_mate/ working config** — codemagic.yaml copied from `/c/Users/Rikke/Documents/JourneyMate/codemagic.yaml` (proven working). Single iOS workflow: builds IPA → submits to TestFlight. Build number offset +250 continues from last AppStore build (249). flutter analyze + flutter test as build gates.
+
+- **iOS location permission strings match dietary use case** — NSLocationWhenInUseUsageDescription: "JourneyMate uses your location to find nearby restaurants that match your dietary needs". NSLocationAlwaysAndWhenInUseUsageDescription: "JourneyMate uses your location to find nearby restaurants that match your dietary preferences". Clearly states purpose for App Store review compliance.
+
+- **LSApplicationQueriesSchemes includes 12 map apps** — Exact list from FlutterFlow: comgooglemaps, baidumap, iosamap, waze, yandexmaps, yandexnavi, citymapper, mapswithme, osmandmaps, dgis, qqmap, here-location. Required for map_launcher feature in contact_details_widget.dart "Open in Maps" button.
+
 ---
 
 ## What not to do

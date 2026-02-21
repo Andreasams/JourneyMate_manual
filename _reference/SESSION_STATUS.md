@@ -7,15 +7,13 @@
 ## Current Status
 
 **Phase:** Phase 7 Preliminary Task — Shared widget implementation (12/29 complete)
-**Last completed task:** Batch 5 — OpeningHoursAndWeekdays + ContactDetailsWidget + ImageGalleryOverlaySwipableWidget complete (2026-02-21 Session #6)
+**Last completed task:** Phase 4.5 — Codemagic CI/CD Setup + iOS/Android permissions (2026-02-21)
 **Next task:** Batch 6 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
 - **For widgets:** 3 widgets per session (except menu_dishes_list_view and filter_overlay_widget — solo sessions)
 - **For pages:** 1 page per session
-
-**Execution order change:** Phase 4.5 (Codemagic CI/CD) is POSTPONED until after Phase 5 (not skipped). Execution order is now: Phase 4 → Phase 5 → Phase 4.5 → Phase 6 → Phase 7 → Phase 8.
 
 ---
 
@@ -30,7 +28,7 @@
 | Phase 3 | ✅ Complete | `_reference/BUILDSHIP_REQUIREMENTS.md` — 15 sections, all 12 endpoints + all GAP_ANALYSIS flags |
 | Phase 3.5 | ✅ Complete | All BuildShip/Supabase changes executed and verified |
 | Phase 4 | ✅ Complete | Flutter foundation (theme, router, API service, translation, analytics) |
-| Phase 4.5 | 🔄 Postponed | Codemagic CI/CD (postponed until after Phase 5) |
+| Phase 4.5 | ✅ Complete | Codemagic CI/CD + iOS/Android permissions |
 | Phase 5 | ✅ Complete | All 8 Riverpod providers + 70 tests + PROVIDERS_REFERENCE.md |
 | Phase 6A | ✅ Complete | Translation service with 191 static keys from FlutterFlow |
 | Phase 6B | 🔄 Ongoing | Per-page translation key additions (runs parallel with Phase 7) |
@@ -298,6 +296,76 @@ Ignore any notes from other sessions that said "system fonts" — those applied 
 - `journey_mate/lib/theme/app_constants.dart` (added kDefaultCityId)
 - `journey_mate/test/providers/*.dart` (5 test files, 70 tests)
 - `_reference/PROVIDERS_REFERENCE.md` (complete documentation)
+
+---
+
+## Phase 4.5: COMPLETE ✅ (2026-02-21)
+
+**Deliverable:** Codemagic CI/CD pipeline + iOS/Android permissions
+
+**What was produced:**
+
+### iOS Updates (6 changes to Info.plist)
+- ✅ CFBundleDisplayName: "Journey Mate" → "JourneyMate" (no space)
+- ✅ CFBundleLocalizations array: 7 languages (en, da, de, fr, it, no, sv)
+- ✅ NSLocationWhenInUseUsageDescription: "JourneyMate uses your location to find nearby restaurants that match your dietary needs"
+- ✅ NSLocationAlwaysAndWhenInUseUsageDescription: "JourneyMate uses your location to find nearby restaurants that match your dietary preferences"
+- ✅ LSApplicationQueriesSchemes: 12 map apps (comgooglemaps, waze, citymapper, etc.) — required for map_launcher package
+- ✅ UISupportedInterfaceOrientations: Portrait-only for iPhone (landscape removed)
+
+### Android Updates (2 changes to AndroidManifest.xml)
+- ✅ android:label: "journey_mate" → "JourneyMate"
+- ✅ Permissions: INTERNET + ACCESS_FINE_LOCATION + ACCESS_COARSE_LOCATION
+
+### Codemagic CI/CD
+- ✅ `journey_mate/codemagic.yaml` copied from working config
+- ✅ iOS workflow: flutter analyze + flutter test → build IPA → submit to TestFlight
+- ✅ Build number offset: +250 (continues from AppStore build 249)
+- ✅ Email notifications: andreasstrandgaard@gmail.com
+- ✅ Trigger: Automatic on push to main branch
+
+### Documentation
+- ✅ `_reference/CODEMAGIC_SETUP_GUIDE.md` created (~460 lines)
+  - Prerequisites (Apple Developer, App Store Connect API, certificates)
+  - Step-by-step Codemagic configuration
+  - Build versioning explained (offset calculation)
+  - Troubleshooting guide
+  - Post-setup checklist
+  - Future enhancements (Android workflow, Slack notifications)
+- ✅ `CLAUDE.md` updated: 5 new product decisions (#33-37)
+- ✅ `SESSION_STATUS.md` updated: Phase 4.5 complete
+
+### Deferred Items
+- ❌ Deep linking (CFBundleURLTypes) — not implemented in app yet
+- ❌ Google Maps API key — not using embedded maps
+- ❌ Android workflow — Phase 8 addition
+
+### Verification
+- ✅ flutter pub get: All dependencies resolve
+- ✅ flutter analyze: 0 issues
+- ✅ iOS build (no-codesign): Succeeds
+- ✅ Android build: Succeeds
+
+**Files Changed (Phase 4.5):**
+- `journey_mate/ios/Runner/Info.plist` (70 → 102 lines)
+- `journey_mate/android/app/src/main/AndroidManifest.xml` (45 → 49 lines)
+- `journey_mate/codemagic.yaml` (created, 77 lines)
+- `_reference/CODEMAGIC_SETUP_GUIDE.md` (created, ~460 lines)
+- `_reference/SESSION_STATUS.md` (this file updated)
+- `CLAUDE.md` (5 new decisions added)
+
+**What This Enables:**
+1. ✅ Location services work properly on iOS (correct permission prompts)
+2. ✅ Map launcher feature works ("Open in Maps" button shows installed apps)
+3. ✅ App Store compliance (no rejections for missing location permissions)
+4. ✅ Correct app name ("JourneyMate" without space) on both platforms
+5. ✅ Portrait-only UX on iPhone (better restaurant discovery experience)
+6. ✅ CI/CD ready for Phase 8 (automatic TestFlight builds on push to main)
+7. ✅ Build gates enforced (flutter analyze must pass)
+
+**Next Steps for User:**
+- Configure Codemagic per CODEMAGIC_SETUP_GUIDE.md (after Phase 8)
+- First push to main after Phase 8 will trigger automatic TestFlight submission
 
 ---
 
