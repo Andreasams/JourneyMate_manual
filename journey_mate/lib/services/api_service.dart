@@ -329,4 +329,22 @@ class ApiService {
 
     return _makePostRequest('/feedbackform', body);
   }
+
+  // ============================================================
+  // ENDPOINT #13: SUBMIT_ERRONEOUS_INFO
+  // ============================================================
+
+  Future<ApiCallResponse> postErroneousInfo({
+    required int businessId,
+    required String businessName,
+    required String message,
+    required String languageCode,
+  }) {
+    return _makePostRequest('/erroneousinfo', {
+      'businessId': businessId,
+      'businessName': businessName,
+      'message': message,
+      'languageCode': languageCode,
+    });
+  }
 }

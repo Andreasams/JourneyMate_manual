@@ -614,7 +614,7 @@ VALUES
 
   ('contact_form_hint_contact', 'en', 'email@example.com or +45 12 34 56 78', 'ui'),
   ('contact_form_hint_contact', 'da', 'email@eksempel.dk eller +45 12 34 56 78', 'ui'),
-  ('contact_form_hint_contact', 'de', 'email@beispiel.de oder +45 12 34 56 78', 'ui'),
+  ('contact_form_hint_contact', 'de', 'email@beispiel.de eller +45 12 34 56 78', 'ui'),
   ('contact_form_hint_contact', 'fr', 'email@exemple.fr ou +45 12 34 56 78', 'ui'),
   ('contact_form_hint_contact', 'it', 'email@esempio.it o +45 12 34 56 78', 'ui'),
   ('contact_form_hint_contact', 'no', 'email@eksempel.no eller +45 12 34 56 78', 'ui'),
@@ -856,3 +856,125 @@ VALUES
   ('feedback_page_dont_know', 'no', 'Vet ikke', 'ui'),
   ('feedback_page_dont_know', 'sv', 'Vet inte', 'ui')
 ;
+
+-- ============================================================
+-- ErroneousInfoFormWidget Keys (13 keys × 7 languages = 91 rows)
+-- Added: 2026-02-21 (Session #14 - Phase 7 Batch 13)
+-- ============================================================
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  -- Main titles (3 keys)
+  ('erroneous_info_title_main', 'en', 'Report incorrect information', 'ui'),
+  ('erroneous_info_title_main', 'da', 'Rapportér forkerte oplysninger', 'ui'),
+  ('erroneous_info_title_main', 'de', 'Falsche Informationen melden', 'ui'),
+  ('erroneous_info_title_main', 'fr', 'Signaler des informations incorrectes', 'ui'),
+  ('erroneous_info_title_main', 'it', 'Segnala informazioni errate', 'ui'),
+  ('erroneous_info_title_main', 'no', 'Rapporter feil informasjon', 'ui'),
+  ('erroneous_info_title_main', 'sv', 'Rapportera felaktig information', 'ui'),
+
+  ('erroneous_info_subtitle_reporting_for', 'en', 'Reporting information for', 'ui'),
+  ('erroneous_info_subtitle_reporting_for', 'da', 'Rapporterer oplysninger for', 'ui'),
+  ('erroneous_info_subtitle_reporting_for', 'de', 'Informationen melden für', 'ui'),
+  ('erroneous_info_subtitle_reporting_for', 'fr', 'Signalement d''informations pour', 'ui'),
+  ('erroneous_info_subtitle_reporting_for', 'it', 'Segnalazione informazioni per', 'ui'),
+  ('erroneous_info_subtitle_reporting_for', 'no', 'Rapporterer informasjon for', 'ui'),
+  ('erroneous_info_subtitle_reporting_for', 'sv', 'Rapporterar information för', 'ui'),
+
+  ('erroneous_info_subtitle_main', 'en', 'Help us keep our information accurate by reporting what''s incorrect or missing', 'ui'),
+  ('erroneous_info_subtitle_main', 'da', 'Hjælp os med at holde vores oplysninger nøjagtige ved at rapportere, hvad der er forkert eller mangler', 'ui'),
+  ('erroneous_info_subtitle_main', 'de', 'Helfen Sie uns, unsere Informationen korrekt zu halten, indem Sie melden, was falsch oder fehlt', 'ui'),
+  ('erroneous_info_subtitle_main', 'fr', 'Aidez-nous à maintenir nos informations à jour en signalant ce qui est incorrect ou manquant', 'ui'),
+  ('erroneous_info_subtitle_main', 'it', 'Aiutaci a mantenere le nostre informazioni accurate segnalando cosa è errato o mancante', 'ui'),
+  ('erroneous_info_subtitle_main', 'no', 'Hjelp oss med å holde informasjonen vår nøyaktig ved å rapportere hva som er feil eller mangler', 'ui'),
+  ('erroneous_info_subtitle_main', 'sv', 'Hjälp oss att hålla vår information korrekt genom att rapportera vad som är fel eller saknas', 'ui'),
+
+  -- Message field (4 keys)
+  ('erroneous_info_title_message', 'en', 'What needs to be corrected?', 'ui'),
+  ('erroneous_info_title_message', 'da', 'Hvad skal rettes?', 'ui'),
+  ('erroneous_info_title_message', 'de', 'Was muss korrigiert werden?', 'ui'),
+  ('erroneous_info_title_message', 'fr', 'Qu''est-ce qui doit être corrigé?', 'ui'),
+  ('erroneous_info_title_message', 'it', 'Cosa deve essere corretto?', 'ui'),
+  ('erroneous_info_title_message', 'no', 'Hva må korrigeres?', 'ui'),
+  ('erroneous_info_title_message', 'sv', 'Vad behöver korrigeras?', 'ui'),
+
+  ('erroneous_info_subtitle_message', 'en', 'Please describe the issue in detail (minimum 10 characters)', 'ui'),
+  ('erroneous_info_subtitle_message', 'da', 'Beskriv venligst problemet i detaljer (minimum 10 tegn)', 'ui'),
+  ('erroneous_info_subtitle_message', 'de', 'Bitte beschreiben Sie das Problem im Detail (mindestens 10 Zeichen)', 'ui'),
+  ('erroneous_info_subtitle_message', 'fr', 'Veuillez décrire le problème en détail (minimum 10 caractères)', 'ui'),
+  ('erroneous_info_subtitle_message', 'it', 'Descrivi il problema in dettaglio (minimo 10 caratteri)', 'ui'),
+  ('erroneous_info_subtitle_message', 'no', 'Vennligst beskriv problemet i detalj (minimum 10 tegn)', 'ui'),
+  ('erroneous_info_subtitle_message', 'sv', 'Beskriv problemet i detalj (minst 10 tecken)', 'ui'),
+
+  ('erroneous_info_hint_message', 'en', 'E.g., Wrong opening hours, outdated menu, incorrect contact info...', 'ui'),
+  ('erroneous_info_hint_message', 'da', 'F.eks. forkerte åbningstider, forældet menu, forkerte kontaktoplysninger...', 'ui'),
+  ('erroneous_info_hint_message', 'de', 'Z.B. Falsche Öffnungszeiten, veraltete Speisekarte, falsche Kontaktinformationen...', 'ui'),
+  ('erroneous_info_hint_message', 'fr', 'Par ex., Horaires incorrects, menu obsolète, informations de contact incorrectes...', 'ui'),
+  ('erroneous_info_hint_message', 'it', 'Ad es., Orari errati, menu obsoleto, informazioni di contatto errate...', 'ui'),
+  ('erroneous_info_hint_message', 'no', 'F.eks., Feil åpningstider, utdatert meny, feil kontaktinformasjon...', 'ui'),
+  ('erroneous_info_hint_message', 'sv', 'T.ex., Fel öppettider, föråldrad meny, felaktig kontaktinformation...', 'ui'),
+
+  -- Validation errors (2 keys)
+  ('erroneous_info_error_message_required', 'en', 'Please describe what needs to be corrected', 'ui'),
+  ('erroneous_info_error_message_required', 'da', 'Beskriv venligst, hvad der skal rettes', 'ui'),
+  ('erroneous_info_error_message_required', 'de', 'Bitte beschreiben Sie, was korrigiert werden muss', 'ui'),
+  ('erroneous_info_error_message_required', 'fr', 'Veuillez décrire ce qui doit être corrigé', 'ui'),
+  ('erroneous_info_error_message_required', 'it', 'Descrivi cosa deve essere corretto', 'ui'),
+  ('erroneous_info_error_message_required', 'no', 'Vennligst beskriv hva som må korrigeres', 'ui'),
+  ('erroneous_info_error_message_required', 'sv', 'Beskriv vad som behöver korrigeras', 'ui'),
+
+  ('erroneous_info_error_message_too_short', 'en', 'Please provide at least 10 characters', 'ui'),
+  ('erroneous_info_error_message_too_short', 'da', 'Angiv venligst mindst 10 tegn', 'ui'),
+  ('erroneous_info_error_message_too_short', 'de', 'Bitte geben Sie mindestens 10 Zeichen ein', 'ui'),
+  ('erroneous_info_error_message_too_short', 'fr', 'Veuillez fournir au moins 10 caractères', 'ui'),
+  ('erroneous_info_error_message_too_short', 'it', 'Fornisci almeno 10 caratteri', 'ui'),
+  ('erroneous_info_error_message_too_short', 'no', 'Vennligst oppgi minst 10 tegn', 'ui'),
+  ('erroneous_info_error_message_too_short', 'sv', 'Ange minst 10 tecken', 'ui'),
+
+  -- Submit button (1 key)
+  ('erroneous_info_button_submit', 'en', 'Submit report', 'ui'),
+  ('erroneous_info_button_submit', 'da', 'Indsend rapport', 'ui'),
+  ('erroneous_info_button_submit', 'de', 'Bericht einreichen', 'ui'),
+  ('erroneous_info_button_submit', 'fr', 'Soumettre le rapport', 'ui'),
+  ('erroneous_info_button_submit', 'it', 'Invia segnalazione', 'ui'),
+  ('erroneous_info_button_submit', 'no', 'Send inn rapport', 'ui'),
+  ('erroneous_info_button_submit', 'sv', 'Skicka in rapport', 'ui'),
+
+  -- Error messages (2 keys)
+  ('erroneous_info_error_submission_failed', 'en', 'Failed to submit report. Please try again.', 'ui'),
+  ('erroneous_info_error_submission_failed', 'da', 'Kunne ikke indsende rapport. Prøv venligst igen.', 'ui'),
+  ('erroneous_info_error_submission_failed', 'de', 'Bericht konnte nicht eingereicht werden. Bitte versuchen Sie es erneut.', 'ui'),
+  ('erroneous_info_error_submission_failed', 'fr', 'Échec de la soumission du rapport. Veuillez réessayer.', 'ui'),
+  ('erroneous_info_error_submission_failed', 'it', 'Impossibile inviare la segnalazione. Riprova.', 'ui'),
+  ('erroneous_info_error_submission_failed', 'no', 'Kunne ikke sende inn rapport. Vennligst prøv igjen.', 'ui'),
+  ('erroneous_info_error_submission_failed', 'sv', 'Kunde inte skicka in rapport. Försök igen.', 'ui'),
+
+  ('erroneous_info_error_network', 'en', 'Network error. Please check your connection and try again.', 'ui'),
+  ('erroneous_info_error_network', 'da', 'Netværksfejl. Tjek venligst din forbindelse og prøv igen.', 'ui'),
+  ('erroneous_info_error_network', 'de', 'Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.', 'ui'),
+  ('erroneous_info_error_network', 'fr', 'Erreur réseau. Veuillez vérifier votre connexion et réessayer.', 'ui'),
+  ('erroneous_info_error_network', 'it', 'Errore di rete. Controlla la connessione e riprova.', 'ui'),
+  ('erroneous_info_error_network', 'no', 'Nettverksfeil. Vennligst sjekk tilkoblingen din og prøv igjen.', 'ui'),
+  ('erroneous_info_error_network', 'sv', 'Nätverksfel. Kontrollera din anslutning och försök igen.', 'ui'),
+
+  -- Success messages (2 keys)
+  ('erroneous_info_success_message', 'en', 'Thank you! We''ll review your report and update the information.', 'ui'),
+  ('erroneous_info_success_message', 'da', 'Tak! Vi vil gennemgå din rapport og opdatere oplysningerne.', 'ui'),
+  ('erroneous_info_success_message', 'de', 'Vielen Dank! Wir werden Ihren Bericht prüfen und die Informationen aktualisieren.', 'ui'),
+  ('erroneous_info_success_message', 'fr', 'Merci ! Nous examinerons votre rapport et mettrons à jour les informations.', 'ui'),
+  ('erroneous_info_success_message', 'it', 'Grazie! Esamineremo la tua segnalazione e aggiorneremo le informazioni.', 'ui'),
+  ('erroneous_info_success_message', 'no', 'Takk! Vi vil gjennomgå rapporten din og oppdatere informasjonen.', 'ui'),
+  ('erroneous_info_success_message', 'sv', 'Tack! Vi kommer att granska din rapport och uppdatera informationen.', 'ui'),
+
+  ('erroneous_info_success_navigate_away', 'en', 'You can now close this form.', 'ui'),
+  ('erroneous_info_success_navigate_away', 'da', 'Du kan nu lukke denne formular.', 'ui'),
+  ('erroneous_info_success_navigate_away', 'de', 'Sie können dieses Formular jetzt schließen.', 'ui'),
+  ('erroneous_info_success_navigate_away', 'fr', 'Vous pouvez maintenant fermer ce formulaire.', 'ui'),
+  ('erroneous_info_success_navigate_away', 'it', 'Ora puoi chiudere questo modulo.', 'ui'),
+  ('erroneous_info_success_navigate_away', 'no', 'Du kan nå lukke dette skjemaet.', 'ui'),
+  ('erroneous_info_success_navigate_away', 'sv', 'Du kan nu stänga detta formulär.', 'ui');
+
+-- ============================================================
+-- END OF ErroneousInfoFormWidget KEYS
+-- Total: 91 INSERT statements (13 keys × 7 languages)
+-- ============================================================
