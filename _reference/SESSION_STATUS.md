@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (21/29 complete)
-**Last completed task:** Batch 8 — RestaurantShimmerWidget + UserFeedbackButtonsPage + UserFeedbackButtonsTopic complete (2026-02-21 Session #9)
-**Next task:** Batch 9 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (24/29 complete)
+**Last completed task:** Batch 9 — RestaurantListShimmerWidget + AllergiesFilterWidget + DietaryRestrictionsFilterWidget complete (2026-02-21 Session #10)
+**Next task:** Batch 10 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
@@ -433,7 +433,10 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 19 | RestaurantShimmerWidget | ⭐ Very Low | ✅ Complete | #9 | 336 |
 | 20 | UserFeedbackButtonsPage | ⭐ Very Low | ✅ Complete | #9 | 145 |
 | 21 | UserFeedbackButtonsTopic | ⭐ Very Low | ✅ Complete | #9 | 145 |
-| 22-29 | [Remaining 8 widgets] | Various | ⏳ Pending | #10-13 | — |
+| 22 | RestaurantListShimmerWidget | ⭐ Very Low | ✅ Complete | #10 | 222 |
+| 23 | AllergiesFilterWidget | ⭐⭐⭐ Medium | ✅ Complete | #10 | 296 |
+| 24 | DietaryRestrictionsFilterWidget | ⭐⭐⭐⭐⭐ High | ✅ Complete | #10 | 543 |
+| 25-29 | [Remaining 5 widgets] | Various | ⏳ Pending | #11-13 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -547,6 +550,12 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - `_reference/NEW_TRANSLATION_KEYS.sql` (35 SQL INSERT statements appended: 5 keys × 7 languages)
 - `_reference/SESSION_STATUS.md` (this file updated)
 
+**Files Changed Session #10:**
+- `journey_mate/lib/widgets/shared/restaurant_list_shimmer_widget.dart` (created, 222 lines)
+- `journey_mate/lib/widgets/shared/allergies_filter_widget.dart` (created, 296 lines)
+- `journey_mate/lib/widgets/shared/dietary_restrictions_filter_widget.dart` (created, 543 lines)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
 **Decisions Made Session #8:**
 - FilterTitlesRow uses exact column widths: 36%/33%/31% (no rounding)
 - FilterTitlesRow displays 3 tabs: Location, Type, Needs (filter_location, filter_type, filter_preferences)
@@ -568,6 +577,17 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - Both feedback button widgets use ListView.separated with horizontal scroll
 - Removed unused _fontSize constant from both feedback widgets (caught by flutter analyze)
 - Topic keys already exist in Supabase (no new translation keys needed for UserFeedbackButtonsTopic)
+
+**Decisions Made Session #10:**
+- RestaurantListShimmerWidget uses design tokens (AppColors.border, bgSurface, bgCard, divider, AppSpacing.*)
+- RestaurantListShimmerWidget uses SingleTickerProviderStateMixin + AnimationController (1.5s duration)
+- AllergiesFilterWidget visual logic: Orange = NOT excluded (inverse of typical selected state)
+- DietaryRestrictionsFilterWidget auto-selection only for restrictions with allergen requirements (IDs 1, 4)
+- Both filter widgets removed analytics tracking calls (no trackEvent method exists in analyticsProvider)
+- Both filter widgets use td(ref, key) for translations (no new keys needed - all exist in Supabase)
+- Both filter widgets use identical visual styling (AppColors.accent/bgInput, AppRadius.button)
+- All 3 widgets use design tokens (no raw colors, no magic numbers)
+- Single underscore for unused separatorBuilder parameters (not double underscore)
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`

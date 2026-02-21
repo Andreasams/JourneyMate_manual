@@ -167,9 +167,11 @@ Every Phase 7 session MUST follow this workflow:
 | #6 | OpeningHoursAndWeekdays, ContactDetailsWidget, ImageGalleryOverlay | +context.mounted, +null-aware spread, +language-adaptive layout | 1,155 |
 | #7 | ContactUsFormWidget, FeedbackFormWidget, NavBarWidget | +localized labels for forms, +markUserEngaged removal | 1,530 |
 | #8 | FilterTitlesRow, CategoryDescriptionSheet, LanguageSelectorButton | +exact filter column widths | 632 |
+| #9 | RestaurantShimmerWidget, UserFeedbackButtonsPage, UserFeedbackButtonsTopic | +single underscore in separatorBuilder | 626 |
+| #10 | RestaurantListShimmerWidget, AllergiesFilterWidget, DietaryRestrictionsFilterWidget | +no analytics tracking (removed trackEvent) | 1,061 |
 
-**Total implemented:** 18/29 widgets (62%)
-**Total lines of code:** ~8,938 lines
+**Total implemented:** 24/29 widgets (83%)
+**Total lines of code:** ~11,625 lines
 
 ---
 
