@@ -809,3 +809,50 @@ VALUES
   ('settings_select_language_title', 'no', 'Velg språk', 'ui'),
   ('settings_select_language_title', 'sv', 'Välj språk', 'ui')
 ;
+
+-- Batch 8: UserFeedbackButtonsPage (Phase 7.9)
+-- Added: 2026-02-21
+-- 5 keys × 7 languages = 35 SQL INSERT statements
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  ('feedback_page_search_results', 'en', 'Search results', 'ui'),
+  ('feedback_page_search_results', 'da', 'Søgeresultater', 'ui'),
+  ('feedback_page_search_results', 'de', 'Suchergebnisse', 'ui'),
+  ('feedback_page_search_results', 'fr', 'Résultats de recherche', 'ui'),
+  ('feedback_page_search_results', 'it', 'Risultati della ricerca', 'ui'),
+  ('feedback_page_search_results', 'no', 'Søkeresultater', 'ui'),
+  ('feedback_page_search_results', 'sv', 'Sökresultat', 'ui'),
+
+  ('feedback_page_business_profile', 'en', 'Business profile', 'ui'),
+  ('feedback_page_business_profile', 'da', 'Virksomhedsprofil', 'ui'),
+  ('feedback_page_business_profile', 'de', 'Geschäftsprofil', 'ui'),
+  ('feedback_page_business_profile', 'fr', 'Profil d''entreprise', 'ui'),
+  ('feedback_page_business_profile', 'it', 'Profilo aziendale', 'ui'),
+  ('feedback_page_business_profile', 'no', 'Bedriftsprofil', 'ui'),
+  ('feedback_page_business_profile', 'sv', 'Företagsprofil', 'ui'),
+
+  ('feedback_page_settings', 'en', 'Settings', 'ui'),
+  ('feedback_page_settings', 'da', 'Indstillinger', 'ui'),
+  ('feedback_page_settings', 'de', 'Einstellungen', 'ui'),
+  ('feedback_page_settings', 'fr', 'Paramètres', 'ui'),
+  ('feedback_page_settings', 'it', 'Impostazioni', 'ui'),
+  ('feedback_page_settings', 'no', 'Innstillinger', 'ui'),
+  ('feedback_page_settings', 'sv', 'Inställningar', 'ui'),
+
+  ('feedback_page_other', 'en', 'Other', 'ui'),
+  ('feedback_page_other', 'da', 'Andet', 'ui'),
+  ('feedback_page_other', 'de', 'Andere', 'ui'),
+  ('feedback_page_other', 'fr', 'Autre', 'ui'),
+  ('feedback_page_other', 'it', 'Altro', 'ui'),
+  ('feedback_page_other', 'no', 'Annet', 'ui'),
+  ('feedback_page_other', 'sv', 'Annat', 'ui'),
+
+  ('feedback_page_dont_know', 'en', 'Don''t know', 'ui'),
+  ('feedback_page_dont_know', 'da', 'Ved ikke', 'ui'),
+  ('feedback_page_dont_know', 'de', 'Weiß nicht', 'ui'),
+  ('feedback_page_dont_know', 'fr', 'Je ne sais pas', 'ui'),
+  ('feedback_page_dont_know', 'it', 'Non so', 'ui'),
+  ('feedback_page_dont_know', 'no', 'Vet ikke', 'ui'),
+  ('feedback_page_dont_know', 'sv', 'Vet inte', 'ui')
+;

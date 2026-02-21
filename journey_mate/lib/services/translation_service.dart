@@ -2813,6 +2813,53 @@ const Map<String, Map<String, String>> kStaticTranslations = {
     'no': 'Velg språk',
     'sv': 'Välj språk',
   },
+
+  // Batch 8: UserFeedbackButtonsPage (5 keys)
+  'feedback_page_search_results': {
+    'en': 'Search results',
+    'da': 'Søgeresultater',
+    'de': 'Suchergebnisse',
+    'fr': 'Résultats de recherche',
+    'it': 'Risultati della ricerca',
+    'no': 'Søkeresultater',
+    'sv': 'Sökresultat',
+  },
+  'feedback_page_business_profile': {
+    'en': 'Business profile',
+    'da': 'Virksomhedsprofil',
+    'de': 'Geschäftsprofil',
+    'fr': 'Profil d\'entreprise',
+    'it': 'Profilo aziendale',
+    'no': 'Bedriftsprofil',
+    'sv': 'Företagsprofil',
+  },
+  'feedback_page_settings': {
+    'en': 'Settings',
+    'da': 'Indstillinger',
+    'de': 'Einstellungen',
+    'fr': 'Paramètres',
+    'it': 'Impostazioni',
+    'no': 'Innstillinger',
+    'sv': 'Inställningar',
+  },
+  'feedback_page_other': {
+    'en': 'Other',
+    'da': 'Andet',
+    'de': 'Andere',
+    'fr': 'Autre',
+    'it': 'Altro',
+    'no': 'Annet',
+    'sv': 'Annat',
+  },
+  'feedback_page_dont_know': {
+    'en': 'Don\'t know',
+    'da': 'Ved ikke',
+    'de': 'Weiß nicht',
+    'fr': 'Je ne sais pas',
+    'it': 'Non so',
+    'no': 'Vet ikke',
+    'sv': 'Vet inte',
+  },
 };
 
 // ============================================================

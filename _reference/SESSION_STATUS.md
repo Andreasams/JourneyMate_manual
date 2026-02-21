@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (18/29 complete)
-**Last completed task:** Batch 7 — FilterTitlesRow + CategoryDescriptionSheet + LanguageSelectorButton complete (2026-02-21 Session #8)
-**Next task:** Batch 8 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (21/29 complete)
+**Last completed task:** Batch 8 — RestaurantShimmerWidget + UserFeedbackButtonsPage + UserFeedbackButtonsTopic complete (2026-02-21 Session #9)
+**Next task:** Batch 9 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
@@ -430,7 +430,10 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 16 | FilterTitlesRow | ⭐⭐ Low | ✅ Complete | #8 | 147 |
 | 17 | CategoryDescriptionSheet | ⭐⭐ Low | ✅ Complete | #8 | 177 |
 | 18 | LanguageSelectorButton | ⭐⭐ Low | ✅ Complete | #8 | 308 |
-| 19-29 | [Remaining 11 widgets] | Various | ⏳ Pending | #9-12 | — |
+| 19 | RestaurantShimmerWidget | ⭐ Very Low | ✅ Complete | #9 | 336 |
+| 20 | UserFeedbackButtonsPage | ⭐ Very Low | ✅ Complete | #9 | 145 |
+| 21 | UserFeedbackButtonsTopic | ⭐ Very Low | ✅ Complete | #9 | 145 |
+| 22-29 | [Remaining 8 widgets] | Various | ⏳ Pending | #10-13 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -536,6 +539,14 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - `_reference/NEW_TRANSLATION_KEYS.sql` (35 SQL INSERT statements appended: 5 keys × 7 languages)
 - `_reference/SESSION_STATUS.md` (this file updated)
 
+**Files Changed Session #9:**
+- `journey_mate/lib/widgets/shared/restaurant_shimmer_widget.dart` (created, 336 lines)
+- `journey_mate/lib/widgets/shared/user_feedback_buttons_page.dart` (created, 145 lines)
+- `journey_mate/lib/widgets/shared/user_feedback_buttons_topic.dart` (created, 145 lines)
+- `journey_mate/lib/services/translation_service.dart` (5 keys added: UserFeedbackButtonsPage)
+- `_reference/NEW_TRANSLATION_KEYS.sql` (35 SQL INSERT statements appended: 5 keys × 7 languages)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
 **Decisions Made Session #8:**
 - FilterTitlesRow uses exact column widths: 36%/33%/31% (no rounding)
 - FilterTitlesRow displays 3 tabs: Location, Type, Needs (filter_location, filter_type, filter_preferences)
@@ -545,6 +556,18 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - LanguageSelectorButton reloads translations + filters on language change
 - Removed unused imports to pass flutter analyze
 - Translation keys: filter_location, filter_type, filter_preferences (3), settings_language_label, settings_select_language_title (2) = 5 keys total
+
+**Decisions Made Session #9:**
+- RestaurantShimmerWidget uses AnimationController with 1.5-second duration (smooth, not jarring)
+- RestaurantShimmerWidget uses design tokens: AppColors.bgSurface/bgPage/bgInput instead of raw Colors.grey
+- RestaurantShimmerWidget added SingleTickerProviderStateMixin for AnimationController vsync
+- UserFeedbackButtonsPage uses ts(context, key) for static translations (5 new keys added)
+- UserFeedbackButtonsTopic uses td(ref, key) for dynamic translations (existing Supabase keys)
+- UserFeedbackButtonsTopic is ConsumerStatefulWidget to access ref for td() helper
+- Both feedback button widgets use identical visual pattern (orange selected, white unselected)
+- Both feedback button widgets use ListView.separated with horizontal scroll
+- Removed unused _fontSize constant from both feedback widgets (caught by flutter analyze)
+- Topic keys already exist in Supabase (no new translation keys needed for UserFeedbackButtonsTopic)
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
