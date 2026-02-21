@@ -1,8 +1,9 @@
 # Phase 7 Implementation: Lessons Learned & Session Protocol
 
 **Created:** 2026-02-21
-**Purpose:** Capture lessons learned from Phase 7 widget/page implementation to guide future sessions
-**Update Protocol:** Each Claude Code session implementing Phase 7 work MUST append to this document before ending
+**Last Updated:** 2026-02-21
+**Purpose:** Capture lessons learned from Phase 7 widget/page implementation to guide future sessions AND enable final cross-widget consistency review
+**Update Protocol:** Each Claude Code session implementing Phase 7 work MUST update this document before ending
 
 ---
 
@@ -54,38 +55,56 @@ Every Phase 7 session MUST follow this workflow:
 - Fix all warnings/errors before proceeding
 - Run code review checklist (see CLAUDE.md)
 
-### 4. Session End
-- Mark task(s) as completed
-- **Append lessons learned to THIS FILE IF you discovered something useful** (see guidelines below)
-- Update SESSION_STATUS.md
-- Commit with descriptive message
-- Inform user of completion + next steps
+### 4. Session End (3 REQUIRED UPDATES)
+1. **Update Pattern Discovery Timeline** (if you discovered a new pattern)
+2. **Update Widget Build Order** (add your session entry)
+3. **Append session lessons learned** (if relevant — see guidelines below)
+4. Update SESSION_STATUS.md
+5. Commit with descriptive message
+6. Inform user of completion + next steps
 
 ---
 
-## Lessons Learned (Append ONLY When Relevant)
+## How to Update This Document (Guidelines for Each Session)
 
-**⚠️ IMPORTANT: Do NOT append lessons learned for every session. Only add entries when you:**
-- Discovered a new pattern or approach that future sessions should follow
-- Encountered a challenge with a non-obvious solution
-- Found a pitfall that future sessions should avoid
-- Identified a design token mapping that wasn't straightforward
-- Made a decision that affects future widget/page implementations
+### ✅ ALWAYS Update (Every Session):
 
-**✅ DO append lessons learned when:**
-- First widget in a complexity tier (sets pattern for similar widgets)
-- Complex widgets with non-trivial state management
-- Widgets that required reading multiple FlutterFlow files
-- Pages with new patterns not seen in previous pages
-- Any session where you learned something that would help the next session
+**1. Widget Build Order Table** (see section below)
+- Add row for your session showing:
+  - Session number
+  - Widgets built
+  - Patterns that existed at time of build
+  - Total lines of code
 
-**❌ DO NOT append lessons learned when:**
-- Simple widget that followed existing patterns exactly
-- No issues encountered, no decisions made
-- Everything worked as expected with zero surprises
-- Widget/page was straightforward translation with no challenges
+**2. Session Status Tracking**
+- Update widget count in SESSION_STATUS.md
+- Mark widgets as complete in Widget Implementation Order section
 
-**If no lessons learned:** Just update the widget progress table in SESSION_STATUS.md and commit. Empty sections are worse than no entry.
+### ⚠️ CONDITIONALLY Update (Only When Relevant):
+
+**3. Pattern Discovery Timeline** (see section below)
+- Add row ONLY if you discovered a NEW pattern that:
+  - Should be applied to future widgets
+  - Should be retrofitted to past widgets (note which ones)
+  - Changes how something should be implemented
+
+**4. Session Lessons Learned Entry** (detailed entry)
+- Add full session entry ONLY if you:
+  - Discovered a new pattern or approach
+  - Encountered a non-obvious challenge with useful solution
+  - Found a pitfall that future sessions should avoid
+  - Made decisions affecting future implementations
+
+**5. Common Pitfalls Section**
+- Add new pitfall ONLY if it's a recurring mistake risk
+- Must have ❌ Bad example + ✅ Good example
+
+### ❌ NEVER Add:
+
+- Lessons that contradict CLAUDE.md rules
+- "Worked as expected" boilerplate
+- Duplicate patterns already documented
+- Empty/vague entries without specific examples
 
 ---
 
@@ -95,26 +114,62 @@ Every Phase 7 session MUST follow this workflow:
 
 **❌ NEVER document lessons learned that:**
 - Contradict or weaken existing rules in CLAUDE.md
-- Suggest skipping steps from the standard workflow (e.g., "skip reading BUNDLE.md, just read FlutterFlow")
-- Recommend breaking design system compliance (e.g., "raw hex colors are fine for simple widgets")
-- Propose shortcuts that bypass verification (e.g., "don't run flutter analyze for small changes")
+- Suggest skipping steps from the standard workflow
+- Recommend breaking design system compliance
+- Propose shortcuts that bypass verification
 - Conflict with phase protocols or design documents
 
 **✅ VALID lessons learned examples:**
-- "MaterialStateProperty → WidgetStateProperty (Flutter 3.x)" — technical update within Flutter
+- "MaterialStateProperty → WidgetStateProperty (Flutter 3.x)" — technical update
 - "Use AppColors.accent even if FlutterFlow color doesn't match exactly" — reinforces design token rule
-- "SizedBox > Container for layout-only constraints" — best practice within Flutter analyzer guidance
-- "Complex filter logic requires reading both MASTER_README and FlutterFlow source" — additive workflow insight
-
-**⚠️ INVALID lessons learned examples:**
-- "Skip BUNDLE.md and just implement from FlutterFlow to save time" — breaks three-source rule
-- "Don't worry about design tokens for one-off widgets" — breaks design system compliance
-- "flutter analyze is too slow, just commit and fix later" — breaks verification requirement
-- "Hardcoded strings are fine, we'll translate later" — breaks translation protocol
+- "SizedBox > Container for layout-only constraints" — best practice within analyzer guidance
 
 **If you think a rule should change, that's a user decision (update CLAUDE.md), NOT a lesson learned.**
 
-Lessons learned document HOW to work within the system, not how to work around it.
+---
+
+## Pattern Discovery Timeline
+
+**Purpose:** Track WHEN patterns were discovered and which widgets need them retrofitted.
+
+**How to update:** Add a row when you discover a NEW pattern that should apply to other widgets.
+
+| Session | Pattern Discovered | Applies To | Widgets Built Before This Pattern |
+|---------|-------------------|------------|-----------------------------------|
+| #1 | WidgetStateProperty (not MaterialStateProperty) | All widgets | None (first session) |
+| #2 | `.withValues(alpha:)` not `.withOpacity()` | All color transparency | #1 (PaymentOptionsWidget) |
+| #2 | Language code via `Localizations.localeOf(context)` | All widgets needing API language | #1 (PaymentOptionsWidget) |
+| #4 | Widget-local state uses State variables (not Notifier) | All stateful widgets | #1-5 |
+| #6 | `context.mounted` not `mounted` after async | All async operations | #1-11 |
+| #6 | Null-aware spread operator for optional map entries | All optional map construction | #1-11 |
+| #6 | Language-adaptive layout widths for CJK/Polish/Finnish | Widgets displaying translated day/month names | #1-11 |
+| #7 | Topic sent as localized label string (not stable key) | Forms using `supabaseInsertObject` | N/A (first form) |
+| #7 | Remove `markUserEngaged()` calls (ActivityScope handles it) | All widgets | #1-15 (but none had it) |
+| #8 | Filter column widths must be exact: 36%/33%/31% | Filter-related widgets | #1-17 |
+
+**Note:** After all 29 widgets complete, use this table for "Final Review Checklist" to propagate patterns backward.
+
+---
+
+## Widget Build Order
+
+**Purpose:** Show what patterns were available when each widget was built (for final review).
+
+**How to update:** Add a row at end of each session.
+
+| Session | Widgets Built | Patterns Available At Build Time | Lines of Code |
+|---------|---------------|----------------------------------|---------------|
+| #1 | PaymentOptionsWidget | (baseline) | 567 |
+| #2 | FilterDescriptionSheet, MissingLocationFormWidget | +.withValues, +language access | 652 |
+| #3 | ExpandableTextWidget, BusinessFeatureButtons | +.withValues, +language access | 1,089 |
+| #4 | MenuCategoriesRows | +widget-local state | 1,106 |
+| #5 | PackageCoursesDisplay, PackageBottomSheet, GalleryTabWidget | +widget-local state | 2,207 |
+| #6 | OpeningHoursAndWeekdays, ContactDetailsWidget, ImageGalleryOverlay | +context.mounted, +null-aware spread, +language-adaptive layout | 1,155 |
+| #7 | ContactUsFormWidget, FeedbackFormWidget, NavBarWidget | +localized labels for forms, +markUserEngaged removal | 1,530 |
+| #8 | FilterTitlesRow, CategoryDescriptionSheet, LanguageSelectorButton | +exact filter column widths | 632 |
+
+**Total implemented:** 18/29 widgets (62%)
+**Total lines of code:** ~8,938 lines
 
 ---
 
@@ -163,6 +218,12 @@ Future<void> onButtonTap() async {
 **Applies To:** ALL 29 widgets and ALL 12 pages in Phase 7.
 
 **Reference:** See CLAUDE.md decision #31 for full rationale.
+
+---
+
+## Session Lessons Learned (Detailed Entries)
+
+**Note:** These entries preserve temporal context for final cross-widget review. Each session documents what was known at that moment in time.
 
 ---
 
@@ -249,13 +310,6 @@ Future<void> onButtonTap() async {
 #### Files Created/Modified
 - ✅ Created: `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
 - ✅ No other files needed (widget is self-contained)
-
-#### Next Widget Recommended
-**FilterDescriptionSheet** (⭐⭐ Low complexity)
-- Simple bottom sheet with text display
-- Uses DraggableScrollableSheet
-- Reads from filterProvider (introduces provider pattern)
-- Good next step to learn ConsumerWidget pattern
 
 ---
 
@@ -515,27 +569,150 @@ Future<void> onButtonTap() async {
 
 ---
 
-### Session #5: [Widget/Page Name] (YYYY-MM-DD)
+### Session #6: OpeningHoursAndWeekdays + ContactDetailsWidget + ImageGalleryOverlaySwipableWidget (2026-02-21)
 
-**Widget/Page:**
-**Completed By:**
-**Duration:**
-**Status:**
+**Widgets:** Batch 5 (3 widgets)
+**Completed By:** Claude Code Session #6
+**Status:** ✅ Complete, 0 issues
 
 #### What Went Well
-
+1. OpeningHoursAndWeekdays translation system with 23 keys worked smoothly
+2. ContactDetailsWidget map_launcher and url_launcher integration was straightforward
+3. Language-adaptive layout logic was well-documented in FlutterFlow source
+4. Flutter 3.x patterns (context.mounted, null-aware spread) applied correctly
+5. All 11 flutter analyze issues fixed efficiently
 
 #### Challenges & Solutions
 
+1. **Challenge:** Language-adaptive column width logic for OpeningHoursAndWeekdays
+   **Solution:** Created helper method `_getWeekdayColumnWidth(languageCode)` with CJK/Polish/Finnish/default cases:
+   ```dart
+   double _getWeekdayColumnWidth(String languageCode) {
+     // CJK languages use shorter characters
+     if (['zh', 'ja', 'ko'].contains(languageCode)) return 75.0;
+     // Polish/Finnish use longer weekday names
+     if (['pl', 'fi'].contains(languageCode)) return 125.0;
+     // Default for most European languages
+     return 85.0;
+   }
+   ```
 
-#### Translation Patterns Discovered
+2. **Challenge:** Copy-to-clipboard dialogs with 1-second auto-dismiss in ContactDetailsWidget
+   **Solution:** Used `showDialog` + `Future.delayed(Duration(seconds: 1))` + `context.mounted` check before `Navigator.pop`:
+   ```dart
+   await _showCopyDialog(context, text, label);
+   await Future.delayed(const Duration(seconds: 1));
+   if (context.mounted) {
+     Navigator.of(context, rootNavigator: true).pop();
+   }
+   ```
 
+3. **Challenge:** Flutter analyzer wanted null-aware pattern for optional map entries
+   **Solution:** Used null-aware spread operator `...?` instead of collection-if:
+   ```dart
+   // ❌ BEFORE (lint warning)
+   if (note != null) 'note': note,
+
+   // ✅ AFTER (no warning)
+   ...?note != null ? {'note': note} : null,
+   ```
+
+4. **Challenge:** `use_build_context_synchronously` warnings after async operations
+   **Solution:** Changed `mounted` checks to `context.mounted` (Flutter 3.x best practice):
+   ```dart
+   // ❌ BEFORE
+   if (mounted) {
+     await _showCopiedConfirmation(context);
+   }
+
+   // ✅ AFTER
+   if (context.mounted) {
+     await _showCopiedConfirmation(context);
+   }
+   ```
+
+5. **Challenge:** Unused imports triggering flutter analyze warnings
+   **Solution:** Removed unused `app_colors.dart` and `app_spacing.dart` imports when only `app_typography.dart` was needed
 
 #### Key Takeaways for Next Sessions
 
+1. **Language-adaptive layout pattern:**
+   When building widgets that display language-dependent text (day names, month names, etc.), always check if column widths need to vary by language:
+   ```dart
+   double _getColumnWidth(String lang) {
+     if (['zh', 'ja', 'ko'].contains(lang)) return narrowWidth;
+     if (['pl', 'fi'].contains(lang)) return wideWidth;
+     return defaultWidth;
+   }
+   ```
+
+2. **External package integration (map_launcher, url_launcher):**
+   - Always check availability before launching:
+     ```dart
+     final availableMaps = await MapLauncher.installedMaps;
+     if (availableMaps.isNotEmpty && context.mounted) {
+       await availableMaps.first.showMarker(...);
+     }
+
+     final uri = Uri.parse(url);
+     if (await canLaunchUrl(uri)) {
+       await launchUrl(uri);
+     }
+     ```
+   - Wrap in try-catch for robust error handling
+   - Check `context.mounted` before showing error dialogs
+
+3. **Wrapper widget pattern (ImageGalleryOverlaySwipableWidget):**
+   - Thin wrappers can be < 100 lines
+   - Delegate all logic to composed widget
+   - Only handle onClose callbacks or navigation
+   - Use placeholder UI when underlying widget doesn't exist yet
+
+4. **Null-aware spread operator pattern (Flutter 3.x):**
+   When adding optional entries to a map literal, prefer `...?` over collection-if to satisfy linter:
+   ```dart
+   Map<String, dynamic> data = {
+     'required_field': value,
+     ...?optionalValue != null ? {'optional_field': optionalValue} : null,
+   };
+   ```
+
+5. **context.mounted vs mounted:**
+   After ANY async operation (Future.delayed, API call, file I/O), always check `context.mounted` (not `mounted`) before using BuildContext:
+   ```dart
+   await someAsyncOperation();
+   if (context.mounted) {
+     Navigator.pop(context);
+     ScaffoldMessenger.of(context).showSnackBar(...);
+   }
+   ```
 
 #### Files Created/Modified
+- ✅ Created: opening_hours_and_weekdays.dart (~392 lines)
+- ✅ Created: contact_details_widget.dart (~693 lines)
+- ✅ Created: image_gallery_overlay_swipable_widget.dart (~70 lines)
+- ✅ Updated: translation_service.dart (36 keys: 23 + 13)
+- ✅ Updated: NEW_TRANSLATION_KEYS.sql (252 translations: 161 + 91)
 
+#### Widget-Specific Notes
+
+**OpeningHoursAndWeekdays:**
+- Parses complex `openingHours` JSON structure (7 days × 5 slots × 2 cutoffs per slot)
+- Responsive wrapping: cutoff times move to next line when `textScaleFactor >= 1.1` or bold text enabled
+- Translation keys use descriptive names: `day_monday_cap`, `cutoff_type_kitchen_close`, etc.
+- Does NOT use Riverpod (pure StatefulWidget with props)
+
+**ContactDetailsWidget:**
+- Composes OpeningHoursAndWeekdays (dependency satisfied in same batch)
+- 6 conditional contact methods: phone, email, website, reservation, Instagram, Facebook
+- Uses businessProvider (read-only) for current business data
+- Uses accessibilityProvider (read-only) for bold text setting
+- All icons from Feather Icons (consistent with design system)
+
+**ImageGalleryOverlaySwipableWidget:**
+- Placeholder implementation (ImageGalleryWidget from custom_widgets not yet available)
+- Shows temporary UI with category name, image count, and close button
+- Will be replaced when ImageGalleryWidget is implemented in a future batch
 
 ---
 
@@ -595,6 +772,97 @@ flutter analyze
 git add .
 git commit -m "..."
 ```
+
+### Pitfall #6: Using .withOpacity() (Deprecated in Flutter 3.x)
+❌ **Bad:**
+```dart
+color: AppColors.accent.withOpacity(0.5)
+```
+✅ **Good:**
+```dart
+color: AppColors.accent.withValues(alpha: 0.5)
+```
+**Why:** `.withOpacity()` is deprecated in Flutter 3.x. Always use `.withValues(alpha:)` for transparency.
+
+### Pitfall #7: Assuming currentLanguageProvider Exists
+❌ **Bad:**
+```dart
+final languageCode = ref.watch(currentLanguageProvider);
+```
+✅ **Good:**
+```dart
+final languageCode = Localizations.localeOf(context).languageCode;
+```
+**Why:** No language provider exists in PROVIDERS_REFERENCE.md. Use `Localizations.localeOf(context)` instead.
+
+### Pitfall #8: Using mounted Instead of context.mounted After Async
+❌ **Bad:**
+```dart
+await someAsyncOperation();
+if (mounted) {
+  Navigator.pop(context); // ⚠️ Can cause lint warning
+}
+```
+✅ **Good:**
+```dart
+await someAsyncOperation();
+if (context.mounted) {
+  Navigator.pop(context); // ✅ Flutter 3.x best practice
+}
+```
+**Why:** Flutter 3.x linter prefers `context.mounted` for async operations to avoid `use_build_context_synchronously` warnings.
+
+### Pitfall #9: Using collection-if for Optional Map Entries
+❌ **Bad:**
+```dart
+Map<String, dynamic> data = {
+  'required': value,
+  if (optional != null) 'optional': optional, // ⚠️ Lint warning
+};
+```
+✅ **Good:**
+```dart
+Map<String, dynamic> data = {
+  'required': value,
+  ...?optional != null ? {'optional': optional} : null, // ✅ No warning
+};
+```
+**Why:** Flutter 3.x linter prefers null-aware spread operator for cleaner null handling.
+
+### Pitfall #10: Creating Widget-Local Notifier Classes
+❌ **Bad:**
+```dart
+class _MyWidgetState extends ConsumerState<MyWidget> {
+  late final MyNotifier _notifier; // ❌ Notifier needs provider
+
+  @override
+  void initState() {
+    super.initState();
+    _notifier = MyNotifier();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(_notifier.state); // ❌ Can't access .state (protected)
+  }
+}
+```
+✅ **Good:**
+```dart
+class _MyWidgetState extends ConsumerState<MyWidget> {
+  String _value = ''; // ✅ Plain state variable
+
+  void _update(String newValue) {
+    setState(() => _value = newValue);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(_value); // ✅ Works perfectly
+  }
+}
+```
+**Why:** Riverpod 3.x Notifiers require providers. For widget-local state, use plain State variables with `setState()`.
 
 ---
 
@@ -672,52 +940,111 @@ Before marking a widget complete, verify:
 - [ ] ✅ FFAppState reads/writes replaced with provider reads/writes
 - [ ] ✅ StateNotifier replaced with Notifier (Riverpod 3.x)
 - [ ] ✅ MaterialStateProperty replaced with WidgetStateProperty
+- [ ] ✅ `.withOpacity()` replaced with `.withValues(alpha:)`
+- [ ] ✅ `mounted` replaced with `context.mounted` after async operations
 - [ ] ✅ Hardcoded strings replaced with ts() or td()
 - [ ] ✅ flutter analyze returns "No issues found!"
 - [ ] ✅ Code review checklist passed (see CLAUDE.md)
-- [ ] ✅ Lessons learned appended to this file
+- [ ] ✅ Lessons learned appended to this file (if relevant)
 - [ ] ✅ SESSION_STATUS.md updated
 - [ ] ✅ Git commit created
 
 ---
 
-## Widget Implementation Order (Recommended)
+## Widget Implementation Order (Remaining Widgets)
 
-Based on complexity and dependencies:
+**Widgets Complete:** 18/29 (62%)
 
-### Batch 1 (Very Low/Low complexity, no dependencies)
-1. ✅ PaymentOptionsWidget
-2. FilterDescriptionSheet
-3. MissingLocationFormWidget
+### Remaining Widgets (11 total):
 
-### Batch 2 (Low complexity, minimal dependencies)
-4. BusinessFeatureButtons
-5. MenuCategoriesRows
-6. ExpandableTextWidget
+**Priority 1 — Business/Menu Components:**
+- BusinessHoursWidget (⭐⭐ Low)
+- MenuItemCard (⭐⭐⭐ Medium)
+- DietaryBadgesRow (⭐⭐ Low)
 
-### Batch 3 (Medium complexity, introduces patterns)
-7. ContactUsFormWidget
-8. FeedbackFormWidget
-9. NavBarWidget
+**Priority 2 — Filter Components:**
+- UnifiedFiltersWidget (⭐⭐⭐⭐ High) — Complex filter state
+- FilterChipRow (⭐⭐ Low)
 
-### Batch 4 (Medium complexity, gallery/package widgets)
-10. PackageBottomSheet
-11. PackageCoursesDisplay
-12. GalleryTabWidget
+**Priority 3 — Search/Results Components:**
+- SearchBarWidget (⭐⭐⭐ Medium)
+- BusinessCardWidget (⭐⭐⭐ Medium)
+- SectionHeaderRow (⭐ Very Low)
 
-### Batch 5 (Medium complexity, contact/hours)
-13. ContactDetailWidget
-14. OpeningHoursAndWeekdays
-15. ImageGalleryOverlaySwipableWidget
+**Priority 4 — Massive Solo Sessions:**
+- **MenuDishesListView** (⭐⭐⭐⭐⭐ Extreme) — SOLO SESSION REQUIRED (~1,500+ lines)
+- **FilterOverlayWidget** (⭐⭐⭐⭐⭐ Extreme) — SOLO SESSION REQUIRED (~1,200+ lines)
 
-### Solo Sessions (High complexity, massive files)
-16. **MenuDishesListView** (⭐⭐⭐⭐⭐ Extreme) — SOLO SESSION REQUIRED
-17. **FilterOverlayWidget** (⭐⭐⭐⭐⭐ Extreme) — SOLO SESSION REQUIRED
-18. ItemBottomSheet (⭐⭐⭐⭐ High)
-19. UnifiedFiltersWidget (⭐⭐⭐⭐ High)
+**Priority 5 — Miscellaneous:**
+- ItemBottomSheet (⭐⭐⭐⭐ High) — Depends on MenuDishesListView
 
-### Remaining widgets (categorize as you encounter them)
-20-29. [To be categorized based on MASTER_README analysis]
+---
+
+## Final Review Checklist (Run After All 29 Widgets Complete)
+
+**Purpose:** Ensure pattern consistency across all widgets by propagating discoveries backward and verifying early decisions forward.
+
+### Phase 1: Pattern Propagation (Forward Pass)
+
+For each pattern in "Pattern Discovery Timeline", review all widgets built BEFORE that session:
+
+- [ ] **WidgetStateProperty pattern (Session #1):** Review widgets #2-29 for any MaterialStateProperty usage
+- [ ] **`.withValues(alpha:)` pattern (Session #2):** Review widget #1 (PaymentOptionsWidget) for `.withOpacity()` usage
+- [ ] **Language code access (Session #2):** Review widget #1 for any language code needs
+- [ ] **Widget-local state (Session #4):** Review widgets #1-5 for any widget-local Notifier usage
+- [ ] **`context.mounted` (Session #6):** Review widgets #1-11 for `mounted` checks after async
+- [ ] **Null-aware spread (Session #6):** Review widgets #1-11 for collection-if in map literals
+- [ ] **Language-adaptive layout (Session #6):** Review widgets #1-11 for fixed-width columns with translated text
+- [ ] **Localized labels for forms (Session #7):** Review any forms in widgets #1-15
+- [ ] **Filter column widths 36%/33%/31% (Session #8):** Review any filter-related widgets in #1-17
+
+### Phase 2: Design Token Consistency
+
+- [ ] All 29 widgets use `AppColors.*` (no raw hex strings)
+- [ ] All 29 widgets use `AppSpacing.*` (no magic pixel numbers)
+- [ ] All 29 widgets use `AppRadius.*` (no hardcoded border radius)
+- [ ] All 29 widgets use `AppTypography.*` or `GoogleFonts.*` (no inline TextStyle)
+- [ ] Orange (#e8751a) only for CTAs/interactive elements (never match status)
+- [ ] Green (#1a9456) only for match confirmation (never CTAs)
+
+### Phase 3: Translation Consistency
+
+- [ ] All 29 widgets use `ts(context, key)` for static FlutterFlow keys
+- [ ] All 29 widgets use `td(ref, key)` for dynamic Supabase keys
+- [ ] No hardcoded English strings remain in any widget
+- [ ] All new translation keys added to `_reference/NEW_TRANSLATION_KEYS.sql`
+- [ ] All keys follow naming convention (descriptive snake_case with widget/page prefix)
+
+### Phase 4: State Management Consistency
+
+- [ ] Widget-local state: Uses State variables with `setState()` (not Notifier)
+- [ ] Shared state: Uses proper provider reads via `ref.watch()` or `ref.read()`
+- [ ] No `StatefulWidget` where `ConsumerStatefulWidget` needed (widget reads providers)
+- [ ] No `ConsumerWidget` where `StatefulWidget` sufficient (widget doesn't read providers)
+
+### Phase 5: Flutter 3.x Best Practices
+
+- [ ] All 29 widgets use `WidgetStateProperty` (not MaterialStateProperty)
+- [ ] All 29 widgets use `.withValues(alpha:)` (not `.withOpacity()`)
+- [ ] All 29 widgets use `context.mounted` after async (not `mounted`)
+- [ ] All 29 widgets use null-aware spread `...?` for optional map entries
+- [ ] All imports cleaned (no unused imports in any widget)
+- [ ] All 29 widgets pass `flutter analyze` with 0 issues
+
+### Phase 6: FlutterFlow Migration Verification
+
+- [ ] All 29 widgets have `markUserEngaged()` calls removed (ActivityScope handles it)
+- [ ] No imports of `/custom_code/actions/mark_user_engaged.dart` remain
+- [ ] All FlutterFlow-specific patterns translated to Riverpod 3.x patterns
+- [ ] All BLoC Cubits converted to either Notifier (shared state) or State variables (widget-local)
+
+### Phase 7: Code Quality
+
+- [ ] All 29 widgets have clear section comments (if > 300 lines)
+- [ ] All 29 widgets have descriptive variable/method names
+- [ ] All complex algorithms have explanatory comments
+- [ ] No TODOs or FIXMEs remain unresolved
+- [ ] All edge cases handled (null checks, empty states, error states)
 
 ---
 
@@ -725,167 +1052,4 @@ Based on complexity and dependencies:
 
 **Next session:** Read this file completely before starting any work!
 
----
-
-## Session #6: OpeningHoursAndWeekdays + ContactDetailsWidget + ImageGalleryOverlaySwipableWidget (2026-02-21)
-
-**Widgets:** Batch 5 (3 widgets)
-**Completed By:** Claude Code Session #6
-**Status:** ✅ Complete, 0 issues
-
-### What Went Well
-1. OpeningHoursAndWeekdays translation system with 23 keys worked smoothly
-2. ContactDetailsWidget map_launcher and url_launcher integration was straightforward
-3. Language-adaptive layout logic was well-documented in FlutterFlow source
-4. Flutter 3.x patterns (context.mounted, null-aware spread) applied correctly
-5. All 11 flutter analyze issues fixed efficiently
-
-### Challenges & Solutions
-
-1. **Challenge:** Language-adaptive column width logic for OpeningHoursAndWeekdays
-   **Solution:** Created helper method `_getWeekdayColumnWidth(languageCode)` with CJK/Polish/Finnish/default cases:
-   ```dart
-   double _getWeekdayColumnWidth(String languageCode) {
-     // CJK languages use shorter characters
-     if (['zh', 'ja', 'ko'].contains(languageCode)) return 75.0;
-     // Polish/Finnish use longer weekday names
-     if (['pl', 'fi'].contains(languageCode)) return 125.0;
-     // Default for most European languages
-     return 85.0;
-   }
-   ```
-
-2. **Challenge:** Copy-to-clipboard dialogs with 1-second auto-dismiss in ContactDetailsWidget
-   **Solution:** Used `showDialog` + `Future.delayed(Duration(seconds: 1))` + `context.mounted` check before `Navigator.pop`:
-   ```dart
-   await _showCopyDialog(context, text, label);
-   await Future.delayed(const Duration(seconds: 1));
-   if (context.mounted) {
-     Navigator.of(context, rootNavigator: true).pop();
-   }
-   ```
-
-3. **Challenge:** Flutter analyzer wanted null-aware pattern for optional map entries
-   **Solution:** Used null-aware spread operator `...?` instead of collection-if:
-   ```dart
-   // ❌ BEFORE (lint warning)
-   if (note != null) 'note': note,
-   
-   // ✅ AFTER (no warning)
-   ...?note != null ? {'note': note} : null,
-   ```
-
-4. **Challenge:** `use_build_context_synchronously` warnings after async operations
-   **Solution:** Changed `mounted` checks to `context.mounted` (Flutter 3.x best practice):
-   ```dart
-   // ❌ BEFORE
-   if (mounted) {
-     await _showCopiedConfirmation(context);
-   }
-   
-   // ✅ AFTER
-   if (context.mounted) {
-     await _showCopiedConfirmation(context);
-   }
-   ```
-
-5. **Challenge:** Unused imports triggering flutter analyze warnings
-   **Solution:** Removed unused `app_colors.dart` and `app_spacing.dart` imports when only `app_typography.dart` was needed
-
-### Key Takeaways for Next Sessions
-
-1. **Language-adaptive layout pattern:**
-   When building widgets that display language-dependent text (day names, month names, etc.), always check if column widths need to vary by language:
-   ```dart
-   double _getColumnWidth(String lang) {
-     if (['zh', 'ja', 'ko'].contains(lang)) return narrowWidth;
-     if (['pl', 'fi'].contains(lang)) return wideWidth;
-     return defaultWidth;
-   }
-   ```
-
-2. **External package integration (map_launcher, url_launcher):**
-   - Always check availability before launching:
-     ```dart
-     final availableMaps = await MapLauncher.installedMaps;
-     if (availableMaps.isNotEmpty && context.mounted) {
-       await availableMaps.first.showMarker(...);
-     }
-     
-     final uri = Uri.parse(url);
-     if (await canLaunchUrl(uri)) {
-       await launchUrl(uri);
-     }
-     ```
-   - Wrap in try-catch for robust error handling
-   - Check `context.mounted` before showing error dialogs
-
-3. **Wrapper widget pattern (ImageGalleryOverlaySwipableWidget):**
-   - Thin wrappers can be < 100 lines
-   - Delegate all logic to composed widget
-   - Only handle onClose callbacks or navigation
-   - Use placeholder UI when underlying widget doesn't exist yet
-
-4. **Null-aware spread operator pattern (Flutter 3.x):**
-   When adding optional entries to a map literal, prefer `...?` over collection-if to satisfy linter:
-   ```dart
-   Map<String, dynamic> data = {
-     'required_field': value,
-     ...?optionalValue != null ? {'optional_field': optionalValue} : null,
-   };
-   ```
-
-5. **context.mounted vs mounted:**
-   After ANY async operation (Future.delayed, API call, file I/O), always check `context.mounted` (not `mounted`) before using BuildContext:
-   ```dart
-   await someAsyncOperation();
-   if (context.mounted) {
-     Navigator.pop(context);
-     ScaffoldMessenger.of(context).showSnackBar(...);
-   }
-   ```
-
-### Files Created/Modified
-- ✅ Created: opening_hours_and_weekdays.dart (~392 lines)
-- ✅ Created: contact_details_widget.dart (~693 lines)
-- ✅ Created: image_gallery_overlay_swipable_widget.dart (~70 lines)
-- ✅ Updated: translation_service.dart (36 keys: 23 + 13)
-- ✅ Updated: NEW_TRANSLATION_KEYS.sql (252 translations: 161 + 91)
-
-### Widget-Specific Notes
-
-**OpeningHoursAndWeekdays:**
-- Parses complex `openingHours` JSON structure (7 days × 5 slots × 2 cutoffs per slot)
-- Responsive wrapping: cutoff times move to next line when `textScaleFactor >= 1.1` or bold text enabled
-- Translation keys use descriptive names: `day_monday_cap`, `cutoff_type_kitchen_close`, etc.
-- Does NOT use Riverpod (pure StatefulWidget with props)
-
-**ContactDetailsWidget:**
-- Composes OpeningHoursAndWeekdays (dependency satisfied in same batch)
-- 6 conditional contact methods: phone, email, website, reservation, Instagram, Facebook
-- Uses businessProvider (read-only) for current business data
-- Uses accessibilityProvider (read-only) for bold text setting
-- All icons from Feather Icons (consistent with design system)
-
-**ImageGalleryOverlaySwipableWidget:**
-- Placeholder implementation (ImageGalleryWidget from custom_widgets not yet available)
-- Shows temporary UI with category name, image count, and close button
-- Will be replaced when ImageGalleryWidget is implemented in a future batch
-
-### Translation Keys Added
-
-**OpeningHoursAndWeekdays (23 keys × 7 languages = 161 translations):**
-- 7 weekday names: `day_monday_cap` through `day_sunday_cap`
-- 2 status labels: `status_closed`, `status_by_appointment_only`
-- 8 cutoff types: `cutoff_type_kitchen_close`, `cutoff_type_last_order`, etc.
-- 6 general labels: `opening_hours_title`, `open_label`, `until_label`, etc.
-
-**ContactDetailsWidget (13 keys × 7 languages = 91 translations):**
-- 3 section headers: `contact_details_address`, `contact_details_opening_hours`, `contact_details_contact_information`
-- 7 contact method labels: `contact_details_phone`, `contact_details_email`, `contact_details_website`, etc.
-- 3 action labels: `contact_details_tap_to_call`, `contact_details_tap_to_email`, `contact_details_view_on_instagram`, `contact_details_view_on_facebook`
-
-**Total:** 36 keys × 7 languages = 252 SQL INSERT statements appended to NEW_TRANSLATION_KEYS.sql
-
----
-
+**After all 29 widgets complete:** Run "Final Review Checklist" to ensure consistency.
