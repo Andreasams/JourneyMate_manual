@@ -8,7 +8,8 @@
       "Bash(flutter pub get:*)",
       "Bash(ls:*)",
       "Bash(git rm:*)",
-      "Bash(flutter test:*)"
+      "Bash(flutter test:*)",
+      "Bash(find:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
