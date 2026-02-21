@@ -154,7 +154,7 @@ ref.read(analyticsProvider.notifier).incrementPackageClick();
 ref.read(analyticsProvider.notifier).recordCategoryViewed(int categoryId);
 ref.read(analyticsProvider.notifier).updateDeepestScroll(int percent);
 ref.read(analyticsProvider.notifier).incrementFilterReset();
-ref.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(int resultCount);
+ref.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(int resultCount, bool hasActiveFilters);
 ```
 
 ### Usage Example
@@ -165,6 +165,14 @@ ref.read(analyticsProvider.notifier).startMenuSession(businessId);
 
 // On menu item click
 ref.read(analyticsProvider.notifier).incrementItemClick();
+
+// On filter change (menu page)
+final searchState = ref.read(searchStateProvider);
+final hasActiveFilters = searchState.filtersUsedForSearch.isNotEmpty;
+ref.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(
+  filteredItems.length,
+  hasActiveFilters,
+);
 
 // On menu page exit
 ref.read(analyticsProvider.notifier).endMenuSession(businessId);

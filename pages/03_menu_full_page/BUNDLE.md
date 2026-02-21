@@ -72,7 +72,7 @@ import 'package:provider/provider.dart';
 | `markUserEngaged` | `/custom_code/actions/mark_user_engaged.dart` | Engagement tracking |
 | `startMenuSession` | `/custom_code/actions/start_menu_session.dart` | Menu session tracking |
 | `endMenuSession` | `/custom_code/actions/end_menu_session.dart` | Menu session metrics |
-| `updateMenuSessionFilterMetrics` | `/custom_code/actions/update_menu_session_filter_metrics.dart` | Filter usage tracking |
+| `updateMenuSessionFilterMetrics` | `/custom_code/actions/update_menu_session_filter_metrics.dart` | Filter usage tracking (⚠️ **Signature changed** - see Riverpod State section) |
 
 #### Custom Functions Used
 
@@ -664,8 +664,25 @@ Semantics(
 ### Writes
 | Provider | Notifier method | Trigger |
 |----------|----------------|---------|
-| `ref.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(...)` | `updateMenuSessionFilterMetrics` | User applies/removes a dietary filter in UnifiedFiltersWidget |
+| `ref.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(resultCount, hasActiveFilters)` | `updateMenuSessionFilterMetrics` | User applies/removes a dietary filter in UnifiedFiltersWidget |
 | `ref.read(analyticsProvider.notifier).clearMenuSession()` | `clearMenuSession` | endMenuSession called on page dispose |
+
+**⚠️ Important - `updateMenuSessionFilterMetrics` signature changed from FlutterFlow:**
+- **FlutterFlow:** `updateMenuSessionFilterMetrics(int currentResultCount)`
+- **Riverpod (corrected):** `updateMenuSessionFilterMetrics(int currentResultCount, bool hasActiveFilters)`
+- **Why:** FlutterFlow always set `everHadFiltersActive = true` when called (bug). New version requires explicit filter state.
+- **Usage:**
+  ```dart
+  // When filter changes in UnifiedFiltersWidget
+  final searchState = ref.read(searchStateProvider);
+  final hasActiveFilters = searchState.filtersUsedForSearch.isNotEmpty;
+  final resultCount = filteredMenuItems.length;
+
+  ref.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(
+    resultCount,
+    hasActiveFilters,
+  );
+  ```
 
 ### Local state (NOT in providers)
 | Variable | Type | Purpose |
