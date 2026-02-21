@@ -1,0 +1,223 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
+
+import '../../theme/app_colors.dart';
+import '../../theme/app_constants.dart';
+import '../../services/translation_service.dart';
+import '../../services/api_service.dart';
+import '../../providers/search_providers.dart';
+
+/// Bottom navigation bar with 2 tabs: Search and Account
+///
+/// Features:
+/// - Search tab: Triggers API search call, updates searchStateProvider, navigates to /search
+/// - Account tab: Clears filters, navigates to /settings
+/// - Active tab styling with accent color
+/// - Location integration for search (with fallback)
+/// - User engagement tracking
+class NavBarWidget extends ConsumerStatefulWidget {
+  /// Whether the current page is the search results page
+  /// - true = Search page (search tab is active)
+  /// - false = Account page (account tab is active)
+  final bool pageIsSearchResults;
+
+  const NavBarWidget({
+    super.key,
+    required this.pageIsSearchResults,
+  });
+
+  @override
+  ConsumerState<NavBarWidget> createState() => _NavBarWidgetState();
+}
+
+class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
+  /// Gets current user location with fallback
+  Future<Position?> _getUserLocation() async {
+    try {
+      // Check permission first
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+        return null;
+      }
+
+      // Get current position with new LocationSettings API
+      return await Geolocator.getCurrentPosition(
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 5),
+        ),
+      );
+    } catch (e) {
+      // Return null on any error (permission denied, timeout, etc.)
+      return null;
+    }
+  }
+
+  /// Formats Position as LatLng string for API
+  String _formatLatLng(Position? position) {
+    if (position == null) {
+      return 'LatLng(lat: 0.0, lng: 0.0)'; // Fallback
+    }
+    return 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
+  }
+
+  /// Handles search tab tap
+  Future<void> _onSearchTabTap() async {
+    // Only execute if NOT already on search page
+    if (widget.pageIsSearchResults) return;
+
+    // Get language code BEFORE async operations
+    final languageCode = Localizations.localeOf(context).languageCode;
+
+    // Get user location (with fallback)
+    final position = await _getUserLocation();
+    final userLocationString = _formatLatLng(position);
+
+    try {
+      // Call search API with empty search input
+      final response = await ApiService.instance.search(
+        cityId: AppConstants.kDefaultCityId.toString(),
+        userLocation: userLocationString,
+        searchInput: '',
+        languageCode: languageCode,
+        filters: [], // Empty filters initially
+        filtersUsedForSearch: [], // Empty for initial load
+        sortBy: 'match',
+        sortOrder: 'desc',
+        selectedStation: null,
+        onlyOpen: false,
+        category: 'all',
+        page: 1,
+        pageSize: 20,
+      );
+
+      if (response.statusCode == 200) {
+        // Parse response
+        final jsonBody = response.jsonBody;
+        final resultCount = jsonBody['resultCount'] as int? ?? 0;
+
+        // Update searchStateProvider (positional args, not named)
+        ref.read(searchStateProvider.notifier).updateSearchResults(
+          jsonBody,
+          resultCount,
+        );
+
+        // Generate new filter session ID
+        ref.read(searchStateProvider.notifier).generateNewFilterSessionId();
+
+        // Navigate to search page (if context is still mounted)
+        if (!context.mounted) return;
+        // ignore: use_build_context_synchronously
+        context.go('/search');
+      }
+    } catch (e) {
+      // Silently fail (user will see no results or error on search page)
+      debugPrint('NavBar search call failed: $e');
+    }
+  }
+
+  /// Handles account tab tap
+  void _onAccountTabTap() {
+    // Only execute if NOT already on account page
+    if (!widget.pageIsSearchResults) return;
+
+    // Clear filters
+    ref.read(searchStateProvider.notifier).clearFilters();
+
+    // Clear filter session ID
+    ref.read(searchStateProvider.notifier).setFilterSessionId('');
+
+    // Navigate to settings page
+    context.go('/settings');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Active tab colors
+    final searchTabActive = widget.pageIsSearchResults;
+    final accountTabActive = !widget.pageIsSearchResults;
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: SafeArea(
+        child: Container(
+          width: double.infinity,
+          height: 70.0,
+          decoration: BoxDecoration(
+            color: AppColors.bgPage,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Search tab
+              _buildTabButton(
+                icon: Icons.search,
+                label: ts(context, 'm4kntw8r'), // "Search"
+                isActive: searchTabActive,
+                onTap: _onSearchTabTap,
+              ),
+
+              // Account tab
+              _buildTabButton(
+                icon: Icons.person,
+                label: ts(context, 'ykne5sdr'), // "Account"
+                isActive: accountTabActive,
+                onTap: _onAccountTabTap,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds a single tab button
+  Widget _buildTabButton({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    final color = isActive ? AppColors.accent : AppColors.textPrimary;
+
+    return InkWell(
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: onTap,
+      child: SizedBox(
+        width: 100.0,
+        height: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Icon
+            Icon(
+              icon,
+              color: color,
+              size: 24.0,
+            ),
+            SizedBox(height: 4), // Gap between icon and text
+
+            // Label
+            Text(
+              label,
+              style: GoogleFonts.roboto(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

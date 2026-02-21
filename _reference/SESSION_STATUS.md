@@ -6,9 +6,9 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — Shared widget implementation (12/29 complete)
-**Last completed task:** Phase 4.5 — Codemagic CI/CD Setup + iOS/Android permissions (2026-02-21)
-**Next task:** Batch 6 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
+**Phase:** Phase 7 Preliminary Task — Shared widget implementation (15/29 complete)
+**Last completed task:** Batch 6 — ContactUsFormWidget + FeedbackFormWidget + NavBarWidget complete (2026-02-21 Session #7)
+**Next task:** Batch 7 (3 widgets) — Per PHASE7_LESSONS_LEARNED.md widget implementation order
 **Blocked on:** Nothing — continue widget implementation per PHASE7_LESSONS_LEARNED.md protocol
 
 **⚠️ Session Scope Rule:** Each Claude Code session works on ONLY ONE aspect at a time:
@@ -424,7 +424,10 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 | 10 | OpeningHoursAndWeekdays | ⭐⭐⭐ Medium | ✅ Complete | #6 | 392 |
 | 11 | ContactDetailsWidget | ⭐⭐⭐ Medium | ✅ Complete | #6 | 693 |
 | 12 | ImageGalleryOverlaySwipableWidget | ⭐ Very Low | ✅ Complete | #6 | 70 |
-| 13-29 | [Remaining 17 widgets] | Various | ⏳ Pending | #7-11 | — |
+| 13 | ContactUsFormWidget | ⭐⭐⭐ Medium | ✅ Complete | #7 | 550 |
+| 14 | FeedbackFormWidget | ⭐⭐⭐⭐ Medium-High | ✅ Complete | #7 | 680 |
+| 15 | NavBarWidget | ⭐⭐⭐ Medium | ✅ Complete | #7 | 300 |
+| 16-29 | [Remaining 14 widgets] | Various | ⏳ Pending | #8-11 | — |
 
 **What was produced (Session #1):**
 - ✅ `journey_mate/lib/widgets/shared/payment_options_widget.dart` (567 lines)
@@ -499,6 +502,28 @@ Ultimate goal (Phase 8): 100% dynamic translations from Supabase via BuildShip A
 - ImageGalleryOverlaySwipableWidget is a placeholder (ImageGalleryWidget from custom_widgets not yet implemented)
 - Removed unused imports (app_colors, app_spacing) from opening_hours_and_weekdays.dart
 - Used null-aware spread operator pattern for optional map entries (`...?note != null ? {'note': note} : null`)
+
+**Files Changed Session #7:**
+- `journey_mate/lib/widgets/shared/contact_us_form_widget.dart` (created, 550 lines)
+- `journey_mate/lib/widgets/shared/feedback_form_widget.dart` (created, 680 lines)
+- `journey_mate/lib/widgets/shared/nav_bar_widget.dart` (created, 300 lines)
+- `shared/widgets/MASTER_README_nav_bar_widget.md` (created, documentation for NavBar)
+- `journey_mate/lib/services/translation_service.dart` (53 keys added: 22 ContactUs + 31 Feedback)
+- `_reference/NEW_TRANSLATION_KEYS.sql` (371 SQL INSERT statements appended: 154 ContactUs + 217 Feedback)
+- `_reference/BATCH6_TRANSLATION_KEYS.sql` (created as intermediate file, 371 statements)
+- `_reference/SESSION_STATUS.md` (this file updated)
+
+**Decisions Made Session #7:**
+- ContactUs + Feedback forms use self-contained local state (no provider for form state)
+- Topic in FeedbackForm sent as localized label string (not stable key) to match BuildShip endpoint
+- NavBar uses go_router for navigation (/search, /settings routes)
+- NavBar falls back to LatLng(0, 0) if location unavailable
+- CityID uses AppConstants.kDefaultCityId constant (17)
+- Removed markUserEngaged() calls (method doesn't exist in current analyticsProvider)
+- Fixed geolocator deprecated API (desiredAccuracy, timeLimit → LocationSettings)
+- Fixed searchStateProvider.updateSearchResults signature (positional args, not named)
+- Added GoogleFonts import to contact_us_form_widget.dart
+- Used ignore comment for use_build_context_synchronously lint (valid mounted check)
 
 **Next Session Must Do:**
 1. Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
