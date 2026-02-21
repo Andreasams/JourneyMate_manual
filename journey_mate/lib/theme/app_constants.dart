@@ -2,6 +2,9 @@
 class AppConstants {
   AppConstants._();
 
+  // Application constants
+  static const int kDefaultCityId = 17; // Copenhagen
+
   // Screen dimensions (reference - iPhone 14/15 standard)
   static const double screenWidth = 390.0;
   static const double screenHeight = 844.0;

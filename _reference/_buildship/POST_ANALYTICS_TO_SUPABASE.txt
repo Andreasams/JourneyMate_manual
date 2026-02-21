@@ -1,0 +1,292 @@
+URL: https://wvb8ww.buildship.run/analytics
+INPUT:
+* Object: eventData
+* String: eventType
+* String: deviceId
+* String: timestamp
+* String: sessionId
+* String: userId
+
+import { createClient } from '@supabase/supabase-js';
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
+interface NodeInputs {
+  supabaseUrl: string;
+  supabaseKey: string;
+  eventType: string;
+  deviceId: string;
+  sessionId: string;
+  userId: string;
+  eventData: Record<string, any>;
+  timestamp: string;
+}
+
+interface AnalyticsResponse {
+  success: boolean;
+  error?: string;
+  eventType?: string;
+  timestamp?: string;
+}
+
+interface NodeScriptOptions {
+  logging: {
+    log: (...args: any[]) => void;
+  };
+}
+
+type EventType = 
+  | 'session_start'
+  | 'session_end'
+  | 'session_heartbeat'
+  | 'filter_applied'
+  | 'filter_session_ended'
+  | 'filter_session_started'
+  | 'business_clicked'
+  | 'business_profile_viewed'
+  | 'menu_filter_applied'
+  | 'menu_filters_reset'
+  | 'menu_session_started'
+  | 'menu_session_ended'
+  | 'menu_item_clicked'
+  | 'menu_package_clicked'
+  | 'menu_filter_impact'
+  | 'menu_scroll_depth'
+  | 'category_description_viewed'
+  | 'page_viewed'
+  | 'location_permission_changed'
+  | 'location_settings_opened'
+  | 'location_settings_error'
+  | 'allergen_filter_toggled'
+  | 'dietary_restriction_toggled'
+  | 'dietary_preference_toggled'
+  | 'image_gallery_opened'
+  | 'image_gallery_navigation'
+  | 'image_gallery_closed'
+  | 'filter_info_clicked'
+  | 'currency_changed'
+  | 'language_changed'
+  | 'gallery_tab_opened'
+  | 'gallery_tab_changed'
+  | 'expandable_text_toggled'
+  | 'social_link_clicked'
+  | 'share_button_clicked'
+  | 'business_contact_toggled';  
+
+const VALID_EVENT_TYPES: readonly EventType[] = [
+  'session_start',
+  'session_end',
+  'session_heartbeat',
+  'filter_applied',
+  'filter_session_ended',
+  'filter_session_started',
+  'business_clicked',
+  'business_profile_viewed',
+  'menu_filter_applied',
+  'menu_filters_reset',
+  'menu_session_started',
+  'menu_session_ended',
+  'menu_item_clicked',
+  'menu_package_clicked',
+  'menu_filter_impact',
+  'menu_scroll_depth',
+  'category_description_viewed',
+  'page_viewed',
+  'location_permission_changed',
+  'location_settings_opened',
+  'location_settings_error',
+  'allergen_filter_toggled',
+  'dietary_restriction_toggled',
+  'dietary_preference_toggled',
+  'image_gallery_opened',
+  'image_gallery_navigation',
+  'image_gallery_closed',
+  'filter_info_clicked',
+  'currency_changed',
+  'language_changed',
+  'gallery_tab_opened',
+  'gallery_tab_changed',
+  'expandable_text_toggled',
+  'social_link_clicked',
+  'share_button_clicked',
+  'business_contact_toggled'
+] as const;
+
+// ============================================================================
+// MAIN EXPORT - ULTRA-THIN WRAPPER
+// ============================================================================
+
+export default async function trackAnalyticsEvent(
+  { 
+    supabaseUrl, 
+    supabaseKey, 
+    eventType, 
+    deviceId, 
+    sessionId, 
+    userId, 
+    eventData, 
+    timestamp 
+  }: NodeInputs,
+  { logging }: NodeScriptOptions,
+): Promise<AnalyticsResponse> {
+
+  logging.log("📊 Analytics Event Received:", eventType);
+  
+  // ==========================================================================
+  // STEP 1: VALIDATION ONLY
+  // ==========================================================================
+  
+  if (!supabaseUrl || !supabaseKey) {
+    logging.log("❌ Missing Supabase credentials");
+    return { success: false, error: "Missing Supabase credentials" };
+  }
+
+  if (!eventType) {
+    logging.log("❌ Missing eventType");
+    return { success: false, error: "Missing eventType" };
+  }
+
+  if (!VALID_EVENT_TYPES.includes(eventType as EventType)) {
+    logging.log("❌ Invalid event type:", eventType);
+    return { 
+      success: false, 
+      error: `Invalid event type: ${eventType}. Must be one of: ${VALID_EVENT_TYPES.join(', ')}` 
+    };
+  }
+
+  if (!sessionId || !userId) {
+    logging.log("❌ Missing required identifiers");
+    return { 
+      success: false, 
+      error: "Missing required fields: sessionId or userId" 
+    };
+  }
+
+  if (!timestamp) {
+    logging.log("❌ Missing timestamp");
+    return { success: false, error: "Missing timestamp" };
+  }
+
+  // ==========================================================================
+  // STEP 2: SINGLE RPC CALL - SUPABASE DOES EVERYTHING
+  // ==========================================================================
+  
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  try {
+    const { data, error } = await supabase.rpc('track_analytics_event', {
+      p_user_id: userId,
+      p_session_id: sessionId,
+      p_event_type: eventType,
+      p_event_data: eventData || {},
+      p_timestamp: timestamp,
+      p_business_id: eventData?.businessId || eventData?.business_id || null,
+      p_click_position: eventData?.clickPosition || eventData?.click_position || null
+    });
+
+    if (error) {
+      throw new Error(`RPC call failed: ${error.message}`);
+    }
+
+    // The RPC returns a single row with success/message
+    const result = data?.[0];
+    
+    if (!result?.success) {
+      throw new Error(result?.message || 'Unknown error from RPC');
+    }
+
+    // ==========================================================================
+    // STEP 3: SUCCESS LOGGING
+    // ==========================================================================
+    
+    logging.log(`✅ Event tracked: ${eventType}`);
+    
+    // Add specific logging for common event types
+    switch (eventType) {
+      case 'session_start':
+        logging.log(`   🚀 Session started (first: ${eventData?.isFirstSession})`);
+        break;
+      case 'session_end':
+        logging.log(`   🏁 Session ended (${eventData?.endReason}): ${eventData?.engagementRate}% engaged`);
+        break;
+      case 'session_heartbeat':
+        logging.log(`   💓 ${eventData?.foregroundSeconds}s fg, ${eventData?.engagedSeconds}s engaged`);
+        break;
+      case 'filter_applied':
+        logging.log(`   🔍 Refinement #${eventData?.refinementSequence} (${eventData?.resultsCount} results)`);
+        break;
+      case 'business_clicked':
+        logging.log(`   🖱️ Business clicked at position ${eventData?.clickPosition || eventData?.click_position}`);
+        break;
+      case 'menu_filters_reset':
+        logging.log(`   🔄 Filters reset #${eventData?.reset_number}`);
+        break;
+      case 'menu_session_started':
+        logging.log(`   📋 Menu session started for business ${eventData?.business_id}`);
+        break;
+      case 'menu_session_ended':
+        logging.log(`   🏁 Menu session: ${eventData?.total_interactions} interactions, ${eventData?.filter_engagement_score}/100 filter score`);
+        break;
+      case 'menu_item_clicked':
+        logging.log(`   🍽️ Item clicked: ${eventData?.item_name} at position ${eventData?.position_in_category} in category ${eventData?.category_name}`);
+        break;
+      case 'menu_package_clicked':
+        logging.log(`   📦 Package clicked: ${eventData?.package_name} (position ${eventData?.package_position}/${eventData?.total_packages})`);
+        break;
+      case 'menu_filter_impact':
+        logging.log(`   📊 Filter impact: ${eventData?.items_visible}/${eventData?.items_total} items visible (${eventData?.filter_effectiveness_percent}% filtered out)`);
+        break;
+      case 'menu_scroll_depth':
+        logging.log(`   📜 Scroll depth: ${eventData?.scroll_depth_percent}% (category ${eventData?.deepest_category_index}/${eventData?.total_categories})`);
+        break;
+      case 'category_description_viewed':
+        logging.log(`   📖 Category description viewed: ${eventData?.category_name} (business ${eventData?.business_id})`);
+        break;
+      case 'location_permission_changed':
+        logging.log(`   📍 Location permission: ${eventData?.previousStatus} → ${eventData?.newStatus} (${eventData?.permissionResult}) from ${eventData?.source}`);
+        break;
+      case 'location_settings_opened':
+        logging.log(`   ⚙️ Location settings opened from ${eventData?.source} (current: ${eventData?.currentStatus})`);
+        break;
+      case 'location_settings_error':
+        logging.log(`   ❌ Location settings error from ${eventData?.source}: ${eventData?.error}`);
+        break;
+      case 'allergen_filter_toggled':
+        logging.log(`   🥜 Allergen ${eventData?.allergen_name}: ${eventData?.action} (${eventData?.excluded_count} total excluded)`);
+        break;
+      case 'dietary_restriction_toggled':
+        logging.log(`   🚫 Restriction ${eventData?.restriction_name}: ${eventData?.action}`);
+        break;
+      case 'dietary_preference_toggled':
+        logging.log(`   🌱 Preference ${eventData?.preference_name}: ${eventData?.action}`);
+        break;
+      case 'expandable_text_toggled':
+        logging.log(`   📄 Text ${eventData?.action}: ${eventData?.text_id || 'description'}`);
+        break;
+      case 'social_link_clicked':
+        logging.log(`   🔗 Social link: ${eventData?.link_type} (business ${eventData?.business_id})`);
+        break;
+      case 'share_button_clicked':
+        logging.log(`   📤 Share button clicked (business ${eventData?.business_id})`);
+        break;
+      case 'business_contact_toggled':
+        logging.log(`   📞 Contact info opened (business ${eventData?.business_id})`);
+        break;
+    }
+
+    return { 
+      success: true, 
+      eventType, 
+      timestamp 
+    };
+
+  } catch (error: any) {
+    logging.log("❌ Error tracking event:", error.message);
+    return { 
+      success: false, 
+      error: error.message 
+    };
+  }
+}

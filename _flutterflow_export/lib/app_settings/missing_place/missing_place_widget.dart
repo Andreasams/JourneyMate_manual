@@ -1,0 +1,140 @@
+import '/flutter_flow/flutter_flow_icon_button.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
+import 'dart:ui';
+import '/custom_code/actions/index.dart' as actions;
+import '/custom_code/widgets/index.dart' as custom_widgets;
+import '/flutter_flow/custom_functions.dart' as functions;
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'missing_place_model.dart';
+export 'missing_place_model.dart';
+
+class MissingPlaceWidget extends StatefulWidget {
+  const MissingPlaceWidget({super.key});
+
+  static String routeName = 'MissingPlace';
+  static String routePath = 'missingPlace';
+
+  @override
+  State<MissingPlaceWidget> createState() => _MissingPlaceWidgetState();
+}
+
+class _MissingPlaceWidgetState extends State<MissingPlaceWidget> {
+  late MissingPlaceModel _model;
+
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _model = createModel(context, () => MissingPlaceModel());
+
+    // On page load action.
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      _model.pageStartTime = getCurrentTimestamp;
+      safeSetState(() {});
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  }
+
+  @override
+  void dispose() {
+    // On page dispose action.
+    () async {
+      await actions.trackAnalyticsEvent(
+        'page_viewed',
+        <String, String>{
+          'pageName': 'missingPlaceSettings',
+          'durationSeconds': functions
+              .getSessionDurationSeconds(_model.pageStartTime!)
+              .toString(),
+        },
+      );
+    }();
+
+    _model.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    context.watch<FFAppState>();
+
+    return Title(
+        title: 'MissingPlace',
+        color: FlutterFlowTheme.of(context).primary.withAlpha(0XFF),
+        child: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: Scaffold(
+            key: scaffoldKey,
+            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+            appBar: AppBar(
+              backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+              automaticallyImplyLeading: false,
+              leading: FlutterFlowIconButton(
+                borderColor: Colors.transparent,
+                borderRadius: 30.0,
+                borderWidth: 1.0,
+                buttonSize: 60.0,
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  color: FlutterFlowTheme.of(context).primaryText,
+                  size: 30.0,
+                ),
+                onPressed: () async {
+                  await actions.markUserEngaged();
+                  context.safePop();
+                },
+              ),
+              title: Text(
+                FFLocalizations.of(context).getText(
+                  'f5zshdrf' /* Are we missing a place? */,
+                ),
+                style: FlutterFlowTheme.of(context).headlineMedium.override(
+                      fontFamily:
+                          FlutterFlowTheme.of(context).headlineMediumFamily,
+                      color: FlutterFlowTheme.of(context).primaryText,
+                      fontSize: 22.0,
+                      letterSpacing: 0.0,
+                      useGoogleFonts:
+                          !FlutterFlowTheme.of(context).headlineMediumIsCustom,
+                    ),
+              ),
+              actions: [],
+              centerTitle: true,
+            ),
+            body: SafeArea(
+              top: true,
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      height: MediaQuery.sizeOf(context).height,
+                      child: custom_widgets.MissingLocationFormWidget(
+                        width: double.infinity,
+                        height: MediaQuery.sizeOf(context).height,
+                        currentLanguage:
+                            FFLocalizations.of(context).languageCode,
+                        translationsCache: FFAppState().translationsCache,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
+}

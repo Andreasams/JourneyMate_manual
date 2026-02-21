@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'services/analytics_service.dart';
-import 'providers/analytics_provider.dart';
-import 'providers/accessibility_provider.dart';
+import 'providers/app_providers.dart';
 import 'widgets/app_lifecycle_observer.dart';
 import 'widgets/activity_scope.dart';
 

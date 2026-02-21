@@ -1,0 +1,1106 @@
+ Plan to implement                                                                                                    │
+│                                                                                                                      │
+│ JourneyMate-Organized: Full Migration Plan                                                                           │
+│                                                                                                                      │
+│ For Claude: REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.                 │
+│                                                                                                                      │
+│ Goal: Migrate JourneyMate from a FlutterFlow export into clean, production-ready Flutter code using Riverpod state   │
+│ management, organized page by page from existing BUNDLE.md specifications.                                           │
+│                                                                                                                      │
+│ Architecture: FlutterFlow export (_flutterflow_export/) is the ground truth for functionality. BUNDLE.md files per   │
+│ page are the implementation specs. The new Flutter project (journey_mate/) is built by copying behavior from         │
+│ FlutterFlow and applying the v2 design from shared/app_theme.dart.                                                   │
+│                                                                                                                      │
+│ Tech Stack: Flutter 3.x, Riverpod 2.x (flutter_riverpod), go_router 12.x, BuildShip REST API (all backend including  │
+│ auth), FlutterSecureStorage + SharedPreferences, google_fonts, flutter_animate                                       │
+│                                                                                                                      │
+│ Auth decision: No direct Supabase SDK. Authentication flows through BuildShip → Supabase (BuildShip mediates). The   │
+│ Flutter app treats "logged in" as a local state (token/session stored in SecureStorage). On launch, always route to  │
+│ welcome page — either new-user or returning-user variant based on stored session.                                    │
+│                                                                                                                      │
+│ Working Directory: C:\Users\Rikke\Documents\JourneyMate-Organized                                                    │
+│                                                                                                                      │
+│ Reference Files (read before each session):                                                                          │
+│ - DESIGN_SYSTEM_flutter.md — all color, spacing, typography tokens                                                   │
+│ - Relevant page BUNDLE.md — implementation spec for that page                                                        │
+│ - Relevant page GAP_ANALYSIS.md — delta between FlutterFlow and new design; what Claude can build vs. what needs     │
+│ BuildShip                                                                                                            │
+│ - shared/ MASTER_README files for every custom action/widget/function used on that page                              │
+│ - _flutterflow_export/lib/app_state.dart — FFAppState ground truth                                                   │
+│ - _flutterflow_export/lib/backend/api_requests/api_calls.dart — API call ground truth                                │
+│ - _flutterflow_export/lib/custom_code/ — actual code for all custom elements (README explains, code is here)         │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Overview of Phases                                                                                                   │
+│                                                                                                                      │
+│ Phase 0 — CLAUDE.md + project scaffold           (Claude does this)                                                  │
+│ Phase 1 — FFAppState master map                   (Claude does this)                                                 │
+│ Phase 2 — Bundle.md audit + gap fill              (Claude + User review)                                             │
+│ Phase 3 — Buildship gap analysis                  (Claude documents, User executes)                                  │
+│ Phase 3.5 — Synthesized task list                 (Claude produces, User approves)                                   │
+│ Phase 4 — Flutter project foundation              (Claude does this)                                                 │
+│ Phase 4.5 — Codemagic CI/CD setup                 (Claude does this, User adds secrets)                              │
+│ Phase 5 — Riverpod architecture                   (Claude does this)                                                 │
+│ Phase 6 — Translation foundation                  (minimal upfront; per-page pass after each page)                   │
+│ Phase 7 — Page implementation (in order)          (Claude does this, code review after each page)                    │
+│ Phase 8 — Integration polish                      (Claude + User testing)                                            │
+│                                                                                                                      │
+│ Who does what: Phases 0, 1, 4, 4.5, 5, 7 are fully Claude-executable. Phase 2 requires user review of gaps. Phase 3  │
+│ produces a BuildShip work list the user executes. Phase 3.5 produces the final task list (approved by user before    │
+│ coding begins). Phase 6 SQL is batched and user runs once at end. Phase 8 is collaborative.                          │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 0: CLAUDE.md + Project Scaffold                                                                                │
+│                                                                                                                      │
+│ Goal: Establish session rules and create the new Flutter project shell.                                              │
+│                                                                                                                      │
+│ Task 0A: Write CLAUDE.md for JourneyMate-Organized                                                                   │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Create: JourneyMate-Organized/CLAUDE.md                                                                            │
+│                                                                                                                      │
+│ What to include:                                                                                                     │
+│ - Working directory is JourneyMate-Organized/ (not JourneyMate/)                                                     │
+│ - We are in Phase 3 (Flutter migration) — JSX design phase is complete                                               │
+│ - Three sources for every feature: BUNDLE.md > FlutterFlow source > Design system                                    │
+│ - State management: Riverpod (flutter_riverpod 2.x) — NOT FFAppState, NOT Provider                                   │
+│ - Every page implementation must follow the BUNDLE.md for that page exactly                                          │
+│ - No guessing functionality — always reference FlutterFlow source first                                              │
+│ - Folder structure: journey_mate/lib/ is the production app                                                          │
+│ - _flutterflow_export/ is read-only ground truth                                                                     │
+│ - shared/app_theme.dart is the design token source                                                                   │
+│ - Commit after completing each task/phase                                                                            │
+│ - Reference each bundle.md path by page number                                                                       │
+│                                                                                                                      │
+│ Step 1: Write the file                                                                                               │
+│ Step 2: Commit — docs: add CLAUDE.md for JourneyMate-Organized                                                       │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Task 0B: Create Flutter project structure                                                                            │
+│                                                                                                                      │
+│ Context: Currently only _flutterflow_export/ exists. We need a clean journey_mate/ project to build into.            │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Create directory: journey_mate/ (run flutter create journey_mate)                                                  │
+│ - Modify: journey_mate/pubspec.yaml — copy dependencies from _flutterflow_export/pubspec.yaml, add flutter_riverpod: │
+│  ^2.6.1, riverpod_annotation: ^2.6.1, remove FlutterFlow-specific packages not needed                                │
+│                                                                                                                      │
+│ Dependencies to ADD to pubspec.yaml:                                                                                 │
+│ flutter_riverpod: ^2.6.1                                                                                             │
+│ riverpod_annotation: ^2.6.1                                                                                          │
+│                                                                                                                      │
+│ Dependencies to REMOVE (FlutterFlow-specific or replaced):                                                           │
+│ - ff_commons or any ff_* packages                                                                                    │
+│ - supabase_flutter, supabase, gotrue, functions_client — auth is through BuildShip only                              │
+│ - sign_in_with_apple — no direct social auth in new app                                                              │
+│ - Any FlutterFlow platform packages that are replaced by standard ones                                               │
+│                                                                                                                      │
+│ Folder structure to create under journey_mate/lib/:                                                                  │
+│ lib/                                                                                                                 │
+│   main.dart                                                                                                          │
+│   app.dart                    # MaterialApp + ProviderScope                                                          │
+│   router/                                                                                                            │
+│     app_router.dart           # go_router setup                                                                      │
+│   providers/                                                                                                         │
+│     app_providers.dart        # all Riverpod providers                                                               │
+│     search_providers.dart     # search-specific providers                                                            │
+│     business_providers.dart   # business profile providers                                                           │
+│     settings_providers.dart   # settings/preferences providers                                                       │
+│   services/                                                                                                          │
+│     api_service.dart          # BuildShip API client                                                                 │
+│     translation_service.dart  # dynamic translation system                                                           │
+│     analytics_service.dart    # analytics wrapper                                                                    │
+│   models/                                                                                                            │
+│     restaurant.dart                                                                                                  │
+│     menu_item.dart                                                                                                   │
+│     filter.dart                                                                                                      │
+│     business_profile.dart                                                                                            │
+│   pages/                                                                                                             │
+│     search/                                                                                                          │
+│     business_profile/                                                                                                │
+│     menu_full_page/                                                                                                  │
+│     gallery_full_page/                                                                                               │
+│     contact_details/                                                                                                 │
+│     welcome/                                                                                                         │
+│     settings/                                                                                                        │
+│   widgets/                                                                                                           │
+│     shared/                   # widgets used on 2+ pages                                                             │
+│   theme/                                                                                                             │
+│     app_theme.dart            # copied from shared/app_theme.dart                                                    │
+│     app_colors.dart                                                                                                  │
+│     app_spacing.dart                                                                                                 │
+│     app_typography.dart                                                                                              │
+│                                                                                                                      │
+│ Step 1: Run flutter create journey_mate --org com.journeymate                                                        │
+│ Step 2: Update pubspec.yaml with dependencies                                                                        │
+│ Step 3: Create all folders (empty, with .gitkeep)                                                                    │
+│ Step 4: Run flutter pub get                                                                                          │
+│ Step 5: Verify flutter analyze returns no errors on empty project                                                    │
+│ Step 6: Commit — chore: scaffold clean Flutter project structure                                                     │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 1: FFAppState Master Map                                                                                       │
+│                                                                                                                      │
+│ Goal: Create a single document that maps every FFAppState variable to: what pages use it, whether it's read or       │
+│ written, what Riverpod provider it will live in, and its scope (global / session / page-local).                      │
+│                                                                                                                      │
+│ Why this must happen before bundle.md audit: Without this map, it is impossible to know whether a bundle.md is       │
+│ correct about which state it declares. The map is the ground truth.                                                  │
+│                                                                                                                      │
+│ Task 1A: Create MASTER_STATE_MAP.md                                                                                  │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: _flutterflow_export/lib/app_state.dart (FFAppState — 43 variables)                                           │
+│ - Read: All page files under _flutterflow_export/lib/ to identify usage                                              │
+│ - Create: _reference/MASTER_STATE_MAP.md                                                                             │
+│                                                                                                                      │
+│ Format for each variable:                                                                                            │
+│ ### `variableName`                                                                                                   │
+│ - **Type:** int / bool / String / List<int> / dynamic                                                                │
+│ - **Default:** value                                                                                                 │
+│ - **Persistent:** Yes (FlutterSecureStorage) / No (session-only)                                                     │
+│ - **Pages that READ it:** list                                                                                       │
+│ - **Pages that WRITE it:** list                                                                                      │
+│ - **Category:** Global | Session-shared | Page-local                                                                 │
+│ - **Riverpod target:** Which provider will own this                                                                  │
+│ - **Migration notes:** Any complexity                                                                                │
+│                                                                                                                      │
+│ Category definitions:                                                                                                │
+│ - Global — Persists across sessions (CityID, translationsCache). Stored in SharedPreferences or SecureStorage.       │
+│ Provider scope: app-level.                                                                                           │
+│ - Session-shared — Used by 2+ pages within a session. No persistence needed. Provider scope: app-level               │
+│ StateNotifierProvider.                                                                                               │
+│ - Page-local — Was only ever used on one page (forced into FFAppState by FlutterFlow limitations). Migrate to        │
+│ page-level state (StateProvider or local state in ConsumerStatefulWidget).                                           │
+│                                                                                                                      │
+│ Known variables from exploration:                                                                                    │
+│                                                                                                                      │
+│ Variable: CityID                                                                                                     │
+│ Category: Global                                                                                                     │
+│ Riverpod target: cityIdProvider (persisted)                                                                          │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: translationsCache                                                                                          │
+│ Category: Global                                                                                                     │
+│ Riverpod target: translationProvider (persisted)                                                                     │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: searchResults                                                                                              │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: filtersUsedForSearch                                                                                       │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: mostRecentlyViewedBusiness                                                                                 │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: businessProvider                                                                                    │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: mostRecentlyViewedBusinesMenuItems                                                                         │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: businessProvider                                                                                    │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: mostRecentlyViewedBusinessSelectedCategoryID                                                               │
+│ Category: Page-local (menu)                                                                                          │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: mostRecentlyViewedBusinessSelectedMenuID                                                                   │
+│ Category: Page-local (business profile)                                                                              │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: filterOverlayOpen                                                                                          │
+│ Category: Page-local                                                                                                 │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: CityPickerIsOpen                                                                                           │
+│ Category: Page-local                                                                                                 │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: BusinessIsOpen                                                                                             │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: businessProvider                                                                                    │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: restaurantIsFavorited                                                                                      │
+│ Category: Page-local                                                                                                 │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: fontScale                                                                                                  │
+│ Category: Global                                                                                                     │
+│ Riverpod target: accessibilityProvider                                                                               │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: isBoldTextEnabled                                                                                          │
+│ Category: Global                                                                                                     │
+│ Riverpod target: accessibilityProvider                                                                               │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: locationStatus                                                                                             │
+│ Category: Global                                                                                                     │
+│ Riverpod target: locationProvider                                                                                    │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: userCurrencyCode                                                                                           │
+│ Category: Global                                                                                                     │
+│ Riverpod target: localizationProvider                                                                                │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: exchangeRate                                                                                               │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: localizationProvider                                                                                │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: filtersForUserLanguage                                                                                     │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: filterProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: filterLookupMap                                                                                            │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: filterProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: currentFilterSessionId                                                                                     │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: sessionStartTime                                                                                           │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: analyticsProvider                                                                                   │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: menuSessionData                                                                                            │
+│ Category: Page-local (menu)                                                                                          │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: selectedDietaryPreferenceId                                                                                │
+│ Category: Page-local (menu/profile)                                                                                  │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: excludedAllergyIds                                                                                         │
+│ Category: Page-local (menu/profile)                                                                                  │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: selectedDietaryRestrictionId                                                                               │
+│ Category: Page-local (menu/profile)                                                                                  │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: hasActiveSearch                                                                                            │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: searchResultsCount                                                                                         │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: currentSearchText                                                                                          │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: previousActiveFilters                                                                                      │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: previousSearchText                                                                                         │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: previousFilterSessionId                                                                                    │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: currentRefinementSequence                                                                                  │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: lastRefinementTime                                                                                         │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: searchProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: activeSelectedTitleId                                                                                      │
+│ Category: Page-local (filter sheet)                                                                                  │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: foodDrinkTypes                                                                                             │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: filterProvider                                                                                      │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: visibleItemCount                                                                                           │
+│ Category: Page-local (menu)                                                                                          │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: filtersOfSelectedBusiness                                                                                  │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: businessProvider                                                                                    │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: openingHours                                                                                               │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: businessProvider                                                                                    │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: emptyLocation                                                                                              │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: locationProvider                                                                                    │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: BusinessFeatureButtonsCount                                                                                │
+│ Category: Page-local (business profile)                                                                              │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: isClosed                                                                                                   │
+│ Category: Page-local (business profile)                                                                              │
+│ Riverpod target: local state                                                                                         │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: mostRecentlyViewedBusinessAvailableDietaryPreferences                                                      │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: businessProvider                                                                                    │
+│ ────────────────────────────────────────                                                                             │
+│ Variable: mostRecentlyViewedBusinessAvailableRestrictions                                                            │
+│ Category: Session-shared                                                                                             │
+│ Riverpod target: businessProvider                                                                                    │
+│                                                                                                                      │
+│ Step 1: For each variable, read usages across FlutterFlow pages to verify category assignments                       │
+│ Step 2: Write MASTER_STATE_MAP.md with full analysis                                                                 │
+│ Step 3: Commit — docs: add MASTER_STATE_MAP with Riverpod migration assignments                                      │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 2: Bundle.md Audit                                                                                             │
+│                                                                                                                      │
+│ Goal: Ensure every BUNDLE.md is complete enough to implement its page without ambiguity. Every bundle must declare   │
+│ the same standard set of sections so a session starts with complete information.                                     │
+│                                                                                                                      │
+│ Decision: Shared/ READMEs — Reference, Don't Duplicate                                                               │
+│                                                                                                                      │
+│ Each custom widget, action, and function under shared/ has its own MASTER_README with full implementation notes. The │
+│  actual code lives in _flutterflow_export/lib/custom_code/.                                                          │
+│                                                                                                                      │
+│ Approach: BUNDLE.md files reference shared READMEs by path only (e.g.                                                │
+│ shared/widgets/UnifiedFiltersWidget/MASTER_README.md). Content is NOT copied into BUNDLE.md. This prevents drift     │
+│ where the README and BUNDLE.md say different things. During implementation, both files are read: BUNDLE.md for the   │
+│ page context and the shared README for the component details.                                                        │
+│                                                                                                                      │
+│ Rule for every page session: Before implementing a custom widget/action/function, read its shared/ MASTER_README AND │
+│  its source in _flutterflow_export/lib/custom_code/.                                                                 │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Task 2A: Define bundle.md standard                                                                                   │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Create: _reference/BUNDLE_STANDARD.md                                                                              │
+│                                                                                                                      │
+│ Required sections in every BUNDLE.md:                                                                                │
+│ 1. Page Purpose — One sentence                                                                                       │
+│ 2. Routes — Where you navigate from, where you navigate to, what triggers navigation                                 │
+│ 3. Riverpod State — Every provider this page reads or writes (post-migration names)                                  │
+│ 4. Local State — Every variable managed in the widget's own state                                                    │
+│ 5. API Calls — Every BuildShip endpoint called, trigger, parameters, response fields used                            │
+│ 6. Translation Keys — Every key used on this page (with MASTER_TRANSLATION_KEYS reference)                           │
+│ 7. Actions — Every user action and its full effect (state changes + navigation + analytics)                          │
+│ 8. Widgets — Every non-trivial widget used, with its parameters                                                      │
+│ 9. Analytics Events — Every event tracked, trigger conditions                                                        │
+│ 10. Edge Cases — Empty state, loading state, error state, offline state                                              │
+│                                                                                                                      │
+│ Task 2B: Audit each bundle.md against standard                                                                       │
+│                                                                                                                      │
+│ Pages to audit (7 pages + 6 settings sub-pages = 13 total):                                                          │
+│ - pages/01_search/BUNDLE.md + GAP_ANALYSIS.md                                                                        │
+│ - pages/02_business_profile/BUNDLE.md + GAP_ANALYSIS.md                                                              │
+│ - pages/03_menu_full_page/BUNDLE.md + GAP_ANALYSIS.md                                                                │
+│ - pages/04_gallery_full_page/BUNDLE.md + GAP_ANALYSIS.md                                                             │
+│ - pages/05_contact_details/BUNDLE.md + GAP_ANALYSIS.md                                                               │
+│ - pages/06_welcome_onboarding/BUNDLE.md + GAP_ANALYSIS.md                                                            │
+│ - pages/07_settings/settings_main/BUNDLE.md + GAP_ANALYSIS.md                                                        │
+│ - pages/07_settings/contact_us/BUNDLE.md + GAP_ANALYSIS.md                                                           │
+│ - pages/07_settings/localization/BUNDLE.md + GAP_ANALYSIS.md                                                         │
+│ - pages/07_settings/location_sharing/BUNDLE.md + GAP_ANALYSIS.md                                                     │
+│ - pages/07_settings/missing_place/BUNDLE.md + GAP_ANALYSIS.md                                                        │
+│ - pages/07_settings/share_feedback/BUNDLE.md + GAP_ANALYSIS.md                                                       │
+│                                                                                                                      │
+│ For each BUNDLE.md:                                                                                                  │
+│ 1. Read BUNDLE.md and GAP_ANALYSIS.md together                                                                       │
+│ 2. From GAP_ANALYSIS.md, classify each gap item:                                                                     │
+│   - "Claude builds" — new functionality Claude can implement from the design spec                                    │
+│   - "Needs BuildShip" — requires a new or modified API endpoint (flag for Phase 3)                                   │
+│ 3. Check against BUNDLE_STANDARD.md — note what sections are missing or unclear                                      │
+│ 4. Cross-check state variables against MASTER_STATE_MAP.md — verify the bundle uses the correct Riverpod provider    │
+│ names                                                                                                                │
+│ 5. Check shared/ MASTER_README references — verify every custom action/widget used on the page has a README, and add │
+│  a ## Shared Dependencies section to BUNDLE.md listing them with their path (do NOT copy content — only reference by │
+│  path)                                                                                                               │
+│ 6. Write a gap list as a comment block at the top of the BUNDLE.md: <!-- AUDIT GAPS: ... -->                         │
+│ 7. Fill the gaps where information is available from FlutterFlow source                                              │
+│ 8. Flag gaps that require user input                                                                                 │
+│                                                                                                                      │
+│ Output: A _reference/BUNDLE_AUDIT_REPORT.md summarizing:                                                             │
+│ - All gaps found per page                                                                                            │
+│ - Which gaps are filled                                                                                              │
+│ - Which need user decision                                                                                           │
+│ - Which GAP_ANALYSIS items need BuildShip work (forwarded to Phase 3)                                                │
+│                                                                                                                      │
+│ Step 1: Create BUNDLE_STANDARD.md                                                                                    │
+│ Step 2: Audit each bundle one by one (13 files)                                                                      │
+│ Step 3: Write BUNDLE_AUDIT_REPORT.md                                                                                 │
+│ Step 4: USER REVIEW REQUIRED — User reads BUNDLE_AUDIT_REPORT.md and confirms/resolves flagged gaps                  │
+│ Step 5: Fill confirmed gaps in each BUNDLE.md                                                                        │
+│ Step 6: Commit — docs: complete bundle.md audit, fill gaps from FlutterFlow source                                   │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 3: BuildShip Gap Analysis                                                                                      │
+│                                                                                                                      │
+│ Goal: Identify every change the user needs to make in BuildShip BEFORE page implementation begins for any page that  │
+│ depends on those changes. This prevents implementing pages against APIs that don't match yet.                        │
+│                                                                                                                      │
+│ Task 3A: Create BuildShip Requirements Document                                                                      │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: All BUNDLE.md files (API calls sections)                                                                     │
+│ - Read: _flutterflow_export/lib/backend/api_requests/api_calls.dart                                                  │
+│ - Create: _reference/BUILDSHIP_REQUIREMENTS.md                                                                       │
+│                                                                                                                      │
+│ Format:                                                                                                              │
+│ ## Endpoint: /search                                                                                                 │
+│ **Current behavior:** ...                                                                                            │
+│ **Required changes:** ...                                                                                            │
+│ **Pages blocked until fixed:** ...                                                                                   │
+│ **Priority:** HIGH / MEDIUM / LOW                                                                                    │
+│                                                                                                                      │
+│ ## New endpoint required: /xxx                                                                                       │
+│ **Purpose:** ...                                                                                                     │
+│ **Parameters:** ...                                                                                                  │
+│ **Response:** ...                                                                                                    │
+│ **Pages blocked until created:** ...                                                                                 │
+│                                                                                                                      │
+│ Step 1: For each of the 9 BuildShip endpoints, compare current behavior with BUNDLE.md requirements                  │
+│ Step 2: Identify any new endpoints needed                                                                            │
+│ Step 3: Identify parameter or response changes needed                                                                │
+│ Step 4: Order by priority (blocking core user flow = HIGH)                                                           │
+│ Step 5: Write BUILDSHIP_REQUIREMENTS.md                                                                              │
+│ Step 6: USER ACTION REQUIRED — User reads and executes BuildShip changes before work on affected pages               │
+│ Step 7: Commit — docs: add BuildShip requirements and gap analysis                                                   │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 3.5: Synthesized Task List                                                                                     │
+│                                                                                                                      │
+│ Goal: After Phase 2 (bundle audit) and Phase 3 (BuildShip gap analysis) are complete, we know the full scope of work │
+│  for the first time. This phase produces the definitive ordered task list that governs all coding work in Phase 7.   │
+│                                                                                                                      │
+│ Why this phase exists: The plan you are reading now is a meta-plan (how to approach the migration). The synthesized  │
+│ task list is the execution plan — a granular, ordered, ticket-style list of every concrete thing to build or change, │
+│  with clear ownership (Claude vs. User) and dependencies.                                                            │
+│                                                                                                                      │
+│ Task 3.5A: Generate MASTER_TASK_LIST.md                                                                              │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: _reference/BUNDLE_AUDIT_REPORT.md (all gaps per page)                                                        │
+│ - Read: _reference/BUILDSHIP_REQUIREMENTS.md (all API changes needed)                                                │
+│ - Read: _reference/MASTER_STATE_MAP.md (all state migrations)                                                        │
+│ - Create: _reference/MASTER_TASK_LIST.md                                                                             │
+│                                                                                                                      │
+│ Format:                                                                                                              │
+│ ## MASTER_TASK_LIST                                                                                                  │
+│                                                                                                                      │
+│ ### Foundation Tasks (must complete before any page)                                                                 │
+│ - [ ] T01 — [Claude] Create Flutter project scaffold                                                                 │
+│ - [ ] T02 — [Claude] Set up Riverpod providers                                                                       │
+│ - [ ] T03 — [User] Make BuildShip change: /search endpoint update                                                    │
+│ ...                                                                                                                  │
+│                                                                                                                      │
+│ ### Page Tasks (ordered by dependency)                                                                               │
+│ - [ ] T10 — [Claude] Implement welcome/new-user page                                                                 │
+│   - Depends on: T01, T02                                                                                             │
+│   - Spec: pages/06_welcome_onboarding/BUNDLE.md                                                                      │
+│   - GAP items included: [list from GAP_ANALYSIS]                                                                     │
+│ - [ ] T11 — [User] BuildShip: add auth session endpoint                                                              │
+│   - Blocks: T10                                                                                                      │
+│ ...                                                                                                                  │
+│                                                                                                                      │
+│ ### Polish Tasks (after all pages complete)                                                                          │
+│ - [ ] T50 — [Claude] Translation key pass + SQL generation                                                           │
+│ - [ ] T51 — [User] Run NEW_TRANSLATION_KEYS.sql in Supabase                                                          │
+│ - [ ] T52 — [Claude] Integration smoke test                                                                          │
+│                                                                                                                      │
+│ Step 1: Pull all "Claude builds" items from GAP_ANALYSIS.md files into tasks                                         │
+│ Step 2: Pull all "Needs BuildShip" items from BUILDSHIP_REQUIREMENTS.md into user tasks                              │
+│ Step 3: Pull all Riverpod migration items from MASTER_STATE_MAP.md                                                   │
+│ Step 4: Order all tasks by dependency (Foundation → Pages in order → Polish)                                         │
+│ Step 5: Mark ownership: [Claude] or [User] on every task                                                             │
+│ Step 6: USER REVIEW REQUIRED — User approves task list before Phase 4 begins. This is the contract for Phase 7.      │
+│ Step 7: Commit — docs: add MASTER_TASK_LIST — approved work plan for Phase 7                                         │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 4: Flutter Project Foundation                                                                                  │
+│                                                                                                                      │
+│ Goal: Build the infrastructure layer that all pages depend on. This is done once and must be correct before any page │
+│  work begins.                                                                                                        │
+│                                                                                                                      │
+│ Task 4A: App Theme                                                                                                   │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: JourneyMate-Organized/DESIGN_SYSTEM_flutter.md                                                               │
+│ - Read: JourneyMate-Organized/shared/app_theme.dart                                                                  │
+│ - Create: journey_mate/lib/theme/app_colors.dart                                                                     │
+│ - Create: journey_mate/lib/theme/app_spacing.dart                                                                    │
+│ - Create: journey_mate/lib/theme/app_typography.dart                                                                 │
+│ - Create: journey_mate/lib/theme/app_theme.dart                                                                      │
+│                                                                                                                      │
+│ What goes here: All design tokens from DESIGN_SYSTEM_flutter.md as Dart constants. ThemeData configured with correct │
+│  colors, typography, and component themes. This file is referenced by every widget — it must be correct and          │
+│ complete.                                                                                                            │
+│                                                                                                                      │
+│ Step 1: Create app_colors.dart with all color constants                                                              │
+│ Step 2: Create app_spacing.dart with spacing scale                                                                   │
+│ Step 3: Create app_typography.dart with all text styles                                                              │
+│ Step 4: Create app_theme.dart that composes ThemeData from the above                                                 │
+│ Step 5: Verify flutter analyze passes                                                                                │
+│ Step 6: Commit — feat: add app theme and design tokens                                                               │
+│                                                                                                                      │
+│ Task 4B: Router                                                                                                      │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: _flutterflow_export/lib/flutter_flow/nav/nav.dart                                                            │
+│ - Create: journey_mate/lib/router/app_router.dart                                                                    │
+│                                                                                                                      │
+│ What goes here: go_router setup with all routes. Route names as constants. Auth-guarded routes. Page transition      │
+│ animations (SlideTransition for forward nav, fade for modals).                                                       │
+│                                                                                                                      │
+│ Routes needed:                                                                                                       │
+│ - / → always redirect to /welcome                                                                                    │
+│ - /welcome → single welcome page (new vs. returning distinction handled internally by checking stored language       │
+│ preference)                                                                                                          │
+│ - /search → search (main home screen, entered after welcome)                                                         │
+│ - /business/:id → business profile                                                                                   │
+│ - /business/:id/menu → menu full page                                                                                │
+│ - /business/:id/gallery → gallery                                                                                    │
+│ - /business/:id/contact → contact details                                                                            │
+│ - /settings → settings main                                                                                          │
+│ - /settings/localization → localization                                                                              │
+│ - /settings/location → location sharing                                                                              │
+│ - /settings/contact → contact us form                                                                                │
+│ - /settings/feedback → share feedback                                                                                │
+│ - /settings/missing-place → missing place form                                                                       │
+│                                                                                                                      │
+│ New/returning detection (simple, not token-based):                                                                   │
+│ - Welcome page on load calls getUserPreference('user_language_code')                                                 │
+│ - Empty/null → first time user → show both buttons                                                                   │
+│ - Value exists → returning user → show only "Continue" button                                                        │
+│ - No router-level auth gate needed at this stage                                                                     │
+│                                                                                                                      │
+│ Step 1: Create app_router.dart with all routes                                                                       │
+│ Step 2: Wire into main.dart                                                                                          │
+│ Step 3: Commit — feat: add go_router with all page routes                                                            │
+│                                                                                                                      │
+│ Task 4C: API Service Layer                                                                                           │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: _flutterflow_export/lib/backend/api_requests/api_calls.dart                                                  │
+│ - Create: journey_mate/lib/services/api_service.dart                                                                 │
+│                                                                                                                      │
+│ What goes here: A clean Dart service class wrapping all 9 BuildShip endpoints. One method per endpoint. Typed        │
+│ response models. Error handling. No direct usage of raw http — all calls go through this service.                    │
+│                                                                                                                      │
+│ Endpoints to wrap:                                                                                                   │
+│ 0. auth — session creation / validation (verify this exists in BuildShip; if not, flag in Phase 3)                   │
+│ 1. search(cityId, searchInput, filters, userLocation, languageCode) → SearchResult                                   │
+│ 2. getBusinessProfile(businessId, languageCode) → BusinessProfile                                                    │
+│ 3. getDishesAndDrinks(businessId, languageCode) → MenuResult                                                         │
+│ 4. getFilters(languageCode) → List<Filter>                                                                           │
+│ 5. getExchangeRate(from, to) → double                                                                                │
+│ 6. getFilterDescriptions(languageCode, businessId) → Map<int, String>                                                │
+│ 7. getMenuItem(menuItemId, languageCode) → MenuItem                                                                  │
+│ 8. getTranslations(languageCode) → Map<String, dynamic>                                                              │
+│ 9. submitFeedback(formId, businessName, businessAddress, message, topic, userName, contact) → bool                   │
+│                                                                                                                      │
+│ Step 1: Create typed model classes in models/                                                                        │
+│ Step 2: Create api_service.dart with all methods                                                                     │
+│ Step 3: Commit — feat: add BuildShip API service layer with typed models                                             │
+│                                                                                                                      │
+│ Task 4D: Translation Service                                                                                         │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: _flutterflow_export/lib/custom_code/actions/get_translations_with_update.dart                                │
+│ - Read: _flutterflow_export/lib/flutter_flow/custom_functions.dart (getTranslations function)                        │
+│ - Read: _flutterflow_export/lib/flutter_flow/internationalization.dart                                               │
+│ - Create: journey_mate/lib/services/translation_service.dart                                                         │
+│                                                                                                                      │
+│ What goes here: Clean wrapper around the dual translation system. t(context, key) helper for static translations.    │
+│ td(key) helper for dynamic BuildShip translations. Cache management.                                                 │
+│                                                                                                                      │
+│ Step 1: Create translation_service.dart                                                                              │
+│ Step 2: Commit — feat: add translation service wrapping dual translation system                                      │
+│                                                                                                                      │
+│ Task 4E: Port main.dart infrastructure                                                                               │
+│                                                                                                                      │
+│ Context: The FlutterFlow main.dart contains a sophisticated engagement tracking and analytics system that must be    │
+│ carried into the new project. This is NOT boilerplate — it includes ~600 lines of production infrastructure.         │
+│                                                                                                                      │
+│ Components to port (from _flutterflow_export/lib/main.dart):                                                         │
+│ 1. EngagementTracker — Heartbeat-based foreground/engaged-time tracking with session management, activity detection, │
+│  periodic flush, session timeout (30 min inactivity)                                                                 │
+│ 2. AnalyticsService — Singleton managing device ID, session ID, filter session ID, first-session detection           │
+│ 3. AppLifecycleObserver — Connects app lifecycle to EngagementTracker                                                │
+│ 4. ActivityScope — Wraps entire app; captures all pointer/scroll/keyboard events; detects bold text + font scale     │
+│ accessibility settings                                                                                               │
+│ 5. ActivityNavigatorObserver — Marks user active on every route change                                               │
+│                                                                                                                      │
+│ How to port (key changes from FlutterFlow version):                                                                  │
+│ - Copy logic exactly — this system is correct                                                                        │
+│ - Replace FFAppState().sessionStartTime writes → analyticsProvider                                                   │
+│ - Replace FFAppState().isBoldTextEnabled + FFAppState().fontScale → accessibilityProvider                            │
+│ - Keep EngagementTracker and AnalyticsService as global singletons (same pattern)                                    │
+│ - Wire ActivityNavigatorObserver to GoRouter observers instead of MaterialApp                                        │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: _flutterflow_export/lib/main.dart (full source)                                                              │
+│ - Create: journey_mate/lib/services/analytics_service.dart (AnalyticsService + EngagementTracker)                    │
+│ - Create: journey_mate/lib/widgets/activity_scope.dart (ActivityScope + ActivityNavigatorObserver)                   │
+│ - Modify: journey_mate/lib/app.dart (wire AppLifecycleObserver, ActivityScope, ProviderScope)                        │
+│ - Modify: journey_mate/lib/main.dart (minimal entry point)                                                           │
+│                                                                                                                      │
+│ Step 1: Port EngagementTracker + AnalyticsService to analytics_service.dart                                          │
+│ Step 2: Port ActivityScope + ActivityNavigatorObserver to activity_scope.dart                                        │
+│ Step 3: Wire AppLifecycleObserver in app.dart                                                                        │
+│ Step 4: Write minimal main.dart (init analytics + Riverpod + runApp)                                                 │
+│ Step 5: Verify flutter analyze passes                                                                                │
+│ Step 6: Commit — feat: port engagement tracker and analytics infrastructure                                          │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 4.5: Codemagic CI/CD Setup                                                                                     │
+│                                                                                                                      │
+│ Goal: Configure Codemagic to build and push to App Store from the new journey_mate/ project. Copy and adapt the      │
+│ existing configuration from JourneyMate/.                                                                            │
+│                                                                                                                      │
+│ Why here: CI/CD must be configured before page implementation begins so that each merged page can be verified in a   │
+│ real build. Discovering build configuration issues late is expensive.                                                │
+│                                                                                                                      │
+│ Task 4.5A: Copy and adapt Codemagic configuration                                                                    │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: C:\Users\Rikke\Documents\JourneyMate\codemagic.yaml (source)                                                 │
+│ - Read: All related signing/push files in C:\Users\Rikke\Documents\JourneyMate\ (anything referenced by              │
+│ codemagic.yaml)                                                                                                      │
+│ - Create: journey_mate/codemagic.yaml (adapted for new project)                                                      │
+│                                                                                                                      │
+│ Adaptations needed:                                                                                                  │
+│ - Update project root path to point to journey_mate/                                                                 │
+│ - Bundle identifier: journeymate.dk (from URL scheme in Info.plist)                                                  │
+│ - Verify Flutter version matches new project requirements                                                            │
+│ - Preserve all signing configuration (certificates, provisioning profiles)                                           │
+│ - Preserve App Store Connect integration settings                                                                    │
+│                                                                                                                      │
+│ Info.plist for new project (must match existing, key settings from FlutterFlow version):                             │
+│ - CFBundleDisplayName: JourneyMate                                                                                   │
+│ - CFBundleURLSchemes: journeymate (deep link scheme)                                                                 │
+│ - CFBundleLocalizations: en, da, de, it, sv, no, fr                                                                  │
+│ - NSLocationWhenInUseUsageDescription: "In order to search for nearby places, the app needs to use your location"    │
+│ - NSLocationAlwaysAndWhenInUseUsageDescription: "JourneyMate uses your location to find nearby restaurants that      │
+│ match your dietary preferences"                                                                                      │
+│ - LSApplicationQueriesSchemes: comgooglemaps, waze, citymapper, and other map apps (copy full list from FlutterFlow  │
+│ export)                                                                                                              │
+│ - FlutterDeepLinkingEnabled: true                                                                                    │
+│ - UISupportedInterfaceOrientations: portrait only (remove landscape from list — confirm with user)                   │
+│ - Copy the full plist from _flutterflow_export/ios/Runner/Info.plist                                                 │
+│                                                                                                                      │
+│ Step 1: Read existing codemagic.yaml from JourneyMate                                                                │
+│ Step 2: Identify all referenced files (export plist, signing scripts, etc.)                                          │
+│ Step 3: Copy those files into journey_mate/                                                                          │
+│ Step 4: Adapt paths and project name in codemagic.yaml                                                               │
+│ Step 5: Verify yaml syntax                                                                                           │
+│ Step 6: USER ACTION REQUIRED: User adds any environment secrets/variables in Codemagic dashboard (API keys, signing  │
+│ passwords) that are not in the yaml file                                                                             │
+│ Step 7: Commit — chore: add Codemagic CI/CD configuration for App Store deployment                                   │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 5: Riverpod Architecture                                                                                       │
+│                                                                                                                      │
+│ Goal: Define and implement all Riverpod providers before any page is built. Every page will use these providers —    │
+│ they must exist first.                                                                                               │
+│                                                                                                                      │
+│ Task 5A: Define providers from MASTER_STATE_MAP                                                                      │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: _reference/MASTER_STATE_MAP.md (from Phase 1)                                                                │
+│ - Create: journey_mate/lib/providers/app_providers.dart                                                              │
+│ - Create: journey_mate/lib/providers/search_providers.dart                                                           │
+│ - Create: journey_mate/lib/providers/business_providers.dart                                                         │
+│ - Create: journey_mate/lib/providers/filter_providers.dart                                                           │
+│ - Create: journey_mate/lib/providers/settings_providers.dart                                                         │
+│                                                                                                                      │
+│ Provider structure:                                                                                                  │
+│                                                                                                                      │
+│ app_providers.dart (global, persisted):                                                                              │
+│ // City selection — persisted to SharedPreferences                                                                   │
+│ final cityIdProvider = StateNotifierProvider<CityNotifier, int>((ref) => CityNotifier());                            │
+│                                                                                                                      │
+│ // Translation cache — persisted to SecureStorage                                                                    │
+│ final translationsProvider = StateNotifierProvider<TranslationsNotifier, Map<String, dynamic>?>(...);                │
+│                                                                                                                      │
+│ // Accessibility                                                                                                     │
+│ final accessibilityProvider = StateNotifierProvider<AccessibilityNotifier, AccessibilityState>(...);                 │
+│                                                                                                                      │
+│ // Location permission                                                                                               │
+│ final locationProvider = StateNotifierProvider<LocationNotifier, LocationState>(...);                                │
+│                                                                                                                      │
+│ search_providers.dart (session-shared):                                                                              │
+│ final searchStateProvider = StateNotifierProvider<SearchNotifier, SearchState>(...);                                 │
+│ // Contains: searchResults, filtersUsedForSearch, searchResultsCount, hasActiveSearch,                               │
+│ //           currentSearchText, previousActiveFilters, currentFilterSessionId, etc.                                  │
+│                                                                                                                      │
+│ business_providers.dart (session-shared):                                                                            │
+│ final businessProvider = StateNotifierProvider<BusinessNotifier, BusinessState>(...);                                │
+│ // Contains: mostRecentlyViewedBusiness, filtersOfSelectedBusiness, openingHours,                                    │
+│ //           availableDietaryPreferences, availableRestrictions, menuItems, etc.                                     │
+│                                                                                                                      │
+│ filter_providers.dart (session-shared):                                                                              │
+│ final filterProvider = StateNotifierProvider<FilterNotifier, FilterState>(...);                                      │
+│ // Contains: filtersForUserLanguage, filterLookupMap, foodDrinkTypes                                                 │
+│                                                                                                                      │
+│ settings_providers.dart (global):                                                                                    │
+│ final localizationProvider = StateNotifierProvider<LocalizationNotifier, LocalizationState>(...);                    │
+│ // Contains: userCurrencyCode, exchangeRate                                                                          │
+│                                                                                                                      │
+│ Step 1: Create all StateNotifier classes with correct state models                                                   │
+│ Step 2: Wire ProviderScope in main.dart / app.dart                                                                   │
+│ Step 3: Verify flutter analyze passes                                                                                │
+│ Step 4: Write brief _reference/PROVIDERS_REFERENCE.md documenting every provider and what it owns                    │
+│ Step 5: Commit — feat: add Riverpod providers for all app state                                                      │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 6: Translation Foundation (Minimal Upfront)                                                                    │
+│                                                                                                                      │
+│ Goal: Establish the translation infrastructure, but defer key generation until after pages are implemented. This     │
+│ avoids creating keys without context and avoids the unreliable state of MASTER_TRANSLATION_KEYS.md.                  │
+│                                                                                                                      │
+│ Why defer: Custom widgets and functions already use Supabase translation keys (already wired in FlutterFlow). The    │
+│ only missing keys are for new page-level UI elements added in the v2 design. Those are best identified after a page  │
+│ is implemented, when it is clear exactly what text is hardcoded and what context each key needs.                     │
+│                                                                                                                      │
+│ Translation architecture:                                                                                            │
+│ - Dynamic keys (Supabase via BuildShip): All custom widgets/functions already use getTranslations(languageCode, key, │
+│  translationsCache). These continue to work as-is. The translationsProvider in Riverpod loads and caches the full    │
+│ key-value map.                                                                                                       │
+│ - Static keys (FlutterFlow internationalization.dart): The existing keys in                                          │
+│ _flutterflow_export/lib/flutter_flow/internationalization.dart are the baseline. Port these into the new project's   │
+│ translation service.                                                                                                 │
+│ - New keys (deferred): Identified per-page after implementation.                                                     │
+│                                                                                                                      │
+│ Task 6A: Port existing static translations                                                                           │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: _flutterflow_export/lib/flutter_flow/internationalization.dart                                               │
+│ - Create: journey_mate/lib/services/translation_service.dart                                                         │
+│                                                                                                                      │
+│ What to include:                                                                                                     │
+│ - td(key) helper: looks up dynamic key from translationsProvider cache                                               │
+│ - ts(context, key) helper: looks up static key from Flutter's built-in localizations                                 │
+│ - Port existing FlutterFlow static keys to AppLocalizations format                                                   │
+│                                                                                                                      │
+│ Step 1: Create translation_service.dart with both helpers                                                            │
+│ Step 2: Port existing static key strings from internationalization.dart                                              │
+│ Step 3: Commit — feat: add translation service with existing static keys                                             │
+│                                                                                                                      │
+│ Task 6B: Per-page translation key pass (done AFTER each page in Phase 7)                                             │
+│                                                                                                                      │
+│ After each page is implemented:                                                                                      │
+│ 1. Scan the page code for any hardcoded strings                                                                      │
+│ 2. Each hardcoded string becomes a new translation key                                                               │
+│ 3. Name the key descriptively with context (e.g. search_empty_state_title not string_1)                              │
+│ 4. Add the key to translation_service.dart with its English value                                                    │
+│ 5. Generate a SQL insert statement and append it to _reference/NEW_TRANSLATION_KEYS.sql                              │
+│ 6. USER ACTION REQUIRED (batched): After all pages are done, user runs the full SQL file against the Supabase        │
+│ translation table once                                                                                               │
+│                                                                                                                      │
+│ Output: _reference/NEW_TRANSLATION_KEYS.sql — a running file that grows as pages are completed. Run once at the end  │
+│ of Phase 7.                                                                                                          │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 7: Page Implementation (In Order)                                                                              │
+│                                                                                                                      │
+│ The specification sheet for every page (no separate document needed):                                                │
+│ These three documents together constitute the complete spec for any page:                                            │
+│ 1. DESIGN_SYSTEM_flutter.md — visual correctness                                                                     │
+│ 2. The page's BUNDLE.md — functional correctness                                                                     │
+│ 3. _reference/PROVIDERS_REFERENCE.md — state correctness                                                             │
+│                                                                                                                      │
+│ The code review after each page checks the implementation against all three.                                         │
+│                                                                                                                      │
+│ Rule: Before implementing any page, the session MUST:                                                                │
+│ 1. Re-read DESIGN_SYSTEM_flutter.md                                                                                  │
+│ 2. Re-read _reference/PROVIDERS_REFERENCE.md                                                                         │
+│ 3. Read the page's BUNDLE.md                                                                                         │
+│ 4. Read the page's GAP_ANALYSIS.md — classify what Claude builds vs. what is BuildShip-blocked                       │
+│ 5. For every custom widget/action/function the page uses, read its shared/ MASTER_README AND its source in           │
+│ _flutterflow_export/lib/custom_code/                                                                                 │
+│ 6. Verify the page's BuildShip dependencies are not in BUILDSHIP_REQUIREMENTS.md as blocked                          │
+│ 7. Implement following the BUNDLE.md checklist exactly                                                               │
+│ 8. After page is complete: run translation key pass (Task 6B)                                                        │
+│ 9. After translation pass: run code review (see below)                                                               │
+│                                                                                                                      │
+│ Code review protocol (after every page):                                                                             │
+│                                                                                                                      │
+│ Use the /code-review skill, or manually review against this checklist:                                               │
+│                                                                                                                      │
+│ Design token adherence:                                                                                              │
+│ - All colors are from AppColors (no raw hex strings)                                                                 │
+│ - All spacing is from AppSpacing (no magic pixel numbers)                                                            │
+│ - All text styles are from AppTypography (no inline TextStyle)                                                       │
+│ - Orange is only used for CTAs/interactive elements (never match status)                                             │
+│ - Green is only used for match confirmation (never CTAs)                                                             │
+│ - Filter column widths are 36%/33%/31% (never flexible)                                                              │
+│                                                                                                                      │
+│ BUNDLE.md adherence:                                                                                                 │
+│ - Every widget listed in BUNDLE.md is implemented                                                                    │
+│ - Every action listed in BUNDLE.md triggers the correct state change                                                 │
+│ - Every analytics event listed in BUNDLE.md is tracked                                                               │
+│ - Every API call listed in BUNDLE.md is made at the correct trigger point                                            │
+│ - Every navigation action listed in BUNDLE.md is wired correctly                                                     │
+│ - All edge cases (empty, loading, error) are handled                                                                 │
+│                                                                                                                      │
+│ State correctness:                                                                                                   │
+│ - No FFAppState references remain                                                                                    │
+│ - All reads come from the correct Riverpod provider per PROVIDERS_REFERENCE.md                                       │
+│ - Page-local state is in local ConsumerStatefulWidget state (not a provider)                                         │
+│ - No hardcoded strings (all text uses td() or ts())                                                                  │
+│                                                                                                                      │
+│ Code quality:                                                                                                        │
+│ - flutter analyze returns 0 warnings, 0 errors                                                                       │
+│ - No TODO comments left unaddressed                                                                                  │
+│ - Widget tree is not excessively nested (extract sub-widgets where needed)                                           │
+│                                                                                                                      │
+│ Page order (dependency-driven):                                                                                      │
+│                                                                                                                      │
+│ Page 7.1: Welcome / Onboarding                                                                                       │
+│                                                                                                                      │
+│ Why first: Entry point. No dependencies on other pages. Establishes navigation foundation.                           │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: pages/06_welcome_onboarding/BUNDLE.md                                                                        │
+│ - Read: _flutterflow_export/lib/initiate_flow/welcome_page_widget.dart (FlutterFlow source — full code available)    │
+│ - Create: journey_mate/lib/pages/welcome/welcome_page.dart                                                           │
+│                                                                                                                      │
+│ One page, conditional button (NOT two pages):                                                                        │
+│ - On init: calls getUserPreference('user_language_code')                                                             │
+│ - If language pref exists → returning user → show only "Continue" button                                             │
+│ - If language pref is null/empty → first time user → show BOTH "Continue" (English) AND "Fortsæt på dansk" (Danish)  │
+│ buttons                                                                                                              │
+│ - The "Fortsæt på dansk" button is hidden with if (_model.userLanguageCode == null || _model.userLanguageCode == '') │
+│  — simple conditional render                                                                                         │
+│                                                                                                                      │
+│ Router decision (simplified):                                                                                        │
+│ - Always route to /welcome on app launch — no token check needed                                                     │
+│ - The page itself handles the new vs. returning distinction via stored language preference                           │
+│                                                                                                                      │
+│ On-load actions (parallel, from FlutterFlow source):                                                                 │
+│ Parallel batch 1:                                                                                                    │
+│   - getUserPreference('user_currency_code') → updateCurrencyWithExchangeRate()                                       │
+│   - checkLocationPermission('welcomepage') [fire-and-forget]                                                         │
+│   - getUserPreference('user_language_code')                                                                          │
+│     - If empty → saveUserPreference('user_language_code', 'en'), setAppLanguage('en')                                │
+│   - Set _buttonsMayShow = true → reveal buttons                                                                      │
+│                                                                                                                      │
+│ Parallel batch 2 (after batch 1):                                                                                    │
+│   - getTranslationsWithUpdate(languageCode)                                                                          │
+│   - getFiltersWithUpdate(languageCode) [fire-and-forget]                                                             │
+│                                                                                                                      │
+│ "Continue" button action:                                                                                            │
+│ 1. Get current location                                                                                              │
+│ 2. Call SearchCall (cityId, userLocation, '', languageCode)                                                          │
+│ 3. markUserEngaged() [fire-and-forget]                                                                               │
+│ 4. generateAndStoreFilterSessionId() [fire-and-forget]                                                               │
+│ 5. Store searchResults + searchResultsCount in searchProvider                                                        │
+│ 6. Track analytics 'page_viewed' [fire-and-forget]                                                                   │
+│ 7. Navigate to /search                                                                                               │
+│                                                                                                                      │
+│ "Fortsæt på dansk" button action (first-time users only):                                                            │
+│ Parallel:                                                                                                            │
+│   - markUserEngaged, track analytics, saveUserPreference('user_currency_code', 'DKK'),                               │
+│     saveUserPreference('user_language_code', 'da'), generateAndStoreFilterSessionId,                                 │
+│     setAppLanguage('da')                                                                                             │
+│   - getTranslationsWithUpdate('da'), getFiltersWithUpdate('da')                                                      │
+│   - If locationStatus: SearchCall(da) → store results                                                                │
+│   - If no location: requestLocationPermissionAndTrack → SearchCall(da) → store results                               │
+│ Navigate to /search after 100ms delay                                                                                │
+│                                                                                                                      │
+│ State involved: searchStateProvider, localizationProvider, translationsProvider, filterProvider, locationProvider,   │
+│ accessibilityProvider                                                                                                │
+│                                                                                                                      │
+│ Step 1: Implement welcome_page.dart following the action sequences above and BUNDLE.md                               │
+│ Step 2: Wire button visibility conditional (_buttonsMayShow gates entire button column)                              │
+│ Step 3: Wire router to always go to /welcome on launch (remove token check)                                          │
+│ Step 4: Run translation key pass — scan for hardcoded strings, append to NEW_TRANSLATION_KEYS.sql                    │
+│ Step 5: Run code review against the three-document spec (design + BUNDLE.md + providers)                             │
+│ Step 6: Run flutter analyze — must be 0 warnings                                                                     │
+│ Step 7: Commit — feat: implement welcome page with new/returning user conditional                                    │
+│                                                                                                                      │
+│ Note: Steps 4–7 are repeated at the end of every page in Phase 7.                                                    │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Page 7.2: Search                                                                                                     │
+│                                                                                                                      │
+│ Why second: Core user flow. Establishes search + filter patterns used everywhere.                                    │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: pages/01_search/BUNDLE.md                                                                                    │
+│ - Read: _flutterflow_export/lib/search/ (FlutterFlow source)                                                         │
+│ - Create: journey_mate/lib/pages/search/search_page.dart                                                             │
+│ - Create: journey_mate/lib/pages/search/widgets/ (search-specific sub-widgets)                                       │
+│                                                                                                                      │
+│ State involved: searchStateProvider, filterProvider, locationProvider, translationsProvider, accessibilityProvider   │
+│                                                                                                                      │
+│ Key complexity: Filter panel (3 columns, fixed widths 36%/33%/31%), search session tracking, analytics events on     │
+│ refinement                                                                                                           │
+│                                                                                                                      │
+│ Step 1: Implement search page shell + filter panel                                                                   │
+│ Step 2: Wire searchStateProvider (search API call + result display)                                                  │
+│ Step 3: Implement filter selection UI (chip rows, filter sheet)                                                      │
+│ Step 4: Implement restaurant card list                                                                               │
+│ Step 5: Implement empty state + loading shimmer                                                                      │
+│ Step 6: Wire analytics events                                                                                        │
+│ Step 7: Run flutter analyze                                                                                          │
+│ Step 8: Commit — feat: implement search page with filter system                                                      │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Page 7.3: Business Profile                                                                                           │
+│                                                                                                                      │
+│ Why third: Second core flow, navigated to from search.                                                               │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: pages/02_business_profile/BUNDLE.md                                                                          │
+│ - Read: _flutterflow_export/lib/profile/ (FlutterFlow source)                                                        │
+│ - Create: journey_mate/lib/pages/business_profile/business_profile_page.dart                                         │
+│ - Create: journey_mate/lib/pages/business_profile/widgets/ (modals, sheets, etc.)                                    │
+│                                                                                                                      │
+│ State involved: businessProvider, translationsProvider, filterProvider, accessibilityProvider                        │
+│                                                                                                                      │
+│ Key complexity: Parallel API calls (profile + menu), gallery tabs, expandable sections, filter matching display,     │
+│ contact modals, menu session tracking                                                                                │
+│                                                                                                                      │
+│ Step 1: Implement page scaffold + header section                                                                     │
+│ Step 2: Implement filter match display                                                                               │
+│ Step 3: Implement expandable info sections                                                                           │
+│ Step 4: Implement gallery tabs                                                                                       │
+│ Step 5: Implement menu preview section                                                                               │
+│ Step 6: Implement contact popup + report modal                                                                       │
+│ Step 7: Wire all analytics events (profile view, section interactions)                                               │
+│ Step 8: Commit — feat: implement business profile page                                                               │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Page 7.4: Menu Full Page                                                                                             │
+│                                                                                                                      │
+│ Why fourth: Extends business profile. Shares filter and menu state.                                                  │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: pages/03_menu_full_page/BUNDLE.md                                                                            │
+│ - Read: _flutterflow_export/lib/profile/ (menu section)                                                              │
+│ - Create: journey_mate/lib/pages/menu_full_page/menu_full_page.dart                                                  │
+│                                                                                                                      │
+│ State involved: businessProvider (menu items, selected category, dietary filters), filterProvider,                   │
+│ translationsProvider                                                                                                 │
+│                                                                                                                      │
+│ Local state: selectedDietaryPreferenceId, excludedAllergyIds, selectedDietaryRestrictionId, visibleItemCount,        │
+│ menuSessionData                                                                                                      │
+│                                                                                                                      │
+│ Step 1: Implement menu page with category tabs                                                                       │
+│ Step 2: Implement dish cards with dietary filtering                                                                  │
+│ Step 3: Implement UnifiedFiltersWidget integration                                                                   │
+│ Step 4: Wire menu session tracking (start/end)                                                                       │
+│ Step 5: Commit — feat: implement menu full page                                                                      │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Page 7.5: Gallery Full Page                                                                                          │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: pages/04_gallery_full_page/BUNDLE.md                                                                         │
+│ - Create: journey_mate/lib/pages/gallery_full_page/gallery_full_page.dart                                            │
+│                                                                                                                      │
+│ State involved: businessProvider (gallery images), translationsProvider                                              │
+│                                                                                                                      │
+│ Step 1: Implement gallery with TabBarView (menu/outdoor/food/interior tabs)                                          │
+│ Step 2: Implement full-screen image viewer                                                                           │
+│ Step 3: Commit — feat: implement gallery full page                                                                   │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Page 7.6: Contact Details                                                                                            │
+│                                                                                                                      │
+│ Files:                                                                                                               │
+│ - Read: pages/05_contact_details/BUNDLE.md                                                                           │
+│ - Create: journey_mate/lib/pages/contact_details/contact_details_page.dart                                           │
+│                                                                                                                      │
+│ State involved: businessProvider, translationsProvider                                                               │
+│                                                                                                                      │
+│ Step 1: Implement contact details display                                                                            │
+│ Step 2: Implement copy-to-clipboard, open in maps, open URL actions                                                  │
+│ Step 3: Commit — feat: implement contact details page                                                                │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Pages 7.7–7.12: Settings                                                                                             │
+│                                                                                                                      │
+│ Files (one task per sub-page):                                                                                       │
+│ - pages/07_settings/settings_main/BUNDLE.md → settings/settings_main_page.dart                                       │
+│ - pages/07_settings/localization/BUNDLE.md → settings/localization_page.dart                                         │
+│ - pages/07_settings/location_sharing/BUNDLE.md → settings/location_sharing_page.dart                                 │
+│ - pages/07_settings/contact_us/BUNDLE.md → settings/contact_us_page.dart                                             │
+│ - pages/07_settings/share_feedback/BUNDLE.md → settings/share_feedback_page.dart                                     │
+│ - pages/07_settings/missing_place/BUNDLE.md → settings/missing_place_page.dart                                       │
+│                                                                                                                      │
+│ State involved: localizationProvider, accessibilityProvider, locationProvider, translationsProvider,                 │
+│ settingsProvider                                                                                                     │
+│                                                                                                                      │
+│ Step (each sub-page): Implement → analyze → commit                                                                   │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Phase 8: Integration Polish                                                                                          │
+│                                                                                                                      │
+│ Goal: Verify everything works end-to-end. Address cross-cutting concerns.                                            │
+│                                                                                                                      │
+│ Task 8A: Navigation smoke test                                                                                       │
+│                                                                                                                      │
+│ Walk every navigation path:                                                                                          │
+│ - App launch → welcome → search                                                                                      │
+│ - Search → business profile → back                                                                                   │
+│ - Business profile → menu → back                                                                                     │
+│ - Business profile → gallery → back                                                                                  │
+│ - Business profile → contact → back                                                                                  │
+│ - Search → settings → each sub-page → back                                                                           │
+│                                                                                                                      │
+│ Task 8B: Accessibility pass                                                                                          │
+│                                                                                                                      │
+│ For each page:                                                                                                       │
+│ - Verify fontScale / isBoldTextEnabled from accessibilityProvider is respected                                       │
+│ - Verify touch targets are ≥ 44px                                                                                    │
+│ - Verify semantic labels on images and icons                                                                         │
+│                                                                                                                      │
+│ Task 8C: Translation completeness pass                                                                               │
+│                                                                                                                      │
+│ - Run through every page and verify no hardcoded strings                                                             │
+│ - Verify all MASTER_TRANSLATION_KEYS.md entries are used                                                             │
+│                                                                                                                      │
+│ Task 8D: Analytics audit                                                                                             │
+│                                                                                                                      │
+│ - Verify every event defined in BUNDLE.md files is implemented                                                       │
+│                                                                                                                      │
+│ Task 8E: Final flutter analyze                                                                                       │
+│                                                                                                                      │
+│ - Zero warnings, zero errors before marking done                                                                     │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Appendix: Skills to Invoke Per Phase                                                                                 │
+│                                                                                                                      │
+│ ┌───────────────────┬─────────────────────────────────────────────────────┐                                          │
+│ │       Phase       │                  Recommended Skill                  │                                          │
+│ ├───────────────────┼─────────────────────────────────────────────────────┤                                          │
+│ │ 0: Scaffold       │ Direct implementation (straightforward)             │                                          │
+│ ├───────────────────┼─────────────────────────────────────────────────────┤                                          │
+│ │ 1: State map      │ /brainstorming if state category is unclear         │                                          │
+│ ├───────────────────┼─────────────────────────────────────────────────────┤                                          │
+│ │ 2: Bundle audit   │ Direct read + write                                 │                                          │
+│ ├───────────────────┼─────────────────────────────────────────────────────┤                                          │
+│ │ 3: BuildShip gaps │ Direct analysis + write                             │                                          │
+│ ├───────────────────┼─────────────────────────────────────────────────────┤                                          │
+│ │ 4: Foundation     │ /feature-dev for each infrastructure component      │                                          │
+│ ├───────────────────┼─────────────────────────────────────────────────────┤                                          │
+│ │ 5: Riverpod       │ /writing-plans for provider architecture if complex │                                          │
+│ ├───────────────────┼─────────────────────────────────────────────────────┤                                          │
+│ │ 7: Each page      │ /feature-dev per page; /code-review after each page │                                          │
+│ ├───────────────────┼─────────────────────────────────────────────────────┤                                          │
+│ │ 8: Polish         │ /systematic-debugging if layout bugs arise          │                                          │
+│ └───────────────────┴─────────────────────────────────────────────────────┘                                          │
+│                                                                                                                      │
+│ ---                                                                                                                  │
+│ Skills to Consider Adding                                                                                            │
+│                                                                                                                      │
+│ The following skills are referenced above but may not be installed. Check with /skills before starting:              │
+│                                                                                                                      │
+│ - superpowers:executing-plans — required for executing this plan task by task                                        │
+│ - superpowers:subagent-driven-development — useful for Phase 7 when multiple settings pages can be built in parallel │
+│ - superpowers:systematic-debugging — essential for Phase 8 layout debugging                                          │
+│ - feature-dev:feature-dev — one per page migration in Phase 7                                                        │
+│                                                                                                                      │
+│ If any of these are missing, the user should install them before Phase 4. 

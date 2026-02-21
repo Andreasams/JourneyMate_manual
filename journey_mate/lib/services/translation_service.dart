@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'api_service.dart';
+import '../providers/app_providers.dart';
 
 // ============================================================
 // STATIC TRANSLATIONS (Sample keys for Phase 4 — full map in Phase 6)
@@ -54,38 +54,8 @@ const Map<String, Map<String, String>> kStaticTranslations = {
 };
 
 // ============================================================
-// DYNAMIC TRANSLATIONS CACHE (Riverpod 3.x provider)
-// ============================================================
-
-final translationsCacheProvider =
-    NotifierProvider<TranslationsCacheNotifier, Map<String, String>>(() {
-  return TranslationsCacheNotifier();
-});
-
-class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
-  @override
-  Map<String, String> build() => {};
-
-  /// Loads translations from BuildShip for a specific language
-  Future<void> loadTranslations(String languageCode) async {
-    final response =
-        await ApiService.instance.getUiTranslations(languageCode: languageCode);
-
-    if (response.succeeded && response.jsonBody is Map) {
-      state = Map<String, String>.from(response.jsonBody);
-    } else {
-      state = {};
-    }
-  }
-
-  /// Clears all cached translations
-  void clear() {
-    state = {};
-  }
-}
-
-// ============================================================
 // HELPER FUNCTIONS FOR WIDGETS
+// Note: translationsCacheProvider is now in providers/app_providers.dart
 // ============================================================
 
 /// Static translation lookup (ts = "translation static")

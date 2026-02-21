@@ -1,0 +1,194 @@
+import { createClient } from '@supabase/supabase-js';
+
+interface NodeInputs {
+  supabaseUrl: string;
+  supabaseKey: string;
+  languageCode: string;
+}
+
+interface NodeScriptOptions {
+  logging: any;
+  env: any;
+  getBuildShipFile: any;
+}
+
+interface FilterItem {
+  id: number;
+  name: string;
+  type: string;
+  parent_id: number | null;
+  is_neighborhood: boolean;
+  city_id: number | null;
+  has_subitems: boolean;
+  children: FilterItem[];
+  display_order: number | null;
+  neighbourhood_id_1?: number | null;
+  neighbourhood_id_2?: number | null;
+}
+
+interface FoodDrinkItem {
+  id: number;
+  name: string;
+  type: 'food' | 'drink';
+  has_gluten_free: boolean;
+  has_halal: boolean;
+  has_lactose_free: boolean;
+  has_vegan: boolean;
+  has_vegetarian: boolean;
+  display_order: number | null;
+}
+
+interface NodeOutput {
+  filters: FilterItem[];
+  foodDrinkTypes: FoodDrinkItem[];
+  success: boolean;
+  error?: string;
+  filterCount: number;
+  foodDrinkCount: number;
+}
+
+export default async function getOptimizedFilters(
+  { supabaseUrl, supabaseKey, languageCode }: NodeInputs,
+  { logging, env, getBuildShipFile }: NodeScriptOptions,
+): Promise<NodeOutput> {
+
+  logging.log("Starting getOptimizedFilters with new combined function:", {
+    supabaseUrl: supabaseUrl ? "[PROVIDED]" : "[MISSING]",
+    supabaseKey: supabaseKey ? "[PROVIDED]" : "[MISSING]",
+    languageCode: languageCode || "[MISSING]"
+  });
+
+  if (!supabaseUrl) {
+    logging.log('ERROR: Missing required input "supabaseUrl".');
+    return { filters: [], foodDrinkTypes: [], success: false, error: 'supabaseUrl is required', filterCount: 0, foodDrinkCount: 0 };
+  }
+  
+  if (!supabaseKey) {
+    logging.log('ERROR: Missing required input "supabaseKey".');
+    return { filters: [], foodDrinkTypes: [], success: false, error: 'supabaseKey is required', filterCount: 0, foodDrinkCount: 0 };
+  }
+  
+  if (!languageCode) {
+    logging.log('ERROR: Missing required input "languageCode".');
+    return { filters: [], foodDrinkTypes: [], success: false, error: 'languageCode is required', filterCount: 0, foodDrinkCount: 0 };
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  try {
+    logging.log(`Calling NEW Supabase RPC 'get_filters_and_food_types_with_translations' for language: ${languageCode}`);
+    
+    const { data, error } = await supabase
+      .rpc('get_filters_and_food_types_with_translations', {
+        p_language_code: languageCode
+      });
+
+    if (error) {
+      logging.log('ERROR: Supabase RPC call failed.', { error: error.message, hint: error.hint });
+      return {
+        filters: [],
+        foodDrinkTypes: [],
+        success: false,
+        error: `Database error: ${error.message}`,
+        filterCount: 0,
+        foodDrinkCount: 0
+      };
+    }
+
+    if (!data || data.length === 0) {
+      logging.log('WARNING: No data returned from function.');
+      return {
+        filters: [],
+        foodDrinkTypes: [],
+        success: true,
+        error: 'No data found for language',
+        filterCount: 0,
+        foodDrinkCount: 0
+      };
+    }
+
+    // Extract filter_data and food_drink_data from the first row
+    const result = data[0];
+    const filters = result.filter_data || [];
+    const foodDrinkTypes = result.food_drink_data || [];
+
+    logging.log('INFO: Data successfully retrieved from database.', { 
+      filterCount: filters.length,
+      foodDrinkCount: foodDrinkTypes.length
+    });
+
+    // Build hierarchical structure for filters (same as before)
+    const filterMap = new Map();
+    
+    filters.forEach(filter => {
+      filterMap.set(filter.id, { ...filter, children: [] });
+    });
+
+    filterMap.forEach(filter => {
+      if (filter.parent_id) {
+        const parent = filterMap.get(filter.parent_id);
+        if (parent) {
+          parent.children.push(filter);
+          parent.has_subitems = true;
+        }
+      }
+    });
+
+    filterMap.forEach(filter => {
+      if (filter.children.length > 0) {
+        filter.children.sort((a: FilterItem, b: FilterItem) => {
+          if (filter.id === 7) {
+            return a.name.localeCompare(b.name);
+          }
+          
+          if (filter.id === 6) {
+            if (a.display_order !== null && b.display_order !== null) {
+              if (a.display_order !== b.display_order) {
+                return a.display_order - b.display_order;
+              }
+            }
+            return a.name.localeCompare(b.name);
+          }
+          
+          if (a.display_order === null && b.display_order === null) {
+            return a.id - b.id;
+          }
+          if (a.display_order === null) return 1;
+          if (b.display_order === null) return -1;
+          if (a.display_order !== b.display_order) {
+            return a.display_order - b.display_order;
+          }
+          return a.id - b.id;
+        });
+      }
+    });
+
+    const topLevelFilters = Array.from(filterMap.values())
+      .filter(filter => filter.parent_id === null)
+      .sort((a, b) => a.id - b.id);
+
+    logging.log('INFO: Successfully built hierarchical filter structure.', { 
+      topLevelCount: topLevelFilters.length,
+      foodDrinkCount: foodDrinkTypes.length
+    });
+    
+    return {
+      filters: topLevelFilters,
+      foodDrinkTypes: foodDrinkTypes,
+      success: true,
+      filterCount: topLevelFilters.length,
+      foodDrinkCount: foodDrinkTypes.length
+    };
+
+  } catch (error: any) {
+    logging.log('ERROR: Filter processing failed.', { error: error.message, stack: error.stack });
+    return {
+      filters: [],
+      foodDrinkTypes: [],
+      success: false,
+      error: `Processing error: ${error.message}`,
+      filterCount: 0,
+      foodDrinkCount: 0
+    };
+  }
+}

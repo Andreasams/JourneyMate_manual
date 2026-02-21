@@ -1,0 +1,128 @@
+/**
+ * @node getLanguageText
+ * @description Fetches all UI translations for a specified language from the
+ * `ui_translations` Supabase table and returns them as a flat
+ * key-value map. Strips all metadata (IDs, timestamps, categories) so
+ * downstream nodes receive only what they need: `{ translation_key: translation_value }`.
+ *
+ * @example
+ * // Input
+ * { languageCode: "da" }
+ *
+ * // Output
+ * {
+ *   "allergen_1": "selleri",
+ *   "key_home": "Hjem",
+ *   "key_search": "Søg"
+ * }
+ *
+ * @input {string} supabaseUrl       - The Supabase project URL.
+ * @input {string} supabaseKey       - The Supabase service role or anon key.
+ * @input {string} languageCode      - BCP-47 language code to fetch (e.g. "en", "da", "de").
+ *
+ * @output {NodeOutput}              - Flat `{ [translation_key]: translation_value }` map on success.
+ * @output {{ error: string }}       - Error object if inputs are missing or the query fails.
+ *
+ * @table ui_translations
+ * @columns_used translation_key, translation_value (filtered by language_code)
+ *
+ * @sideEffects None — read-only Supabase query.
+ */
+import { createClient } from '@supabase/supabase-js';
+
+// --- Type Definitions ---
+
+interface NodeInputs {
+  supabaseUrl: string;
+  supabaseKey: string;
+  languageCode: string;
+}
+
+interface NodeScriptOptions {
+  logging: any;
+  env: any;
+  getBuildShipFile: any;
+}
+
+// Interface for the data returned directly from the Supabase table
+interface TranslationRow {
+  id: number;
+  language_code: string;
+  translation_key: string;
+  translation_value: string;
+  category: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// The clean output structure: a map of translation_key -> translation_value
+interface NodeOutput {
+  [key: string]: string; // e.g., { "allergen_1": "celery", "key_home": "Home" }
+}
+
+/**
+ * Fetches all translations for a given language from Supabase and returns them
+ * as a flat key-value map, discarding all unnecessary metadata.
+ * * @param inputs - Supabase credentials and the language code.
+ * @param options - Script options, including the logging utility.
+ * @returns A promise that resolves to a Map<string, string> of translations.
+ */
+export default async function getLanguageText(
+  { supabaseUrl, supabaseKey, languageCode }: NodeInputs,
+  { logging }: NodeScriptOptions,
+): Promise<NodeOutput | { error: string }> { // Return error object on failure
+
+  // Log the initiation of the function and its inputs for tracking
+  logging.log("Starting getLanguageText (Translation Fetching):", {
+    languageCode: languageCode || "[MISSING]"
+  });
+
+  // --- Input Validation ---
+  if (!supabaseUrl || !supabaseKey || !languageCode) {
+    logging.log('ERROR: Missing required input (Supabase credentials or languageCode).');
+    return { error: 'Missing required inputs' };
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  const tableName = 'ui_translations';
+  const selectColumns = 'translation_key, translation_value'; // Only select what we need
+
+  try {
+    // --- Supabase Query: Simple select with filter ---
+    logging.log(`Querying table: ${tableName} for language: ${languageCode}`);
+    
+    const { data, error } = await supabase
+      .from(tableName)
+      .select(selectColumns)
+      .eq('language_code', languageCode);
+
+    if (error) {
+      logging.log('ERROR: Supabase query failed.', { error: error.message, hint: error.hint });
+      return { error: `Database error: ${error.message}` };
+    }
+
+    if (!data || data.length === 0) {
+      logging.log('WARNING: No translations found for the specified language.');
+      return {}; // Return empty map if no data found
+    }
+
+    // --- Data Transformation: Convert array to key-value map ---
+    const translationsMap: NodeOutput = {};
+    
+    // The data array contains objects like { translation_key: 'key', translation_value: 'value' }
+    data.forEach((row: { translation_key: string, translation_value: string }) => {
+      if (row.translation_key && row.translation_value) {
+        translationsMap[row.translation_key] = row.translation_value;
+      }
+    });
+
+    logging.log(`INFO: Successfully processed ${data.length} translation rows into a map.`);
+
+    // --- Final Output ---
+    return translationsMap; // Returns the clean { key: value } map
+    
+  } catch (error: any) {
+    logging.log('FATAL ERROR: Translation processing failed.', { error: error.message, stack: error.stack });
+    return { error: `Processing error: ${error.message}` };
+  }
+}
