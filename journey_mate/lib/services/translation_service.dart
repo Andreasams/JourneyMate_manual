@@ -3115,6 +3115,152 @@ const Map<String, Map<String, String>> kStaticTranslations = {
     'no': 'Fjern alle',
     'sv': 'Rensa alla',
   },
+
+  // ============================================================
+  // Phase 7.3.2: Search Page (15 keys)
+  // Added: 2026-02-22
+  // ============================================================
+
+  // Search bar and placeholders
+  'search_placeholder': {
+    'en': 'Search for restaurants...',
+    'da': 'Søg efter restauranter...',
+    'de': 'Nach Restaurants suchen...',
+    'fr': 'Rechercher des restaurants...',
+    'it': 'Cerca ristoranti...',
+    'no': 'Søk etter restauranter...',
+    'sv': 'Sök efter restauranger...',
+  },
+  'search_no_results': {
+    'en': 'No search results',
+    'da': 'Ingen søgeresultater',
+    'de': 'Keine Suchergebnisse',
+    'fr': 'Aucun résultat de recherche',
+    'it': 'Nessun risultato di ricerca',
+    'no': 'Ingen søkeresultater',
+    'sv': 'Inga sökresultat',
+  },
+  'search_error_retry': {
+    'en': 'Try again',
+    'da': 'Prøv igen',
+    'de': 'Erneut versuchen',
+    'fr': 'Réessayer',
+    'it': 'Riprova',
+    'no': 'Prøv igjen',
+    'sv': 'Försök igen',
+  },
+  'search_clear_text': {
+    'en': 'Clear text',
+    'da': 'Ryd tekst',
+    'de': 'Text löschen',
+    'fr': 'Effacer le texte',
+    'it': 'Cancella testo',
+    'no': 'Fjern tekst',
+    'sv': 'Rensa text',
+  },
+  'search_no_results_with_query': {
+    'en': 'No results for \'{query}\'',
+    'da': 'Ingen resultater for \'{query}\'',
+    'de': 'Keine Ergebnisse für \'{query}\'',
+    'fr': 'Aucun résultat pour \'{query}\'',
+    'it': 'Nessun risultato per \'{query}\'',
+    'no': 'Ingen resultater for \'{query}\'',
+    'sv': 'Inga resultat för \'{query}\'',
+  },
+
+  // Location permission
+  'location_permission_denied': {
+    'en': 'Enable location to see distances',
+    'da': 'Aktiver placering for at se afstand',
+    'de': 'Standort aktivieren, um Entfernungen zu sehen',
+    'fr': 'Activez la localisation pour voir les distances',
+    'it': 'Attiva la posizione per vedere le distanze',
+    'no': 'Aktiver plassering for å se avstander',
+    'sv': 'Aktivera plats för att se avstånd',
+  },
+  'location_permission_enable': {
+    'en': 'Enable',
+    'da': 'Aktiver',
+    'de': 'Aktivieren',
+    'fr': 'Activer',
+    'it': 'Attiva',
+    'no': 'Aktiver',
+    'sv': 'Aktivera',
+  },
+
+  // Sort options
+  'sort_match': {
+    'en': 'Best match',
+    'da': 'Bedst match',
+    'de': 'Beste Übereinstimmung',
+    'fr': 'Meilleure correspondance',
+    'it': 'Miglior corrispondenza',
+    'no': 'Beste treff',
+    'sv': 'Bästa matchning',
+  },
+  'sort_nearest': {
+    'en': 'Nearest',
+    'da': 'Nærmest',
+    'de': 'Nächste',
+    'fr': 'Le plus proche',
+    'it': 'Più vicino',
+    'no': 'Nærmest',
+    'sv': 'Närmaste',
+  },
+  'sort_station': {
+    'en': 'Nearest train station',
+    'da': 'Nærmest togstation',
+    'de': 'Nächster Bahnhof',
+    'fr': 'Gare la plus proche',
+    'it': 'Stazione ferroviaria più vicina',
+    'no': 'Nærmeste togstasjon',
+    'sv': 'Närmaste tågstation',
+  },
+  'sort_price_low': {
+    'en': 'Price: Low to high',
+    'da': 'Pris: Lav til høj',
+    'de': 'Preis: Niedrig bis hoch',
+    'fr': 'Prix: Bas à élevé',
+    'it': 'Prezzo: Basso ad alto',
+    'no': 'Pris: Lav til høy',
+    'sv': 'Pris: Låg till hög',
+  },
+  'sort_price_high': {
+    'en': 'Price: High to low',
+    'da': 'Pris: Høj til lav',
+    'de': 'Preis: Hoch bis niedrig',
+    'fr': 'Prix: Élevé à bas',
+    'it': 'Prezzo: Alto a basso',
+    'no': 'Pris: Høy til lav',
+    'sv': 'Pris: Hög till låg',
+  },
+  'sort_newest': {
+    'en': 'Newest',
+    'da': 'Nyeste',
+    'de': 'Neueste',
+    'fr': 'Le plus récent',
+    'it': 'Più recente',
+    'no': 'Nyeste',
+    'sv': 'Nyaste',
+  },
+  'sort_sheet_title': {
+    'en': 'Sort by',
+    'da': 'Sortér efter',
+    'de': 'Sortieren nach',
+    'fr': 'Trier par',
+    'it': 'Ordina per',
+    'no': 'Sorter etter',
+    'sv': 'Sortera efter',
+  },
+  'filter_only_open': {
+    'en': 'Only open places',
+    'da': 'Kun åbne steder',
+    'de': 'Nur geöffnete Orte',
+    'fr': 'Uniquement les lieux ouverts',
+    'it': 'Solo luoghi aperti',
+    'no': 'Kun åpne steder',
+    'sv': 'Endast öppna ställen',
+  },
 };
 
 // ============================================================

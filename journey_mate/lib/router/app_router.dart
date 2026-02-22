@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../pages/welcome/welcome_page.dart';
 import '../pages/app_settings_initiate_flow/app_settings_initiate_flow_page.dart';
+import '../pages/search_page.dart';
 
 /// Application router with all 11 routes
 /// Uses go_router 17.x for navigation
@@ -20,13 +21,10 @@ final appRouter = GoRouter(
       builder: (context, state) => const WelcomePage(),
     ),
 
-    // Phase 7.2: Search
+    // Phase 7.3.2: Search (COMPLETE ✅)
     GoRoute(
       path: '/search',
-      builder: (context, state) => _placeholderPage(
-        'Search',
-        'Phase 7.2 - Restaurant search with filters',
-      ),
+      builder: (context, state) => const SearchPage(),
     ),
 
     // Phase 7.3: Business Profile

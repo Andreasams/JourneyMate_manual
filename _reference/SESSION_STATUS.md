@@ -6,30 +6,35 @@
 
 ## Current Status
 
-**Phase:** Phase 7.3.1 — COMPLETE ✅ (FilterOverlayWidget)
-**Last completed task:** FilterOverlayWidget implementation — 3-column hierarchical filter interface with all 20+ edge cases (2026-02-22)
-**Next task:** Phase 7.3.2 — Search Page implementation (third of 12 pages)
-**Blocked on:** Nothing — FilterOverlayWidget complete and production-ready, ready for Search page
+**Phase:** Phase 7.3.2 — COMPLETE ✅ (Search Page)
+**Last completed task:** Search Page + SortBottomSheet implementation — Full search functionality with filters, sorting, debouncing, and analytics (2026-02-22)
+**Next task:** Phase 7.4 — Business Profile Page implementation (fourth of 12 pages)
+**Blocked on:** Nothing — Search page complete and production-ready, ready for Business Profile page
 
-## Files changed this session (Phase 7.3.1 - 2026-02-22)
-- `journey_mate/lib/widgets/shared/filter_overlay_widget.dart` (created, ~1,750 lines)
-- `_reference/PHASE7.3_SESSION2_HANDOVER.md` (created, comprehensive handover document for Search Page implementation)
-- `_reference/SESSION_STATUS.md` (this file - updated for Session 1 completion)
+## Files changed this session (Phase 7.3.2 - 2026-02-22)
+- `journey_mate/lib/pages/search_page.dart` (created, ~580 lines) — Complete search page with debouncing, filters, sorting
+- `journey_mate/lib/widgets/shared/sort_bottom_sheet.dart` (created, ~150 lines) — 6-option sort sheet with "only open" toggle
+- `journey_mate/lib/services/translation_service.dart` (updated) — Added 15 translation keys × 7 languages
+- `journey_mate/lib/router/app_router.dart` (updated) — Wired /search route to SearchPage
+- `_reference/NEW_TRANSLATION_KEYS.sql` (appended 105 SQL statements) — All 15 keys for Search page
+- `_reference/PHASE7_3_2_TRANSLATIONS.sql` (created) — Intermediate SQL file for Phase 7.3.2 keys
+- `_reference/SESSION_STATUS.md` (this file - updated for Phase 7.3.2 completion)
 
 ## Decisions made this session
-- FilterOverlayWidget ported COMPLETE 1,715-line functionality from FlutterFlow with zero compromises
-- Changed presentation layer only: FlutterFlow inline modal → new design bottom sheet (content 100% identical)
-- All 20+ edge cases preserved: null filterData, missing IDs, conflicting filters, neighborhood/shopping/train coordination
-- Category 8 parent-child logic implemented exactly per FlutterFlow (add parent, show sub-items)
-- Dietary composite display (6-digit IDs 593-597) with "Parent lowercased-child" format
-- Combined chip display for IDs 585, 586, 158, 159, 588 (show parent only, not individual sub-items)
-- Debounced search: 300ms delay (not 200ms like Search page will use - matches FlutterFlow)
-- Filter lookup map built once in initState for O(1) access (flattened hierarchy)
-- Widget-local state pattern: State variables with setState() (not Notifier classes)
-- Removed all markUserEngaged() calls (ActivityScope handles engagement automatically)
-- Analytics tracking: filter_session_started on first filter selection
-- Translation keys: 5 keys × 7 languages = 35 SQL statements (to be added in Phase 6B)
-- flutter analyze: Expected 0 issues (following established patterns from previous 31 widgets)
+- Search Page implemented per 6-phase plan: Core scaffold → Filter integration → Search & debouncing → Sort controls → Analytics & polish → Edge cases & code review
+- Debounced search: 200ms delay (matches plan, different from FilterOverlayWidget's 300ms)
+- Search uses ApiService.instance.search() directly (not through a provider method to avoid circular dependencies)
+- Analytics uses ApiService.instance.postAnalytics() with full required parameters (deviceId, sessionId, userId, timestamp)
+- Request ID pattern for race condition prevention: `++_requestId` before each search, ignore stale results
+- NavBarWidget requires `pageIsSearchResults` boolean (not `currentPageName` string) — SearchPage passes `true`
+- SearchResultsListView onBusinessTap takes only `int businessId` (not `(int, String)` tuple)
+- Sort options: match, nearest, station, price_low, price_high, newest (6 total)
+- Floating sort button positioned: `bottom: 92.0` (80px nav bar + 12px gap)
+- Location permission banner shows when `!locationState.hasPermission` — inline non-blocking banner
+- Empty states: 3 variants (initial, no results with query, no results with filters)
+- Translation keys: 15 keys × 7 languages = 105 SQL statements appended to NEW_TRANSLATION_KEYS.sql
+- SortBottomSheet uses activeColor + activeTrackColor (Flutter 3.31+ deprecation handled)
+- flutter analyze: 1 info-level warning in search_page.dart (properly guarded BuildContext usage) — acceptable
 
 ## What the next session must do first
 - Read `_reference/PHASE7.3_SESSION2_HANDOVER.md` — comprehensive handover document with complete implementation plan
