@@ -363,6 +363,8 @@ These decisions have been explicitly confirmed and must not be re-debated:
 
 - **CityID is always 17 (Copenhagen).** City selection is not implemented in v1. CityID does not need a provider or persistence — use a plain `const int kDefaultCityId = 17` constant and pass it directly to API calls. Do not build city-switching UI.
 
+- **⚠️ Git History Secret (TEMPORARY ALLOWANCE - ACTION REQUIRED)** — GitHub detected a Supabase secret key in old commit `29801392c072350ef8a92204f5366f6995b4dfeb` from the FlutterFlow export (`_flutterflow_export/lib/backend/supabase/supabase.dart:7`). Secret was **temporarily allowed** via GitHub security bypass on 2026-02-22 to enable immediate pushes to Codemagic. **CRITICAL:** Before final production release or adding external collaborators, git history MUST be rewritten to permanently remove the secret using `git filter-branch` or BFG Repo-Cleaner, followed by force-push. Current mitigation: `_flutterflow_export/` is now in `.gitignore` (no future commits will include it), and the production app (`journey_mate/`) uses BuildShip API exclusively (zero hardcoded secrets). The secret exists only in historical commits, not in current codebase state. Document created: 2026-02-22. **TODO for Phase 8:** Clean git history before production deployment.
+
 - **`restaurantIsFavorited` is a future feature.** Do not implement. No favorite button, no favorite state, no related UI.
 
 - **Filter panel is now a bottom sheet, not a modal overlay.** The `filterOverlayOpen` / `activeSelectedTitleId` approach from FlutterFlow is replaced. In the new design, tapping "Filter" opens a `showModalBottomSheet`. Which tab is selected inside that sheet is local state in the bottom sheet widget itself. Do not build the 3-column inline overlay from FlutterFlow.
@@ -397,7 +399,7 @@ These decisions have been explicitly confirmed and must not be re-debated:
 
 ## What not to do
 
-- Do not edit `_flutterflow_export/` (read-only ground truth)
+- ~~Do not edit `_flutterflow_export/` (read-only ground truth)~~ **UPDATE 2026-02-22:** `_flutterflow_export/` has been removed from the GitHub repo (still exists locally for reference). The FlutterFlow code is read-only and serves as reference documentation only. All production code is in `journey_mate/`.
 - Do not add direct Supabase SDK calls — all backend is through BuildShip
 - Do not invent functionality — always reference FlutterFlow source first
 - Do not use FFAppState or Provider in `journey_mate/`
