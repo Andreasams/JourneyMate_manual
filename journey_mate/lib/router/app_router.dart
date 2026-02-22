@@ -6,6 +6,7 @@ import '../pages/search_page.dart';
 import '../pages/business_profile_page.dart';
 import '../pages/menu_full_page.dart';
 import '../pages/gallery_full_page.dart';
+import '../pages/business_information_page.dart';
 import '../pages/settings/settings_main_page.dart';
 import '../pages/settings/localization_page.dart';
 import '../pages/settings/location_sharing_page.dart';
@@ -63,15 +64,12 @@ final appRouter = GoRouter(
       },
     ),
 
-    // Phase 7.6: Business Information
+    // Phase 7.6: Business Information (COMPLETE ✅)
     GoRoute(
       path: '/business/:id/information',
       builder: (context, state) {
-        final id = state.pathParameters['id']!;
-        return _placeholderPage(
-          'Business Information',
-          'Phase 7.6 - Business ID: $id',
-        );
+        final businessId = state.pathParameters['id']!;
+        return BusinessInformationPage(businessId: businessId);
       },
     ),
 
