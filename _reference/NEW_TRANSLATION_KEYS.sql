@@ -1389,3 +1389,42 @@ INSERT INTO ui_translations (translation_key, language_code, translation_text, c
   ('about_report_incorrect_info', 'no', 'Rapporter feil informasjon', 'ui'),
   ('about_report_incorrect_info', 'sv', 'Rapportera felaktig information', 'ui');
 
+
+-- Page: Gallery Full Page (Phase 7.5) - 2026-02-22
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category)
+VALUES
+  ('gallery_food', 'en', 'Food', 'ui'),
+  ('gallery_food', 'da', 'Mad', 'ui'),
+  ('gallery_food', 'de', 'Essen', 'ui'),
+  ('gallery_food', 'fr', 'Nourriture', 'ui'),
+  ('gallery_food', 'it', 'Cibo', 'ui'),
+  ('gallery_food', 'no', 'Mat', 'ui'),
+  ('gallery_food', 'sv', 'Mat', 'ui'),
+  ('gallery_menu', 'en', 'Menu', 'ui'),
+  ('gallery_menu', 'da', 'Menu', 'ui'),
+  ('gallery_menu', 'de', 'Menü', 'ui'),
+  ('gallery_menu', 'fr', 'Menu', 'ui'),
+  ('gallery_menu', 'it', 'Menu', 'ui'),
+  ('gallery_menu', 'no', 'Meny', 'ui'),
+  ('gallery_menu', 'sv', 'Meny', 'ui'),
+  ('gallery_interior', 'en', 'Interior', 'ui'),
+  ('gallery_interior', 'da', 'Inde', 'ui'),
+  ('gallery_interior', 'de', 'Innenraum', 'ui'),
+  ('gallery_interior', 'fr', 'Intérieur', 'ui'),
+  ('gallery_interior', 'it', 'Interno', 'ui'),
+  ('gallery_interior', 'no', 'Innvendig', 'ui'),
+  ('gallery_interior', 'sv', 'Interiör', 'ui'),
+  ('gallery_outdoor', 'en', 'Outdoor', 'ui'),
+  ('gallery_outdoor', 'da', 'Ude', 'ui'),
+  ('gallery_outdoor', 'de', 'Außenbereich', 'ui'),
+  ('gallery_outdoor', 'fr', 'Extérieur', 'ui'),
+  ('gallery_outdoor', 'it', 'Esterno', 'ui'),
+  ('gallery_outdoor', 'no', 'Utvendig', 'ui'),
+  ('gallery_outdoor', 'sv', 'Utomhus', 'ui'),
+  ('gallery_no_images', 'en', 'No images in this category', 'ui'),
+  ('gallery_no_images', 'da', 'Ingen billeder i denne kategori', 'ui'),
+  ('gallery_no_images', 'de', 'Keine Bilder in dieser Kategorie', 'ui'),
+  ('gallery_no_images', 'fr', 'Aucune image dans cette catégorie', 'ui'),
+  ('gallery_no_images', 'it', 'Nessuna immagine in questa categoria', 'ui'),
+  ('gallery_no_images', 'no', 'Ingen bilder i denne kategorien', 'ui'),
+  ('gallery_no_images', 'sv', 'Inga bilder i denna kategori', 'ui');

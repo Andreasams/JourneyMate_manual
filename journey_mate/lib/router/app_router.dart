@@ -5,6 +5,7 @@ import '../pages/app_settings_initiate_flow/app_settings_initiate_flow_page.dart
 import '../pages/search_page.dart';
 import '../pages/business_profile_page.dart';
 import '../pages/menu_full_page.dart';
+import '../pages/gallery_full_page.dart';
 
 /// Application router with all 11 routes
 /// Uses go_router 17.x for navigation
@@ -47,15 +48,12 @@ final appRouter = GoRouter(
       },
     ),
 
-    // Phase 7.5: Gallery Full Page
+    // Phase 7.5: Gallery Full Page (COMPLETE ✅)
     GoRoute(
       path: '/business/:id/gallery',
       builder: (context, state) {
-        final id = state.pathParameters['id']!;
-        return _placeholderPage(
-          'Gallery',
-          'Phase 7.5 - Business ID: $id',
-        );
+        final businessId = state.pathParameters['id']!;
+        return GalleryFullPage(businessId: businessId);
       },
     ),
 
