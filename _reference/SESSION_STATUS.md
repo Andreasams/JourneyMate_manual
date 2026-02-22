@@ -6,30 +6,33 @@
 
 ## Current Status
 
-**Phase:** Phase 7.1 — COMPLETE ✅ (Welcome/Onboarding Page)
-**Last completed task:** Welcome/Onboarding Page implementation — entry point for all users (2026-02-22)
-**Next task:** Phase 7.2 — Search Page implementation (second of 12 pages)
-**Blocked on:** Nothing — Welcome page complete and verified, ready for Search page
+**Phase:** Phase 7.2 — COMPLETE ✅ (App Settings Initiate Flow Page)
+**Last completed task:** App Settings Initiate Flow Page implementation — language & currency setup for new users (2026-02-22)
+**Next task:** Phase 7.3 — Search Page implementation (third of 12 pages)
+**Blocked on:** Nothing — App Settings page complete and verified, ready for Search page
 
-## Files changed this session (Phase 7.1 - 2026-02-22)
-- `journey_mate/lib/pages/welcome/welcome_page.dart` (created, 504 lines)
-- `journey_mate/lib/router/app_router.dart` (updated with WelcomePage + placeholder route)
+## Files changed this session (Phase 7.2 - 2026-02-22)
+- `journey_mate/lib/pages/app_settings_initiate_flow/app_settings_initiate_flow_page.dart` (created, 383 lines)
+- `journey_mate/lib/router/app_router.dart` (updated with AppSettingsInitiateFlowPage route)
 
 ## Decisions made this session
-- User detection via SharedPreferences direct check (no provider modification needed)
-- Error handling uses dialog (stay on page, allow retry)
-- Loading state uses inline button spinner (button disabled while loading)
-- Analytics tracked on dispose with correct pageName: 'welcomePage'
-- Geolocator uses LocationSettings (not deprecated desiredAccuracy/timeLimit)
-- No new translation keys needed (all 5 keys exist from Phase 6A)
-- Placeholder route `/set-language-currency` added for English setup flow
+- Language selection persists to SharedPreferences via callback from LanguageSelectorButton
+- CurrencySelectorButton is self-contained (no props needed except width/height)
+- Location permission check is non-blocking (fire-and-forget in initState)
+- Location fetch uses 5-second timeout with graceful fallback (null if fails)
+- Search API called with empty searchInput (show all) and 50 results
+- Navigation uses context.go() not context.push() (replaces onboarding flow in history)
+- Error dialog uses hardcoded English strings (error_title key doesn't exist yet)
+- Analytics tracked on dispose with pageName: 'appSettingsInitiateFlowPage'
+- No new translation keys needed (all 7 keys exist from Phase 6A)
+- flutter analyze: 0 issues in new code (2 pre-existing info warnings in item_bottom_sheet.dart from Session #13)
 
 ## What the next session must do first
 - Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
 - Read `C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md` (Phase 7 implementation plan)
 - Read `DESIGN_SYSTEM_flutter.md` for design tokens
 - Read `pages/01_search/BUNDLE.md` for Search page implementation
-- Implement Search page per Phase 7 workflow
+- Implement Search page per Phase 7 workflow (most complex page - filtering, search, sorting, results display)
 
 ## Open questions for user
 - None
