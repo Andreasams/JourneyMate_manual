@@ -30,10 +30,6 @@ workflows:
         script: |
           cd journey_mate
           flutter pub get
-      - name: Generate iOS configuration
-        script: |
-          cd journey_mate
-          flutter build ios --config-only --no-codesign
       - name: Install CocoaPods dependencies
         script: |
           cd journey_mate/ios
