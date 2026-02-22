@@ -6,6 +6,9 @@ import '../pages/search_page.dart';
 import '../pages/business_profile_page.dart';
 import '../pages/menu_full_page.dart';
 import '../pages/gallery_full_page.dart';
+import '../pages/settings/settings_main_page.dart';
+import '../pages/settings/localization_page.dart';
+import '../pages/settings/location_sharing_page.dart';
 
 /// Application router with all 11 routes
 /// Uses go_router 17.x for navigation
@@ -69,13 +72,10 @@ final appRouter = GoRouter(
       },
     ),
 
-    // Phase 7.7: Settings Main
+    // Phase 7.7: Settings Main (COMPLETE ✅)
     GoRoute(
       path: '/settings',
-      builder: (context, state) => _placeholderPage(
-        'Settings',
-        'Phase 7.7 - Main settings page',
-      ),
+      builder: (context, state) => const SettingsMainPage(),
     ),
 
     // App Settings Initiate Flow (English onboarding wizard)
@@ -84,22 +84,16 @@ final appRouter = GoRouter(
       builder: (context, state) => const AppSettingsInitiateFlowPage(),
     ),
 
-    // Phase 7.8: Localization
+    // Phase 7.8: Localization (COMPLETE ✅)
     GoRoute(
       path: '/settings/localization',
-      builder: (context, state) => _placeholderPage(
-        'Localization',
-        'Phase 7.8 - Language & currency settings',
-      ),
+      builder: (context, state) => const LocalizationPage(),
     ),
 
-    // Phase 7.9: Location Sharing
+    // Phase 7.9: Location Sharing (COMPLETE ✅)
     GoRoute(
       path: '/settings/location',
-      builder: (context, state) => _placeholderPage(
-        'Location Sharing',
-        'Phase 7.9 - Location permissions',
-      ),
+      builder: (context, state) => const LocationSharingPage(),
     ),
 
     // Phase 7.10: Contact Us

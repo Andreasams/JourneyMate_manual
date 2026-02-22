@@ -26,7 +26,11 @@
       "Bash(\"_reference/NEW_TRANSLATION_KEYS.sql\":*)",
       "Bash(_reference/NEW_TRANSLATION_KEYS.sql:*)",
       "Bash(/c/Users/Rikke/Documents/JourneyMate-Organized/_reference/PHASE7.4_IMAGEGALLERY_HANDOVER.md:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git push:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter --version:*)",
+      "Bash(git mv:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
