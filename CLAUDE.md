@@ -389,6 +389,10 @@ These decisions have been explicitly confirmed and must not be re-debated:
 
 - **Codemagic uses journey_mate/ working config** — codemagic.yaml copied from `/c/Users/Rikke/Documents/JourneyMate/codemagic.yaml` (proven working). Single iOS workflow: builds IPA → submits to TestFlight. Build number offset +250 continues from last AppStore build (249). flutter analyze + flutter test as build gates.
 
+- **✅ App successfully deployed to TestFlight** — As of 2026-02-22, the app built successfully via Codemagic CI/CD and is available on TestFlight for internal testing. Phase 7 (all 12 pages) is complete. Remaining work: Phase 6B (translation SQL migration to Supabase) and Phase 8 (integration polish, final testing, production release prep).
+
+- **Welcome page mascot image** — Updated to use `journeymate_mascot.png` (2026-02-22) instead of the original FlutterFlow `placefindr_mascot.png`. New mascot reflects JourneyMate branding and appears on the welcome/onboarding page.
+
 - **iOS location permission strings match dietary use case** — NSLocationWhenInUseUsageDescription: "JourneyMate uses your location to find nearby restaurants that match your dietary needs". NSLocationAlwaysAndWhenInUseUsageDescription: "JourneyMate uses your location to find nearby restaurants that match your dietary preferences". Clearly states purpose for App Store review compliance.
 
 - **LSApplicationQueriesSchemes includes 12 map apps** — Exact list from FlutterFlow: comgooglemaps, baidumap, iosamap, waze, yandexmaps, yandexnavi, citymapper, mapswithme, osmandmaps, dgis, qqmap, here-location. Required for map_launcher feature in contact_details_widget.dart "Open in Maps" button.

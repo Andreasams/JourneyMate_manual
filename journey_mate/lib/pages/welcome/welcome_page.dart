@@ -377,7 +377,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               // Mascot Image
               Center(
                 child: Image.asset(
-                  'assets/images/placefindr_mascot.png',
+                  'assets/images/journeymate_mascot.png',
                   width: 180,
                   height: 180,
                   fit: BoxFit.contain,
