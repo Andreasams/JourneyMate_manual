@@ -7,13 +7,19 @@
 ## Current Status
 
 **Phase:** Phase 7.4 — IN PROGRESS 🔄 (Business Profile Page — Dependency Implementation)
-**Last completed task:** ImageGalleryWidget implementation — Full-screen gallery with infinite scroll complete (2026-02-22)
-**Next task:** Session 5 Profile Components — Implement 3 profile component widgets (ProfileTopBusinessBlock, ContactDetail, ImageGalleryOverlaySwipable)
-**Blocked on:** Nothing — ImageGalleryWidget complete, ready for Session 5
+**Last completed task:** ProfileTopBusinessBlockWidget + review/fix of 2 existing widgets complete (2026-02-22)
+**Next task:** Continue Phase 7.4 per implementation plan (Session 6: More profile components or page implementation)
+**Blocked on:** Nothing
 
-## Files changed this session (Phase 7.4 ImageGalleryWidget - 2026-02-22)
+## Files changed this session (Phase 7.4 Profile Components - 2026-02-22)
+- `journey_mate/lib/widgets/shared/profile_top_business_block_widget.dart` (created, 510 lines) — Hero section widget for Business Profile page
+- `shared/widgets/MASTER_README_profile_top_business_block_widget.md` (created, comprehensive documentation)
+- `journey_mate/lib/widgets/shared/image_gallery_overlay_swipable_widget.dart` (fixed, 50 lines) — Replaced placeholder with proper ImageGalleryWidget integration
+- `journey_mate/lib/widgets/shared/contact_details_widget.dart` (reviewed, no changes needed) — Production-ready, 0 issues
+- `_reference/SESSION_STATUS.md` (this file - updated)
+
+## Files changed previous session (Phase 7.4 ImageGalleryWidget - 2026-02-22)
 - `journey_mate/lib/widgets/shared/image_gallery_widget.dart` (created, 379 lines) — Full-screen gallery widget with infinite scroll
-- `_reference/SESSION_STATUS.md` (this file - updated for ImageGalleryWidget completion)
 
 ## Files changed previous session (Phase 7.4 prep - 2026-02-22)
 - `journey_mate/lib/services/custom_functions/distance_calculator.dart` (created, 64 lines) — Haversine distance calculation
@@ -22,7 +28,19 @@
 - `journey_mate/lib/services/custom_actions/determine_status_and_color.dart` (created, 407 lines) — Business status calculation action
 - `journey_mate/lib/models/lat_lng.dart` (created, 24 lines) — Simple LatLng class for geolocation
 
-## Decisions made this session (Phase 7.4 ImageGalleryWidget - 2026-02-22)
+## Decisions made this session (Phase 7.4 Profile Components - 2026-02-22)
+- ProfileTopBusinessBlockWidget uses StatefulWidget (not ConsumerWidget) — no Riverpod dependencies, all data via props
+- determineStatusAndColor action called once on component load via SchedulerBinding.addPostFrameCallback
+- Status color and text stored in local widget state (_statusColor, _statusText) via setState()
+- ImageGalleryOverlaySwipableWidget fixed to properly integrate with completed ImageGalleryWidget (replaced 91-line placeholder with 50-line implementation)
+- ContactDetailsWidget confirmed production-ready via flutter analyze (0 issues, no anti-patterns)
+- ProfileTopBusinessBlockWidget preserves exact FlutterFlow spacing (3px, 4px, 8px) and typography (15px, 20px, w300) for pixel-perfect match
+- Widget uses positional parameters for determineStatusAndColor (not named parameters)
+- Translation cache access pattern: passed as empty map to custom functions for now (TODO: wire up translationsCacheProvider)
+- Exchange rate access pattern: hardcoded 1.0 for now (TODO: wire up localizationProvider)
+- flutter analyze: 0 issues in all 3 widgets
+
+## Decisions made previous session (Phase 7.4 ImageGalleryWidget - 2026-02-22)
 - ImageGalleryWidget uses ConsumerStatefulWidget (needs ref.read for analytics, though not using analyticsProvider state)
 - Virtual page indexing pattern: `500 * 1000 + currentIndex` starting point for infinite scroll
 - Single-image bounce: Accumulate delta (not replace), clamp to ±100px, AnimatedContainer spring-back
@@ -50,17 +68,14 @@
 - flutter analyze: 0 issues (fixed 27 underscore warnings + missing import)
 
 ## What the next session must do first
-- Read `C:\Users\Rikke\.claude\plans\federated-moseying-wigderson.md` — Phase 7.4 implementation plan (Session 5: Profile Components)
-- Read MASTER_README files for 3 widgets:
-  - `shared/widgets/MASTER_README_profile_top_business_block_widget.md` (~600 lines) — Main hero section
-  - `shared/widgets/MASTER_README_contact_detail_widget.md` (~500 lines) — Contact modal with map launcher
-  - `shared/widgets/MASTER_README_image_gallery_overlay_swipable_widget.md` (~100 lines) — Wrapper for ImageGalleryWidget
-- Read FlutterFlow ground truth sources for all 3 widgets
-- Implement Session 5 Profile Components (3 widgets batch)
-- Wire up all 4 custom functions + 1 action in ProfileTopBusinessBlockWidget
-- Use newly created ImageGalleryWidget in ImageGalleryOverlaySwipable wrapper
-- Run flutter analyze — MUST return 0 issues
-- Continue with Phase 7.4 Sessions 6-11 per plan
+- Read Phase 7.4 implementation plan (if exists) or Phase 7 main plan (`C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md`)
+- Determine next priority:
+  - Option A: Continue Phase 7.4 with remaining profile components (if any)
+  - Option B: Begin Business Profile page implementation (Phase 7.3)
+  - Option C: Continue with remaining preliminary widgets (if switching back to preliminary task)
+- Read PHASE7_LESSONS_LEARNED.md for session protocol
+- Run flutter analyze — verify all widgets still pass
+- Check `pages/02_business_profile/BUNDLE.md` for page dependencies if starting page implementation
 
 ## Open questions for user
 - None
