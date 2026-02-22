@@ -9,6 +9,9 @@ import '../pages/gallery_full_page.dart';
 import '../pages/settings/settings_main_page.dart';
 import '../pages/settings/localization_page.dart';
 import '../pages/settings/location_sharing_page.dart';
+import '../pages/settings/contact_us_page.dart';
+import '../pages/settings/share_feedback_page.dart';
+import '../pages/settings/missing_place_page.dart';
 
 /// Application router with all 11 routes
 /// Uses go_router 17.x for navigation
@@ -96,31 +99,22 @@ final appRouter = GoRouter(
       builder: (context, state) => const LocationSharingPage(),
     ),
 
-    // Phase 7.10: Contact Us
+    // Phase 7.10: Contact Us (COMPLETE ✅)
     GoRoute(
       path: '/settings/contact',
-      builder: (context, state) => _placeholderPage(
-        'Contact Us',
-        'Phase 7.10 - Support form',
-      ),
+      builder: (context, state) => const ContactUsPage(),
     ),
 
-    // Phase 7.11: Share Feedback
+    // Phase 7.11: Share Feedback (COMPLETE ✅)
     GoRoute(
       path: '/settings/feedback',
-      builder: (context, state) => _placeholderPage(
-        'Share Feedback',
-        'Phase 7.11 - Feedback form',
-      ),
+      builder: (context, state) => const ShareFeedbackPage(),
     ),
 
-    // Phase 7.12: Missing Place
+    // Phase 7.12: Missing Place (COMPLETE ✅)
     GoRoute(
       path: '/settings/missing-place',
-      builder: (context, state) => _placeholderPage(
-        'Missing Place',
-        'Phase 7.12 - Report missing restaurant',
-      ),
+      builder: (context, state) => const MissingPlacePage(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
