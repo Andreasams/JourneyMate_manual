@@ -19,9 +19,9 @@ _flutterflow_export/
 Thumbs.db
 
 # Development reference documentation (keep locally, exclude from git)
-_reference/
-pages/
-shared/
+/_reference/
+/pages/
+/shared/
 
 # Top-level design/planning documents (keep locally, exclude from git)
 DESIGN_SYSTEM_flutter.md

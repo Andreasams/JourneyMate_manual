@@ -357,7 +357,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
             vertical: AppSpacing.huge,
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Heading
