@@ -6,12 +6,22 @@
 
 ## Current Status
 
-**Phase:** Phase 7.3 — COMPLETE ✅ (Business Profile Page Core Implementation)
-**Last completed task:** Implemented Business Profile page with 3 tabs, parallel API loading, analytics tracking (2026-02-22)
-**Next task:** Phase 7.3 Widget Integration — Integrate complex widgets (UnifiedFiltersWidget, MenuDishesListView, GalleryTabWidget, etc.) into tab views
+**Phase:** Phase 7.3 — COMPLETE ✅ (Business Profile Page FULLY Integrated)
+**Last completed task:** Completed Business Profile page widget integration - all 3 tabs functional with complex widgets (2026-02-22)
+**Next task:** Phase 7.4 — Menu Full Page implementation
 **Blocked on:** Nothing
 
-## Files changed this session (Business Profile Page - 2026-02-22)
+## Files changed this session (Business Profile Widget Integration - 2026-02-22)
+- `journey_mate/lib/pages/business_profile_page.dart` (updated, 757 lines) — Integrated 6 complex widgets into 3 tabs
+  - **Wave 1 (About Tab):** ExpandableTextWidget, PaymentOptionsWidget, ContactDetailsWidget, ErroneousInfoFormWidget
+  - **Wave 2 (Gallery Tab):** GalleryTabWidget with ImageGalleryWidget modal
+  - **Wave 3 (Menu Tab):** UnifiedFiltersWidget, MenuCategoriesRows, MenuDishesListView with bidirectional scroll sync
+  - Added 3 menu state variables (_selectedMenuId, _selectedCategoryId, _visibleItemCount)
+  - Added 2 helper methods (_buildGalleryData, _hasActiveFilters)
+  - Fixed 33 flutter analyze issues (parameter mismatches, property names)
+- `_reference/SESSION_STATUS.md` (this file - updated)
+
+## Files changed previous session (Business Profile Page Core - 2026-02-22)
 - `journey_mate/lib/pages/business_profile_page.dart` (created, 700+ lines) — Core page structure with 3 tabs, parallel API loading, analytics
 - `journey_mate/lib/router/app_router.dart` (updated) — Replaced placeholder route with BusinessProfilePage
 - `journey_mate/lib/services/translation_service.dart` (updated) — Added 9 new translation keys for Business Profile page
@@ -44,7 +54,22 @@
 - `journey_mate/lib/services/custom_actions/determine_status_and_color.dart` (created, 407 lines) — Business status calculation action
 - `journey_mate/lib/models/lat_lng.dart` (created, 24 lines) — Simple LatLng class for geolocation
 
-## Decisions made this session (Business Profile Page - 2026-02-22)
+## Decisions made this session (Business Profile Widget Integration - 2026-02-22)
+- **Wave-based integration strategy:** About → Gallery → Menu (risk-driven: lowest to highest complexity)
+- **About tab widgets:** ExpandableTextWidget (conditional on description), PaymentOptionsWidget (reads filterProvider/searchStateProvider/businessProvider), ContactDetailsWidget (no explicit props), ErroneousInfoFormWidget (modal bottom sheet, no businessId/businessName params)
+- **Gallery tab transformation:** category_id (1-4) → category key (interior/outdoor/food/menu) via _buildGalleryData() helper
+- **Gallery tab modal:** ImageGalleryWidget requires `currentIndex` (not initialIndex), no businessId parameter
+- **Menu tab bidirectional scroll sync:** State deduplication pattern prevents infinite loop (only update if categoryId/menuId changed)
+- **Menu tab analytics:** updateMenuSessionFilterMetrics takes 2 positional params (count, hasActiveFilters) not named params
+- **ItemBottomSheet integration:** Requires 8 parameters (chosenCurrency, originalCurrencyCode, exchangeRate, currentLanguage from localizationProvider + translationsCache from translationsCacheProvider + businessName from businessProvider)
+- **PackageBottomSheet integration:** Requires normalizedMenuData (menuItems), packageId from packageData['package_id'], plus currency/exchange/business context
+- **CategoryDescriptionSheet integration:** Requires categoryName + categoryDescription (not just description), uses regular ScrollController (not DraggableScrollableController)
+- **FilterProvider property:** `filtersForLanguage` (not filtersForUserLanguage)
+- **LocalizationState:** Only has currencyCode + exchangeRate (no languageCode) - get language from `Localizations.localeOf(context).languageCode`
+- **Analytics methods:** `incrementItemClick()` (not incrementMenuItemClick), `incrementPackageClick()` exist in analyticsProvider
+- flutter analyze: 0 issues ✅
+
+## Decisions made previous session (Business Profile Page Core - 2026-02-22)
 - **Business Profile page structure:** 3-tab layout (Menu/Gallery/About) with TabController, hero section always visible above tabs
 - **API loading pattern:** 3 parallel API calls via Future.wait() on page load (getBusinessProfile, getRestaurantMenu, getFilterDescriptions)
 - **Menu session analytics:** startMenuSession on page load, endMenuSession on dispose, tracking via analyticsProvider
