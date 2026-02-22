@@ -7,19 +7,36 @@
 ## Current Status
 
 **Phase:** Phase 7.4 — IN PROGRESS 🔄 (Business Profile Page — Dependency Implementation)
-**Last completed task:** Custom functions and actions for Profile widgets — 4 functions + 1 action implemented, all dependencies for ProfileTopBusinessBlockWidget ready (2026-02-22)
-**Next task:** Session 5 Profile Components — Implement ImageGalleryWidget, then 3 profile component widgets (ProfileTopBusinessBlock, ContactDetail, ImageGalleryOverlaySwipable)
-**Blocked on:** Nothing — All 4 custom functions/1 custom action complete, ready for ImageGalleryWidget implementation
+**Last completed task:** ImageGalleryWidget implementation — Full-screen gallery with infinite scroll complete (2026-02-22)
+**Next task:** Session 5 Profile Components — Implement 3 profile component widgets (ProfileTopBusinessBlock, ContactDetail, ImageGalleryOverlaySwipable)
+**Blocked on:** Nothing — ImageGalleryWidget complete, ready for Session 5
 
-## Files changed this session (Phase 7.4 prep - 2026-02-22)
+## Files changed this session (Phase 7.4 ImageGalleryWidget - 2026-02-22)
+- `journey_mate/lib/widgets/shared/image_gallery_widget.dart` (created, 379 lines) — Full-screen gallery widget with infinite scroll
+- `_reference/SESSION_STATUS.md` (this file - updated for ImageGalleryWidget completion)
+
+## Files changed previous session (Phase 7.4 prep - 2026-02-22)
 - `journey_mate/lib/services/custom_functions/distance_calculator.dart` (created, 64 lines) — Haversine distance calculation
 - `journey_mate/lib/services/custom_functions/address_formatter.dart` (created, 92 lines) — Copenhagen address formatting with abbreviations
 - `journey_mate/lib/services/custom_functions/hours_formatter.dart` (created, 347 lines) — Business hours formatting (complex ~300 lines)
 - `journey_mate/lib/services/custom_actions/determine_status_and_color.dart` (created, 407 lines) — Business status calculation action
 - `journey_mate/lib/models/lat_lng.dart` (created, 24 lines) — Simple LatLng class for geolocation
-- `_reference/SESSION_STATUS.md` (this file - updated for Phase 7.4 prep completion)
 
-## Decisions made this session (Phase 7.4 prep)
+## Decisions made this session (Phase 7.4 ImageGalleryWidget - 2026-02-22)
+- ImageGalleryWidget uses ConsumerStatefulWidget (needs ref.read for analytics, though not using analyticsProvider state)
+- Virtual page indexing pattern: `500 * 1000 + currentIndex` starting point for infinite scroll
+- Single-image bounce: Accumulate delta (not replace), clamp to ±100px, AnimatedContainer spring-back
+- Analytics fire-and-forget: ApiService.postAnalytics() without await, catchError returns ApiCallResponse.failure()
+- No drag protection delays implemented (simplified from FlutterFlow - removed _isDragging flag)
+- Analytics events: gallery_opened (once with _hasLoggedOpen flag), gallery_image_viewed (per unique index), gallery_closed
+- All design tokens applied: AppColors, AppSpacing.md/xl/xxl, AppTypography.bodyRegular, AppRadius.button
+- CachedNetworkImage with placeholder (CircularProgressIndicator) + errorWidget (Icon + Text)
+- Edge cases handled: empty list → empty state, out-of-bounds index → clamped, network errors → error widget
+- Removed unused import app_providers.dart (not needed since using ApiService directly)
+- AppTypography uses bodyRegular (not body1) - matches existing theme structure
+- flutter analyze: 0 issues
+
+## Decisions made previous session (Phase 7.4 prep)
 - Created custom functions for ProfileTopBusinessBlockWidget dependencies (Option A from Session 5 plan)
 - LatLng model created locally instead of adding google_maps_flutter dependency (lighter approach, only need data class)
 - All helper functions use regular names (not underscore-prefixed) to comply with Dart linter rules
@@ -33,12 +50,16 @@
 - flutter analyze: 0 issues (fixed 27 underscore warnings + missing import)
 
 ## What the next session must do first
-- Read `C:\Users\Rikke\.claude\plans\federated-moseying-wigderson.md` — Phase 7.4 implementation plan
-- Read `shared/widgets/MASTER_README_image_gallery_widget.md` — ImageGalleryWidget specification
-- Read `_flutterflow_export/lib/custom_code/widgets/image_gallery_widget.dart` — Ground truth source
-- Implement ImageGalleryWidget (full-screen gallery with PageView carousel, ~1,000 lines)
-- After ImageGalleryWidget complete: Start Session 5 Profile Components (3 widgets: ProfileTopBusinessBlock, ContactDetail, ImageGalleryOverlaySwipable)
-- Wire up custom functions/actions in ProfileTopBusinessBlockWidget when building it
+- Read `C:\Users\Rikke\.claude\plans\federated-moseying-wigderson.md` — Phase 7.4 implementation plan (Session 5: Profile Components)
+- Read MASTER_README files for 3 widgets:
+  - `shared/widgets/MASTER_README_profile_top_business_block_widget.md` (~600 lines) — Main hero section
+  - `shared/widgets/MASTER_README_contact_detail_widget.md` (~500 lines) — Contact modal with map launcher
+  - `shared/widgets/MASTER_README_image_gallery_overlay_swipable_widget.md` (~100 lines) — Wrapper for ImageGalleryWidget
+- Read FlutterFlow ground truth sources for all 3 widgets
+- Implement Session 5 Profile Components (3 widgets batch)
+- Wire up all 4 custom functions + 1 action in ProfileTopBusinessBlockWidget
+- Use newly created ImageGalleryWidget in ImageGalleryOverlaySwipable wrapper
+- Run flutter analyze — MUST return 0 issues
 - Continue with Phase 7.4 Sessions 6-11 per plan
 
 ## Open questions for user
