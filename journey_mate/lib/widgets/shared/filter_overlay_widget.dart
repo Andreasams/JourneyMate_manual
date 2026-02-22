@@ -4,10 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme/app_colors.dart';
-import '../../theme/app_spacing.dart';
-import '../../theme/app_radius.dart';
+import '../../theme/app_constants.dart';
 import '../../providers/search_providers.dart';
-import '../../providers/filter_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
@@ -90,7 +88,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// =========================================================================
 
   /// Filter lookup map for O(1) access to any filter by ID
-  Map<int, dynamic> _filterMap = {};
+  final Map<int, dynamic> _filterMap = {};
 
   /// Currently selected filter IDs (widget-local state)
   final Set<int> _selectedFilterIds = {};
@@ -103,7 +101,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   bool _isInitialState = true;
   bool _searchPerformed = false;
   bool _receivedActiveIdsAfterSearch = true;
-  bool _hasReceivedNewCount = false;
 
   /// Optimistic result count for immediate feedback
   int? _optimisticResultCount;
@@ -155,7 +152,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   final Color _selectedCategoryAccentBarColor = AppColors.accent;
   static const double _orangeAccentBarWidth = 2.0;
   static const double _orangeAccentBarMargin = 3.0;
-  static const double _orangeAccentBarSpacing = 3.0;
 
   // Spacing
   static const double _itemPaddingHorizontal = 8.0;
@@ -213,7 +209,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
     if (widget.resultCount != null) {
       _optimisticResultCount = widget.resultCount;
-      _hasReceivedNewCount = true;
     }
   }
 
@@ -340,8 +335,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     if (oldWidget.resultCount != widget.resultCount &&
         widget.resultCount != null) {
       setState(() {
-        _hasReceivedNewCount = true;
-        _optimisticResultCount = widget.resultCount;
+          _optimisticResultCount = widget.resultCount;
       });
     }
   }
@@ -519,9 +513,13 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   bool _shouldMarkCategoryInactive(int categoryId) {
     if (_currentSelectionType == FilterSelectionType.shoppingArea &&
-        categoryId == _trainStationCategoryId) return true;
+        categoryId == _trainStationCategoryId) {
+      return true;
+    }
     if (_currentSelectionType == FilterSelectionType.trainStation &&
-        categoryId == _shoppingAreaCategoryId) return true;
+        categoryId == _shoppingAreaCategoryId) {
+      return true;
+    }
     return false;
   }
 
@@ -799,6 +797,10 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         final newSearchState = ref.read(searchStateProvider);
         unawaited(ApiService.instance.postAnalytics(
           eventType: 'filter_session_started',
+          deviceId: '', // ApiService handles defaults
+          sessionId: '', // ApiService handles defaults
+          userId: '', // ApiService handles defaults
+          timestamp: DateTime.now().toIso8601String(),
           eventData: {
             'filterSessionId': newSearchState.currentFilterSessionId,
             'entryPoint': 'filter_overlay',
@@ -808,7 +810,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
       // Detect train station filter
       final trainStationInfo = _detectTrainStationFilter();
-      final hasTrainStation = trainStationInfo.$1;
       final trainStationId = trainStationInfo.$2;
 
       // Execute search via API
@@ -819,9 +820,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         searchInput: searchTerm,
         filters: List<int>.from(_selectedFilterIds),
         filtersUsedForSearch: List<int>.from(_selectedFilterIds),
+        cityId: AppConstants.kDefaultCityId.toString(),
         languageCode: languageCode,
-        hasTrainStation: hasTrainStation,
-        trainStationId: trainStationId,
+        selectedStation: trainStationId,
       );
 
       if (result.succeeded) {
@@ -843,8 +844,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         if (mounted) {
           setState(() {
             _optimisticResultCount = resultCount;
-            _hasReceivedNewCount = true;
-          });
+                });
         }
 
         await widget.onSearchCompleted(activeFilterIds, resultCount);
@@ -877,7 +877,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
       _updateSelectionTypeOnRemoval(filterId);
       _selectedFilterIds.remove(filterId);
-      _hasReceivedNewCount = true;
     });
 
     ref.read(searchStateProvider.notifier).setFilters(
@@ -922,7 +921,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       _initialFilterIds = [];
       _initialCategoryId = null;
       _initialItemId = null;
-      _hasReceivedNewCount = true;
       _currentSelectionType = FilterSelectionType.none;
       _selectedNeighborhoodId = null;
 
@@ -1405,7 +1403,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     setState(() {
       // Remove all sub-items in this combined button
       _selectedFilterIds.removeAll(subitemIds);
-      _hasReceivedNewCount = true;
     });
 
     ref.read(searchStateProvider.notifier).setFilters(
@@ -1619,7 +1616,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   TextStyle _getFilterTextStyle(bool isSelected, bool isActive) {
     const baseFontWeight = FontWeight.w400;
     final fontWeight = isSelected
-        ? FontWeight.values[baseFontWeight.index + 1]
+        ? FontWeight.values[baseFontWeight.value + 1]
         : baseFontWeight;
 
     return TextStyle(

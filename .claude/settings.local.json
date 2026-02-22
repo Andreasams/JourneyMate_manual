@@ -24,7 +24,8 @@
       "Bash(git restore:*)",
       "Bash(/tmp/phase7_widget_session_template.txt:*)",
       "Bash(\"_reference/NEW_TRANSLATION_KEYS.sql\":*)",
-      "Bash(_reference/NEW_TRANSLATION_KEYS.sql:*)"
+      "Bash(_reference/NEW_TRANSLATION_KEYS.sql:*)",
+      "Bash(/c/Users/Rikke/Documents/JourneyMate-Organized/_reference/PHASE7.4_IMAGEGALLERY_HANDOVER.md:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

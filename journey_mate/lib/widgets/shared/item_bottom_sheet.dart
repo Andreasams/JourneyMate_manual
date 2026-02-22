@@ -579,6 +579,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
           _isLoadingLanguage = false;
         });
 
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Could not load language: $e'),
@@ -640,6 +641,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
           _isLoadingLanguage = false;
         });
 
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Could not update currency'),

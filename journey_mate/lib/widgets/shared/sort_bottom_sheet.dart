@@ -105,7 +105,7 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
           style: AppTypography.bodyRegular,
         ),
         value: _onlyOpen,
-        activeColor: AppColors.accent,
+        activeThumbColor: AppColors.accent,
         activeTrackColor: AppColors.accent.withValues(alpha: 0.5),
         contentPadding: EdgeInsets.zero,
         onChanged: (value) {

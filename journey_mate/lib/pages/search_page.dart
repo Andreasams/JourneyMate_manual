@@ -151,6 +151,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       }
     }
 
+    // ignore: use_build_context_synchronously
     final languageCode = Localizations.localeOf(context).languageCode;
 
     try {

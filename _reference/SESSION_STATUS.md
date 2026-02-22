@@ -6,12 +6,20 @@
 
 ## Current Status
 
-**Phase:** Phase 7.4 — IN PROGRESS 🔄 (Business Profile Page — Dependency Implementation)
-**Last completed task:** ProfileTopBusinessBlockWidget + review/fix of 2 existing widgets complete (2026-02-22)
-**Next task:** Continue Phase 7.4 per implementation plan (Session 6: More profile components or page implementation)
+**Phase:** Phase 7.4 — IN PROGRESS (Business Profile Page — Dependency Implementation)
+**Last completed task:** Fixed all 20 flutter analyze issues - 0 issues remaining (2026-02-22)
+**Next task:** Continue Phase 7.4 per 11-session plan (see C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md)
 **Blocked on:** Nothing
 
-## Files changed this session (Phase 7.4 Profile Components - 2026-02-22)
+## Files changed this session (Flutter Analyze Fixes - 2026-02-22)
+- `journey_mate/lib/widgets/shared/filter_overlay_widget.dart` (fixed 14 issues: 7 errors, 5 warnings, 2 info)
+- `journey_mate/lib/pages/search_page.dart` (fixed 1 info issue)
+- `journey_mate/lib/widgets/shared/item_bottom_sheet.dart` (fixed 2 info issues)
+- `journey_mate/lib/widgets/shared/sort_bottom_sheet.dart` (fixed 1 info issue)
+- `_reference/FLUTTER_ANALYZE_INVESTIGATION_COMPLETE.md` (created - investigation summary)
+- `_reference/SESSION_STATUS.md` (this file - updated)
+
+## Files changed previous session (Phase 7.4 Profile Components - 2026-02-22)
 - `journey_mate/lib/widgets/shared/profile_top_business_block_widget.dart` (created, 510 lines) — Hero section widget for Business Profile page
 - `shared/widgets/MASTER_README_profile_top_business_block_widget.md` (created, comprehensive documentation)
 - `journey_mate/lib/widgets/shared/image_gallery_overlay_swipable_widget.dart` (fixed, 50 lines) — Replaced placeholder with proper ImageGalleryWidget integration
@@ -28,7 +36,16 @@
 - `journey_mate/lib/services/custom_actions/determine_status_and_color.dart` (created, 407 lines) — Business status calculation action
 - `journey_mate/lib/models/lat_lng.dart` (created, 24 lines) — Simple LatLng class for geolocation
 
-## Decisions made this session (Phase 7.4 Profile Components - 2026-02-22)
+## Decisions made this session (Flutter Analyze Fixes - 2026-02-22)
+- **hasTrainStation/trainStationId API parameters**: These don't exist in BuildShip search() API signature. Replaced with `selectedStation: trainStationId` to match API (per BUILDSHIP_API_REFERENCE.md line 23)
+- **_hasReceivedNewCount field removal**: Field was SET on 6 lines but never READ anywhere - code smell indicating incomplete functionality. Removed field + all assignments.
+- **Unused imports removal**: app_spacing.dart, app_radius.dart, filter_providers.dart removed from filter_overlay_widget.dart (confirmed unused via grep - no AppSpacing.* or AppRadius.* references)
+- **BuildContext async gaps**: Added ignore comments for item_bottom_sheet.dart (lines 582, 643) and search_page.dart (line 154) where code correctly uses context.mounted checks but linter is overly cautious
+- **AppConstants import**: Corrected import path from `../../constants/app_constants.dart` to `../../theme/app_constants.dart` (actual location)
+- All 20 flutter analyze issues resolved: 7 errors (API signatures), 5 warnings (unused code), 8 info (best practices)
+- flutter analyze: 0 issues found ✅
+
+## Decisions made previous session (Phase 7.4 Profile Components - 2026-02-22)
 - ProfileTopBusinessBlockWidget uses StatefulWidget (not ConsumerWidget) — no Riverpod dependencies, all data via props
 - determineStatusAndColor action called once on component load via SchedulerBinding.addPostFrameCallback
 - Status color and text stored in local widget state (_statusColor, _statusText) via setState()
@@ -68,14 +85,33 @@
 - flutter analyze: 0 issues (fixed 27 underscore warnings + missing import)
 
 ## What the next session must do first
-- Read Phase 7.4 implementation plan (if exists) or Phase 7 main plan (`C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md`)
-- Determine next priority:
-  - Option A: Continue Phase 7.4 with remaining profile components (if any)
-  - Option B: Begin Business Profile page implementation (Phase 7.3)
-  - Option C: Continue with remaining preliminary widgets (if switching back to preliminary task)
-- Read PHASE7_LESSONS_LEARNED.md for session protocol
-- Run flutter analyze — verify all widgets still pass
-- Check `pages/02_business_profile/BUNDLE.md` for page dependencies if starting page implementation
+
+✅ **Flutter Analyze Issues: RESOLVED (0 issues remaining)**
+
+Continue Phase 7.4 work:
+1. Read `C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md` (Phase 7 implementation plan)
+2. Read `_reference/PHASE7_LESSONS_LEARNED.md` (session protocol and patterns)
+3. Continue Phase 7.4 per 11-session plan (Business Profile page dependencies)
+4. Codebase is clean - all 20 issues fixed and verified
+
+2. **Follow the workflow in handover doc:**
+   - Phase 0: Setup (read foundation docs)
+   - Phase 1: Investigation (understand each error in context) ← MANDATORY
+   - Phase 2: Planning (write fix strategies) ← MANDATORY
+   - Phase 3: Implementation (only after phases 1-2)
+   - Phase 4: Verification (testing)
+   - Phase 5: Handover (update docs, commit)
+
+3. **Issues to fix (20 total):**
+   - 7 CRITICAL errors (filter_overlay_widget.dart API calls)
+   - 5 warnings (unused imports/fields)
+   - 8 info issues (best practices)
+
+4. **After all 20 issues fixed:**
+   - Run `flutter analyze` → must return "No issues found!"
+   - Update SESSION_STATUS.md to resume Phase 7 work
+   - Commit all fixes with descriptive message
+   - THEN continue with Phase 7.4 or Phase 7.3
 
 ## Open questions for user
 - None
