@@ -31,6 +31,9 @@ workflows:
         script: |
           cd journey_mate/ios
           pod install
+      - name: Apply provisioning profiles
+        script: |
+          xcode-project use-profiles
       - name: Flutter analyze
         script: |
           cd journey_mate
