@@ -235,7 +235,7 @@ class ApiService {
   Future<ApiCallResponse> getUiTranslations({
     required String languageCode,
   }) {
-    return _makeGetRequest('/translations', {
+    return _makeGetRequest('/languageText', {
       'languageCode': languageCode,
     });
   }
