@@ -6,11 +6,23 @@
 
 ## Current Status
 
-**Phase:** Phase 7 (Page Implementation) — COMPLETE ✅ 🎉
-**Deployment:** App successfully deployed to TestFlight! ✈️ (2026-02-22)
-**Last completed task:** Implemented Business Information page (2026-02-22)
-**Next task:** Phase 6B (Translation SQL migration) → Phase 8 (Integration polish)
-**Blocked on:** Nothing
+**Phase:** Phase 8 (Integration polish & bug fixes)
+**Deployment:** TestFlight grey screen bug — FIX DEPLOYED, awaiting build 🚀 (2026-02-22)
+**Last completed task:** Fixed grey screen + missing API calls bug (2026-02-22)
+**Next task:** Test new TestFlight build to verify fix works
+**Blocked on:** Codemagic build in progress (~20-30 min)
+
+**🔴 CRITICAL BUG FIXED (2026-02-22):**
+TestFlight build showed grey screen on search page. Root cause analysis revealed:
+1. **Filters never loaded** — Missing `loadFiltersForLanguage()` call at app startup
+2. **Translation API failures were silent** — If `/translations` call failed, app continued with empty state
+3. **Network timing issue** — Device network might not be ready when main.dart runs (~1s after launch)
+
+**✅ SOLUTION DEPLOYED (commit 088e40f):**
+- Added filter loading alongside translations in `main.dart` (parallel Future.wait)
+- Added 3-attempt retry logic with 2s delay between attempts
+- Added 10-second timeout per attempt
+- Error screen with "Retry" button if all attempts fail (no more silent grey screen)
 
 **🎉 MILESTONES:**
 - All 12 pages implemented! Phase 7 is 100% complete. All pages functional, all routes wired, flutter analyze: 0 issues across entire codebase.
@@ -18,8 +30,47 @@
 - Welcome page mascot updated to journeymate_mascot.png (2026-02-22)
 
 **⚠️ REMAINING WORK:**
+- Verify TestFlight build fixes grey screen issue
 - Phase 6B: Translation SQL migration (batch insert all keys to Supabase, switch to 100% dynamic td() calls)
 - Phase 8: Integration polish, testing, production deployment prep
+
+## Files changed this session (Grey Screen Bug Fix - 2026-02-22)
+- `journey_mate/lib/main.dart` (modified) — Added filter loading + retry logic + error screen
+  - Lines 1-11: Added imports (dart:math, filter_providers)
+  - Lines 28-150: Complete rewrite of initialization sequence
+    - Helper function: loadWithRetry() with 3 attempts, 2s delay, 10s timeout
+    - Parallel loading: translations + filters via Future.wait
+    - Error handling: Full-screen error UI with retry button if all attempts fail
+    - Debug logging: 🔄 attempt markers, ✅ success, ⚠️ failures
+  - Commit: 088e40f (pushed to main, Codemagic build triggered)
+- `_reference/SESSION_STATUS.md` (this file - updated)
+
+## Decisions made this session (Grey Screen Bug Fix - 2026-02-22)
+- **Initialization timing: main.dart is the correct place** — Loading translations/filters at app startup (before any page renders) prevents flash of untranslated content. FlutterFlow's welcome-page approach was due to platform limitations, not best practice.
+- **Retry logic: 3 attempts with 2s delay** — Handles "network not ready" issue on device startup. More than 3 attempts would feel too slow to users.
+- **Timeout: 10 seconds per attempt** — BuildShip typically responds in 1-2s. 10s is generous without making users wait too long.
+- **Error screen vs fallback to kStaticTranslations** — Decided to show clear error screen instead of silently falling back to hardcoded translations. Better UX: user knows app needs network and can retry.
+- **Filter loading must happen at startup** — Search page depends on filters being available immediately. Loading them on-demand in search page would cause delay and complicate state management.
+
+## What the next session must do first (Grey Screen Bug Fix - 2026-02-22)
+1. Wait for Codemagic build to complete (~20-30 minutes from push at 088e40f)
+2. Install new TestFlight build on device
+3. **Test scenarios:**
+   - Fresh install → Launch → Welcome page → Continue → Search page
+   - Verify: NO grey screen, text visible, filters work
+   - Check BuildShip logs: should see `/translations?languageCode=en` and `/filters?languageCode=en` calls
+4. **If still grey screen:**
+   - Check BuildShip logs for API calls (if missing → different issue)
+   - Check device logs for error messages
+   - Consider adding more debug logging to ApiService._makeGetRequest
+5. **If error screen appears:**
+   - Good! Error handling works (better than grey screen)
+   - Investigate why API is failing (BuildShip down? Device network issue?)
+
+## Open questions for user (Grey Screen Bug Fix - 2026-02-22)
+- None — fix is straightforward, just needs testing
+
+---
 
 ## Files changed this session (Business Information Page - 2026-02-22)
 - `journey_mate/lib/pages/business_information_page.dart` (created, 497 lines) — Full-screen business detail view
