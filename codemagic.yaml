@@ -45,10 +45,10 @@ workflows:
       - name: Set build number
         script: |
           # $BUILD_NUMBER is Codemagic's own auto-incrementing counter for this repo.
-          # Offset by 273 so the first build produces 274, above the last TestFlight
-          # build (273 from the old JourneyMate repo), and every subsequent build increments.
+          # Offset adjusted to 269 to produce build 275 (BUILD_NUMBER is at 6 after failed builds).
+          # Target: 275 (continuing from TestFlight build 273 in old repo)
           cd journey_mate/ios
-          agvtool new-version -all $((BUILD_NUMBER + 273))
+          agvtool new-version -all $((BUILD_NUMBER + 269))
       - name: Build iOS app
         script: |
           cd journey_mate
