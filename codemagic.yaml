@@ -40,10 +40,8 @@ workflows:
           flutter analyze
       - name: Set build number
         script: |
-          LATEST=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID")
-          NEXT=$((LATEST + 1))
           cd journey_mate/ios
-          agvtool new-version -all $NEXT
+          agvtool new-version -all $((BUILD_NUMBER + 274))
       - name: Build iOS app
         script: |
           cd journey_mate
