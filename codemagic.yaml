@@ -19,11 +19,6 @@ workflows:
       - name: Set up Flutter
         script: |
           flutter precache --ios
-      - name: Set up code signing
-        script: |
-          keychain initialize
-          keychain add-certificates
-          xcode-project use-profiles
       - name: Get Flutter dependencies
         script: |
           cd journey_mate
