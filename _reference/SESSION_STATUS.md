@@ -6,29 +6,30 @@
 
 ## Current Status
 
-**Phase:** Phase 7 Preliminary Task — COMPLETE ✅ (34/34 widgets, 100%) + Widget Consistency Review Complete
-**Last completed task:** Widget Consistency Review — All 34 widgets verified, 3 issues fixed (2026-02-22)
-**Next task:** Phase 7.1 — Welcome/Onboarding Page implementation (first of 12 pages)
-**Blocked on:** Nothing — all shared widgets complete, quality verified, ready for page implementation
+**Phase:** Phase 7.1 — COMPLETE ✅ (Welcome/Onboarding Page)
+**Last completed task:** Welcome/Onboarding Page implementation — entry point for all users (2026-02-22)
+**Next task:** Phase 7.2 — Search Page implementation (second of 12 pages)
+**Blocked on:** Nothing — Welcome page complete and verified, ready for Search page
 
-## Files changed this session (Consistency Review - 2026-02-22)
-- `journey_mate/lib/widgets/shared/menu_item_card.dart` (fixed price formatting + color token)
-- `_reference/SESSION_STATUS.md` (CurrencySelectorButton complexity → High + status update)
-- `_reference/PHASE7_LESSONS_LEARNED.md` (added post-implementation review results)
+## Files changed this session (Phase 7.1 - 2026-02-22)
+- `journey_mate/lib/pages/welcome/welcome_page.dart` (created, 504 lines)
+- `journey_mate/lib/router/app_router.dart` (updated with WelcomePage + placeholder route)
 
 ## Decisions made this session
-- MenuItemCard uses centralized price_formatter.dart (eliminates duplication)
-- AppColors.error preferred over AppColors.red for semantic clarity (both valid)
-- CurrencySelectorButton complexity is High (478 lines, complex overlay logic)
-- ItemBottomSheet lint warnings acceptable (context.mounted used correctly)
-- All 34 widgets production-ready, minimal issues found
+- User detection via SharedPreferences direct check (no provider modification needed)
+- Error handling uses dialog (stay on page, allow retry)
+- Loading state uses inline button spinner (button disabled while loading)
+- Analytics tracked on dispose with correct pageName: 'welcomePage'
+- Geolocator uses LocationSettings (not deprecated desiredAccuracy/timeLimit)
+- No new translation keys needed (all 5 keys exist from Phase 6A)
+- Placeholder route `/set-language-currency` added for English setup flow
 
 ## What the next session must do first
 - Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
 - Read `C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md` (Phase 7 implementation plan)
 - Read `DESIGN_SYSTEM_flutter.md` for design tokens
-- Read `pages/06_welcome_onboarding/BUNDLE_welcome_page.md` for first page implementation
-- Implement Welcome/Onboarding page per Phase 7 workflow
+- Read `pages/01_search/BUNDLE.md` for Search page implementation
+- Implement Search page per Phase 7 workflow
 
 ## Open questions for user
 - None
