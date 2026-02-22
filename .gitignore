@@ -6,8 +6,8 @@ journey_mate/build/
 journey_mate/.packages
 journey_mate/pubspec.lock
 
-# FlutterFlow export - track but mark read-only
-# _flutterflow_export/ is included in git
+# FlutterFlow export - excluded from repo (reference only, not for production)
+_flutterflow_export/
 
 # IDE
 .idea/
