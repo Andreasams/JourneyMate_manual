@@ -6,43 +6,40 @@
 
 ## Current Status
 
-**Phase:** Phase 7.3.2 — COMPLETE ✅ (Search Page)
-**Last completed task:** Search Page + SortBottomSheet implementation — Full search functionality with filters, sorting, debouncing, and analytics (2026-02-22)
-**Next task:** Phase 7.4 — Business Profile Page implementation (fourth of 12 pages)
-**Blocked on:** Nothing — Search page complete and production-ready, ready for Business Profile page
+**Phase:** Phase 7.4 — IN PROGRESS 🔄 (Business Profile Page — Dependency Implementation)
+**Last completed task:** Custom functions and actions for Profile widgets — 4 functions + 1 action implemented, all dependencies for ProfileTopBusinessBlockWidget ready (2026-02-22)
+**Next task:** Session 5 Profile Components — Implement ImageGalleryWidget, then 3 profile component widgets (ProfileTopBusinessBlock, ContactDetail, ImageGalleryOverlaySwipable)
+**Blocked on:** Nothing — All 4 custom functions/1 custom action complete, ready for ImageGalleryWidget implementation
 
-## Files changed this session (Phase 7.3.2 - 2026-02-22)
-- `journey_mate/lib/pages/search_page.dart` (created, ~580 lines) — Complete search page with debouncing, filters, sorting
-- `journey_mate/lib/widgets/shared/sort_bottom_sheet.dart` (created, ~150 lines) — 6-option sort sheet with "only open" toggle
-- `journey_mate/lib/services/translation_service.dart` (updated) — Added 15 translation keys × 7 languages
-- `journey_mate/lib/router/app_router.dart` (updated) — Wired /search route to SearchPage
-- `_reference/NEW_TRANSLATION_KEYS.sql` (appended 105 SQL statements) — All 15 keys for Search page
-- `_reference/PHASE7_3_2_TRANSLATIONS.sql` (created) — Intermediate SQL file for Phase 7.3.2 keys
-- `_reference/SESSION_STATUS.md` (this file - updated for Phase 7.3.2 completion)
+## Files changed this session (Phase 7.4 prep - 2026-02-22)
+- `journey_mate/lib/services/custom_functions/distance_calculator.dart` (created, 64 lines) — Haversine distance calculation
+- `journey_mate/lib/services/custom_functions/address_formatter.dart` (created, 92 lines) — Copenhagen address formatting with abbreviations
+- `journey_mate/lib/services/custom_functions/hours_formatter.dart` (created, 347 lines) — Business hours formatting (complex ~300 lines)
+- `journey_mate/lib/services/custom_actions/determine_status_and_color.dart` (created, 407 lines) — Business status calculation action
+- `journey_mate/lib/models/lat_lng.dart` (created, 24 lines) — Simple LatLng class for geolocation
+- `_reference/SESSION_STATUS.md` (this file - updated for Phase 7.4 prep completion)
 
-## Decisions made this session
-- Search Page implemented per 6-phase plan: Core scaffold → Filter integration → Search & debouncing → Sort controls → Analytics & polish → Edge cases & code review
-- Debounced search: 200ms delay (matches plan, different from FilterOverlayWidget's 300ms)
-- Search uses ApiService.instance.search() directly (not through a provider method to avoid circular dependencies)
-- Analytics uses ApiService.instance.postAnalytics() with full required parameters (deviceId, sessionId, userId, timestamp)
-- Request ID pattern for race condition prevention: `++_requestId` before each search, ignore stale results
-- NavBarWidget requires `pageIsSearchResults` boolean (not `currentPageName` string) — SearchPage passes `true`
-- SearchResultsListView onBusinessTap takes only `int businessId` (not `(int, String)` tuple)
-- Sort options: match, nearest, station, price_low, price_high, newest (6 total)
-- Floating sort button positioned: `bottom: 92.0` (80px nav bar + 12px gap)
-- Location permission banner shows when `!locationState.hasPermission` — inline non-blocking banner
-- Empty states: 3 variants (initial, no results with query, no results with filters)
-- Translation keys: 15 keys × 7 languages = 105 SQL statements appended to NEW_TRANSLATION_KEYS.sql
-- SortBottomSheet uses activeColor + activeTrackColor (Flutter 3.31+ deprecation handled)
-- flutter analyze: 1 info-level warning in search_page.dart (properly guarded BuildContext usage) — acceptable
+## Decisions made this session (Phase 7.4 prep)
+- Created custom functions for ProfileTopBusinessBlockWidget dependencies (Option A from Session 5 plan)
+- LatLng model created locally instead of adding google_maps_flutter dependency (lighter approach, only need data class)
+- All helper functions use regular names (not underscore-prefixed) to comply with Dart linter rules
+- returnDistance() function: Haversine formula for great-circle distance, auto-converts to miles for English (0.621371 factor)
+- streetAndNeighbourhoodLength(): Copenhagen-specific with 13 neighborhoods → postal abbreviations (Kbh K, Kbh V, etc.)
+- openClosesAt(): Very complex (300 lines), handles 5 time slots/day, overnight hours, 15+ edge cases
+- determineStatusAndColor(): Async action (400 lines), calculates open/closed status with 30-minute "soon" thresholds
+- All 4 custom functions + 1 action include temporary translation stubs (TODO: wire up translationsCacheProvider)
+- convertAndFormatPriceRange() already exists in price_formatter.dart (Session #16) — reuse it
+- All implementations follow exact FlutterFlow source patterns from MASTER_README documentation
+- flutter analyze: 0 issues (fixed 27 underscore warnings + missing import)
 
 ## What the next session must do first
-- Read `_reference/PHASE7.3_SESSION2_HANDOVER.md` — comprehensive handover document with complete implementation plan
-- Read `CLAUDE.md` + `_reference/PHASE7_LESSONS_LEARNED.md` + `_reference/PROVIDERS_REFERENCE.md`
-- Read `DESIGN_SYSTEM_flutter.md` for design tokens
-- Read `_reference/BUILDSHIP_API_REFERENCE.md` for SEARCH endpoint contract
-- Read `pages/01_search/BUNDLE.md` for Search page functional spec
-- Implement Search page per 6-phase plan in handover document (scaffold → filter integration → search & debouncing → sort controls → analytics & polish → edge cases & code review)
+- Read `C:\Users\Rikke\.claude\plans\federated-moseying-wigderson.md` — Phase 7.4 implementation plan
+- Read `shared/widgets/MASTER_README_image_gallery_widget.md` — ImageGalleryWidget specification
+- Read `_flutterflow_export/lib/custom_code/widgets/image_gallery_widget.dart` — Ground truth source
+- Implement ImageGalleryWidget (full-screen gallery with PageView carousel, ~1,000 lines)
+- After ImageGalleryWidget complete: Start Session 5 Profile Components (3 widgets: ProfileTopBusinessBlock, ContactDetail, ImageGalleryOverlaySwipable)
+- Wire up custom functions/actions in ProfileTopBusinessBlockWidget when building it
+- Continue with Phase 7.4 Sessions 6-11 per plan
 
 ## Open questions for user
 - None
