@@ -1096,13 +1096,13 @@ const Map<String, Map<String, String>> kStaticTranslations = {
   },
   // WelcomePage
   '6dww9uct': {
-    'en': 'Welcome to JourneyMate',
-    'da': 'Velkommen til JourneyMate',
-    'de': 'Willkommen bei JourneyMate',
-    'fr': 'Bienvenue chez JourneyMate',
-    'it': 'Benvenuti a JourneyMate',
-    'no': 'Velkommen til JourneyMate',
-    'sv': 'Välkommen till JourneyMate',
+    'en': 'Welcome to\nJourneyMate',
+    'da': 'Velkommen til\nJourneyMate',
+    'de': 'Willkommen bei\nJourneyMate',
+    'fr': 'Bienvenue chez\nJourneyMate',
+    'it': 'Benvenuti a\nJourneyMate',
+    'no': 'Velkommen til\nJourneyMate',
+    'sv': 'Välkommen till\nJourneyMate',
   },
   'z6e1v2g7': {
     'en': 'Go out, your way. ',
