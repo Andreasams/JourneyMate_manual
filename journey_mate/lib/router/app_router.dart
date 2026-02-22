@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../pages/welcome/welcome_page.dart';
 
 /// Application router with all 11 routes
 /// Uses go_router 17.x for navigation
@@ -15,10 +16,7 @@ final appRouter = GoRouter(
     // Phase 7.1: Welcome / Onboarding
     GoRoute(
       path: '/welcome',
-      builder: (context, state) => _placeholderPage(
-        'Welcome Page',
-        'Phase 7.1 - Welcome / Onboarding',
-      ),
+      builder: (context, state) => const WelcomePage(),
     ),
 
     // Phase 7.2: Search
@@ -84,6 +82,15 @@ final appRouter = GoRouter(
       builder: (context, state) => _placeholderPage(
         'Settings',
         'Phase 7.7 - Main settings page',
+      ),
+    ),
+
+    // App Settings Initiate Flow (English onboarding wizard)
+    GoRoute(
+      path: '/set-language-currency',
+      builder: (context, state) => _placeholderPage(
+        'Language & Currency Setup',
+        'Phase 7.7+ - English onboarding flow',
       ),
     ),
 
