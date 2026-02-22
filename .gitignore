@@ -17,3 +17,19 @@ _flutterflow_export/
 # OS
 .DS_Store
 Thumbs.db
+
+# Development reference documentation (keep locally, exclude from git)
+_reference/
+pages/
+shared/
+
+# Top-level design/planning documents (keep locally, exclude from git)
+DESIGN_SYSTEM_flutter.md
+IMPLEMENTATION_PLAN.txt
+MASTER_TRANSLATION_KEYS.md
+LESSONS_LEARNED_jsx_to_flutter.md
+INFO.plist.txt
+MAIN.dart.txt
+
+# Note: CLAUDE.md intentionally tracked (project instructions for future devs)
+# Note: codemagic.yaml intentionally tracked (CI/CD configuration)
