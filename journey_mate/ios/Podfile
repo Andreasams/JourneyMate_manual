@@ -43,5 +43,39 @@ post_install do |installer|
     target.build_configurations.each do |config|
       config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
     end
+
+    # Fix for PrivacyInfo.xcprivacy files in Xcode 15+
+    # Ensures .xcprivacy files are copied as resources, not compiled
+    # Required for map_launcher and other plugins with privacy manifests
+    xcprivacy_files = []
+    target.build_phases.each do |build_phase|
+      # Remove .xcprivacy files from compilation (shouldn't be there, but clean up if present)
+      if build_phase.is_a?(Xcodeproj::Project::Object::PBXSourcesBuildPhase)
+        build_phase.files.delete_if do |build_file|
+          if build_file.file_ref.path&.end_with?('PrivacyInfo.xcprivacy')
+            xcprivacy_files << build_file.file_ref
+            true
+          else
+            false
+          end
+        end
+      end
+    end
+
+    # Add .xcprivacy files to "Copy Bundle Resources" build phase
+    unless xcprivacy_files.empty?
+      resources_build_phase = target.build_phases.find do |bp|
+        bp.is_a?(Xcodeproj::Project::Object::PBXResourcesBuildPhase)
+      end
+
+      if resources_build_phase
+        xcprivacy_files.each do |file_ref|
+          # Only add if not already present
+          unless resources_build_phase.files.any? { |f| f.file_ref == file_ref }
+            resources_build_phase.add_file_reference(file_ref)
+          end
+        end
+      end
+    end
   end
 end
