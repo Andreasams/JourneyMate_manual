@@ -1299,3 +1299,93 @@ VALUES
   ('filter_only_open', 'no', 'Kun åpne steder', 'ui'),
   ('filter_only_open', 'sv', 'Endast öppna ställen', 'ui')
 ;
+
+-- ============================================================
+-- BUSINESS PROFILE PAGE KEYS (Phase 7.3 - 2026-02-22)
+-- ============================================================
+-- 9 keys × 7 languages = 63 INSERT statements
+
+-- Tab labels (3 keys)
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category) VALUES
+  ('tab_menu', 'en', 'Menu', 'ui'),
+  ('tab_menu', 'da', 'Menu', 'ui'),
+  ('tab_menu', 'de', 'Menü', 'ui'),
+  ('tab_menu', 'fr', 'Menu', 'ui'),
+  ('tab_menu', 'it', 'Menu', 'ui'),
+  ('tab_menu', 'no', 'Meny', 'ui'),
+  ('tab_menu', 'sv', 'Meny', 'ui');
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category) VALUES
+  ('tab_gallery', 'en', 'Gallery', 'ui'),
+  ('tab_gallery', 'da', 'Galleri', 'ui'),
+  ('tab_gallery', 'de', 'Galerie', 'ui'),
+  ('tab_gallery', 'fr', 'Galerie', 'ui'),
+  ('tab_gallery', 'it', 'Galleria', 'ui'),
+  ('tab_gallery', 'no', 'Galleri', 'ui'),
+  ('tab_gallery', 'sv', 'Galleri', 'ui');
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category) VALUES
+  ('tab_about', 'en', 'About', 'ui'),
+  ('tab_about', 'da', 'Om', 'ui'),
+  ('tab_about', 'de', 'Über', 'ui'),
+  ('tab_about', 'fr', 'À propos', 'ui'),
+  ('tab_about', 'it', 'Informazioni', 'ui'),
+  ('tab_about', 'no', 'Om', 'ui'),
+  ('tab_about', 'sv', 'Om', 'ui');
+
+-- Loading and empty states (3 keys)
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category) VALUES
+  ('menu_loading', 'en', 'Loading menu...', 'ui'),
+  ('menu_loading', 'da', 'Indlæser menu...', 'ui'),
+  ('menu_loading', 'de', 'Menü wird geladen...', 'ui'),
+  ('menu_loading', 'fr', 'Chargement du menu...', 'ui'),
+  ('menu_loading', 'it', 'Caricamento menu...', 'ui'),
+  ('menu_loading', 'no', 'Laster meny...', 'ui'),
+  ('menu_loading', 'sv', 'Laddar meny...', 'ui');
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category) VALUES
+  ('business_not_found', 'en', 'Business not found', 'ui'),
+  ('business_not_found', 'da', 'Virksomhed ikke fundet', 'ui'),
+  ('business_not_found', 'de', 'Geschäft nicht gefunden', 'ui'),
+  ('business_not_found', 'fr', 'Établissement non trouvé', 'ui'),
+  ('business_not_found', 'it', 'Attività non trovata', 'ui'),
+  ('business_not_found', 'no', 'Bedrift ikke funnet', 'ui'),
+  ('business_not_found', 'sv', 'Företag hittades inte', 'ui');
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category) VALUES
+  ('error_retry_button', 'en', 'Retry', 'ui'),
+  ('error_retry_button', 'da', 'Prøv igen', 'ui'),
+  ('error_retry_button', 'de', 'Wiederholen', 'ui'),
+  ('error_retry_button', 'fr', 'Réessayer', 'ui'),
+  ('error_retry_button', 'it', 'Riprova', 'ui'),
+  ('error_retry_button', 'no', 'Prøv igjen', 'ui'),
+  ('error_retry_button', 'sv', 'Försök igen', 'ui');
+
+-- About tab section headings (3 keys)
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category) VALUES
+  ('about_description_label', 'en', 'Description', 'ui'),
+  ('about_description_label', 'da', 'Beskrivelse', 'ui'),
+  ('about_description_label', 'de', 'Beschreibung', 'ui'),
+  ('about_description_label', 'fr', 'Description', 'ui'),
+  ('about_description_label', 'it', 'Descrizione', 'ui'),
+  ('about_description_label', 'no', 'Beskrivelse', 'ui'),
+  ('about_description_label', 'sv', 'Beskrivning', 'ui');
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category) VALUES
+  ('about_payment_options_label', 'en', 'Payment Options', 'ui'),
+  ('about_payment_options_label', 'da', 'Betalingsmuligheder', 'ui'),
+  ('about_payment_options_label', 'de', 'Zahlungsoptionen', 'ui'),
+  ('about_payment_options_label', 'fr', 'Options de paiement', 'ui'),
+  ('about_payment_options_label', 'it', 'Opzioni di pagamento', 'ui'),
+  ('about_payment_options_label', 'no', 'Betalingsalternativer', 'ui'),
+  ('about_payment_options_label', 'sv', 'Betalningsalternativ', 'ui');
+
+INSERT INTO ui_translations (translation_key, language_code, translation_text, category) VALUES
+  ('about_report_incorrect_info', 'en', 'Report incorrect information', 'ui'),
+  ('about_report_incorrect_info', 'da', 'Rapporter ukorrekte oplysninger', 'ui'),
+  ('about_report_incorrect_info', 'de', 'Falsche Informationen melden', 'ui'),
+  ('about_report_incorrect_info', 'fr', 'Signaler des informations incorrectes', 'ui'),
+  ('about_report_incorrect_info', 'it', 'Segnala informazioni errate', 'ui'),
+  ('about_report_incorrect_info', 'no', 'Rapporter feil informasjon', 'ui'),
+  ('about_report_incorrect_info', 'sv', 'Rapportera felaktig information', 'ui');
+

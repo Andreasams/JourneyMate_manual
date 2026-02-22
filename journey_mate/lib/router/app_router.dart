@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../pages/welcome/welcome_page.dart';
 import '../pages/app_settings_initiate_flow/app_settings_initiate_flow_page.dart';
 import '../pages/search_page.dart';
+import '../pages/business_profile_page.dart';
 
 /// Application router with all 11 routes
 /// Uses go_router 17.x for navigation
@@ -27,15 +28,12 @@ final appRouter = GoRouter(
       builder: (context, state) => const SearchPage(),
     ),
 
-    // Phase 7.3: Business Profile
+    // Phase 7.3: Business Profile (COMPLETE ✅)
     GoRoute(
       path: '/business/:id',
       builder: (context, state) {
-        final id = state.pathParameters['id']!;
-        return _placeholderPage(
-          'Business Profile',
-          'Phase 7.3 - Business ID: $id',
-        );
+        final businessId = state.pathParameters['id']!;
+        return BusinessProfilePage(businessId: businessId);
       },
     ),
 

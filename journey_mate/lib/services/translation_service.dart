@@ -3261,6 +3261,97 @@ const Map<String, Map<String, String>> kStaticTranslations = {
     'no': 'Kun åpne steder',
     'sv': 'Endast öppna ställen',
   },
+
+  // ============================================================
+  // BUSINESS PROFILE PAGE KEYS (Phase 7.3)
+  // ============================================================
+
+  // Tab labels
+  'tab_menu': {
+    'en': 'Menu',
+    'da': 'Menu',
+    'de': 'Menü',
+    'fr': 'Menu',
+    'it': 'Menu',
+    'no': 'Meny',
+    'sv': 'Meny',
+  },
+  'tab_gallery': {
+    'en': 'Gallery',
+    'da': 'Galleri',
+    'de': 'Galerie',
+    'fr': 'Galerie',
+    'it': 'Galleria',
+    'no': 'Galleri',
+    'sv': 'Galleri',
+  },
+  'tab_about': {
+    'en': 'About',
+    'da': 'Om',
+    'de': 'Über',
+    'fr': 'À propos',
+    'it': 'Informazioni',
+    'no': 'Om',
+    'sv': 'Om',
+  },
+
+  // Loading and empty states
+  'menu_loading': {
+    'en': 'Loading menu...',
+    'da': 'Indlæser menu...',
+    'de': 'Menü wird geladen...',
+    'fr': 'Chargement du menu...',
+    'it': 'Caricamento menu...',
+    'no': 'Laster meny...',
+    'sv': 'Laddar meny...',
+  },
+  'business_not_found': {
+    'en': 'Business not found',
+    'da': 'Virksomhed ikke fundet',
+    'de': 'Geschäft nicht gefunden',
+    'fr': 'Établissement non trouvé',
+    'it': 'Attività non trovata',
+    'no': 'Bedrift ikke funnet',
+    'sv': 'Företag hittades inte',
+  },
+  'error_retry_button': {
+    'en': 'Retry',
+    'da': 'Prøv igen',
+    'de': 'Wiederholen',
+    'fr': 'Réessayer',
+    'it': 'Riprova',
+    'no': 'Prøv igjen',
+    'sv': 'Försök igen',
+  },
+
+  // About tab section headings
+  'about_description_label': {
+    'en': 'Description',
+    'da': 'Beskrivelse',
+    'de': 'Beschreibung',
+    'fr': 'Description',
+    'it': 'Descrizione',
+    'no': 'Beskrivelse',
+    'sv': 'Beskrivning',
+  },
+  'about_payment_options_label': {
+    'en': 'Payment Options',
+    'da': 'Betalingsmuligheder',
+    'de': 'Zahlungsoptionen',
+    'fr': 'Options de paiement',
+    'it': 'Opzioni di pagamento',
+    'no': 'Betalingsalternativer',
+    'sv': 'Betalningsalternativ',
+  },
+  'about_report_incorrect_info': {
+    'en': 'Report incorrect information',
+    'da': 'Rapporter ukorrekte oplysninger',
+    'de': 'Falsche Informationen melden',
+    'fr': 'Signaler des informations incorrectes',
+    'it': 'Segnala informazioni errate',
+    'no': 'Rapporter feil informasjon',
+    'sv': 'Rapportera felaktig information',
+  },
 };
 
 // ============================================================
