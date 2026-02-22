@@ -4,6 +4,7 @@ import '../pages/welcome/welcome_page.dart';
 import '../pages/app_settings_initiate_flow/app_settings_initiate_flow_page.dart';
 import '../pages/search_page.dart';
 import '../pages/business_profile_page.dart';
+import '../pages/menu_full_page.dart';
 
 /// Application router with all 11 routes
 /// Uses go_router 17.x for navigation
@@ -37,15 +38,12 @@ final appRouter = GoRouter(
       },
     ),
 
-    // Phase 7.4: Menu Full Page
+    // Phase 7.4: Menu Full Page (COMPLETE ✅)
     GoRoute(
       path: '/business/:id/menu',
       builder: (context, state) {
-        final id = state.pathParameters['id']!;
-        return _placeholderPage(
-          'Menu',
-          'Phase 7.4 - Business ID: $id',
-        );
+        final businessId = state.pathParameters['id']!;
+        return MenuFullPage(businessId: businessId);
       },
     ),
 
