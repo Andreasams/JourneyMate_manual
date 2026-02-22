@@ -86,13 +86,28 @@
 
 ## What the next session must do first
 
-✅ **Flutter Analyze Issues: RESOLVED (0 issues remaining)**
+🎯 **Ready to implement Business Profile Page (Phase 7.3)**
 
-Continue Phase 7.4 work:
-1. Read `C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md` (Phase 7 implementation plan)
-2. Read `_reference/PHASE7_LESSONS_LEARNED.md` (session protocol and patterns)
-3. Continue Phase 7.4 per 11-session plan (Business Profile page dependencies)
-4. Codebase is clean - all 20 issues fixed and verified
+✅ **All prerequisites complete:**
+- ✅ 34/34 shared widgets built (100%)
+- ✅ All 20 flutter analyze issues fixed (0 errors, 0 warnings, 0 info)
+- ✅ Codebase clean and verified
+- ✅ All foundation complete (providers, routing, API, translations)
+
+📋 **MANDATORY: Read this comprehensive handover document first:**
+- **`_reference/PHASE7_NEXT_SESSION_INSTRUCTIONS.md`** — Complete Business Profile page implementation guide
+  - 10 foundation documents to read (in order)
+  - 7-phase workflow with detailed code examples
+  - Implementation patterns for hero section, tabs, data loading, analytics
+  - Verification checklist and common pitfalls
+  - Estimated 5-6 hours (1 full session)
+
+**Quick start checklist:**
+1. Read PHASE7_NEXT_SESSION_INSTRUCTIONS.md completely
+2. Read pages/02_business_profile/BUNDLE.md
+3. Read C:\Users\Rikke\.claude\plans\drifting-meandering-koala.md (lines 418-500)
+4. Begin Phase 0: Setup & Foundation Reading
+5. Follow 7-phase workflow step-by-step
 
 2. **Follow the workflow in handover doc:**
    - Phase 0: Setup (read foundation docs)
