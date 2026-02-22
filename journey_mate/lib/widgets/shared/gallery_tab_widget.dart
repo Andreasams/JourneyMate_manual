@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../services/translation_service.dart';
+import '../../services/analytics_service.dart';
+import '../../services/api_service.dart';
+import '../../providers/app_providers.dart';
 
 /// A tabbed gallery widget for displaying categorized restaurant images.
 ///
@@ -327,9 +330,25 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
   void _trackGalleryOpened() {
     final availableTabs = _categories.map((c) => c.key).toList();
 
-    // Fire-and-forget analytics (placeholder until full implementation)
-    debugPrint('📊 Gallery opened: $availableTabs');
-    // TODO: Implement full analytics tracking via AnalyticsService
+    // Get analytics data
+    final analyticsState = ref.read(analyticsProvider);
+    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
+    final sessionId = analyticsState.sessionId ?? 'unknown';
+    final userId = AnalyticsService.instance.userId ?? 'unknown';
+
+    // Track event (fire and forget)
+    ApiService.instance.postAnalytics(
+      eventType: 'gallery_opened',
+      deviceId: deviceId,
+      sessionId: sessionId,
+      userId: userId,
+      eventData: {
+        'available_tabs': availableTabs,
+        'total_tabs': availableTabs.length,
+        'initial_tab': availableTabs.isNotEmpty ? availableTabs[0] : 'empty',
+      },
+      timestamp: DateTime.now().toIso8601String(),
+    );
   }
 
   /// Tracks tab change events with context of available tabs.
@@ -342,10 +361,30 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
 
     final fromTab = _categories[fromIndex].key;
     final toTab = _categories[toIndex].key;
+    final availableTabs = _categories.map((c) => c.key).toList();
 
-    // Fire-and-forget analytics (placeholder until full implementation)
-    debugPrint('📊 Gallery tab changed: $fromTab → $toTab via $method');
-    // TODO: Implement full analytics tracking via AnalyticsService
+    // Get analytics data
+    final analyticsState = ref.read(analyticsProvider);
+    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
+    final sessionId = analyticsState.sessionId ?? 'unknown';
+    final userId = AnalyticsService.instance.userId ?? 'unknown';
+
+    // Track event (fire and forget)
+    ApiService.instance.postAnalytics(
+      eventType: 'gallery_tab_changed',
+      deviceId: deviceId,
+      sessionId: sessionId,
+      userId: userId,
+      eventData: {
+        'from_tab': fromTab,
+        'to_tab': toTab,
+        'from_index': fromIndex,
+        'to_index': toIndex,
+        'method': method, // 'tap' or 'swipe'
+        'available_tabs': availableTabs,
+      },
+      timestamp: DateTime.now().toIso8601String(),
+    );
   }
 
   /// =========================================================================

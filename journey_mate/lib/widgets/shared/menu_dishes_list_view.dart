@@ -238,10 +238,17 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
     return ref.read(businessProvider).excludedAllergyIds;
   }
 
-  /// Gets selected category ID (placeholder - TODO: determine source)
+  /// Gets selected category ID for auto-scroll detection.
+  ///
+  /// Returns 0 (all categories) by default, indicating no external category
+  /// selection. Category scrolling is managed via external scroll commands
+  /// (through method calls from parent), not by polling provider state.
+  ///
+  /// Design: This widget reports visible categories via onVisibleCategoryChanged
+  /// callback but does not receive category selection as input. This prevents
+  /// circular dependencies and keeps category selection logic in parent widgets.
   int _getSelectedCategoryId() {
-    // TODO: Determine if this should come from businessProvider or as a prop
-    return 0;
+    return 0; // Intentional: no external category selection
   }
 
   /// Gets user's chosen currency code from localizationProvider
