@@ -6,10 +6,10 @@
 
 ## Current Status
 
-**Phase:** Phase 8 (Integration polish & bug fixes)
+**Phase:** Phase 6B — COMPLETE ✅ | Phase 8 (Integration polish) — IN PROGRESS
 **Deployment:** TestFlight grey screen bug — FIX DEPLOYED, awaiting build 🚀 (2026-02-22)
-**Last completed task:** Fixed grey screen + missing API calls bug (2026-02-22)
-**Next task:** Test new TestFlight build to verify fix works
+**Last completed task:** Phase 6B Translation SQL Migration COMPLETE (2026-02-22)
+**Next task:** Test new TestFlight build to verify grey screen fix, then continue Phase 8
 **Blocked on:** Codemagic build in progress (~20-30 min)
 
 **🔴 CRITICAL BUG FIXED (2026-02-22):**
@@ -25,14 +25,23 @@ TestFlight build showed grey screen on search page. Root cause analysis revealed
 - Error screen with "Retry" button if all attempts fail (no more silent grey screen)
 
 **🎉 MILESTONES:**
-- All 12 pages implemented! Phase 7 is 100% complete. All pages functional, all routes wired, flutter analyze: 0 issues across entire codebase.
-- App successfully built and deployed to TestFlight via Codemagic CI/CD
-- Welcome page mascot updated to journeymate_mascot.png (2026-02-22)
+- ✅ All 12 pages implemented! Phase 7 is 100% complete.
+- ✅ App successfully built and deployed to TestFlight via Codemagic CI/CD
+- ✅ Welcome page mascot updated to journeymate_mascot.png (2026-02-22)
+- ✅ **Phase 6B Translation Migration COMPLETE (2026-02-22):**
+  - All 355 app keys migrated to Supabase ui_translations
+  - 191 FlutterFlow page keys (8-char IDs) uploaded
+  - 125 Phase 7 widget keys (verified existing)
+  - 38 Phase 7 new keys uploaded
+  - Total in Supabase: 497 keys (355 used by app + 142 legacy)
+  - 7 languages: en, da, de, fr, it, no, sv
 
 **⚠️ REMAINING WORK:**
 - Verify TestFlight build fixes grey screen issue
-- Phase 6B: Translation SQL migration (batch insert all keys to Supabase, switch to 100% dynamic td() calls)
+- Phase 8: Switch all ts() calls to td() (100% dynamic translations)
+- Phase 8: Delete kStaticTranslations map (~1,900 lines)
 - Phase 8: Integration polish, testing, production deployment prep
+- Phase 8: Clean git history (remove old Supabase secret)
 
 ## Files changed this session (Grey Screen Bug Fix - 2026-02-22)
 - `journey_mate/lib/main.dart` (modified) — Added filter loading + retry logic + error screen
