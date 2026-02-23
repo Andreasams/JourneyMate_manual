@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -98,7 +99,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                           icon: Icons.location_on,
                           label: td(ref, '290fbi5g'), // "Localization"
                           onTap: () {
-                            Navigator.of(context).pushNamed('/settings/localization');
+                            context.push('/settings/localization');
                           },
                         ),
                       ],
@@ -116,7 +117,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                           icon: Icons.add_circle,
                           label: td(ref, '297ogtn9'), // "Are we missing a place?"
                           onTap: () {
-                            Navigator.of(context).pushNamed('/settings/missing-place');
+                            context.push('/settings/missing-place');
                           },
                           showDividerAbove: false,
                         ),
@@ -125,7 +126,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                           icon: Icons.feedback_rounded,
                           label: td(ref, 'uz83tnpj'), // "Share feedback"
                           onTap: () {
-                            Navigator.of(context).pushNamed('/settings/feedback');
+                            context.push('/settings/feedback');
                           },
                         ),
                         _buildSettingRow(
@@ -133,7 +134,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                           icon: Icons.email_rounded,
                           label: td(ref, 'dme8eg1t'), // "Contact us"
                           onTap: () {
-                            Navigator.of(context).pushNamed('/settings/contact');
+                            context.push('/settings/contact');
                           },
                         ),
                       ],
