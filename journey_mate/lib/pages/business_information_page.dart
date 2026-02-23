@@ -358,7 +358,7 @@ class _BusinessInformationPageState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          ts(context, 'about_description_label'), // "About"
+          td(ref, 'about_description_label'), // "About"
           style: AppTypography.sectionHeading,
         ),
         SizedBox(height: AppSpacing.sm),
@@ -380,7 +380,7 @@ class _BusinessInformationPageState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          ts(context, '7pk0thnp'), // "Features, services & amenities"
+          td(ref, '7pk0thnp'), // "Features, services & amenities"
           style: AppTypography.sectionHeading,
         ),
         SizedBox(height: AppSpacing.sm),
@@ -426,7 +426,7 @@ class _BusinessInformationPageState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          ts(context, 'about_payment_options_label'), // "Payment Options"
+          td(ref, 'about_payment_options_label'), // "Payment Options"
           style: AppTypography.sectionHeading,
         ),
         SizedBox(height: AppSpacing.sm),
@@ -458,7 +458,7 @@ class _BusinessInformationPageState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          ts(context, 'c9r4q0c8'), // "Hours & contact"
+          td(ref, 'c9r4q0c8'), // "Hours & contact"
           style: AppTypography.sectionHeading,
         ),
         SizedBox(height: AppSpacing.sm),
@@ -485,7 +485,7 @@ class _BusinessInformationPageState
         },
         icon: Icon(Icons.report_outlined, color: AppColors.textSecondary),
         label: Text(
-          ts(context, 'about_report_incorrect_info'),
+          td(ref, 'about_report_incorrect_info'),
           style: AppTypography.label.copyWith(
             color: AppColors.textSecondary,
           ),

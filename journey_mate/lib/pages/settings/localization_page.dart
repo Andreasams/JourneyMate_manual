@@ -85,7 +85,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
           },
         ),
         title: Text(
-          ts(context, 'rct7k6pr'), // "Settings"
+          td(ref, 'rct7k6pr'), // "Settings"
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 16,
             color: AppColors.textPrimary,
@@ -101,7 +101,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
 
             // Language Section
             Text(
-              ts(context, 'phfch9og'), // "Language"
+              td(ref, 'phfch9og'), // "Language"
               style: AppTypography.bodyMedium.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -110,7 +110,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              ts(context, 'gl71ej9n'), // "Select your preferred language..."
+              td(ref, 'gl71ej9n'), // "Select your preferred language..."
               style: AppTypography.bodyRegular.copyWith(
                 fontSize: 14,
                 color: AppColors.textSecondary,
@@ -131,7 +131,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
 
             // Currency Section
             Text(
-              ts(context, 'y0gzdnsp'), // "Currency"
+              td(ref, 'y0gzdnsp'), // "Currency"
               style: AppTypography.bodyMedium.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -140,7 +140,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              ts(context, 'n4pzujqg'), // "We can display prices..."
+              td(ref, 'n4pzujqg'), // "We can display prices..."
               style: AppTypography.bodyRegular.copyWith(
                 fontSize: 14,
                 color: AppColors.textSecondary,
@@ -156,7 +156,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
 
             // Exchange rate note
             Text(
-              ts(context, '82y059ik'), // "Exchange rates are updated once per 24 hours..."
+              td(ref, '82y059ik'), // "Exchange rates are updated once per 24 hours..."
               style: AppTypography.bodyRegular.copyWith(
                 fontSize: 12,
                 color: AppColors.textTertiary,

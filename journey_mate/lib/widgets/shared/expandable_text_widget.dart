@@ -97,8 +97,8 @@ class _ExpandableTextWidgetState extends ConsumerState<ExpandableTextWidget> {
   // TRANSLATION HELPERS
   // ========================================
 
-  String _getShowMoreText() => ts(context, 'expandable_show_more');
-  String _getShowLessText() => ts(context, 'expandable_show_less');
+  String _getShowMoreText() => td(ref, 'expandable_show_more');
+  String _getShowLessText() => td(ref, 'expandable_show_less');
 
   // ========================================
   // HEIGHT CALCULATIONS

@@ -280,7 +280,7 @@ class _AppSettingsInitiateFlowPageState
         automaticallyImplyLeading: false, // NO back button
         centerTitle: true,
         title: Text(
-          ts(context, 'opycnrvy'), // "App setup"
+          td(ref, 'opycnrvy'), // "App setup"
           style: AppTypography.categoryHeading,
         ),
       ),
@@ -292,14 +292,14 @@ class _AppSettingsInitiateFlowPageState
             children: [
               // Section Heading
               Text(
-                ts(context, '0aq8qo7g'), // "Localization"
+                td(ref, '0aq8qo7g'), // "Localization"
                 style: AppTypography.sectionHeading,
               ),
               SizedBox(height: AppSpacing.sm),
 
               // Section Description
               Text(
-                ts(context, 'lup5v7ii'), // "Select your preferred language..."
+                td(ref, 'lup5v7ii'), // "Select your preferred language..."
                 style: AppTypography.bodyRegular.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -308,7 +308,7 @@ class _AppSettingsInitiateFlowPageState
 
               // Language Section
               Text(
-                ts(context, 's3movlvc'), // "Language"
+                td(ref, 's3movlvc'), // "Language"
                 style: AppTypography.label,
               ),
               SizedBox(height: AppSpacing.sm),
@@ -321,7 +321,7 @@ class _AppSettingsInitiateFlowPageState
 
               // Currency Section
               Text(
-                ts(context, 'elv468gp'), // "Currency"
+                td(ref, 'elv468gp'), // "Currency"
                 style: AppTypography.label,
               ),
               SizedBox(height: AppSpacing.sm),
@@ -333,7 +333,7 @@ class _AppSettingsInitiateFlowPageState
 
               // Exchange Rate Note
               Text(
-                ts(context,
+                td(ref,
                     '6kxja9sp'), // "Exchange rates are updated once per 24 hours"
                 style: AppTypography.helper.copyWith(
                   color: AppColors.textTertiary,
@@ -365,7 +365,7 @@ class _AppSettingsInitiateFlowPageState
                           ),
                         )
                       : Text(
-                          ts(context, '9nldb2d7'), // "Complete setup"
+                          td(ref, '9nldb2d7'), // "Complete setup"
                           style: AppTypography.button.copyWith(
                             color: Colors.white,
                           ),

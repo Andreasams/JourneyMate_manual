@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -8,7 +9,7 @@ import '../../theme/app_radius.dart';
 /// Sort Bottom Sheet
 /// Allows users to change sort order and toggle "only open" filter
 /// Phase 7.3.2 implementation
-class SortBottomSheet extends StatefulWidget {
+class SortBottomSheet extends ConsumerStatefulWidget {
   const SortBottomSheet({
     super.key,
     required this.currentSort,
@@ -24,10 +25,10 @@ class SortBottomSheet extends StatefulWidget {
       onSortChanged;
 
   @override
-  State<SortBottomSheet> createState() => _SortBottomSheetState();
+  ConsumerState<SortBottomSheet> createState() => _SortBottomSheetState();
 }
 
-class _SortBottomSheetState extends State<SortBottomSheet> {
+class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   late String _selectedSort;
   late bool _onlyOpen;
 
@@ -88,7 +89,7 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
           SizedBox(height: AppSpacing.md),
           // Title
           Text(
-            ts(context, 'sort_sheet_title'),
+            td(ref, 'sort_sheet_title'),
             style: AppTypography.sectionHeading,
           ),
         ],
@@ -101,7 +102,7 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: SwitchListTile(
         title: Text(
-          ts(context, 'filter_only_open'),
+          td(ref, 'filter_only_open'),
           style: AppTypography.bodyRegular,
         ),
         value: _onlyOpen,
@@ -120,7 +121,7 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
     final isSelected = _selectedSort == sortKey;
     return ListTile(
       title: Text(
-        ts(context, translationKey),
+        td(ref, translationKey),
         style: AppTypography.bodyRegular.copyWith(
           color: isSelected ? AppColors.accent : AppColors.textPrimary,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,

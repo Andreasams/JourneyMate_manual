@@ -77,7 +77,7 @@ class _ShareFeedbackPageState extends ConsumerState<ShareFeedbackPage> {
           },
         ),
         title: Text(
-          ts(context, 'hjszsd2y'), // "Share feedback"
+          td(ref, 'hjszsd2y'), // "Share feedback"
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 16,
             color: AppColors.textPrimary,

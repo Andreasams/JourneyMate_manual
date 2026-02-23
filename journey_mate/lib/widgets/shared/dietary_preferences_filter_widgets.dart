@@ -190,7 +190,7 @@ class _DietaryPreferencesFilterWidgetsState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          ts(context, 'filter_preference_allergen_conflict'),
+          td(ref, 'filter_preference_allergen_conflict'),
         ),
         duration: const Duration(seconds: 2),
         backgroundColor: AppColors.red,

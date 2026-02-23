@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -20,7 +21,7 @@ import '../../theme/app_typography.dart';
 /// - Active tab: orange text + 2px bottom border
 /// - Inactive tabs: gray text, no border
 /// - Uses ts(context, key) for translation
-class FilterTitlesRow extends StatelessWidget {
+class FilterTitlesRow extends ConsumerWidget {
   const FilterTitlesRow({
     super.key,
     required this.activeTabIndex,
@@ -70,9 +71,9 @@ class FilterTitlesRow extends StatelessWidget {
   }
 
   /// Builds a single tab button with appropriate styling and borders
-  Widget _buildTabButton(BuildContext context, int tabIndex, double width) {
+  Widget _buildTabButton(WidgetRef ref, int tabIndex, double width) {
     final isSelected = _isSelected(tabIndex);
-    final title = ts(context, _getTranslationKey(tabIndex));
+    final title = td(ref, _getTranslationKey(tabIndex));
 
     return GestureDetector(
       onTap: () => onTabChanged(tabIndex),
@@ -104,7 +105,7 @@ class FilterTitlesRow extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final totalWidth = width ?? MediaQuery.of(context).size.width;
 
     // Exact column widths per design system: 36% / 33% / 31%
@@ -117,9 +118,9 @@ class FilterTitlesRow extends StatelessWidget {
       height: height,
       child: Row(
         children: [
-          _buildTabButton(context, _locationTabIndex, locationWidth),
-          _buildTabButton(context, _typeTabIndex, typeWidth),
-          _buildTabButton(context, _needsTabIndex, needsWidth),
+          _buildTabButton(ref, _locationTabIndex, locationWidth),
+          _buildTabButton(ref, _typeTabIndex, typeWidth),
+          _buildTabButton(ref, _needsTabIndex, needsWidth),
         ],
       ),
     );

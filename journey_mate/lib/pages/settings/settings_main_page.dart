@@ -81,7 +81,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                   children: [
                     // Page title
                     Text(
-                      ts(context, 'cpiiq0im'), // "Settings & account"
+                      td(ref, 'cpiiq0im'), // "Settings & account"
                       style: AppTypography.pageTitle.copyWith(
                         color: AppColors.accent,
                       ),
@@ -91,12 +91,12 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                     // Section 1: My JourneyMate
                     _buildSection(
                       context,
-                      ts(context, '3tlbn2an'), // "My JourneyMate"
+                      td(ref, '3tlbn2an'), // "My JourneyMate"
                       [
                         _buildSettingRow(
                           context,
                           icon: Icons.location_on,
-                          label: ts(context, '290fbi5g'), // "Localization"
+                          label: td(ref, '290fbi5g'), // "Localization"
                           onTap: () {
                             Navigator.of(context).pushNamed('/settings/localization');
                           },
@@ -109,12 +109,12 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                     // Section 2: Reach out
                     _buildSection(
                       context,
-                      ts(context, 'pb7qrt34'), // "Reach out"
+                      td(ref, 'pb7qrt34'), // "Reach out"
                       [
                         _buildSettingRow(
                           context,
                           icon: Icons.add_circle,
-                          label: ts(context, '297ogtn9'), // "Are we missing a place?"
+                          label: td(ref, '297ogtn9'), // "Are we missing a place?"
                           onTap: () {
                             Navigator.of(context).pushNamed('/settings/missing-place');
                           },
@@ -123,7 +123,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                         _buildSettingRow(
                           context,
                           icon: Icons.feedback_rounded,
-                          label: ts(context, 'uz83tnpj'), // "Share feedback"
+                          label: td(ref, 'uz83tnpj'), // "Share feedback"
                           onTap: () {
                             Navigator.of(context).pushNamed('/settings/feedback');
                           },
@@ -131,7 +131,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                         _buildSettingRow(
                           context,
                           icon: Icons.email_rounded,
-                          label: ts(context, 'dme8eg1t'), // "Contact us"
+                          label: td(ref, 'dme8eg1t'), // "Contact us"
                           onTap: () {
                             Navigator.of(context).pushNamed('/settings/contact');
                           },
@@ -144,12 +144,12 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                     // Section 3: Resources
                     _buildSection(
                       context,
-                      ts(context, 'd952v5y4'), // "Resources"
+                      td(ref, 'd952v5y4'), // "Resources"
                       [
                         _buildSettingRow(
                           context,
                           icon: Icons.checklist_rtl_rounded,
-                          label: ts(context, '2v106a6z'), // "Terms of use"
+                          label: td(ref, '2v106a6z'), // "Terms of use"
                           onTap: () {
                             _launchURL(
                                 'https://docs.google.com/document/d/1CAjvjWt73BgvBZSMUKiIyPbz2sZ5RiqCMGuD0R6KVpc/edit?usp=sharing');
@@ -159,7 +159,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                         _buildSettingRow(
                           context,
                           icon: Icons.privacy_tip,
-                          label: ts(context, 'gtmo283r'), // "Privacy policy"
+                          label: td(ref, 'gtmo283r'), // "Privacy policy"
                           onTap: () {
                             _launchURL(
                                 'https://docs.google.com/document/d/1nO_TaK-HB8-CV9FM8zs3uu0mYgCT4taO0nBSv2iHw3A/edit?usp=sharing');

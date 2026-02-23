@@ -75,7 +75,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
   // ============================================================================
 
   String _getUIText(BuildContext context, String key) {
-    return ts(context, key);
+    return td(ref, key);
   }
 
   // ============================================================================
@@ -515,7 +515,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
     final copied = await _showCopyDialog(
       context,
       '+45$phone',
-      ts(context, 'missing_location_copy_to_clipboard'), // "Copy to clipboard"
+      td(ref, 'missing_location_copy_to_clipboard'), // "Copy to clipboard"
     );
 
     if (copied && context.mounted) {
@@ -538,7 +538,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
     final copied = await _showCopyDialog(
       context,
       email,
-      ts(context, 'missing_location_copy_to_clipboard'),
+      td(ref, 'missing_location_copy_to_clipboard'),
     );
 
     if (copied && context.mounted) {
@@ -617,7 +617,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
       context: context,
       builder: (_) => AlertDialog(
         content: Text(
-          ts(context, 'missing_location_copied'), // "Copied!"
+          td(ref, 'missing_location_copied'), // "Copied!"
           style: AppTypography.bodyRegular,
           textAlign: TextAlign.center,
         ),

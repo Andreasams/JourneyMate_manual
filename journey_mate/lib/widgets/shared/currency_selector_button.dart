@@ -137,7 +137,7 @@ class _CurrencySelectorButtonState
 
   /// Gets the currency display label: "Currency Name (Symbol)"
   String _getCurrencyDisplayLabel(BuildContext context, String currencyCode) {
-    final currencyName = ts(context, 'currency_${currencyCode.toLowerCase()}_cap');
+    final currencyName = td(ref, 'currency_${currencyCode.toLowerCase()}_cap');
     final currencySymbol = _getCurrencySymbol(currencyCode);
 
     // If translation not found (fallback key returned), use code as fallback

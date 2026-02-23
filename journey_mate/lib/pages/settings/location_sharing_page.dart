@@ -110,7 +110,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
           },
         ),
         title: Text(
-          ts(context, 'k1c3fupg'), // "Location sharing"
+          td(ref, 'k1c3fupg'), // "Location sharing"
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 16,
             color: AppColors.textPrimary,
@@ -145,7 +145,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
       children: [
         // Heading
         Text(
-          ts(context, 'u0wnvdeg'), // "Turn on location sharing"
+          td(ref, 'u0wnvdeg'), // "Turn on location sharing"
           style: AppTypography.pageTitle.copyWith(
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -157,7 +157,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
 
         // Description (instructions)
         Text(
-          ts(context, 'tht0e2um'), // "To turn on location sharing, t..."
+          td(ref, 'tht0e2um'), // "To turn on location sharing, t..."
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 14,
             color: AppColors.textSecondary,
@@ -180,7 +180,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
             ),
             onPressed: _openLocationSettings,
             child: Text(
-              ts(context, '3r57tlpr'), // "Turn on location sharing"
+              td(ref, '3r57tlpr'), // "Turn on location sharing"
               style: AppTypography.bodyMedium.copyWith(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -193,7 +193,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
 
         // Privacy note
         Text(
-          ts(context, 'iucaz964'), // "Your location is exclusively u..."
+          td(ref, 'iucaz964'), // "Your location is exclusively u..."
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 13,
             color: AppColors.textTertiary,
@@ -211,7 +211,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
       children: [
         // Heading
         Text(
-          ts(context, 'z1v9fk1m'), // "Location sharing is turned on"
+          td(ref, 'z1v9fk1m'), // "Location sharing is turned on"
           style: AppTypography.pageTitle.copyWith(
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -223,7 +223,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
 
         // Description (instructions)
         Text(
-          ts(context, 'd9nsgosc'), // "You can turn off location shar..."
+          td(ref, 'd9nsgosc'), // "You can turn off location shar..."
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 14,
             color: AppColors.textSecondary,
@@ -246,7 +246,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
             ),
             onPressed: _openLocationSettings,
             child: Text(
-              ts(context, '2hj5mmov'), // "Go to Settings"
+              td(ref, '2hj5mmov'), // "Go to Settings"
               style: AppTypography.bodyMedium.copyWith(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -259,7 +259,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
 
         // Privacy note
         Text(
-          ts(context, 'bhki1oos'), // "Your location is exclusively u..."
+          td(ref, 'bhki1oos'), // "Your location is exclusively u..."
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 13,
             color: AppColors.textTertiary,

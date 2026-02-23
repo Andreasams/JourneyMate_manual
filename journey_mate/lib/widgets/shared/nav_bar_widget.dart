@@ -157,7 +157,7 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
               // Search tab
               _buildTabButton(
                 icon: Icons.search,
-                label: ts(context, 'm4kntw8r'), // "Search"
+                label: td(ref, 'm4kntw8r'), // "Search"
                 isActive: searchTabActive,
                 onTap: _onSearchTabTap,
               ),
@@ -165,7 +165,7 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
               // Account tab
               _buildTabButton(
                 icon: Icons.person,
-                label: ts(context, 'ykne5sdr'), // "Account"
+                label: td(ref, 'ykne5sdr'), // "Account"
                 isActive: accountTabActive,
                 onTap: _onAccountTabTap,
               ),

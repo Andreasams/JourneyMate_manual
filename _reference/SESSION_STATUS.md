@@ -6,23 +6,33 @@
 
 ## Current Status
 
-**Phase:** Phase 6B — COMPLETE ✅ | Phase 8 (Integration polish) — IN PROGRESS
-**Deployment:** TestFlight grey screen bug — FIX DEPLOYED, awaiting build 🚀 (2026-02-22)
-**Last completed task:** Phase 6B Translation SQL Migration COMPLETE (2026-02-22)
-**Next task:** Test new TestFlight build to verify grey screen fix, then continue Phase 8
+**Phase:** Phase 8 (Integration polish & bug fixes) — IN PROGRESS
+**Deployment:** TestFlight grey screen bug — REAL FIX DEPLOYED (commit c0b84a4) 🚀 (2026-02-22)
+**Last completed task:** Fixed wrong translation endpoint path (2026-02-22)
+**Next task:** Test new TestFlight build to verify grey screen is ACTUALLY fixed
 **Blocked on:** Codemagic build in progress (~20-30 min)
 
-**🔴 CRITICAL BUG FIXED (2026-02-22):**
-TestFlight build showed grey screen on search page. Root cause analysis revealed:
-1. **Filters never loaded** — Missing `loadFiltersForLanguage()` call at app startup
-2. **Translation API failures were silent** — If `/translations` call failed, app continued with empty state
-3. **Network timing issue** — Device network might not be ready when main.dart runs (~1s after launch)
+**🔴 CRITICAL BUG FIXED (2026-02-22) — REAL ROOT CAUSE:**
+TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
+- ApiService was calling `/translations` endpoint
+- BuildShip actual endpoint is `/languageText` (discovered in GET_UI_TRANSLATIONS.txt)
+- HTTP request never reached BuildShip (404 on non-existent endpoint)
+- No translation data loaded → all ts() calls return empty strings → grey screen
 
-**✅ SOLUTION DEPLOYED (commit 088e40f):**
-- Added filter loading alongside translations in `main.dart` (parallel Future.wait)
-- Added 3-attempt retry logic with 2s delay between attempts
-- Added 10-second timeout per attempt
-- Error screen with "Retry" button if all attempts fail (no more silent grey screen)
+**Evidence from TestFlight testing after commit 088e40f:**
+- ✅ BuildShip logs show `/filters` call (206ms) — filters now working
+- ✅ BuildShip logs show `/search` call (219ms) — search working
+- ❌ BuildShip logs show NO `/languageText` call — wrong endpoint path!
+- User spotted: "Still not call to languageText" (correct endpoint name!)
+
+**✅ ACTUAL SOLUTION DEPLOYED (commit c0b84a4):**
+- Changed `ApiService.getUiTranslations()` endpoint from `/translations` to `/languageText`
+- One-line fix in api_service.dart:238
+
+**Previous fix (commit 088e40f) was ALSO needed:**
+- Added filter loading at startup (was missing)
+- Added retry logic + error screen (handles network timing issues)
+- Both fixes required: correct endpoint + proper initialization
 
 **🎉 MILESTONES:**
 - ✅ All 12 pages implemented! Phase 7 is 100% complete.

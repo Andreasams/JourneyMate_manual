@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
 
@@ -26,11 +27,11 @@ class OpeningHoursAndWeekdays extends StatefulWidget {
   final dynamic openingHours;
 
   @override
-  State<OpeningHoursAndWeekdays> createState() =>
+  ConsumerState<OpeningHoursAndWeekdays> createState() =>
       _OpeningHoursAndWeekdaysState();
 }
 
-class _OpeningHoursAndWeekdaysState extends State<OpeningHoursAndWeekdays> {
+class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekdays> {
   /// =========================================================================
   /// CONSTANTS
   /// =========================================================================
@@ -107,22 +108,22 @@ class _OpeningHoursAndWeekdaysState extends State<OpeningHoursAndWeekdays> {
   /// TRANSLATION HELPERS
   /// =========================================================================
 
-  String _getUIText(BuildContext context, String key) {
-    return ts(context, key);
+  String _getUIText(WidgetRef ref, String key) {
+    return td(ref, key);
   }
 
   String _getDayName(BuildContext context, int dayIndex) {
     if (dayIndex < 0 || dayIndex >= _weekdayTranslationKeys.length) {
       return '';
     }
-    return _getUIText(context, _weekdayTranslationKeys[dayIndex]);
+    return _getUIText(ref, _weekdayTranslationKeys[dayIndex]);
   }
 
   /// Returns the localized label for a cutoff type enum value
   String _getCutoffLabel(BuildContext context, String cutoffType) {
     final translationKey = _cutoffTypeTranslationKeys[cutoffType];
     if (translationKey == null) return cutoffType;
-    return _getUIText(context, translationKey);
+    return _getUIText(ref, translationKey);
   }
 
   /// =========================================================================
@@ -257,8 +258,8 @@ class _OpeningHoursAndWeekdaysState extends State<OpeningHoursAndWeekdays> {
     if (_isDayClosed(dayHours)) {
       // Show "By appointment" if that flag is set, otherwise "Closed"
       final label = _isByAppointmentOnly(dayHours)
-          ? _getUIText(context, 'hours_by_appointment')
-          : _getUIText(context, _closedTranslationKey);
+          ? _getUIText(ref, 'hours_by_appointment')
+          : _getUIText(ref, _closedTranslationKey);
       return Text(
         label,
         style: AppTypography.bodyRegular,

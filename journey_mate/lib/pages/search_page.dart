@@ -397,7 +397,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               backgroundColor: AppColors.bgCard,
               elevation: 4,
               label: Text(
-                ts(context, 'sort_$_currentSort'),
+                td(ref, 'sort_$_currentSort'),
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textPrimary,
                 ),
@@ -420,7 +420,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         onSubmitted: _executeSearch,
         style: AppTypography.input,
         decoration: InputDecoration(
-          hintText: ts(context, 'search_placeholder'),
+          hintText: td(ref, 'search_placeholder'),
           hintStyle: AppTypography.placeholder,
           filled: true,
           fillColor: AppColors.bgInput,
@@ -462,7 +462,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
-              ts(context, 'location_permission_denied'),
+              td(ref, 'location_permission_denied'),
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -478,7 +478,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               }
             },
             child: Text(
-              ts(context, 'location_permission_enable'),
+              td(ref, 'location_permission_enable'),
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.accent,
                 fontWeight: FontWeight.w600,
@@ -523,7 +523,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
               ),
-              child: Text(ts(context, 'search_error_retry')),
+              child: Text(td(ref, 'search_error_retry')),
             ),
           ],
         ),
@@ -545,9 +545,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             SizedBox(height: AppSpacing.lg),
             Text(
               searchState.currentSearchText.isNotEmpty
-                  ? ts(context, 'search_no_results_with_query')
+                  ? td(ref, 'search_no_results_with_query')
                       .replaceAll('{query}', searchState.currentSearchText)
-                  : ts(context, 'search_no_results'),
+                  : td(ref, 'search_no_results'),
               style: AppTypography.bodyRegular.copyWith(
                 color: AppColors.textSecondary,
               ),

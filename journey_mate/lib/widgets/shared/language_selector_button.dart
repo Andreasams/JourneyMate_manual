@@ -145,7 +145,7 @@ class LanguageSelectorButton extends ConsumerWidget {
           // Title
           Center(
             child: Text(
-              ts(context, _selectLanguageTitleKey),
+              td(ref, _selectLanguageTitleKey),
               style: AppTypography.sectionHeading,
             ),
           ),
@@ -273,7 +273,7 @@ class LanguageSelectorButton extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  ts(context, _languageLabelKey),
+                  td(ref, _languageLabelKey),
                   style: AppTypography.helper.copyWith(
                     color: AppColors.textTertiary,
                   ),

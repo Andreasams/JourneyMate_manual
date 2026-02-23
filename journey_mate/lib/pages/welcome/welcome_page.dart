@@ -362,7 +362,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
             children: [
               // Heading
               Text(
-                ts(context, '6dww9uct'), // "Welcome to JourneyMate"
+                td(ref, '6dww9uct'), // "Welcome to JourneyMate"
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 28,
@@ -400,7 +400,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
               // Tagline
               Text(
-                ts(context, 'z6e1v2g7'), // "Go out, your way."
+                td(ref, 'z6e1v2g7'), // "Go out, your way."
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 18,
@@ -414,7 +414,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
               // Description
               Text(
-                ts(context, '0eehrkgn'), // "Discover restaurants, cafés, and..."
+                td(ref, '0eehrkgn'), // "Discover restaurants, cafés, and..."
                 textAlign: TextAlign.center,
                 style: AppTypography.bodyRegular.copyWith(
                   color: AppColors.textSecondary,
@@ -451,7 +451,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                           ),
                         )
                       : Text(
-                          ts(context, 'd2mrwxr4'), // "Continue" / "Fortsæt"
+                          td(ref, 'd2mrwxr4'), // "Continue" / "Fortsæt"
                           style: AppTypography.button.copyWith(
                             color: Colors.white,
                           ),
@@ -476,7 +476,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                       elevation: 0,
                     ),
                     child: Text(
-                      ts(context, 'cuy6esxb'), // "Fortsæt på dansk"
+                      td(ref, 'cuy6esxb'), // "Fortsæt på dansk"
                       style: AppTypography.button.copyWith(
                         color: AppColors.accent,
                       ),

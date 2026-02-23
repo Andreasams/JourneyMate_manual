@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -14,7 +15,7 @@ import '../../services/translation_service.dart';
 /// - Localized labels via translation system
 /// - Automatic rebuild when translations change
 /// - Triggers callback with selected label when page is chosen
-class UserFeedbackButtonsPage extends StatefulWidget {
+class UserFeedbackButtonsPage extends ConsumerStatefulWidget {
   const UserFeedbackButtonsPage({
     super.key,
     this.width,
@@ -27,11 +28,11 @@ class UserFeedbackButtonsPage extends StatefulWidget {
   final Future<void> Function(String label) onButtonSelected;
 
   @override
-  State<UserFeedbackButtonsPage> createState() =>
+  ConsumerState<UserFeedbackButtonsPage> createState() =>
       _UserFeedbackButtonsPageState();
 }
 
-class _UserFeedbackButtonsPageState extends State<UserFeedbackButtonsPage> {
+class _UserFeedbackButtonsPageState extends ConsumerState<UserFeedbackButtonsPage> {
   // --- State ---
   final ScrollController _scrollController = ScrollController();
   String? _selectedLabel;
@@ -60,8 +61,8 @@ class _UserFeedbackButtonsPageState extends State<UserFeedbackButtonsPage> {
   // --- Translation Helpers ---
 
   /// Gets all localized page labels
-  List<String> _getLocalizedLabels(BuildContext context) {
-    return _pageKeys.map((key) => ts(context, key)).toList();
+  List<String> _getLocalizedLabels(WidgetRef ref) {
+    return _pageKeys.map((key) => td(ref, key)).toList();
   }
 
   // --- Event Handlers ---
@@ -80,7 +81,7 @@ class _UserFeedbackButtonsPageState extends State<UserFeedbackButtonsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final labels = _getLocalizedLabels(context);
+    final labels = _getLocalizedLabels(ref);
 
     return SizedBox(
       height: _buttonHeight,

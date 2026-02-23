@@ -350,7 +350,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
                   ),
                 ),
                 child: Text(
-                  ts(context, 'error_retry_button'),
+                  td(ref, 'error_retry_button'),
                   style: AppTypography.button.copyWith(color: Colors.white),
                 ),
               ),
@@ -383,7 +383,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
               ),
               SizedBox(height: AppSpacing.lg),
               Text(
-                ts(context, 'business_not_found'),
+                td(ref, 'business_not_found'),
                 style: AppTypography.bodyRegular.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -496,9 +496,9 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
         unselectedLabelColor: AppColors.textSecondary,
         labelStyle: AppTypography.bodyMedium,
         tabs: [
-          Tab(text: ts(context, 'tab_menu')),
-          Tab(text: ts(context, 'tab_gallery')),
-          Tab(text: ts(context, 'tab_about')),
+          Tab(text: td(ref, 'tab_menu')),
+          Tab(text: td(ref, 'tab_gallery')),
+          Tab(text: td(ref, 'tab_about')),
         ],
       ),
     );
@@ -515,7 +515,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
     if (menuItems == null) {
       return Center(
         child: Text(
-          ts(context, 'menu_loading'),
+          td(ref, 'menu_loading'),
           style: AppTypography.bodyRegular.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -704,7 +704,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
     if (business == null) {
       return Center(
         child: Text(
-          ts(context, 'business_not_found'),
+          td(ref, 'business_not_found'),
           style: AppTypography.bodyRegular.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -724,7 +724,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  ts(context, 'about_description_label'), // "About"
+                  td(ref, 'about_description_label'), // "About"
                   style: AppTypography.sectionHeading,
                 ),
                 SizedBox(height: AppSpacing.sm),
@@ -738,7 +738,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
 
           // 2. Payment Options (PaymentOptionsWidget)
           Text(
-            ts(context, 'about_payment_options_label'), // "Payment Options"
+            td(ref, 'about_payment_options_label'), // "Payment Options"
             style: AppTypography.sectionHeading,
           ),
           SizedBox(height: AppSpacing.sm),
@@ -775,7 +775,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
               },
               icon: Icon(Icons.report_outlined, color: AppColors.textSecondary),
               label: Text(
-                ts(context,
+                td(ref,
                     'about_report_incorrect_info'), // "Report incorrect information"
                 style: AppTypography.label.copyWith(
                   color: AppColors.textSecondary,

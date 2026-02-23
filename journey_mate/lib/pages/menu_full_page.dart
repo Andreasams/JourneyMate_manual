@@ -143,7 +143,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
     if (menuItems == null) {
       return Center(
         child: Text(
-          ts(context, 'menu_loading'),
+          td(ref, 'menu_loading'),
           style: AppTypography.bodyRegular.copyWith(
             color: AppColors.textSecondary,
           ),

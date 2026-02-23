@@ -30,7 +30,21 @@
       "Bash(git push:*)",
       "Bash(flutter build:*)",
       "Bash(flutter --version:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "WebFetch(domain:github.com)",
+      "mcp__plugin_github_github__search_repositories",
+      "Bash(tee:*)",
+      "Bash(dart run flutter_launcher_icons:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(git stash pop:*)",
+      "Bash(comm:*)",
+      "Bash(/tmp/supabase_json_sample.txt:*)",
+      "Bash(python3:*)",
+      "Bash(node --version:*)",
+      "Bash(node:*)",
+      "Bash(for key in 0eehrkgn 6dww9uct 6kxja9sp 82y059ik bhki1oos d9nsgosc g440jonq iucaz964 tht0e2um)",
+      "Bash(do grep -n \"''$key''\" journey_mate/lib/services/translation_service.dart)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -79,7 +79,7 @@ class _MissingPlacePageState extends ConsumerState<MissingPlacePage> {
           },
         ),
         title: Text(
-          ts(context, 'f5zshdrf'), // "Are we missing a place?"
+          td(ref, 'f5zshdrf'), // "Are we missing a place?"
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 16,
             color: AppColors.textPrimary,

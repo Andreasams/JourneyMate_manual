@@ -142,7 +142,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
         children: [
           // "Gallery" label
           Text(
-            ts(context, '9wk6mbas'), // Translation key for "Gallery"
+            td(ref, '9wk6mbas'), // Translation key for "Gallery"
             style: AppTypography.sectionHeading.copyWith(
               color: AppColors.textPrimary,
             ),
@@ -206,13 +206,13 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
   String _getCategoryDisplayName(String categoryKey) {
     switch (categoryKey) {
       case 'food':
-        return ts(context, 'gallery_food');
+        return td(ref, 'gallery_food');
       case 'menu':
-        return ts(context, 'gallery_menu');
+        return td(ref, 'gallery_menu');
       case 'interior':
-        return ts(context, 'gallery_interior');
+        return td(ref, 'gallery_interior');
       case 'outdoor':
-        return ts(context, 'gallery_outdoor');
+        return td(ref, 'gallery_outdoor');
       default:
         return categoryKey;
     }
