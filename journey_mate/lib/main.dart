@@ -7,6 +7,7 @@ import 'services/analytics_service.dart';
 import 'providers/app_providers.dart';
 import 'providers/settings_providers.dart';
 import 'providers/filter_providers.dart';
+import 'providers/locale_provider.dart';
 import 'widgets/app_lifecycle_observer.dart';
 import 'widgets/activity_scope.dart';
 
@@ -20,9 +21,10 @@ void main() async {
   // ⚠️ CRITICAL: Create ProviderContainer BEFORE runApp
   final container = ProviderContainer();
 
-  // Initialize providers (order: Analytics → Accessibility → Localization → Translations+Filters → Location)
+  // Initialize providers (order: Analytics → Accessibility → Locale → Localization → Translations+Filters → Location)
   await container.read(analyticsProvider.notifier).initialize();
   await container.read(accessibilityProvider.notifier).loadFromPreferences();
+  await container.read(localeProvider.notifier).initialize(); // ✅ Phase 3: Initialize locale first
   await container.read(localizationProvider.notifier).loadFromPreferences();
 
   // Load translations + filters in user's stored language (or default to 'en')
