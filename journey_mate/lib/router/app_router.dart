@@ -9,7 +9,6 @@ import '../pages/gallery_full_page.dart';
 import '../pages/business_information_page.dart';
 import '../pages/settings/settings_main_page.dart';
 import '../pages/settings/localization_page.dart';
-import '../pages/settings/location_sharing_page.dart';
 import '../pages/settings/contact_us_page.dart';
 import '../pages/settings/share_feedback_page.dart';
 import '../pages/settings/missing_place_page.dart';
@@ -91,16 +90,10 @@ final appRouter = GoRouter(
       builder: (context, state) => const AppSettingsInitiateFlowPage(),
     ),
 
-    // Phase 7.8: Localization (COMPLETE ✅)
+    // Phase 7.8: Localization (includes location sharing) (COMPLETE ✅)
     GoRoute(
       path: '/settings/localization',
       builder: (context, state) => const LocalizationPage(),
-    ),
-
-    // Phase 7.9: Location Sharing (COMPLETE ✅)
-    GoRoute(
-      path: '/settings/location',
-      builder: (context, state) => const LocationSharingPage(),
     ),
 
     // Phase 7.10: Contact Us (COMPLETE ✅)

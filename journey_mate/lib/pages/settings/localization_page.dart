@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart' as ph;
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_radius.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
 import '../../services/analytics_service.dart';
+import '../../providers/settings_providers.dart';
 import '../../widgets/shared/language_selector_button.dart';
 import '../../widgets/shared/currency_selector_button.dart';
+import '../../widgets/shared/location_status_card.dart';
 
 /// Localization Page (Phase 7.8)
 ///
@@ -31,19 +35,22 @@ class LocalizationPage extends ConsumerStatefulWidget {
   ConsumerState<LocalizationPage> createState() => _LocalizationPageState();
 }
 
-class _LocalizationPageState extends ConsumerState<LocalizationPage> {
+class _LocalizationPageState extends ConsumerState<LocalizationPage> with WidgetsBindingObserver {
   DateTime? _pageStartTime;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _pageStartTime = DateTime.now();
+      _checkLocationPermission();
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     // Track page view analytics with duration
     if (_pageStartTime != null) {
       final durationSeconds = DateTime.now().difference(_pageStartTime!).inSeconds;
@@ -56,12 +63,25 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
         userId: analytics.userId ?? '',
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
-          'pageName': 'languageAndCurrency',
+          'pageName': 'localization',
           'durationSeconds': durationSeconds,
         },
       ).catchError((_) => ApiCallResponse.failure('Analytics failed'));
     }
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Re-check location permission when app resumes (user returns from system settings)
+    if (state == AppLifecycleState.resumed) {
+      _checkLocationPermission();
+    }
+  }
+
+  /// Check current location permission status
+  Future<void> _checkLocationPermission() async {
+    await ref.read(locationProvider.notifier).checkPermission();
   }
 
   @override
@@ -143,10 +163,136 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
               style: AppTypography.helper,
             ),
 
+            const SizedBox(height: AppSpacing.xxl),
+
+            // Location Section
+            Text(
+              td(ref, 'location_title_section'), // "Location"
+              style: AppTypography.sectionHeading,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              td(ref, 'location_description_permission'), // "Allow JourneyMate to show nearby restaurants..."
+              style: AppTypography.bodyRegular,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+
+            // Status card
+            const LocationStatusCard(),
+
+            const SizedBox(height: AppSpacing.sm),
+
+            // Action button (state-dependent)
+            _buildLocationActionButton(),
+
+            // Privacy note (only when disabled)
+            if (!ref.watch(locationProvider).hasPermission) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                td(ref, 'iucaz964'), // "Your location is exclusively u..."
+                style: AppTypography.helper.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+
             const SizedBox(height: AppSpacing.xxxl),
           ],
         ),
       ),
     );
+  }
+
+  /// Builds state-dependent action button for location permission
+  Widget _buildLocationActionButton() {
+    final hasPermission = ref.watch(locationProvider).hasPermission;
+
+    if (!hasPermission) {
+      // STATE 1: Location OFF → Orange CTA button
+      return SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.button),
+            ),
+          ),
+          onPressed: () async {
+            // Track analytics
+            final analytics = AnalyticsService.instance;
+            ApiService.instance.postAnalytics(
+              eventType: 'location_enable_tapped',
+              deviceId: analytics.deviceId ?? '',
+              sessionId: analytics.currentSessionId ?? '',
+              userId: analytics.userId ?? '',
+              timestamp: DateTime.now().toIso8601String(),
+              eventData: {'source': 'localization_page'},
+            ).catchError((_) => ApiCallResponse.failure('Analytics failed'));
+
+            // Open system settings
+            await ref.read(locationProvider.notifier).openSettings();
+          },
+          child: Text(
+            td(ref, '3r57tlpr'), // "Turn on location sharing"
+            style: AppTypography.button,
+          ),
+        ),
+      );
+    } else {
+      // STATE 2: Location ON → Bordered secondary button
+      return SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: AppColors.textSecondary,
+            side: BorderSide(
+              color: AppColors.border,
+              width: 1.5,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.button),
+            ),
+          ),
+          onPressed: () {
+            // Track analytics
+            final analytics = AnalyticsService.instance;
+            ApiService.instance.postAnalytics(
+              eventType: 'location_manage_tapped',
+              deviceId: analytics.deviceId ?? '',
+              sessionId: analytics.currentSessionId ?? '',
+              userId: analytics.userId ?? '',
+              timestamp: DateTime.now().toIso8601String(),
+              eventData: {'source': 'localization_page'},
+            ).catchError((_) => ApiCallResponse.failure('Analytics failed'));
+
+            // Open system settings
+            ref.read(locationProvider.notifier).openSettings();
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                td(ref, 'location_button_manage'), // "Manage location settings"
+                style: AppTypography.button.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: AppColors.textTertiary,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 }

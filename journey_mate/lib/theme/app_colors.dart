@@ -89,4 +89,17 @@ class AppColors {
 
   /// Success state - Confirmations (same as green)
   static const Color success = green;
+
+  // ============================================================
+  // STATUS INDICATORS
+  // ============================================================
+
+  /// Status enabled - Green dot for enabled features (e.g., location sharing)
+  static const Color statusEnabled = Color(0xFF2A9456);
+
+  /// Status disabled - Red dot for disabled features (same as red)
+  static const Color statusDisabled = red;
+
+  /// Card background subtle - Very subtle gray for status cards (same as bgSurface)
+  static const Color bgCardSubtle = bgSurface;
 }
