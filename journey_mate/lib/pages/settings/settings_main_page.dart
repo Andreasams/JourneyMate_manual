@@ -172,6 +172,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                         _buildSettingRow(
                           context,
                           label: td(ref, '290fbi5g'), // "Localization"
+                          icon: Icons.language_outlined,
                           onTap: () {
                             context.push('/settings/localization');
                           },
@@ -189,6 +190,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                         _buildSettingRow(
                           context,
                           label: td(ref, '297ogtn9'), // "Are we missing a place?"
+                          icon: Icons.add_location_alt_outlined,
                           onTap: () {
                             context.push('/settings/missing-place');
                           },
@@ -197,6 +199,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                         _buildSettingRow(
                           context,
                           label: td(ref, 'uz83tnpj'), // "Share feedback"
+                          icon: Icons.feedback_outlined,
                           onTap: () {
                             context.push('/settings/feedback');
                           },
@@ -204,6 +207,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                         _buildSettingRow(
                           context,
                           label: td(ref, 'dme8eg1t'), // "Contact us"
+                          icon: Icons.mail_outline,
                           onTap: () {
                             context.push('/settings/contact');
                           },
@@ -221,6 +225,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                         _buildSettingRow(
                           context,
                           label: td(ref, '2v106a6z'), // "Terms of use"
+                          icon: Icons.description_outlined,
                           onTap: () {
                             _launchURL(
                                 'https://docs.google.com/document/d/1CAjvjWt73BgvBZSMUKiIyPbz2sZ5RiqCMGuD0R6KVpc/edit?usp=sharing');
@@ -230,6 +235,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                         _buildSettingRow(
                           context,
                           label: td(ref, 'gtmo283r'), // "Privacy policy"
+                          icon: Icons.privacy_tip_outlined,
                           onTap: () {
                             _launchURL(
                                 'https://docs.google.com/document/d/1nO_TaK-HB8-CV9FM8zs3uu0mYgCT4taO0nBSv2iHw3A/edit?usp=sharing');
@@ -285,11 +291,12 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
     );
   }
 
-  /// Builds a setting row with label and chevron (left-aligned)
+  /// Builds a setting row with icon, label and chevron (left-aligned)
   Widget _buildSettingRow(
     BuildContext context, {
     required String label,
     required VoidCallback onTap,
+    IconData? icon,
     bool showDividerAbove = true,
   }) {
     return Column(
@@ -308,12 +315,22 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
             height: 48.0,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Label (left-aligned, no icon)
-                Text(
-                  label,
-                  style: AppTypography.bodyRegular,
+                // Icon (if provided)
+                if (icon != null) ...[
+                  Icon(
+                    icon,
+                    color: AppColors.textSecondary,
+                    size: 20.0,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                ],
+                // Label (left-aligned)
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppTypography.bodyRegular,
+                  ),
                 ),
                 // Chevron
                 Icon(

@@ -431,13 +431,24 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Heading
-              Text(
-                td(ref, '6dww9uct'), // "Welcome to JourneyMate"
-                textAlign: TextAlign.center,
-                style: AppTypography.restaurantName.copyWith(
-                  fontSize: 28, // Keep custom size for welcome
-                ),
+              // Heading - Split into two lines
+              Column(
+                children: [
+                  Text(
+                    td(ref, '6dww9uct'), // "Welcome to" (translation updated by user)
+                    textAlign: TextAlign.center,
+                    style: AppTypography.restaurantName.copyWith(
+                      fontSize: 28, // Keep custom size for welcome
+                    ),
+                  ),
+                  Text(
+                    'JourneyMate', // Hardcoded - never translated
+                    textAlign: TextAlign.center,
+                    style: AppTypography.restaurantName.copyWith(
+                      fontSize: 28,
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: AppSpacing.huge),
@@ -471,7 +482,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 td(ref, 'z6e1v2g7'), // "Go out, your way."
                 textAlign: TextAlign.center,
                 style: AppTypography.sectionHeading.copyWith(
-                  fontWeight: FontWeight.w500,
+                  fontSize: 20, // Increased from 18px
+                  fontWeight: FontWeight.w600, // Increased from w500
                 ),
               ),
 
@@ -482,6 +494,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 td(ref, '0eehrkgn'), // "Discover restaurants, cafés, and..."
                 textAlign: TextAlign.center,
                 style: AppTypography.bodyRegular.copyWith(
+                  fontSize: 16, // Increased from 14px
                   color: AppColors.textSecondary,
                 ),
               ),

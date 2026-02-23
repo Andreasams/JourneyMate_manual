@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/settings_providers.dart';
+import '../../providers/locale_provider.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
@@ -326,9 +327,12 @@ class _CurrencySelectorButtonState
 
   @override
   Widget build(BuildContext context) {
-    // Watch for localization changes
-    final localization = ref.watch(localizationProvider);
-    final currentLanguageCode = Localizations.localeOf(context).languageCode;
+    // ✅ Watch BOTH locale changes (language) AND localization changes (currency)
+    // This ensures widget rebuilds when language OR currency changes
+    final locale = ref.watch(localeProvider); // Watch language changes
+    final localization = ref.watch(localizationProvider); // Watch currency changes
+
+    final currentLanguageCode = locale.languageCode;
     final currentCurrency = localization.currencyCode.isEmpty
         ? _defaultCurrencyCode
         : localization.currencyCode;
