@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../providers/search_providers.dart';
@@ -125,32 +126,45 @@ class _SearchResultsListViewState
     debugPrint('🔍 Rendering ListView with ${documents.length} items');
 
     // List of businesses
-    return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 32.0),
-      itemCount: documents.length,
-      separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
-      itemBuilder: (context, index) {
-        final businessData = documents[index];
-        final businessId = _getBusinessId(businessData);
+    // Wrapped in LayoutBuilder to fix Chrome web rendering issue
+    // (ListView inside Expanded needs explicit height constraints on web)
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (kIsWeb) {
+          debugPrint('🌐 [WEB] LayoutBuilder constraints: maxHeight=${constraints.maxHeight}, maxWidth=${constraints.maxWidth}');
+        }
 
-        return GestureDetector(
-          onTap: () {
-            _trackBusinessClick(businessId, index);
-            widget.onBusinessTap?.call(businessId);
-          },
-          child: _BusinessListItem(
-            key: ValueKey('business_$businessId'),
-            businessData: businessData,
-            userLocation: widget.userLocation,
-            statusText: _statusTextCache[businessId],
-            statusColor: _statusColorCache[businessId],
-            onStatusLoaded: (text, color) {
-              if (mounted) {
-                setState(() {
-                  _statusTextCache[businessId] = text;
-                  _statusColorCache[businessId] = color;
-                });
-              }
+        return SizedBox(
+          height: constraints.maxHeight,
+          child: ListView.separated(
+            padding: const EdgeInsets.only(bottom: 32.0),
+            itemCount: documents.length,
+            separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
+            itemBuilder: (context, index) {
+              final businessData = documents[index];
+              final businessId = _getBusinessId(businessData);
+
+              return GestureDetector(
+                onTap: () {
+                  _trackBusinessClick(businessId, index);
+                  widget.onBusinessTap?.call(businessId);
+                },
+                child: _BusinessListItem(
+                  key: ValueKey('business_$businessId'),
+                  businessData: businessData,
+                  userLocation: widget.userLocation,
+                  statusText: _statusTextCache[businessId],
+                  statusColor: _statusColorCache[businessId],
+                  onStatusLoaded: (text, color) {
+                    if (mounted) {
+                      setState(() {
+                        _statusTextCache[businessId] = text;
+                        _statusColorCache[businessId] = color;
+                      });
+                    }
+                  },
+                ),
+              );
             },
           ),
         );

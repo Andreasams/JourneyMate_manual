@@ -377,59 +377,59 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // Main content
-          Container(
-            color: const Color(0x4DFFFF00), // DEBUG: Make Column visible (yellow 30%)
-            child: Column(
-              children: [
-                // Selected filters chips
-                if (searchState.filtersUsedForSearch.isNotEmpty)
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.sm,
-                    ),
-                    child: SelectedFiltersBtns(
-                      filters: searchState.filtersUsedForSearch,
-                      languageCode: Localizations.localeOf(context).languageCode,
-                      translationsCache: translationsCache,
-                    ),
-                  ),
-
-                // Location permission banner
-                if (!locationState.hasPermission) _buildLocationBanner(),
-
-                // Content
-                Expanded(
-                  child: Container(
-                    color: const Color(0x4D0000FF), // DEBUG: Make Expanded visible (blue 30%)
-                    child: _buildContent(),
-                  ),
+      body: Container(
+        color: const Color(0x4DFFFF00), // DEBUG: Make Column visible (yellow 30%)
+        child: Column(
+          children: [
+            // Selected filters chips
+            if (searchState.filtersUsedForSearch.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
                 ),
-              ],
-            ),
-          ),
-
-          // Floating sort button
-          Positioned(
-            bottom: 92.0, // 80px nav bar + 12px gap
-            right: AppSpacing.lg,
-            child: FloatingActionButton.extended(
-              onPressed: _openSortBottomSheet,
-              backgroundColor: AppColors.bgCard,
-              elevation: 4,
-              label: Text(
-                td(ref, 'sort_$_currentSort'),
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textPrimary,
+                child: SelectedFiltersBtns(
+                  filters: searchState.filtersUsedForSearch,
+                  languageCode: Localizations.localeOf(context).languageCode,
+                  translationsCache: translationsCache,
                 ),
               ),
-              icon: Icon(Icons.sort, color: AppColors.accent, size: 20),
+
+            // Location permission banner
+            if (!locationState.hasPermission) _buildLocationBanner(),
+
+            // Content with floating button
+            Expanded(
+              child: Stack(
+                children: [
+                  // Search results list
+                  Container(
+                    color: const Color(0x4D0000FF), // DEBUG: Make content visible (blue 30%)
+                    child: _buildContent(),
+                  ),
+
+                  // Floating sort button
+                  Positioned(
+                    bottom: 12.0,
+                    right: AppSpacing.lg,
+                    child: FloatingActionButton.extended(
+                      onPressed: _openSortBottomSheet,
+                      backgroundColor: AppColors.bgCard,
+                      elevation: 4,
+                      label: Text(
+                        td(ref, 'sort_$_currentSort'),
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      icon: Icon(Icons.sort, color: AppColors.accent, size: 20),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: const NavBarWidget(pageIsSearchResults: true),
     );
