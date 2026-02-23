@@ -194,8 +194,10 @@ class ApiService {
 
   Future<ApiCallResponse> getExchangeRate({
     required String toCurrency,
+    String fromCurrency = 'DKK', // Base currency (always DKK for JourneyMate)
   }) {
-    return _makeGetRequest('/exchangerate', {
+    return _makeGetRequest('/getExchangeRates', { // Fixed: plural endpoint
+      'from_currency': fromCurrency,
       'to_currency': toCurrency,
     });
   }

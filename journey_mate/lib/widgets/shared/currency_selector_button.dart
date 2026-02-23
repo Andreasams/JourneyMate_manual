@@ -163,11 +163,15 @@ class _CurrencySelectorButtonState
     final buttonSize = renderBox.size;
     final buttonPosition = renderBox.localToGlobal(Offset.zero);
 
+    // Capture current language code from widget context (which watches localeProvider)
+    final currentLanguageCode = Localizations.localeOf(context).languageCode;
+
     _overlayEntry = OverlayEntry(
       builder: (overlayContext) => _buildOverlay(
         context: context,
         buttonPosition: buttonPosition,
         buttonWidth: buttonSize.width,
+        languageCode: currentLanguageCode, // Pass language code to overlay
       ),
     );
 
@@ -398,6 +402,7 @@ class _CurrencySelectorButtonState
     required BuildContext context,
     required Offset buttonPosition,
     required double buttonWidth,
+    required String languageCode, // Add language code parameter
   }) {
     return Stack(
       children: [
@@ -412,17 +417,16 @@ class _CurrencySelectorButtonState
         Positioned(
           left: buttonPosition.dx,
           top: buttonPosition.dy + (widget.height ?? 50.0) + AppSpacing.xs,
-          child: _buildOverlayContent(context, buttonWidth),
+          child: _buildOverlayContent(context, buttonWidth, languageCode), // Pass language code
         ),
       ],
     );
   }
 
   /// Builds the overlay content container
-  Widget _buildOverlayContent(BuildContext context, double width) {
-    // Get filtered currencies for current language
-    final currentLanguageCode = Localizations.localeOf(context).languageCode;
-    final availableCurrencies = _getCurrenciesForLanguage(currentLanguageCode);
+  Widget _buildOverlayContent(BuildContext context, double width, String languageCode) {
+    // Get filtered currencies for current language (passed from widget context)
+    final availableCurrencies = _getCurrenciesForLanguage(languageCode);
 
     return Material(
       color: Colors.transparent,
