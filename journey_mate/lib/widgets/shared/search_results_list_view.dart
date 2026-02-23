@@ -149,10 +149,17 @@ class _SearchResultsListViewState
   }
 
   List<dynamic> _extractDocuments(dynamic searchResults) {
+    // After updateSearchResults() normalization, searchResults is already a List
+    if (searchResults is List) {
+      return searchResults;
+    }
+
+    // Fallback: handle Map format (for backwards compatibility)
     if (searchResults is Map && searchResults.containsKey('documents')) {
       final docs = searchResults['documents'];
       if (docs is List) return docs;
     }
+
     return [];
   }
 
