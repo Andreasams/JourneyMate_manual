@@ -346,9 +346,18 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('🔍 _BusinessListItem.build() called for: ${_businessName ?? "unknown"}');
+    debugPrint('🔍   - Profile picture: ${_profilePicture ?? "none"}');
+    debugPrint('🔍   - Business name: ${_businessName ?? "none"}');
+    debugPrint('🔍   - Street: ${_street ?? "none"}');
+
     return Container(
       width: double.infinity,
       constraints: const BoxConstraints(minHeight: _imageSize),
+      decoration: BoxDecoration(
+        color: AppColors.bgCard, // Make it visible
+        border: Border.all(color: Colors.red, width: 2), // Debug border
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
