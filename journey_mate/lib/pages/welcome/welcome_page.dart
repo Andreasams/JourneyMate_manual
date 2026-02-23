@@ -435,11 +435,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               Text(
                 td(ref, '6dww9uct'), // "Welcome to JourneyMate"
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                  height: 1.2,
+                style: AppTypography.restaurantName.copyWith(
+                  fontSize: 28, // Keep custom size for welcome
                 ),
               ),
 
@@ -473,11 +470,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               Text(
                 td(ref, 'z6e1v2g7'), // "Go out, your way."
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: AppTypography.sectionHeading.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
-                  height: 1.3,
                 ),
               ),
 

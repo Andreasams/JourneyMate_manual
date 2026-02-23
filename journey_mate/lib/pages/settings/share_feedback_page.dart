@@ -78,10 +78,7 @@ class _ShareFeedbackPageState extends ConsumerState<ShareFeedbackPage> {
         ),
         title: Text(
           td(ref, 'hjszsd2y'), // "Share feedback"
-          style: AppTypography.bodyRegular.copyWith(
-            fontSize: 16,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.categoryHeading,
         ),
       ),
       body: const SingleChildScrollView(

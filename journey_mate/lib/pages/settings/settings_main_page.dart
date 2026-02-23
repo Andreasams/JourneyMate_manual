@@ -273,11 +273,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
         // Section header
         Text(
           header,
-          style: AppTypography.bodyMedium.copyWith(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.label,
         ),
         const SizedBox(height: AppSpacing.sm),
 
@@ -333,10 +329,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                     const SizedBox(width: AppSpacing.md),
                     Text(
                       label,
-                      style: AppTypography.bodyRegular.copyWith(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
+                      style: AppTypography.bodyRegular,
                     ),
                   ],
                 ),

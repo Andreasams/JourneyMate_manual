@@ -111,10 +111,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
         ),
         title: Text(
           td(ref, 'k1c3fupg'), // "Location sharing"
-          style: AppTypography.bodyRegular.copyWith(
-            fontSize: 16,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.categoryHeading,
         ),
       ),
       body: Center(
@@ -147,9 +144,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
         Text(
           td(ref, 'u0wnvdeg'), // "Turn on location sharing"
           style: AppTypography.pageTitle.copyWith(
-            fontSize: 24,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -158,10 +153,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
         // Description (instructions)
         Text(
           td(ref, 'tht0e2um'), // "To turn on location sharing, t..."
-          style: AppTypography.bodyRegular.copyWith(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.bodyRegular,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.xxl),
@@ -181,11 +173,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
             onPressed: _openLocationSettings,
             child: Text(
               td(ref, '3r57tlpr'), // "Turn on location sharing"
-              style: AppTypography.bodyMedium.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
+              style: AppTypography.button,
             ),
           ),
         ),
@@ -194,8 +182,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
         // Privacy note
         Text(
           td(ref, 'iucaz964'), // "Your location is exclusively u..."
-          style: AppTypography.bodyRegular.copyWith(
-            fontSize: 13,
+          style: AppTypography.bodySmall.copyWith(
             color: AppColors.textTertiary,
           ),
           textAlign: TextAlign.center,
@@ -213,9 +200,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
         Text(
           td(ref, 'z1v9fk1m'), // "Location sharing is turned on"
           style: AppTypography.pageTitle.copyWith(
-            fontSize: 24,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -224,10 +209,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
         // Description (instructions)
         Text(
           td(ref, 'd9nsgosc'), // "You can turn off location shar..."
-          style: AppTypography.bodyRegular.copyWith(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.bodyRegular,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.xxl),
@@ -247,11 +229,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
             onPressed: _openLocationSettings,
             child: Text(
               td(ref, '2hj5mmov'), // "Go to Settings"
-              style: AppTypography.bodyMedium.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
+              style: AppTypography.button,
             ),
           ),
         ),
@@ -260,8 +238,7 @@ class _LocationSharingPageState extends ConsumerState<LocationSharingPage> with 
         // Privacy note
         Text(
           td(ref, 'bhki1oos'), // "Your location is exclusively u..."
-          style: AppTypography.bodyRegular.copyWith(
-            fontSize: 13,
+          style: AppTypography.bodySmall.copyWith(
             color: AppColors.textTertiary,
           ),
           textAlign: TextAlign.center,

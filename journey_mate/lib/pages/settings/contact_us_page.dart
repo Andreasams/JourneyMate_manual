@@ -78,10 +78,7 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
         ),
         title: Text(
           td(ref, 'q6agbobw'), // "Contact us"
-          style: AppTypography.bodyRegular.copyWith(
-            fontSize: 16,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.categoryHeading,
         ),
       ),
       body: const SingleChildScrollView(

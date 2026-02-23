@@ -80,10 +80,7 @@ class _MissingPlacePageState extends ConsumerState<MissingPlacePage> {
         ),
         title: Text(
           td(ref, 'f5zshdrf'), // "Are we missing a place?"
-          style: AppTypography.bodyRegular.copyWith(
-            fontSize: 16,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.categoryHeading,
         ),
       ),
       body: const MissingLocationFormWidget(),

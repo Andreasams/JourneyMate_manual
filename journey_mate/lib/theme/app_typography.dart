@@ -9,35 +9,35 @@ class AppTypography {
   // HEADINGS
   // ============================================================
 
-  /// Page title (h2) - 24px, weight 720 → w800
+  /// Page title (h2) - 26px, weight 720 → w800
   static const TextStyle pageTitle = TextStyle(
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
-    letterSpacing: -0.6, // -0.025em × 24px
+    letterSpacing: -0.65, // -0.025em × 26px
     height: 1.2,
   );
 
-  /// Restaurant name (h1) - 24px, weight 750 → w800
+  /// Restaurant name (h1) - 26px, weight 750 → w800
   static const TextStyle restaurantName = TextStyle(
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
-    letterSpacing: -0.72, // -0.03em × 24px
+    letterSpacing: -0.78, // -0.03em × 26px
     height: 1.2,
   );
 
-  /// Section heading (h3) - 18px, weight 680 → w700
+  /// Section heading (h3) - 20px, weight 680 → w700
   static const TextStyle sectionHeading = TextStyle(
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
     height: 1.3,
   );
 
-  /// Category heading (h4) - 16px, weight 650 → w700
+  /// Category heading (h4) - 18px, weight 650 → w700
   static const TextStyle categoryHeading = TextStyle(
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
     height: 1.3,
@@ -47,77 +47,77 @@ class AppTypography {
   // BODY TEXT
   // ============================================================
 
-  /// Body regular - 14px, weight 400
+  /// Body regular - 16px, weight 400
   static const TextStyle bodyRegular = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
-    height: 1.43, // 20px line height
+    height: 1.5, // 24px line height
   );
 
-  /// Body medium - 14px, weight 500
+  /// Body medium - 16px, weight 500
   static const TextStyle bodyMedium = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
-    height: 1.43,
+    height: 1.5,
   );
 
-  /// Body small - 13px, weight 460 → w500
+  /// Body small - 15px, weight 460 → w500
   static const TextStyle bodySmall = TextStyle(
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
     height: 1.4,
   );
 
-  /// Body tiny - 12px, weight 400
+  /// Body tiny - 14px, weight 400
   static const TextStyle bodyTiny = TextStyle(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.w400,
     color: AppColors.textTertiary,
-    height: 1.33, // 16px line height
+    height: 1.43, // ~20px line height
   );
 
   // ============================================================
   // UI ELEMENTS
   // ============================================================
 
-  /// Label - Form field labels (14px, weight 500)
+  /// Label - Form field labels (16px, weight 500)
   static const TextStyle label = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
     height: 1.4,
   );
 
-  /// Helper text - Below form fields (12px, weight 400)
+  /// Helper text - Below form fields (14px, weight 400)
   static const TextStyle helper = TextStyle(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.w400,
     color: AppColors.textTertiary,
-    height: 1.33,
+    height: 1.43,
   );
 
-  /// Input text - Text inside input fields (14px, weight 400)
+  /// Input text - Text inside input fields (16px, weight 400)
   static const TextStyle input = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
     color: AppColors.textPrimary,
     height: 1.4,
   );
 
-  /// Placeholder - Input placeholder text (14px, weight 400)
+  /// Placeholder - Input placeholder text (16px, weight 400)
   static const TextStyle placeholder = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
     color: AppColors.textTertiary,
     height: 1.4,
   );
 
-  /// Button text - Primary buttons (16px, weight 600)
+  /// Button text - Primary buttons (18px, weight 600)
   static const TextStyle button = TextStyle(
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: FontWeight.w600,
     color: Colors.white,
     height: 1.2,

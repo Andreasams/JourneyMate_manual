@@ -86,10 +86,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
         ),
         title: Text(
           td(ref, 'rct7k6pr'), // "Settings"
-          style: AppTypography.bodyRegular.copyWith(
-            fontSize: 16,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.categoryHeading,
         ),
       ),
       body: SingleChildScrollView(
@@ -102,19 +99,12 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
             // Language Section
             Text(
               td(ref, 'phfch9og'), // "Language"
-              style: AppTypography.bodyMedium.copyWith(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTypography.sectionHeading,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               td(ref, 'gl71ej9n'), // "Select your preferred language..."
-              style: AppTypography.bodyRegular.copyWith(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.bodyRegular,
             ),
             const SizedBox(height: AppSpacing.xs),
             LanguageSelectorButton(
@@ -132,19 +122,12 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
             // Currency Section
             Text(
               td(ref, 'y0gzdnsp'), // "Currency"
-              style: AppTypography.bodyMedium.copyWith(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTypography.sectionHeading,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               td(ref, 'n4pzujqg'), // "We can display prices..."
-              style: AppTypography.bodyRegular.copyWith(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.bodyRegular,
             ),
             const SizedBox(height: AppSpacing.xs),
             const CurrencySelectorButton(
@@ -157,10 +140,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
             // Exchange rate note
             Text(
               td(ref, '82y059ik'), // "Exchange rates are updated once per 24 hours..."
-              style: AppTypography.bodyRegular.copyWith(
-                fontSize: 12,
-                color: AppColors.textTertiary,
-              ),
+              style: AppTypography.helper,
             ),
 
             const SizedBox(height: AppSpacing.xxxl),
