@@ -305,15 +305,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   int _mapTabIndexToTitleId(int tabIndex) {
     // FilterTitlesRow tab index → FilterOverlayWidget title ID
+    // Title IDs confirmed from GET /filters API response:
+    //   id:1 = Location (Lage), id:2 = Type (Typ), id:3 = Preferences (Præferencer)
     switch (tabIndex) {
       case 0:
-        return 5; // Location
+        return 1; // Location
       case 1:
-        return 8; // Business Type
+        return 2; // Business Type
       case 2:
-        return 10; // Food/Dietary Preferences
+        return 3; // Food/Dietary Preferences
       default:
-        return 5;
+        return 1;
     }
   }
 
