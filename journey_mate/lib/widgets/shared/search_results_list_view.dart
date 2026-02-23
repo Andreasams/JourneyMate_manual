@@ -96,23 +96,33 @@ class _SearchResultsListViewState
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('🔍 SearchResultsListView.build() called');
+
     // Selective rebuild: ONLY when searchResults changes
     final searchResults = ref.watch(
       searchStateProvider.select((state) => state.searchResults),
     );
 
+    debugPrint('🔍 searchResults type: ${searchResults.runtimeType}');
+    debugPrint('🔍 searchResults is null: ${searchResults == null}');
+
     // Show shimmer while loading
     if (searchResults == null) {
+      debugPrint('🔍 Returning shimmer widget');
       return const RestaurantListShimmerWidget();
     }
 
     // Extract documents
     final documents = _extractDocuments(searchResults);
+    debugPrint('🔍 Extracted ${documents.length} documents');
 
     // Empty state
     if (documents.isEmpty) {
+      debugPrint('🔍 Documents empty, showing empty state');
       return _buildEmptyState();
     }
+
+    debugPrint('🔍 Rendering ListView with ${documents.length} items');
 
     // List of businesses
     return ListView.separated(
@@ -149,17 +159,24 @@ class _SearchResultsListViewState
   }
 
   List<dynamic> _extractDocuments(dynamic searchResults) {
+    debugPrint('🔍 _extractDocuments: input type = ${searchResults.runtimeType}');
+
     // After updateSearchResults() normalization, searchResults is already a List
     if (searchResults is List) {
+      debugPrint('🔍 searchResults is List with ${searchResults.length} items');
       return searchResults;
     }
 
     // Fallback: handle Map format (for backwards compatibility)
     if (searchResults is Map && searchResults.containsKey('documents')) {
       final docs = searchResults['documents'];
-      if (docs is List) return docs;
+      if (docs is List) {
+        debugPrint('🔍 Extracted documents from Map: ${docs.length} items');
+        return docs;
+      }
     }
 
+    debugPrint('🔍 No documents found, returning empty list');
     return [];
   }
 
