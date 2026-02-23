@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../providers/search_providers.dart';
@@ -97,42 +96,32 @@ class _SearchResultsListViewState
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🔍 SearchResultsListView.build() called');
-
     // Selective rebuild: ONLY when searchResults changes
     final searchResults = ref.watch(
       searchStateProvider.select((state) => state.searchResults),
     );
 
-    debugPrint('🔍 searchResults type: ${searchResults.runtimeType}');
-    debugPrint('🔍 searchResults is null: ${searchResults == null}');
-
     // Show shimmer while loading
     if (searchResults == null) {
-      debugPrint('🔍 Returning shimmer widget');
       return const RestaurantListShimmerWidget();
     }
 
     // Extract documents
     final documents = _extractDocuments(searchResults);
-    debugPrint('🔍 Extracted ${documents.length} documents');
 
     // Empty state
     if (documents.isEmpty) {
-      debugPrint('🔍 Documents empty, showing empty state');
       return _buildEmptyState();
     }
 
-    debugPrint('🔍 Rendering ListView with ${documents.length} items');
+    debugPrint('📊 SearchResultsListView: ${documents.length} items');
 
     // List of businesses
     // Wrapped in LayoutBuilder to fix Chrome web rendering issue
     // (ListView inside Expanded needs explicit height constraints on web)
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (kIsWeb) {
-          debugPrint('🌐 [WEB] LayoutBuilder constraints: maxHeight=${constraints.maxHeight}, maxWidth=${constraints.maxWidth}');
-        }
+        debugPrint('📐 LayoutBuilder constraints: maxHeight=${constraints.maxHeight}, maxWidth=${constraints.maxWidth}');
 
         return SizedBox(
           height: constraints.maxHeight,
@@ -173,11 +162,8 @@ class _SearchResultsListViewState
   }
 
   List<dynamic> _extractDocuments(dynamic searchResults) {
-    debugPrint('🔍 _extractDocuments: input type = ${searchResults.runtimeType}');
-
     // After updateSearchResults() normalization, searchResults is already a List
     if (searchResults is List) {
-      debugPrint('🔍 searchResults is List with ${searchResults.length} items');
       return searchResults;
     }
 
@@ -185,12 +171,10 @@ class _SearchResultsListViewState
     if (searchResults is Map && searchResults.containsKey('documents')) {
       final docs = searchResults['documents'];
       if (docs is List) {
-        debugPrint('🔍 Extracted documents from Map: ${docs.length} items');
         return docs;
       }
     }
 
-    debugPrint('🔍 No documents found, returning empty list');
     return [];
   }
 
@@ -331,9 +315,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   Future<void> _loadStatus() async {
-    debugPrint('🔍   _loadStatus() called for $_businessName');
     if (!mounted || _openingHours == null) {
-      debugPrint('🔍   _loadStatus() skipped: mounted=$mounted, has_hours=${_openingHours != null}');
       return;
     }
 
@@ -348,8 +330,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       languageCode,
       translationsCache,
     );
-
-    debugPrint('🔍   Status result: ${statusResult['text']} (${statusResult['color']})');
 
     if (mounted) {
       setState(() {
@@ -366,17 +346,12 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🔍 _BusinessListItem.build() called for: ${_businessName ?? "unknown"}');
-    debugPrint('🔍   - Profile picture: ${_profilePicture ?? "none"}');
-    debugPrint('🔍   - Business name: ${_businessName ?? "none"}');
-    debugPrint('🔍   - Street: ${_street ?? "none"}');
-
     return Container(
       width: double.infinity,
       constraints: const BoxConstraints(minHeight: _imageSize),
       decoration: BoxDecoration(
-        color: AppColors.bgCard, // Make it visible
-        border: Border.all(color: Colors.red, width: 2), // Debug border
+        color: AppColors.bgCard,
+        border: Border.all(color: Colors.red, width: 2), // DEBUG: Structural visibility
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,7 +365,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   Widget _buildImage() {
-    debugPrint('🔍   _buildImage(): url=${_profilePicture ?? "placeholder"}');
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
       child: Image.network(
@@ -399,7 +373,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         height: _imageSize,
         fit: BoxFit.scaleDown,
         errorBuilder: (context, error, stackTrace) {
-          debugPrint('🔍   Image load error, using placeholder');
           return Image.network(
             _placeholderImageUrl,
             width: _imageSize,

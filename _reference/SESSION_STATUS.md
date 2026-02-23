@@ -6,11 +6,10 @@
 
 ## Current Status
 
-**Phase:** Phase 8A — Critical Production Blockers — IN PROGRESS
-**Deployment:** TestFlight grey screen bug — FIX DEPLOYED (commit 948cb5e) — AWAITING USER TESTING ⏳
-**Last completed task:** ✅ Phase 8A.5 TODO Audit Session 1 COMPLETE (2026-02-23)
-**Next task:** User must add translation keys to Supabase, then test on TestFlight
-**Blocked on:** User action required - Add translation keys + TestFlight testing
+**Phase:** Phase 8 — Integration & Polish — IN PROGRESS
+**Last completed task:** ✅ Standardized Currency & Language Selectors to Dropdowns (2026-02-23)
+**Next task:** User testing & Phase 8 remaining tasks per SESSION_STATUS
+**Blocked on:** Nothing — ready for user testing or next Phase 8 task
 
 **🟡 CRITICAL BUG — GREY SCREEN ON TESTFLIGHT — FIX DEPLOYED — AWAITING TESTING**
 
@@ -38,6 +37,12 @@
 - ✅ All 12 pages implemented! Phase 7 is 100% complete.
 - ✅ App successfully built and deployed to TestFlight via Codemagic CI/CD
 - ✅ Welcome page mascot updated to journeymate_mascot.png (2026-02-22)
+- ✅ **Settings Selectors Standardized (2026-02-23):**
+  - CurrencySelectorButton → DropdownButton with language-specific filtering
+  - LanguageSelectorButton → DropdownButton with floating label
+  - Removed ~250 lines of custom overlay/bottom sheet code
+  - Consistent UI pattern across both selectors
+  - Auto-switch currency when language changes (if current not available)
 - ✅ **Phase 6B Translation Migration COMPLETE (2026-02-22):**
   - All 355 app keys migrated to Supabase ui_translations
   - 191 FlutterFlow page keys (8-char IDs) uploaded
@@ -100,7 +105,68 @@
 - 8A.6: Final pre-release verification (full user journey testing)
 - 8A Integration testing — SKIPPED per user request
 
-## Files changed this session (Phase 8A.3 Git History Cleanup - 2026-02-23)
+## Files changed this session (Settings Selectors Refactor - 2026-02-23)
+
+**STANDARDIZE CURRENCY & LANGUAGE SELECTORS TO DROPDOWNS ✅**
+
+**Summary:**
+- Refactored CurrencySelectorButton from custom overlay to Material Design DropdownButton
+- Added language-specific currency filtering (EN: USD/GBP/DKK, DA: DKK only, etc.)
+- Auto-switch currency when language changes (if current currency not available in new language)
+- Refactored LanguageSelectorButton from bottom sheet to Material Design DropdownButton
+- Both selectors now use consistent UI pattern
+- Removed ~250 lines of complex overlay/bottom sheet code
+- Net code reduction: ~265 lines (404 lines removed, 139 lines added)
+- flutter analyze: 0 errors, 0 warnings
+
+**Files modified:**
+- `journey_mate/lib/widgets/shared/currency_selector_button.dart`
+  - Replaced custom overlay with DropdownButton wrapped in styled Container
+  - Added `_getCurrenciesForLanguage()` method (matches FlutterFlow getCurrencyOptionsForLanguage)
+  - Updated `_updateCurrencyForLanguageChange()` to auto-switch currency when language changes
+  - Removed overlay management code (~150 lines)
+  - Removed `_allCurrencies` field (now using filtered currencies per language)
+  - Removed unused `AppSpacing` import
+  - Header comment updated to reflect new dropdown pattern
+
+- `journey_mate/lib/widgets/shared/language_selector_button.dart`
+  - Replaced bottom sheet with DropdownButton
+  - Added floating label pattern for consistency
+  - Removed bottom sheet methods: `_showLanguageSelector()`, `_buildSheetHeader()`, `_buildLanguageOption()` (~100 lines)
+  - Removed unused `_selectLanguageTitleKey` field
+  - Header comment updated to reflect new dropdown pattern
+
+**Currency filtering by language:**
+- Danish (da): DKK only
+- English (en): USD, GBP, DKK
+- German (de): EUR, DKK
+- French (fr): EUR, DKK
+- Italian (it): EUR, DKK
+- Norwegian (no): NOK, DKK
+- Swedish (sv): SEK, DKK
+- Unknown language: DKK (fallback)
+
+**Auto-switch behavior:**
+- When user changes language, currency selector checks if current currency is available in new language
+- If not available, auto-switches to first option in new language's currency list
+- Example: User has English + USD → switches to Danish → currency auto-switches to DKK
+
+**Benefits:**
+- ✅ Consistent UI pattern (both use Material Design dropdowns)
+- ✅ Smarter currency filtering (shows only relevant currencies per language)
+- ✅ Simpler codebase (no manual overlay positioning, no bottom sheet boilerplate)
+- ✅ Better accessibility (built-in keyboard navigation, screen reader support)
+- ✅ All existing functionality preserved (analytics, API calls, state management)
+
+**Commit:**
+```bash
+git commit -m "refactor(settings): standardize currency & language selectors to dropdowns"
+# Commit SHA: 5defedf
+```
+
+---
+
+## Files changed previous session (Phase 8A.3 Git History Cleanup - 2026-02-23)
 
 **PHASE 8A.3 COMPLETE ✅** — Git History Cleanup
 
