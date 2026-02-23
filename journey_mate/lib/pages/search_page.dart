@@ -87,16 +87,25 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Future<void> _initialize() async {
+    debugPrint('🔍 SearchPage: Initializing...');
+
     // Check location permission
     final hasPermission = await _checkLocationPermission();
+    debugPrint('🔍 Location permission: $hasPermission');
     if (mounted) {
       ref.read(locationProvider.notifier).setPermission(hasPermission);
     }
 
     // Load initial results if no cached results
     final searchState = ref.read(searchStateProvider);
+    debugPrint('🔍 Current searchResults: ${searchState.searchResults}');
+    debugPrint('🔍 searchResults is null: ${searchState.searchResults == null}');
+
     if (searchState.searchResults == null) {
+      debugPrint('🔍 Executing initial search...');
       await _executeSearch('');
+    } else {
+      debugPrint('🔍 Using cached search results');
     }
   }
 
@@ -127,6 +136,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Future<void> _executeSearch(String query) async {
+    debugPrint('🔍 _executeSearch called with query: "$query"');
     final currentRequestId = ++_requestId;
 
     setState(() {
@@ -176,6 +186,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
       if (response.succeeded && mounted) {
         final documents = response.jsonBody['documents'] as List? ?? [];
+        debugPrint('🔍 Search succeeded: ${documents.length} results');
         ref.read(searchStateProvider.notifier).updateSearchResults(
           documents,
           documents.length,
@@ -196,11 +207,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           },
         );
       } else if (mounted) {
+        debugPrint('🔍 Search failed: ${response.error}');
         setState(() {
           _errorMessage = response.error ?? 'Search failed';
         });
       }
     } catch (e) {
+      debugPrint('🔍 Search exception: $e');
       if (mounted) {
         setState(() {
           _errorMessage = e.toString();
@@ -496,13 +509,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Widget _buildContent() {
     final searchState = ref.watch(searchStateProvider);
 
+    debugPrint('🔍 _buildContent: _isLoading=$_isLoading, searchResults=${searchState.searchResults?.runtimeType}, _errorMessage=$_errorMessage');
+
     // Loading state
     if (_isLoading && searchState.searchResults == null) {
+      debugPrint('🔍 Showing loading shimmer');
       return const RestaurantListShimmerWidget();
     }
 
     // Error state
     if (_errorMessage != null) {
+      debugPrint('🔍 Showing error state: $_errorMessage');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -542,6 +559,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
          (searchResults['documents'] as List).isEmpty);
 
     if (isEmpty) {
+      debugPrint('🔍 Showing empty state');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -568,6 +586,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
 
     // Results list
+    debugPrint('🔍 Showing SearchResultsListView');
     final locationState = ref.watch(locationProvider);
     Position? userLocation;
     if (locationState.hasPermission) {
