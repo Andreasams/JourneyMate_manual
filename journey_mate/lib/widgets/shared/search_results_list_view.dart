@@ -317,7 +317,11 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   Future<void> _loadStatus() async {
-    if (!mounted || _openingHours == null) return;
+    debugPrint('🔍   _loadStatus() called for $_businessName');
+    if (!mounted || _openingHours == null) {
+      debugPrint('🔍   _loadStatus() skipped: mounted=$mounted, has_hours=${_openingHours != null}');
+      return;
+    }
 
     // Get language code and translations cache
     final languageCode = Localizations.localeOf(context).languageCode;
@@ -330,6 +334,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       languageCode,
       translationsCache,
     );
+
+    debugPrint('🔍   Status result: ${statusResult['text']} (${statusResult['color']})');
 
     if (mounted) {
       setState(() {
@@ -370,6 +376,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   Widget _buildImage() {
+    debugPrint('🔍   _buildImage(): url=${_profilePicture ?? "placeholder"}');
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
       child: Image.network(
@@ -377,17 +384,21 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         width: _imageSize,
         height: _imageSize,
         fit: BoxFit.scaleDown,
-        errorBuilder: (context, error, stackTrace) => Image.network(
-          _placeholderImageUrl,
-          width: _imageSize,
-          height: _imageSize,
-          fit: BoxFit.scaleDown,
-        ),
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('🔍   Image load error, using placeholder');
+          return Image.network(
+            _placeholderImageUrl,
+            width: _imageSize,
+            height: _imageSize,
+            fit: BoxFit.scaleDown,
+          );
+        },
       ),
     );
   }
 
   Widget _buildInfoColumn() {
+    debugPrint('🔍   _buildInfoColumn()');
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,6 +415,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   Widget _buildNameRow() {
+    debugPrint('🔍   _buildNameRow(): ${_businessName ?? "Business"}');
     return Text(
       _businessName ?? 'Business',
       maxLines: 1,
@@ -416,6 +428,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final statusText = _statusText ?? 'Open';
     final statusColor = _statusColor ?? AppColors.success;
     final timingText = _getTimingText();
+    debugPrint('🔍   _buildStatusRow(): status=$statusText, timing=$timingText');
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -455,24 +468,31 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   /// Returns timing text like "til 22:00" or "opens at 10:00"
   String? _getTimingText() {
-    if (_openingHours == null) return null;
+    if (_openingHours == null) {
+      debugPrint('🔍   _getTimingText(): no opening hours');
+      return null;
+    }
 
     final languageCode = Localizations.localeOf(context).languageCode;
     final translationsCache = ref.read(translationsCacheProvider);
 
-    return openClosesAt(
+    final result = openClosesAt(
       _openingHours,
       DateTime.now(),
       languageCode,
       translationsCache,
     );
+    debugPrint('🔍   _getTimingText(): $result');
+    return result;
   }
 
   Widget _buildDetailsRow() {
+    debugPrint('🔍   _buildDetailsRow()');
     final items = <Widget>[];
 
     // Business type
     if (_businessType != null && _businessType!.isNotEmpty) {
+      debugPrint('🔍     Business type: $_businessType');
       items.add(Flexible(
         child: Text(
           _businessType!,
@@ -529,16 +549,21 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   String? _getPriceRangeText() {
-    if (_priceRangeMin == null || _priceRangeMax == null) return null;
+    if (_priceRangeMin == null || _priceRangeMax == null) {
+      debugPrint('🔍     _getPriceRangeText(): no price data');
+      return null;
+    }
 
     // Use existing price_formatter from Session #5
-    return convertAndFormatPriceRange(
+    final result = convertAndFormatPriceRange(
       _priceRangeMin!.toDouble(),
       _priceRangeMax!.toDouble(),
       'DKK',
       _exchangeRate,
       _userCurrencyCode,
     );
+    debugPrint('🔍     Price range: $result');
+    return result;
   }
 
   String? _getDistanceText() {
@@ -546,6 +571,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         widget.userLocation == null ||
         _latitude == null ||
         _longitude == null) {
+      debugPrint('🔍     _getDistanceText(): skipped (location_enabled=$_locationEnabled, has_user_location=${widget.userLocation != null}, has_coords=${_latitude != null && _longitude != null})');
       return null;
     }
 
@@ -566,11 +592,14 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     );
 
     final unit = languageCode == 'en' ? ' mi.' : ' km.';
-    return '$distance$unit';
+    final result = '$distance$unit';
+    debugPrint('🔍     Distance: $result');
+    return result;
   }
 
   Widget _buildAddressRow() {
     final address = _formatAddress();
+    debugPrint('🔍   _buildAddressRow(): $address');
     return Text(
       address,
       maxLines: 1,
@@ -588,6 +617,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   String _formatAddress() {
     final street = _street ?? '';
     final neighbourhood = _neighbourhoodName ?? '';
+
+    debugPrint('🔍     _formatAddress(): street=$street, neighbourhood=$neighbourhood');
 
     if (street.isEmpty && neighbourhood.isEmpty) {
       return td(ref, 'addressunavail');
