@@ -7,32 +7,30 @@
 ## Current Status
 
 **Phase:** Phase 8A — Critical Production Blockers — IN PROGRESS
-**Deployment:** TestFlight grey screen bug — AWAITING USER TESTING (commit c0b84a4) 🚀 (2026-02-22)
+**Deployment:** TestFlight grey screen bug — STILL UNRESOLVED ⚠️ (latest: commit c0b84a4)
 **Last completed task:** ✅ Phase 8A.3 Git History Cleanup COMPLETE (2026-02-23)
-**Next task:** Phase 8A.6 — Final pre-release verification (or 8A.1 if user tests TestFlight first)
-**Blocked on:** User decision on next priority (verification testing vs TestFlight testing)
+**Next task:** Phase 8A.1 — Debug and fix TestFlight grey screen (user will test latest build)
+**Blocked on:** User will test TestFlight after cleanup complete, then report results for debugging
 
-**🔴 CRITICAL BUG FIXED (2026-02-22) — REAL ROOT CAUSE:**
-TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
-- ApiService was calling `/translations` endpoint
-- BuildShip actual endpoint is `/languageText` (discovered in GET_UI_TRANSLATIONS.txt)
-- HTTP request never reached BuildShip (404 on non-existent endpoint)
-- No translation data loaded → all ts() calls return empty strings → grey screen
+**🔴 CRITICAL BUG — GREY SCREEN ON TESTFLIGHT — STATUS: UNRESOLVED**
 
-**Evidence from TestFlight testing after commit 088e40f:**
-- ✅ BuildShip logs show `/filters` call (206ms) — filters now working
-- ✅ BuildShip logs show `/search` call (219ms) — search working
-- ❌ BuildShip logs show NO `/languageText` call — wrong endpoint path!
-- User spotted: "Still not call to languageText" (correct endpoint name!)
+**What we know:**
+- User tested build AFTER commit c0b84a4 (endpoint fix `/translations` → `/languageText`)
+- Grey screen STILL persists even with correct endpoint
+- Endpoint fix (c0b84a4) was necessary but NOT sufficient to resolve issue
+- User confirmed (2026-02-23): "I did test after the endpoint was fixed, I know that it was not that reason"
 
-**✅ ACTUAL SOLUTION DEPLOYED (commit c0b84a4):**
-- Changed `ApiService.getUiTranslations()` endpoint from `/translations` to `/languageText`
-- One-line fix in api_service.dart:238
+**Fixes attempted (both deployed, grey screen persists):**
+1. Commit 088e40f: Added filter loading at startup + retry logic + error screen
+2. Commit c0b84a4: Fixed endpoint path from `/translations` to `/languageText`
 
-**Previous fix (commit 088e40f) was ALSO needed:**
-- Added filter loading at startup (was missing)
-- Added retry logic + error screen (handles network timing issues)
-- Both fixes required: correct endpoint + proper initialization
+**Next debugging steps (after user tests latest build):**
+- Check if `/languageText` endpoint is actually being called (BuildShip logs)
+- Check if translations are loaded but app crashes after
+- Check device logs for runtime errors during startup
+- Verify initialization sequence in main.dart
+- Check if issue is iOS-specific vs emulator
+- Consider if issue is timing-related (race condition in startup)
 
 **🎉 MILESTONES:**
 - ✅ All 12 pages implemented! Phase 7 is 100% complete.
