@@ -178,6 +178,7 @@ class SearchState {
   final String previousFilterSessionId; // Snapshot before last change
   final int currentRefinementSequence; // Count of refinements in this search
   final DateTime? lastRefinementTime;
+  final DateTime? lastFetchTime; // Timestamp of most recent search API call
 
   const SearchState({
     required this.searchResults,
@@ -191,6 +192,7 @@ class SearchState {
     required this.previousFilterSessionId,
     required this.currentRefinementSequence,
     this.lastRefinementTime,
+    this.lastFetchTime,
   });
 
   factory SearchState.initial() {
@@ -206,6 +208,7 @@ class SearchState {
       previousFilterSessionId: '',
       currentRefinementSequence: 0,
       lastRefinementTime: null,
+      lastFetchTime: null,
     );
   }
 
@@ -221,6 +224,7 @@ class SearchState {
     String? previousFilterSessionId,
     int? currentRefinementSequence,
     DateTime? lastRefinementTime,
+    DateTime? lastFetchTime,
   }) {
     return SearchState(
       searchResults: searchResults ?? this.searchResults,
@@ -234,6 +238,7 @@ class SearchState {
       previousFilterSessionId: previousFilterSessionId ?? this.previousFilterSessionId,
       currentRefinementSequence: currentRefinementSequence ?? this.currentRefinementSequence,
       lastRefinementTime: lastRefinementTime ?? this.lastRefinementTime,
+      lastFetchTime: lastFetchTime ?? this.lastFetchTime,
     );
   }
 
@@ -250,8 +255,10 @@ class SearchState {
     String? previousFilterSessionId,
     int? currentRefinementSequence,
     DateTime? lastRefinementTime,
+    DateTime? lastFetchTime,
     bool clearResults = false,
     bool clearRefinementTime = false,
+    bool clearFetchTime = false,
   }) {
     return SearchState(
       searchResults: clearResults ? null : (searchResults ?? this.searchResults),
@@ -265,6 +272,7 @@ class SearchState {
       previousFilterSessionId: previousFilterSessionId ?? this.previousFilterSessionId,
       currentRefinementSequence: currentRefinementSequence ?? this.currentRefinementSequence,
       lastRefinementTime: clearRefinementTime ? null : (lastRefinementTime ?? this.lastRefinementTime),
+      lastFetchTime: clearFetchTime ? null : (lastFetchTime ?? this.lastFetchTime),
     );
   }
 }

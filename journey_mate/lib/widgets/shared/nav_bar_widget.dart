@@ -66,26 +66,51 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
   }
 
   /// Handles search tab tap
+  /// NEW: Checks cache freshness before making API call
   Future<void> _onSearchTabTap() async {
     // Only execute if NOT already on search page
     if (widget.pageIsSearchResults) return;
 
-    // Get language code BEFORE async operations
-    final languageCode = Localizations.localeOf(context).languageCode;
+    // Check if cached results are fresh
+    final searchNotifier = ref.read(searchStateProvider.notifier);
+    if (searchNotifier.isCacheFresh()) {
+      debugPrint('🚀 NavBar: Using fresh cached results, navigating immediately');
 
-    // Get user location (with fallback)
-    final position = await _getUserLocation();
-    final userLocationString = _formatLatLng(position);
+      // Navigate immediately without API call
+      if (!context.mounted) return;
+      context.go('/search');
+      return;
+    }
 
+    debugPrint('🚀 NavBar: Cache stale or missing, fetching in background...');
+
+    // Navigate immediately (don't block on API)
+    if (!context.mounted) return;
+    context.go('/search');
+
+    // Fetch results in background (fire-and-forget)
+    // SearchPage will show loading shimmer until results arrive
+    _fetchSearchResultsBackground();
+  }
+
+  /// Background search fetch (non-blocking)
+  Future<void> _fetchSearchResultsBackground() async {
     try {
+      // Get language code BEFORE async operations
+      final languageCode = Localizations.localeOf(context).languageCode;
+
+      // Get user location (with fallback)
+      final position = await _getUserLocation();
+      final userLocationString = _formatLatLng(position);
+
       // Call search API with empty search input
       final response = await ApiService.instance.search(
         cityId: AppConstants.kDefaultCityId.toString(),
         userLocation: userLocationString,
         searchInput: '',
         languageCode: languageCode,
-        filters: [], // Empty filters initially
-        filtersUsedForSearch: [], // Empty for initial load
+        filters: [],
+        filtersUsedForSearch: [],
         sortBy: 'match',
         sortOrder: 'desc',
         selectedStation: null,
@@ -96,11 +121,10 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
       );
 
       if (response.statusCode == 200) {
-        // Parse response
         final jsonBody = response.jsonBody;
         final resultCount = jsonBody['resultCount'] as int? ?? 0;
 
-        // Update searchStateProvider (positional args, not named)
+        // Update searchStateProvider (will auto-update SearchPage via watch())
         ref.read(searchStateProvider.notifier).updateSearchResults(
           jsonBody,
           resultCount,
@@ -109,14 +133,11 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
         // Generate new filter session ID
         ref.read(searchStateProvider.notifier).generateNewFilterSessionId();
 
-        // Navigate to search page (if context is still mounted)
-        if (!context.mounted) return;
-        // ignore: use_build_context_synchronously
-        context.go('/search');
+        debugPrint('🚀 NavBar: Background fetch completed ($resultCount results)');
       }
     } catch (e) {
-      // Silently fail (user will see no results or error on search page)
-      debugPrint('NavBar search call failed: $e');
+      debugPrint('🚀 NavBar: Background fetch failed: $e');
+      // Fail silently - SearchPage will handle error state
     }
   }
 

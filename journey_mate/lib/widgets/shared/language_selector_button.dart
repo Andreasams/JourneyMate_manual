@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/filter_providers.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/search_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -62,7 +64,7 @@ class LanguageSelectorButton extends ConsumerWidget {
     'fr', // French
   ];
 
-  /// Handles language change: reload translations + filters
+  /// Handles language change: save preference, reload translations + filters, invalidate cache
   Future<void> _handleLanguageChange(
     BuildContext context,
     WidgetRef ref,
@@ -71,11 +73,20 @@ class LanguageSelectorButton extends ConsumerWidget {
     if (newLanguageCode == currentLanguageCode) return;
 
     try {
+      // Persist language to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_language_code', newLanguageCode);
+      debugPrint('✅ Language saved to preferences: $newLanguageCode');
+
       // Reload translations for new language
       await ref.read(translationsCacheProvider.notifier).loadTranslations(newLanguageCode);
 
       // Reload filters for new language
       await ref.read(filterProvider.notifier).loadFiltersForLanguage(newLanguageCode);
+
+      // Invalidate search cache (results are language-specific)
+      ref.read(searchStateProvider.notifier).invalidateCache();
+      debugPrint('🌍 Language changed, search cache invalidated');
 
       // Notify parent callback
       onLanguageSelected(newLanguageCode);

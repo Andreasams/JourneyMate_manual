@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'provider_state_classes.dart';
@@ -33,6 +34,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
       searchResults: normalizedResults,
       searchResultsCount: count,
       hasActiveSearch: true,
+      lastFetchTime: DateTime.now(), // Record fetch timestamp
     );
   }
 
@@ -135,6 +137,22 @@ class SearchStateNotifier extends Notifier<SearchState> {
   /// Get count of active filters
   int getActiveFilterCount() {
     return state.filtersUsedForSearch.length;
+  }
+
+  /// Check if cached search results are fresh (< 5 minutes old)
+  bool isCacheFresh() {
+    if (state.searchResults == null || state.lastFetchTime == null) {
+      return false;
+    }
+
+    final age = DateTime.now().difference(state.lastFetchTime!);
+    return age.inMinutes < 5;
+  }
+
+  /// Invalidate cached search results (sets timestamp to null)
+  void invalidateCache() {
+    state = state.copyWithNullable(clearFetchTime: true);
+    debugPrint('🔍 Search cache invalidated');
   }
 
   /// Mark search as inactive (results cleared)
