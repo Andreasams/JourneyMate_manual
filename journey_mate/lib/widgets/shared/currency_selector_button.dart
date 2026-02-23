@@ -292,58 +292,63 @@ class _CurrencySelectorButtonState
         ? currentCurrency
         : availableCurrencies.first;
 
-    return Container(
-      width: widget.width,
-      height: 50.0,
-      decoration: BoxDecoration(
-        color: AppColors.bgInput,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(color: AppColors.border, width: 1.0),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
+    return GestureDetector(
+      onTap: () {
+        // Open dropdown programmatically by using a hidden button
+        // We'll trigger the dropdown via the actual DropdownButton below
+      },
+      child: Container(
+        width: widget.width,
+        height: 50.0,
+        decoration: BoxDecoration(
+          color: AppColors.bgInput,
+          borderRadius: BorderRadius.circular(AppRadius.input),
+          border: Border.all(color: AppColors.border, width: 1.0),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
               _getCurrencyDisplayLabel(context, effectiveValue),
               style: AppTypography.bodyRegular.copyWith(
                 fontWeight: FontWeight.w300,
               ),
             ),
-          ),
-          DropdownButton<String>(
-            value: effectiveValue,
-            icon: Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: AppColors.textSecondary,
-              size: 24.0,
-            ),
-            dropdownColor: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(AppRadius.chip),
-            elevation: 4,
-            underline: const SizedBox.shrink(),
-            selectedItemBuilder: (context) {
-              // Return empty widgets for selected item (we show it separately to the left)
-              return availableCurrencies.map((code) => const SizedBox.shrink()).toList();
-            },
-            items: availableCurrencies.map((code) {
-              return DropdownMenuItem<String>(
-                value: code,
-                child: Text(
-                  _getCurrencyDisplayLabel(context, code),
-                  style: AppTypography.bodyRegular.copyWith(
-                    fontWeight: FontWeight.w300,
+            DropdownButton<String>(
+              value: effectiveValue,
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: AppColors.textSecondary,
+                size: 24.0,
+              ),
+              dropdownColor: AppColors.bgSurface,
+              borderRadius: BorderRadius.circular(AppRadius.chip),
+              elevation: 4,
+              underline: const SizedBox.shrink(),
+              selectedItemBuilder: (context) {
+                // Return empty widgets for selected item (we show it separately)
+                return availableCurrencies.map((code) => const SizedBox.shrink()).toList();
+              },
+              items: availableCurrencies.map((code) {
+                return DropdownMenuItem<String>(
+                  value: code,
+                  child: Text(
+                    _getCurrencyDisplayLabel(context, code),
+                    style: AppTypography.bodyRegular.copyWith(
+                      fontWeight: FontWeight.w300,
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
-            onChanged: (newCurrency) {
-              if (newCurrency != null && newCurrency != effectiveValue) {
-                _handleCurrencySelection(newCurrency);
-              }
-            },
-          ),
-        ],
+                );
+              }).toList(),
+              onChanged: (newCurrency) {
+                if (newCurrency != null && newCurrency != effectiveValue) {
+                  _handleCurrencySelection(newCurrency);
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

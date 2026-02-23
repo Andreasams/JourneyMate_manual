@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../services/translation_service.dart';
 import '../../providers/filter_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../theme/app_colors.dart';
@@ -63,9 +62,6 @@ class LanguageSelectorButton extends ConsumerWidget {
     'fr', // French
   ];
 
-  // Translation keys
-  static const String _languageLabelKey = 'settings_language_label';
-
   /// Handles language change: reload translations + filters
   Future<void> _handleLanguageChange(
     BuildContext context,
@@ -108,73 +104,62 @@ class LanguageSelectorButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      width: width,
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(color: AppColors.border, width: 1.0),
-      ),
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: 8.0,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Floating label
-                Text(
-                  td(ref, _languageLabelKey),
-                  style: AppTypography.helper.copyWith(
-                    color: AppColors.textTertiary,
+    final languageName = _languageNames[currentLanguageCode] ?? currentLanguageCode.toUpperCase();
+
+    return GestureDetector(
+      onTap: () {
+        // Open dropdown programmatically by using a hidden button
+        // We'll trigger the dropdown via the actual DropdownButton below
+      },
+      child: Container(
+        width: width,
+        height: 50.0,
+        decoration: BoxDecoration(
+          color: AppColors.bgCard,
+          borderRadius: BorderRadius.circular(AppRadius.input),
+          border: Border.all(color: AppColors.border, width: 1.0),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 12.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              languageName,
+              style: AppTypography.bodyRegular,
+            ),
+            DropdownButton<String>(
+              value: currentLanguageCode,
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: AppColors.textTertiary,
+                size: 24.0,
+              ),
+              dropdownColor: AppColors.bgCard,
+              borderRadius: BorderRadius.circular(AppRadius.input),
+              elevation: 4,
+              underline: const SizedBox.shrink(),
+              selectedItemBuilder: (context) {
+                // Return empty widgets for selected item (we show it separately)
+                return _languageOrder.map((code) => const SizedBox.shrink()).toList();
+              },
+              items: _languageOrder.map((code) {
+                final name = _languageNames[code] ?? code.toUpperCase();
+                return DropdownMenuItem<String>(
+                  value: code,
+                  child: Text(
+                    name,
+                    style: AppTypography.bodyRegular,
                   ),
-                ),
-                const SizedBox(height: 4.0),
-                // Selected language (displayed as text, not in dropdown)
-                Text(
-                  _languageNames[currentLanguageCode] ?? currentLanguageCode.toUpperCase(),
-                  style: AppTypography.bodyRegular,
-                ),
-              ],
+                );
+              }).toList(),
+              onChanged: (newLanguage) async {
+                if (newLanguage != null && newLanguage != currentLanguageCode) {
+                  await _handleLanguageChange(context, ref, newLanguage);
+                }
+              },
             ),
-          ),
-          // Dropdown button (invisible, only shows icon and opens dropdown)
-          DropdownButton<String>(
-            value: currentLanguageCode,
-            icon: Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: AppColors.textTertiary,
-              size: 24.0,
-            ),
-            dropdownColor: AppColors.bgCard,
-            borderRadius: BorderRadius.circular(AppRadius.input),
-            elevation: 4,
-            underline: const SizedBox.shrink(),
-            selectedItemBuilder: (context) {
-              // Return empty widgets for selected item (we show it separately above)
-              return _languageOrder.map((code) => const SizedBox.shrink()).toList();
-            },
-            items: _languageOrder.map((code) {
-              final languageName = _languageNames[code] ?? code.toUpperCase();
-              return DropdownMenuItem<String>(
-                value: code,
-                child: Text(
-                  languageName,
-                  style: AppTypography.bodyRegular,
-                ),
-              );
-            }).toList(),
-            onChanged: (newLanguage) async {
-              if (newLanguage != null && newLanguage != currentLanguageCode) {
-                await _handleLanguageChange(context, ref, newLanguage);
-              }
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
