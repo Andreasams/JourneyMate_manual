@@ -7,7 +7,7 @@
 ## Current Status
 
 **Phase:** Phase 8 — Integration & Polish — IN PROGRESS
-**Last completed task:** ✅ Fixed Selector Widget Regressions (2026-02-23)
+**Last completed task:** ✅ Selector Height Consistency Fix (2026-02-23)
 **Next task:** User testing & Phase 8 remaining tasks per SESSION_STATUS
 **Blocked on:** Nothing — ready for user testing or next Phase 8 task
 
@@ -51,6 +51,12 @@
   - 38 Phase 7 new keys uploaded
   - Total in Supabase: 497 keys (355 used by app + 142 legacy)
   - 7 languages: en, da, de, fr, it, no, sv
+
+**✅ SELECTOR HEIGHT CONSISTENCY FIX (2026-02-23 — commit d52a97b):**
+- Changed CurrencySelectorButton height from 90px to 50px in localization_page.dart
+- Both LanguageSelectorButton and CurrencySelectorButton now consistently use 50px height
+- User explicitly preferred 50px: "It looks good as it is right now"
+- Settings page now has matching selector heights as intended
 
 **✅ PHASE 8A.2 COMPLETE (2026-02-23):**
 - Migrated ALL 176 ts(context, key) calls to td(ref, key)
@@ -226,6 +232,33 @@ git log --all --full-history -- '*supabase.dart'  # No output = file removed ✅
 - ✅ User should verify GitHub Security tab shows no alerts
 - ✅ Ready for Phase 8A.6 Final Pre-Release Verification
 - ⏭️ Or Phase 8A.1 if user wants to test TestFlight first
+
+---
+
+## Files changed this session (Selector Height Fix - 2026-02-23)
+
+**SELECTOR HEIGHT CONSISTENCY ✅** — UI Polish
+
+**Summary:**
+- Changed CurrencySelectorButton height from 90px to 50px in localization_page.dart
+- Both LanguageSelectorButton and CurrencySelectorButton now consistently use 50px height
+- User explicitly preferred 50px over 90px: "It looks good as it is right now"
+- Settings page now has matching selector heights as intended
+
+**Files modified:**
+- journey_mate/lib/pages/settings/localization_page.dart
+  - Line 152: Changed `height: 90.0` → `height: 50.0`
+  - CurrencySelectorButton now matches LanguageSelectorButton height
+  - Visual consistency achieved across both selector buttons
+
+**Commits:**
+- d52a97b: fix(settings): change CurrencySelectorButton height to 50px to match LanguageSelectorButton
+
+**Context:**
+- Continued from previous session where selector widgets were fixed (commit 05fdea3)
+- User noticed currency selector looked "large" compared to language selector
+- Both selectors already use identical overlay pattern (custom dropdown)
+- Height was the last remaining inconsistency between the two buttons
 
 ---
 

@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/filter_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../models/lat_lng.dart';
@@ -98,10 +99,10 @@ class _SearchResultsListViewState
   Widget build(BuildContext context) {
     debugPrint('📊 [6] SearchResultsListView.build() START');
 
-    // Selective rebuild: ONLY when searchResults changes
-    final searchResults = ref.watch(
-      searchStateProvider.select((state) => state.searchResults),
-    );
+    // Watch both searchResults AND active filters for match grouping
+    final searchState = ref.watch(searchStateProvider);
+    final searchResults = searchState.searchResults;
+    final activeFilters = searchState.filtersUsedForSearch;
 
     // Show shimmer while loading
     if (searchResults == null) {
@@ -118,7 +119,10 @@ class _SearchResultsListViewState
       return _buildEmptyState();
     }
 
-    debugPrint('📊 [6c] documents.length=${documents.length}');
+    debugPrint('📊 [6c] documents.length=${documents.length}, activeFilters=${activeFilters.length}');
+
+    // Check if we should show match sections
+    final showMatchSections = activeFilters.isNotEmpty;
 
     // List of businesses
     // Wrapped in LayoutBuilder to fix Chrome web rendering issue
@@ -131,43 +135,206 @@ class _SearchResultsListViewState
           debugPrint('⚠️  [7] WARNING: maxHeight is ZERO - ListView will not render!');
         }
 
-        return SizedBox(
-          height: constraints.maxHeight,
-          child: ListView.separated(
-            padding: const EdgeInsets.only(bottom: 32.0),
-            itemCount: documents.length,
-            separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
-            itemBuilder: (context, index) {
-              debugPrint('📋 [8] ListView itemBuilder called for index=$index');
-              final businessData = documents[index];
-              final businessId = _getBusinessId(businessData);
-
-              return GestureDetector(
-                onTap: () {
-                  _trackBusinessClick(businessId, index);
-                  widget.onBusinessTap?.call(businessId);
-                },
-                child: _BusinessListItem(
-                  key: ValueKey('business_$businessId'),
-                  businessData: businessData,
-                  userLocation: widget.userLocation,
-                  statusText: _statusTextCache[businessId],
-                  statusColor: _statusColorCache[businessId],
-                  onStatusLoaded: (text, color) {
-                    if (mounted) {
-                      setState(() {
-                        _statusTextCache[businessId] = text;
-                        _statusColorCache[businessId] = color;
-                      });
-                    }
-                  },
-                ),
-              );
-            },
-          ),
-        );
+        if (showMatchSections) {
+          return _buildMatchSections(documents, activeFilters.length, constraints);
+        } else {
+          return _buildFlatList(documents, constraints);
+        }
       },
     );
+  }
+
+  /// Builds a flat list when no filters are active
+  Widget _buildFlatList(List<dynamic> documents, BoxConstraints constraints) {
+    return SizedBox(
+      height: constraints.maxHeight,
+      child: ListView.separated(
+        padding: const EdgeInsets.only(bottom: 32.0),
+        itemCount: documents.length,
+        separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
+        itemBuilder: (context, index) {
+          debugPrint('📋 [8] ListView itemBuilder called for index=$index');
+          final businessData = documents[index];
+          final businessId = _getBusinessId(businessData);
+
+          return GestureDetector(
+            onTap: () {
+              _trackBusinessClick(businessId, index);
+              widget.onBusinessTap?.call(businessId);
+            },
+            child: _BusinessListItem(
+              key: ValueKey('business_$businessId'),
+              businessData: businessData,
+              userLocation: widget.userLocation,
+              matchVariant: 'none', // No match categorization
+              activeFilterCount: 0,
+              statusText: _statusTextCache[businessId],
+              statusColor: _statusColorCache[businessId],
+              onStatusLoaded: (text, color) {
+                if (mounted) {
+                  setState(() {
+                    _statusTextCache[businessId] = text;
+                    _statusColorCache[businessId] = color;
+                  });
+                }
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Builds match sections (Full Match, Partial Match, No Match) when filters are active
+  Widget _buildMatchSections(
+    List<dynamic> documents,
+    int totalActiveFilters,
+    BoxConstraints constraints,
+  ) {
+    // Group documents by match quality
+    final fullMatch = <dynamic>[];
+    final partialMatch = <dynamic>[];
+    final noMatch = <dynamic>[];
+
+    for (final doc in documents) {
+      final matchCount = _getMatchCount(doc);
+      if (matchCount == totalActiveFilters) {
+        fullMatch.add(doc);
+      } else if (matchCount > 0) {
+        partialMatch.add(doc);
+      } else {
+        noMatch.add(doc);
+      }
+    }
+
+    debugPrint('🎯 Match sections: full=${fullMatch.length}, partial=${partialMatch.length}, none=${noMatch.length}');
+
+    // Build sections list
+    final sections = <Widget>[];
+    int itemIndex = 0;
+
+    // Full match section
+    if (fullMatch.isNotEmpty) {
+      sections.add(_buildSectionHeader('full'));
+      for (final doc in fullMatch) {
+        sections.add(_buildBusinessCard(doc, 'full', totalActiveFilters, itemIndex++));
+        sections.add(SizedBox(height: _itemSeparatorHeight));
+      }
+    }
+
+    // Partial match section
+    if (partialMatch.isNotEmpty) {
+      sections.add(_buildSectionHeader('partial'));
+      for (final doc in partialMatch) {
+        sections.add(_buildBusinessCard(doc, 'partial', totalActiveFilters, itemIndex++));
+        sections.add(SizedBox(height: _itemSeparatorHeight));
+      }
+    }
+
+    // No match section
+    if (noMatch.isNotEmpty) {
+      sections.add(_buildSectionHeader('none'));
+      for (final doc in noMatch) {
+        sections.add(_buildBusinessCard(doc, 'none', totalActiveFilters, itemIndex++));
+        sections.add(SizedBox(height: _itemSeparatorHeight));
+      }
+    }
+
+    return SizedBox(
+      height: constraints.maxHeight,
+      child: ListView(
+        padding: const EdgeInsets.only(bottom: 32.0),
+        children: sections,
+      ),
+    );
+  }
+
+  Widget _buildBusinessCard(
+    dynamic businessData,
+    String matchVariant,
+    int totalActiveFilters,
+    int itemIndex,
+  ) {
+    final businessId = _getBusinessId(businessData);
+    return GestureDetector(
+      onTap: () {
+        _trackBusinessClick(businessId, itemIndex);
+        widget.onBusinessTap?.call(businessId);
+      },
+      child: _BusinessListItem(
+        key: ValueKey('business_$businessId'),
+        businessData: businessData,
+        userLocation: widget.userLocation,
+        matchVariant: matchVariant,
+        activeFilterCount: totalActiveFilters,
+        statusText: _statusTextCache[businessId],
+        statusColor: _statusColorCache[businessId],
+        onStatusLoaded: (text, color) {
+          if (mounted) {
+            setState(() {
+              _statusTextCache[businessId] = text;
+              _statusColorCache[businessId] = color;
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String section) {
+    final String labelKey;
+    final Color color;
+    final IconData? icon;
+
+    switch (section) {
+      case 'full':
+        labelKey = 'search_match_all'; // "MATCHER ALLE BEHOV"
+        color = AppColors.green;
+        icon = Icons.check;
+        break;
+      case 'partial':
+        labelKey = 'search_match_partial'; // "MATCHER DELVIST"
+        color = AppColors.accent;
+        icon = null;
+        break;
+      case 'none':
+        labelKey = 'search_other_places'; // "ANDRE STEDER"
+        color = AppColors.textTertiary;
+        icon = null;
+        break;
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 8),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 11, color: color),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            td(ref, labelKey).toUpperCase(),
+            style: AppTypography.bodyRegular.copyWith(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _getMatchCount(dynamic businessData) {
+    if (businessData is Map) {
+      final value = businessData['matchCount'];
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+    }
+    return 0;
   }
 
   List<dynamic> _extractDocuments(dynamic searchResults) {
@@ -229,6 +396,8 @@ class _BusinessListItem extends ConsumerStatefulWidget {
     super.key,
     required this.businessData,
     required this.userLocation,
+    required this.matchVariant,
+    required this.activeFilterCount,
     this.statusText,
     this.statusColor,
     this.onStatusLoaded,
@@ -236,6 +405,8 @@ class _BusinessListItem extends ConsumerStatefulWidget {
 
   final dynamic businessData;
   final Position? userLocation;
+  final String matchVariant; // 'full', 'partial', 'none'
+  final int activeFilterCount; // Total number of active filters
   final String? statusText;
   final Color? statusColor;
   final void Function(String? text, Color? color)? onStatusLoaded;
@@ -284,6 +455,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   int? get _priceRangeMin => _getField<int>('price_range_min');
   int? get _priceRangeMax => _getField<int>('price_range_max');
   dynamic get _openingHours => _getField<dynamic>('business_hours');
+  int? get _matchCount => _getField<int>('matchCount');
+  List<dynamic>? get _missedFilters => _getField<List<dynamic>>('missedFilters');
 
   String? get _businessType {
     final languageCode = Localizations.localeOf(context).languageCode;
@@ -298,6 +471,19 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   double get _rowSpacing {
     final fontScale = ref.watch(accessibilityProvider).isBoldTextEnabled;
     return fontScale ? 4.0 : 2.0;
+  }
+
+  /// Returns border color based on match variant
+  Color get _borderColor {
+    switch (widget.matchVariant) {
+      case 'full':
+        return const Color(0xFFb8d4c0); // Green border for full match
+      case 'partial':
+        return const Color(0xFFf0dcc8); // Light orange for partial match
+      case 'none':
+      default:
+        return const Color(0xFFe8e8e8); // Gray for no match
+    }
   }
 
   double get _exchangeRate => ref.watch(localizationProvider).exchangeRate;
@@ -361,21 +547,31 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       builder: (context, itemConstraints) {
         debugPrint('📐 [10] ITEM LayoutBuilder: ${itemConstraints.maxHeight}h × ${itemConstraints.maxWidth}w');
 
-        return Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(minHeight: _imageSize),
-          decoration: BoxDecoration(
-            color: AppColors.bgCard,
-            border: Border.all(color: Colors.red, width: 2), // DEBUG: Structural visibility
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildImage(),
-              const SizedBox(width: 8),
-              Expanded(child: _buildInfoColumn()),
-            ],
-          ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(minHeight: _imageSize),
+              decoration: BoxDecoration(
+                color: AppColors.bgCard,
+                border: Border.all(color: _borderColor, width: 1.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildImage(),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildInfoColumn()),
+                ],
+              ),
+            ),
+            // Partial match info box
+            if (widget.matchVariant == 'partial' && widget.activeFilterCount > 0)
+              _buildPartialMatchInfoBox(),
+          ],
         );
       },
     );
@@ -610,6 +806,85 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       overflow: TextOverflow.ellipsis,
       style: AppTypography.bodyRegular.copyWith(
         color: AppColors.textSecondary,
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Partial Match Info Box
+  // ---------------------------------------------------------------------------
+
+  Widget _buildPartialMatchInfoBox() {
+    final matchCount = _matchCount ?? 0;
+    final missedFilters = _missedFilters ?? [];
+
+    if (matchCount == 0 || missedFilters.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // Get missed filter names
+    final filterState = ref.watch(filterProvider);
+    final missedNames = <String>[];
+
+    filterState.when(
+      data: (state) {
+        for (final filterId in missedFilters) {
+          if (filterId is int) {
+            final filter = state.filterLookupMap[filterId];
+            if (filter != null && filter['filter_name'] != null) {
+              missedNames.add(filter['filter_name'] as String);
+            }
+          }
+        }
+      },
+      loading: () {},
+      error: (e, stack) {},
+    );
+
+    final totalFilters = matchCount + missedFilters.length;
+    final missedText = missedNames.join(', ');
+
+    return Container(
+      margin: const EdgeInsets.only(top: 10, left: 12, right: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFFfef8f2), // Light orange background
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 14,
+            color: AppColors.accent,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: AppTypography.bodyRegular.copyWith(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+                children: [
+                  TextSpan(
+                    text: '${td(ref, 'search_matches')} $matchCount/$totalFilters',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  if (missedNames.isNotEmpty) ...[
+                    const TextSpan(text: ' · '),
+                    TextSpan(
+                      text: '${td(ref, 'search_missing')}: ',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    TextSpan(text: missedText),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

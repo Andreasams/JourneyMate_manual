@@ -475,7 +475,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
         SizedBox(width: 5),
         Text(
-          td(ref, 'city_copenhagen'),
+          td(ref, '05aeogb1'), // FlutterFlow legacy key for Copenhagen
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 13.5,
             fontWeight: FontWeight.w600,
@@ -534,8 +534,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         searchState.currentSearchText.isNotEmpty;
 
     final title = hasActiveFiltersOrSearch
-        ? '${td(ref, 'search_page_title_results')} (${searchState.searchResultsCount})'
-        : td(ref, 'search_page_title_default');
+        ? '${td(ref, 'feedback_page_search_results')} (${searchState.searchResultsCount})'
+        : td(ref, 'search_places_near_you'); // TODO: Add this key to Supabase
 
     return Text(
       title,
