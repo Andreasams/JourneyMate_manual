@@ -127,8 +127,11 @@ class _SearchResultsListViewState
   }
 
   int _getBusinessId(dynamic businessData) {
-    if (businessData is Map && businessData.containsKey('id')) {
-      return businessData['id'] as int? ?? 0;
+    if (businessData is Map) {
+      // API returns 'business_id' (not 'id')
+      final value = businessData['business_id'];
+      if (value is int) return value;
+      if (value is num) return value.toInt();
     }
     return 0;
   }
@@ -310,12 +313,12 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         _profilePicture ?? _placeholderImageUrl,
         width: _imageSize,
         height: _imageSize,
-        fit: BoxFit.cover,
+        fit: BoxFit.scaleDown,
         errorBuilder: (context, error, stackTrace) => Image.network(
           _placeholderImageUrl,
           width: _imageSize,
           height: _imageSize,
-          fit: BoxFit.cover,
+          fit: BoxFit.scaleDown,
         ),
       ),
     );
