@@ -33,6 +33,13 @@ void main() async {
       // ignore: avoid_print
       print('═══════════════════════════════════════════════════════════');
 
+      // ⚠️ WINDOWS DEBUGGING: Show error on screen instead of grey screen
+      _showErrorOverlay(
+        'Flutter Error',
+        details.exceptionAsString(),
+        details.stack.toString(),
+      );
+
       // TODO: Send to Firebase Crashlytics or backend logging service in production
       // Example: FirebaseCrashlytics.instance.recordFlutterError(details);
     };
@@ -47,6 +54,13 @@ void main() async {
       print('📚 STACK TRACE:\n$stack');
       // ignore: avoid_print
       print('═══════════════════════════════════════════════════════════');
+
+      // ⚠️ WINDOWS DEBUGGING: Show error on screen instead of grey screen
+      _showErrorOverlay(
+        'Platform Error',
+        error.toString(),
+        stack.toString(),
+      );
 
       // TODO: Send to Firebase Crashlytics or backend logging service in production
       return true; // Mark error as handled
@@ -213,6 +227,148 @@ void main() async {
     // ignore: avoid_print
     print('═══════════════════════════════════════════════════════════');
 
+    // ⚠️ WINDOWS DEBUGGING: Show error on screen instead of grey screen
+    _showErrorOverlay(
+      'Async Error',
+      error.toString(),
+      stack.toString(),
+    );
+
     // TODO: Send to Firebase Crashlytics or backend logging service in production
   });
+}
+
+/// Shows error overlay on device screen for debugging grey screen issues on Windows
+/// This makes errors visible without needing Xcode, Console.app, or App Store Connect crash reports
+void _showErrorOverlay(String errorType, String errorMessage, String stackTrace) {
+  // Get the root overlay to display error on top of everything
+  final overlayState = WidgetsBinding.instance.rootElement?.findAncestorStateOfType<OverlayState>();
+
+  if (overlayState == null) {
+    // Fallback: If no overlay available, at least print to console
+    // ignore: avoid_print
+    print('⚠️ Cannot show error overlay (no OverlayState), error was: $errorMessage');
+    return;
+  }
+
+  // Create error overlay entry
+  final overlayEntry = OverlayEntry(
+    builder: (context) => Material(
+      color: Colors.black87,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 32),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      errorType,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Error message
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red),
+                ),
+                child: SelectableText(
+                  errorMessage,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Stack trace (scrollable)
+              const Text(
+                'Stack Trace:',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      stackTrace,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Instructions
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8751A).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE8751A)),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '📸 How to report this error:',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '1. Take a screenshot of this screen\n'
+                      '2. The error message shows the exact problem\n'
+                      '3. Share the screenshot with your developer',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+
+  // Show the overlay
+  overlayState.insert(overlayEntry);
 }
