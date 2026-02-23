@@ -11,6 +11,37 @@
 **Next task:** User testing & Phase 8 remaining tasks per SESSION_STATUS
 **Blocked on:** Nothing — ready for user testing or next Phase 8 task
 
+---
+
+## 🔄 PARALLEL WORK STREAM: Search Page JSX Parity Implementation
+
+**Started:** 2026-02-23
+**Goal:** Bring Flutter search page to 100% JSX design parity (18 discrepancies identified)
+**Plan:** `C:\Users\Rikke\.claude\plans\rippling-wondering-pelican.md`
+
+**✅ Phase 1 Complete (commit 31c18b1):** Critical Page Structure (4 items)
+- City header with location pin icon
+- Search bar moved from AppBar to page body
+- Dynamic page title ("Steder nær dig" / "Søgeresultater (X)")
+- 3-button filter row with badges and orange dot indicators
+
+**✅ Phase 2 Complete (commit 278dad3):** Match System (4 items)
+- Match section grouping (fullMatch/partialMatch/noMatch)
+- Color-coded section headers (green checkmark for full, orange for partial, gray for none)
+- Border colors: #b8d4c0 (green), #f0dcc8 (orange), #e8e8e8 (gray)
+- Partial match info boxes showing "Matcher X/Y · Mangler: [list]"
+
+**Translation keys needed (documented in PHASE2_TRANSLATION_KEYS.md):**
+- `search_match_all` - "MATCHER ALLE BEHOV"
+- `search_match_partial` - "MATCHER DELVIST"
+- `search_other_places` - "ANDRE STEDER"
+- `search_matches` - "Matcher"
+- `search_missing` - "Mangler"
+
+**Next task:** Phase 3 (Card Interaction) — Expandable cards (3 items)
+
+**Known issue:** Layout bug with 0 height ListView (pre-existing, unfixable this session per user)
+
 **🟡 CRITICAL BUG — GREY SCREEN ON TESTFLIGHT — FIX DEPLOYED — AWAITING TESTING**
 
 **Root cause identified:** Navigation from search results to business profile was not implemented (just a debugPrint stub). Users tap business card → nothing happens → appears as frozen/grey screen.

@@ -288,17 +288,17 @@ class _SearchResultsListViewState
 
     switch (section) {
       case 'full':
-        labelKey = 'search_match_all'; // "MATCHER ALLE BEHOV"
+        labelKey = 'match_full_header'; // "MATCHES ALL NEEDS"
         color = AppColors.green;
         icon = Icons.check;
         break;
       case 'partial':
-        labelKey = 'search_match_partial'; // "MATCHER DELVIST"
+        labelKey = 'match_partial_header'; // "PARTIAL MATCH"
         color = AppColors.accent;
         icon = null;
         break;
       case 'none':
-        labelKey = 'search_other_places'; // "ANDRE STEDER"
+        labelKey = 'match_other_header'; // "OTHER PLACES"
         color = AppColors.textTertiary;
         icon = null;
         break;
@@ -315,7 +315,7 @@ class _SearchResultsListViewState
             const SizedBox(width: 4),
           ],
           Text(
-            td(ref, labelKey).toUpperCase(),
+            td(ref, labelKey),
             style: AppTypography.bodyRegular.copyWith(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -844,6 +844,15 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final totalFilters = matchCount + missedFilters.length;
     final missedText = missedNames.join(', ');
 
+    // Get translated strings with placeholder replacement
+    final matchesText = td(ref, 'match_info_matches')
+        .replaceAll('{count}', matchCount.toString())
+        .replaceAll('{total}', totalFilters.toString());
+
+    final missingText = missedNames.isNotEmpty
+        ? td(ref, 'match_info_missing').replaceAll('{filters}', missedText)
+        : '';
+
     return Container(
       margin: const EdgeInsets.only(top: 10, left: 12, right: 12),
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
@@ -861,26 +870,11 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: AppTypography.bodyRegular.copyWith(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
-                children: [
-                  TextSpan(
-                    text: '${td(ref, 'search_matches')} $matchCount/$totalFilters',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  if (missedNames.isNotEmpty) ...[
-                    const TextSpan(text: ' · '),
-                    TextSpan(
-                      text: '${td(ref, 'search_missing')}: ',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    TextSpan(text: missedText),
-                  ],
-                ],
+            child: Text(
+              missedNames.isNotEmpty ? '$matchesText · $missingText' : matchesText,
+              style: AppTypography.bodyRegular.copyWith(
+                fontSize: 12,
+                color: AppColors.textSecondary,
               ),
             ),
           ),
