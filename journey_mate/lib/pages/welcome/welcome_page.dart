@@ -37,7 +37,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   bool _isReturningUser = false;
   DateTime? _pageStartTime;
   bool _buttonsVisible = false;
-  bool _isLoadingSearch = false;
   bool _hasTrackedPageView = false; // Prevent duplicate tracking
 
   // ============================================================
@@ -92,6 +91,11 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           _buttonsVisible = true;
         });
       }
+
+      // Pre-fetch search results for returning users (fire-and-forget)
+      if (isReturningUser) {
+        _preFetchSearchResults(languageCode);
+      }
     } catch (e) {
       debugPrint('⚠️ Welcome page initialization error: $e');
       // Still show buttons even if initialization fails
@@ -100,6 +104,71 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           _buttonsVisible = true;
         });
       }
+    }
+  }
+
+  // ============================================================
+  // PRE-FETCH SEARCH RESULTS
+  // ============================================================
+
+  /// Pre-fetch search results for returning users (fire-and-forget)
+  Future<void> _preFetchSearchResults(String languageCode) async {
+    try {
+      debugPrint('👋 Welcome: Pre-fetching search results for returning user...');
+
+      // Check if cache is already fresh
+      final searchNotifier = ref.read(searchStateProvider.notifier);
+      if (searchNotifier.isCacheFresh()) {
+        debugPrint('👋 Welcome: Cache is fresh, skipping pre-fetch');
+        return;
+      }
+
+      // Get user location if permission granted (with timeout)
+      String? userLocation;
+      try {
+        final locationState = ref.read(locationProvider);
+        if (locationState.hasPermission) {
+          final position = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+              timeLimit: Duration(seconds: 5),
+            ),
+          );
+          userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
+        }
+      } catch (e) {
+        debugPrint('👋 Welcome: Location fetch failed: $e');
+        // Continue without location
+      }
+
+      // Call search API with user's language
+      final response = await ApiService.instance.search(
+        cityId: AppConstants.kDefaultCityId.toString(),
+        userLocation: userLocation,
+        searchInput: '',
+        languageCode: languageCode,
+        filters: [],
+        filtersUsedForSearch: [],
+        sortBy: 'match',
+        sortOrder: 'desc',
+        page: 1,
+        pageSize: 20,
+      );
+
+      if (response.succeeded) {
+        final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
+        ref.read(searchStateProvider.notifier).updateSearchResults(
+          response.jsonBody,
+          resultCount,
+        );
+        debugPrint('👋 Welcome: Pre-fetch succeeded ($resultCount results)');
+      } else {
+        debugPrint('👋 Welcome: Pre-fetch failed: ${response.error}');
+        // Fail silently - user will see loading shimmer on Search page
+      }
+    } catch (e) {
+      debugPrint('👋 Welcome: Pre-fetch exception: $e');
+      // Fail silently - don't block Welcome page
     }
   }
 
@@ -120,12 +189,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   }
 
   /// Handle "Fortsæt på dansk" button → Danish quick path
+  /// Saves preferences, pre-fetches search, navigates immediately
   Future<void> _handleDanishDirect() async {
     if (!mounted) return;
-
-    setState(() {
-      _isLoadingSearch = true;
-    });
 
     try {
       // 1. Save language preference
@@ -138,146 +204,149 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       // 3. Set currency to DKK
       await ref.read(localizationProvider.notifier).setCurrency('DKK', 1.0);
 
-      // 4. Get user location (if available)
-      String? userLocation;
-      try {
-        final position = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            timeLimit: Duration(seconds: 5),
-          ),
-        );
-        userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
-      } catch (e) {
-        debugPrint('⚠️ Could not get location: $e');
-        // Continue without location
-      }
-
-      // 5. Call SearchAPI with Danish language
-      final response = await ApiService.instance.search(
-        filters: [],
-        filtersUsedForSearch: [],
-        cityId: AppConstants.kDefaultCityId.toString(),
-        searchInput: '',
-        userLocation: userLocation,
-        languageCode: 'da',
-        sortBy: 'match',
-        sortOrder: 'desc',
-        page: 1,
-        pageSize: 20,
-      );
-
-      if (!mounted) return;
-
-      // 6. Handle API response
-      if (!response.succeeded) {
-        setState(() {
-          _isLoadingSearch = false;
-        });
-        _showErrorDialog();
-        return;
-      }
-
-      // 7. Store search results
-      final resultCount = response.jsonBody['resultCount'] ?? 0;
-      ref.read(searchStateProvider.notifier).updateSearchResults(
-        response.jsonBody,
-        resultCount,
-      );
-
-      // 8. Track analytics
+      // 4. Track analytics
       await _trackPageView();
 
-      // 9. Navigate to search page
+      // 5. Navigate immediately (don't block on search API)
       if (!mounted) return;
       context.go('/search');
+
+      // 6. Fetch search results in background (SearchPage will show shimmer)
+      _fetchDanishSearchBackground();
 
     } catch (e) {
       debugPrint('❌ Danish direct flow error: $e');
       if (mounted) {
-        setState(() {
-          _isLoadingSearch = false;
-        });
         _showErrorDialog();
       }
     }
   }
 
-  /// Handle "Continue" button for returning users → Load search
-  Future<void> _handleReturningUserContinue() async {
-    if (!mounted) return;
-
-    setState(() {
-      _isLoadingSearch = true;
-    });
-
+  /// Background search fetch for Danish direct flow
+  Future<void> _fetchDanishSearchBackground() async {
     try {
-      // 1. Get stored language code
-      final prefs = await SharedPreferences.getInstance();
-      final languageCode = prefs.getString('user_language_code') ?? 'en';
+      debugPrint('👋 Welcome: Fetching Danish search results in background...');
 
-      // 2. Get user location (if available)
+      // Get user location (if available)
       String? userLocation;
       try {
         final position = await Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
+            accuracy: LocationAccuracy.medium,
             timeLimit: Duration(seconds: 5),
           ),
         );
         userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
       } catch (e) {
-        debugPrint('⚠️ Could not get location: $e');
+        debugPrint('👋 Welcome: Location fetch failed: $e');
         // Continue without location
       }
 
-      // 3. Call SearchAPI with user's language
+      // Call SearchAPI with Danish language
       final response = await ApiService.instance.search(
+        cityId: AppConstants.kDefaultCityId.toString(),
+        userLocation: userLocation,
+        searchInput: '',
+        languageCode: 'da',
         filters: [],
         filtersUsedForSearch: [],
-        cityId: AppConstants.kDefaultCityId.toString(),
-        searchInput: '',
-        userLocation: userLocation,
-        languageCode: languageCode,
         sortBy: 'match',
         sortOrder: 'desc',
         page: 1,
         pageSize: 20,
       );
 
-      if (!mounted) return;
+      if (response.succeeded) {
+        final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
+        ref.read(searchStateProvider.notifier).updateSearchResults(
+          response.jsonBody,
+          resultCount,
+        );
+        debugPrint('👋 Welcome: Danish search succeeded ($resultCount results)');
+      } else {
+        debugPrint('👋 Welcome: Danish search failed: ${response.error}');
+      }
+    } catch (e) {
+      debugPrint('👋 Welcome: Danish search exception: $e');
+      // Fail silently - SearchPage will handle error state
+    }
+  }
 
-      // 4. Handle API response
-      if (!response.succeeded) {
-        setState(() {
-          _isLoadingSearch = false;
-        });
-        _showErrorDialog();
-        return;
+  /// Handle "Continue" button for returning users → Navigate immediately
+  /// NEW: Uses pre-fetched results if available, or shows shimmer while loading
+  Future<void> _handleReturningUserContinue() async {
+    if (!mounted) return;
+
+    // Check if cached results are fresh
+    final searchNotifier = ref.read(searchStateProvider.notifier);
+    final hasFreshCache = searchNotifier.isCacheFresh();
+
+    debugPrint('👋 Welcome: Continue tapped (cache fresh: $hasFreshCache)');
+
+    // Track analytics before navigating
+    await _trackPageView();
+
+    // Navigate immediately (don't block on API call)
+    if (!mounted) return;
+    context.go('/search');
+
+    // If cache is stale, fetch in background (SearchPage will show shimmer)
+    if (!hasFreshCache) {
+      _fetchSearchResultsBackground();
+    }
+  }
+
+  /// Background search fetch for returning users (non-blocking)
+  Future<void> _fetchSearchResultsBackground() async {
+    try {
+      debugPrint('👋 Welcome: Fetching search results in background...');
+
+      // Get stored language code
+      final prefs = await SharedPreferences.getInstance();
+      final languageCode = prefs.getString('user_language_code') ?? 'en';
+
+      // Get user location (if available)
+      String? userLocation;
+      try {
+        final position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            timeLimit: Duration(seconds: 5),
+          ),
+        );
+        userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
+      } catch (e) {
+        debugPrint('👋 Welcome: Location fetch failed: $e');
+        // Continue without location
       }
 
-      // 5. Store search results
-      final resultCount = response.jsonBody['resultCount'] ?? 0;
-      ref.read(searchStateProvider.notifier).updateSearchResults(
-        response.jsonBody,
-        resultCount,
+      // Call SearchAPI
+      final response = await ApiService.instance.search(
+        cityId: AppConstants.kDefaultCityId.toString(),
+        userLocation: userLocation,
+        searchInput: '',
+        languageCode: languageCode,
+        filters: [],
+        filtersUsedForSearch: [],
+        sortBy: 'match',
+        sortOrder: 'desc',
+        page: 1,
+        pageSize: 20,
       );
 
-      // 6. Track analytics
-      await _trackPageView();
-
-      // 7. Navigate to search page
-      if (!mounted) return;
-      context.go('/search');
-
-    } catch (e) {
-      debugPrint('❌ Returning user continue error: $e');
-      if (mounted) {
-        setState(() {
-          _isLoadingSearch = false;
-        });
-        _showErrorDialog();
+      if (response.succeeded) {
+        final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
+        ref.read(searchStateProvider.notifier).updateSearchResults(
+          response.jsonBody,
+          resultCount,
+        );
+        debugPrint('👋 Welcome: Background fetch succeeded ($resultCount results)');
+      } else {
+        debugPrint('👋 Welcome: Background fetch failed: ${response.error}');
       }
+    } catch (e) {
+      debugPrint('👋 Welcome: Background fetch exception: $e');
+      // Fail silently - SearchPage will handle error state
     }
   }
 
@@ -429,42 +498,30 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               if (_buttonsVisible) ...[
                 // Primary "Continue" button (always shown)
                 ElevatedButton(
-                  onPressed: _isLoadingSearch
-                      ? null
-                      : (_isReturningUser
-                          ? _handleReturningUserContinue
-                          : _handleEnglishSetup),
+                  onPressed: _isReturningUser
+                      ? _handleReturningUserContinue
+                      : _handleEnglishSetup,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
-                    disabledBackgroundColor: AppColors.border,
                     minimumSize: const Size(270, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.button),
                     ),
                     elevation: 0,
                   ),
-                  child: _isLoadingSearch
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(Colors.white),
-                          ),
-                        )
-                      : Text(
-                          td(ref, 'd2mrwxr4'), // "Continue" / "Fortsæt"
-                          style: AppTypography.button.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
+                  child: Text(
+                    td(ref, 'd2mrwxr4'), // "Continue" / "Fortsæt"
+                    style: AppTypography.button.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
 
                 // Secondary "Fortsæt på dansk" button (only for new users)
                 if (!_isReturningUser) ...[
                   const SizedBox(height: AppSpacing.md),
                   OutlinedButton(
-                    onPressed: _isLoadingSearch ? null : _handleDanishDirect,
+                    onPressed: _handleDanishDirect,
                     style: OutlinedButton.styleFrom(
                       backgroundColor: AppColors.bgPage,
                       side: const BorderSide(
