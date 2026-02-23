@@ -391,7 +391,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
           return SizedBox(
             height: availableHeight,
+            width: double.infinity,
             child: Container(
+              height: availableHeight,
+              width: double.infinity,
               color: const Color(0x4DFFFF00), // DEBUG: Yellow
               child: LayoutBuilder(
                 builder: (context, containerConstraints) {
