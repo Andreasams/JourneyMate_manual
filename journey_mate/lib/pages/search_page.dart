@@ -381,11 +381,21 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         builder: (context, bodyConstraints) {
           debugPrint('📐 [1] BODY LayoutBuilder: ${bodyConstraints.maxHeight}h × ${bodyConstraints.maxWidth}w');
 
-          return Container(
-            color: const Color(0x4DFFFF00), // DEBUG: Yellow
-            child: LayoutBuilder(
-              builder: (context, containerConstraints) {
-                debugPrint('📐 [2] CONTAINER LayoutBuilder: ${containerConstraints.maxHeight}h × ${containerConstraints.maxWidth}w');
+          // WORKAROUND: Scaffold body receiving 0h - use MediaQuery for explicit height
+          final screenHeight = MediaQuery.of(context).size.height;
+          final appBarHeight = kToolbarHeight; // ~56px
+          final navBarHeight = 80.0; // NavBarWidget height
+          final availableHeight = screenHeight - appBarHeight - navBarHeight;
+
+          debugPrint('📐 [1b] CALCULATED: screen=${screenHeight}h, available=${availableHeight}h');
+
+          return SizedBox(
+            height: availableHeight,
+            child: Container(
+              color: const Color(0x4DFFFF00), // DEBUG: Yellow
+              child: LayoutBuilder(
+                builder: (context, containerConstraints) {
+                  debugPrint('📐 [2] CONTAINER LayoutBuilder: ${containerConstraints.maxHeight}h × ${containerConstraints.maxWidth}w');
 
                 return Column(
                   children: [
@@ -450,6 +460,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   ],
                 );
               },
+            ),
             ),
           );
         },
