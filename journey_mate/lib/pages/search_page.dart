@@ -466,11 +466,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildCityHeader() {
-    // TODO Phase 6B: Add translation key 'city_copenhagen' to Supabase ui_translations
-    // For now, fallback to hardcoded Danish per CLAUDE.md (CityID = 17)
-    final cityName = td(ref, 'city_copenhagen');
-    final displayName = cityName == 'city_copenhagen' ? 'København' : cityName;
-
     return Row(
       children: [
         Icon(
@@ -480,7 +475,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
         SizedBox(width: 5),
         Text(
-          displayName,
+          td(ref, 'city_copenhagen'),
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 13.5,
             fontWeight: FontWeight.w600,
@@ -538,22 +533,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         searchState.filtersUsedForSearch.isNotEmpty ||
         searchState.currentSearchText.isNotEmpty;
 
-    // TODO Phase 6B: Add translation keys to Supabase ui_translations:
-    // - 'search_page_title_default' (en: "Places near you", da: "Steder nær dig")
-    // - 'search_page_title_results' (en: "Search results", da: "Søgeresultater")
-    String title;
-    if (hasActiveFiltersOrSearch) {
-      final resultsText = td(ref, 'search_page_title_results');
-      final displayText = resultsText == 'search_page_title_results'
-          ? 'Søgeresultater'
-          : resultsText;
-      title = '$displayText (${searchState.searchResultsCount})';
-    } else {
-      final defaultText = td(ref, 'search_page_title_default');
-      title = defaultText == 'search_page_title_default'
-          ? 'Steder nær dig'
-          : defaultText;
-    }
+    final title = hasActiveFiltersOrSearch
+        ? '${td(ref, 'search_page_title_results')} (${searchState.searchResultsCount})'
+        : td(ref, 'search_page_title_default');
 
     return Text(
       title,

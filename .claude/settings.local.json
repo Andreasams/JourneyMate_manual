@@ -51,7 +51,8 @@
       "Bash(git remote add:*)",
       "Bash(git log:*)",
       "WebSearch",
-      "WebFetch(domain:pub.dev)"
+      "WebFetch(domain:pub.dev)",
+      "Bash(git branch:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
