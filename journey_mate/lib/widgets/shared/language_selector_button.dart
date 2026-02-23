@@ -10,8 +10,7 @@ import '../../theme/app_radius.dart';
 
 /// LanguageSelectorButton - Settings button for language selection
 ///
-/// Displays current language with a chevron icon. Tapping opens a modal bottom
-/// sheet with 7 language options (en, da, de, fr, it, no, sv). Selecting a new
+/// Displays current language in a Material Design dropdown. Selecting a new
 /// language triggers localization update, translation reload, and filter reload.
 ///
 /// Props:
@@ -25,11 +24,11 @@ import '../../theme/app_radius.dart';
 /// - filterProvider: Trigger reload after language change
 ///
 /// Design:
-/// - Button: white background, border (#e8e8e8), 50px height
-/// - Displays current language name (e.g., "English", "Dansk")
-/// - Chevron icon on right
-/// - Bottom sheet with 7 language options (radio-style selection)
-/// - Language names in native form (Dansk, not Danish)
+/// - Material Design DropdownButton
+/// - Floating label: "Language" (from translation key)
+/// - 7 language options: da, en, de, sv, no, it, fr
+/// - Native language names (Dansk, English, Deutsch, etc.)
+/// - 50px height, white background, border, orange focus state
 class LanguageSelectorButton extends ConsumerWidget {
   const LanguageSelectorButton({
     super.key,
@@ -66,149 +65,9 @@ class LanguageSelectorButton extends ConsumerWidget {
 
   // Translation keys
   static const String _languageLabelKey = 'settings_language_label';
-  static const String _selectLanguageTitleKey = 'settings_select_language_title';
 
   // Layout constants
   static const double _buttonHeight = 50.0;
-  static const double _borderRadius = 12.0;
-  static const double _iconSize = 24.0;
-
-  /// Opens the language selector bottom sheet
-  void _showLanguageSelector(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
-        maxChildSize: 0.9,
-        minChildSize: 0.3,
-        builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: AppColors.bgCard,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppRadius.bottomSheet),
-            ),
-          ),
-          child: Column(
-            children: [
-              _buildSheetHeader(context, ref),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.sm,
-                  ),
-                  itemCount: _languageOrder.length,
-                  itemBuilder: (context, index) {
-                    final languageCode = _languageOrder[index];
-                    return _buildLanguageOption(
-                      context,
-                      ref,
-                      languageCode,
-                      currentLanguageCode == languageCode,
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Builds the sheet header with title and close button
-  Widget _buildSheetHeader(BuildContext context, WidgetRef ref) {
-    return Container(
-      height: 64.0,
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Stack(
-        children: [
-          // Swipe bar indicator
-          Positioned(
-            top: 8.0,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: 80.0,
-                height: 4.0,
-                decoration: BoxDecoration(
-                  color: AppColors.textPrimary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-          ),
-          // Title
-          Center(
-            child: Text(
-              td(ref, _selectLanguageTitleKey),
-              style: AppTypography.sectionHeading,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Builds a single language option with radio button
-  Widget _buildLanguageOption(
-    BuildContext context,
-    WidgetRef ref,
-    String languageCode,
-    bool isSelected,
-  ) {
-    final languageName = _languageNames[languageCode] ?? languageCode.toUpperCase();
-
-    return InkWell(
-      onTap: () async {
-        Navigator.of(context).pop();
-        await _handleLanguageChange(context, ref, languageCode);
-      },
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-        child: Row(
-          children: [
-            // Radio button
-            Container(
-              width: 24.0,
-              height: 24.0,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? AppColors.accent : AppColors.border,
-                  width: 2.0,
-                ),
-              ),
-              child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: 12.0,
-                        height: 12.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.accent,
-                        ),
-                      ),
-                    )
-                  : null,
-            ),
-            SizedBox(width: AppSpacing.md),
-            // Language name
-            Text(
-              languageName,
-              style: AppTypography.bodyRegular.copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   /// Handles language change: reload translations + filters
   Future<void> _handleLanguageChange(
@@ -252,46 +111,61 @@ class LanguageSelectorButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final languageName = _languageNames[currentLanguageCode] ?? currentLanguageCode.toUpperCase();
-
-    return GestureDetector(
-      onTap: () => _showLanguageSelector(context, ref),
-      child: Container(
-        width: width,
-        height: _buttonHeight,
-        decoration: BoxDecoration(
-          color: AppColors.bgCard,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(_borderRadius),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  td(ref, _languageLabelKey),
-                  style: AppTypography.helper.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xs),
-                Text(
+    return Container(
+      height: _buttonHeight,
+      width: width,
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(AppRadius.input),
+        border: Border.all(color: AppColors.border, width: 1.0),
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: 8.0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Floating label
+          Text(
+            td(ref, _languageLabelKey),
+            style: AppTypography.helper.copyWith(
+              color: AppColors.textTertiary,
+            ),
+          ),
+          SizedBox(height: AppSpacing.xs),
+          // Dropdown
+          DropdownButton<String>(
+            value: currentLanguageCode,
+            style: AppTypography.bodyRegular,
+            icon: Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: AppColors.textTertiary,
+              size: 24.0,
+            ),
+            dropdownColor: AppColors.bgCard,
+            borderRadius: BorderRadius.circular(AppRadius.input),
+            elevation: 4,
+            isExpanded: true,
+            underline: const SizedBox.shrink(),
+            items: _languageOrder.map((code) {
+              final languageName = _languageNames[code] ?? code.toUpperCase();
+              return DropdownMenuItem<String>(
+                value: code,
+                child: Text(
                   languageName,
                   style: AppTypography.bodyRegular,
                 ),
-              ],
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: AppColors.textTertiary,
-              size: _iconSize,
-            ),
-          ],
-        ),
+              );
+            }).toList(),
+            onChanged: (newLanguage) async {
+              if (newLanguage != null && newLanguage != currentLanguageCode) {
+                await _handleLanguageChange(context, ref, newLanguage);
+              }
+            },
+          ),
+        ],
       ),
     );
   }
