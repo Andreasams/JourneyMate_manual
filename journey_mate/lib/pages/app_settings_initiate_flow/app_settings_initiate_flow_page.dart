@@ -44,8 +44,8 @@ class _AppSettingsInitiateFlowPageState
   // ============================================================
 
   DateTime? _pageStartTime;
-  bool _isLoading = false;
   String _currentLanguageCode = 'en'; // Default to English
+  String? _latestLanguageCode; // Track latest language for API override handling
 
   // ============================================================
   // LIFECYCLE
@@ -116,27 +116,76 @@ class _AppSettingsInitiateFlowPageState
       }
 
       debugPrint('✅ Language updated to: $newLanguageCode');
+
+      // Start search API call immediately (fire-and-forget)
+      // Handles rapid language changes by tracking latest selection
+      _fetchSearchResultsForLanguage(newLanguageCode);
     } catch (e) {
       debugPrint('⚠️ Failed to persist language: $e');
     }
   }
 
-  // ============================================================
-  // LOCATION HANDLING
-  // ============================================================
-
-  Future<String?> _getUserLocation() async {
+  /// Fetch search results for selected language (handles rapid changes)
+  Future<void> _fetchSearchResultsForLanguage(String languageCode) async {
     try {
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 5),
-        ),
+      // Track this as the latest language being fetched
+      _latestLanguageCode = languageCode;
+
+      debugPrint('🔧 Setup: Fetching search results for $languageCode...');
+
+      // Get user location (optional, with timeout)
+      String? userLocation;
+      try {
+        final locationState = ref.read(locationProvider);
+        if (locationState.hasPermission) {
+          final position = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+              timeLimit: Duration(seconds: 5),
+            ),
+          );
+          userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
+        }
+      } catch (e) {
+        debugPrint('🔧 Setup: Location fetch failed: $e');
+        // Continue without location
+      }
+
+      // Call Search API
+      final response = await ApiService.instance.search(
+        cityId: AppConstants.kDefaultCityId.toString(),
+        userLocation: userLocation,
+        searchInput: '',
+        languageCode: languageCode,
+        filters: [],
+        filtersUsedForSearch: [],
+        sortBy: 'match',
+        sortOrder: 'desc',
+        page: 1,
+        pageSize: 20,
       );
-      return 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
+
+      // Only store results if this is still the latest language
+      // (handles rapid language changes - ignore stale responses)
+      if (_latestLanguageCode != languageCode) {
+        debugPrint('🔧 Setup: Ignoring stale results for $languageCode (latest: $_latestLanguageCode)');
+        return;
+      }
+
+      if (response.succeeded) {
+        final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
+        ref.read(searchStateProvider.notifier).updateSearchResults(
+          response.jsonBody,
+          resultCount,
+        );
+        debugPrint('🔧 Setup: Fetch succeeded for $languageCode ($resultCount results)');
+      } else {
+        debugPrint('🔧 Setup: Fetch failed for $languageCode: ${response.error}');
+        // Fail silently - user will see shimmer on Search page if needed
+      }
     } catch (e) {
-      debugPrint('⚠️ Could not get location: $e');
-      return null; // Fail gracefully — continue without location
+      debugPrint('🔧 Setup: Fetch exception for $languageCode: $e');
+      // Fail silently - don't block setup flow
     }
   }
 
@@ -145,92 +194,27 @@ class _AppSettingsInitiateFlowPageState
   // ============================================================
 
   Future<void> _handleCompleteSetup() async {
-    if (_isLoading) return;
+    if (!mounted) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    // Check if cached results are fresh
+    final searchNotifier = ref.read(searchStateProvider.notifier);
+    final hasFreshCache = searchNotifier.isCacheFresh();
 
-    try {
-      // Get user location (optional, non-blocking)
-      final userLocation = await _getUserLocation();
+    debugPrint('🔧 Setup: Complete tapped (cache fresh: $hasFreshCache)');
 
-      // Call Search API with selected language
-      final response = await ApiService.instance.search(
-        cityId: AppConstants.kDefaultCityId.toString(),
-        userLocation: userLocation,
-        searchInput: '', // Empty = show all
-        languageCode: _currentLanguageCode,
-        filters: [],
-        filtersUsedForSearch: [],
-        sortBy: 'match',
-        sortOrder: 'desc',
-        onlyOpen: false,
-        category: 'all',
-        page: 1,
-        pageSize: 50,
-      );
+    // Track analytics before navigating
+    await _trackPageView();
 
-      if (response.succeeded) {
-        // Store results in searchStateProvider
-        ref.read(searchStateProvider.notifier).updateSearchResults(
-              response.jsonBody,
-              response.jsonBody['resultCount'] ?? 0,
-            );
+    // Navigate immediately (don't block on API call)
+    if (!mounted) return;
+    context.go('/search');
 
-        // Navigate to Search page (use go() not push() — replace onboarding flow)
-        if (mounted) {
-          context.go('/search');
-        }
-      } else {
-        // Show error dialog
-        if (mounted) {
-          _showErrorDialog();
-        }
-      }
-    } catch (e) {
-      debugPrint('⚠️ Search API failed: $e');
-      if (mounted) {
-        _showErrorDialog();
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    // If cache is stale or missing, fetch in background
+    // (This is rare since language selection already triggers fetch)
+    if (!hasFreshCache) {
+      debugPrint('🔧 Setup: Cache stale, fetching in background...');
+      _fetchSearchResultsForLanguage(_currentLanguageCode);
     }
-  }
-
-  // ============================================================
-  // ERROR HANDLING
-  // ============================================================
-
-  void _showErrorDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Error',
-          style: AppTypography.sectionHeading,
-        ),
-        content: Text(
-          'Could not load restaurants. Please try again.',
-          style: AppTypography.bodyRegular,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'OK',
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.accent,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   // ============================================================
@@ -346,30 +330,19 @@ class _AppSettingsInitiateFlowPageState
                 width: double.infinity,
                 height: AppConstants.buttonHeight,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleCompleteSetup,
+                  onPressed: _handleCompleteSetup,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
-                    disabledBackgroundColor: AppColors.textDisabled,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.button),
                     ),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          td(ref, '9nldb2d7'), // "Complete setup"
-                          style: AppTypography.button.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
+                  child: Text(
+                    td(ref, '9nldb2d7'), // "Complete setup"
+                    style: AppTypography.button.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ],
