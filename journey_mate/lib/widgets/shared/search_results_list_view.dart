@@ -6,7 +6,12 @@ import '../../providers/settings_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../models/lat_lng.dart';
 import '../../services/custom_functions/price_formatter.dart';
+import '../../services/custom_functions/business_status.dart';
+import '../../services/custom_functions/hours_formatter.dart';
+import '../../services/custom_functions/distance_calculator.dart';
+import '../../services/custom_functions/address_formatter.dart';
 import 'restaurant_list_shimmer_widget.dart';
 
 /// A performant ListView displaying search results for businesses.
@@ -256,9 +261,17 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   Future<void> _loadStatus() async {
     if (!mounted || _openingHours == null) return;
 
-    // TODO: Implement full status calculation logic
-    // For now, use stub implementation
-    final statusResult = _calculateStatusStub(_openingHours);
+    // Get language code and translations cache
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final translationsCache = ref.read(translationsCacheProvider);
+
+    // Use determineStatusAndColor function from business_status.dart
+    final statusResult = determineStatusAndColor(
+      _openingHours,
+      DateTime.now(),
+      languageCode,
+      translationsCache,
+    );
 
     if (mounted) {
       setState(() {
@@ -267,15 +280,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       });
       widget.onStatusLoaded?.call(_statusText, _statusColor);
     }
-  }
-
-  /// Stub implementation - returns hardcoded "Open" status
-  /// TODO: Port full logic from determineStatusAndColor action
-  Map<String, dynamic> _calculateStatusStub(dynamic openingHours) {
-    return {
-      'text': 'Open',
-      'color': AppColors.success,
-    };
   }
 
   // ---------------------------------------------------------------------------
@@ -342,10 +346,9 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   Widget _buildStatusRow() {
-    // Stub implementation - TODO: Add timing text from openClosesAt function
     final statusText = _statusText ?? 'Open';
     final statusColor = _statusColor ?? AppColors.success;
-    final timingText = _getTimingTextStub();
+    final timingText = _getTimingText();
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -383,10 +386,19 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     );
   }
 
-  /// Stub implementation - returns hardcoded timing
-  /// TODO: Port full logic from openClosesAt function
-  String? _getTimingTextStub() {
-    return 'til 22:00';
+  /// Returns timing text like "til 22:00" or "opens at 10:00"
+  String? _getTimingText() {
+    if (_openingHours == null) return null;
+
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final translationsCache = ref.read(translationsCacheProvider);
+
+    return openClosesAt(
+      _openingHours,
+      DateTime.now(),
+      languageCode,
+      translationsCache,
+    );
   }
 
   Widget _buildDetailsRow() {
@@ -470,23 +482,24 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       return null;
     }
 
-    // Stub implementation - TODO: Port returnDistance function
-    final distance = _calculateDistanceStub(
-      widget.userLocation!,
-      _latitude!,
-      _longitude!,
+    final languageCode = Localizations.localeOf(context).languageCode;
+
+    // Create LatLng from user position
+    final userLatLng = LatLng(
+      widget.userLocation!.latitude,
+      widget.userLocation!.longitude,
     );
 
-    final languageCode = Localizations.localeOf(context).languageCode;
+    // Use returnDistance function from distance_calculator.dart
+    final distance = returnDistance(
+      userLatLng,
+      _latitude!,
+      _longitude!,
+      languageCode,
+    );
+
     final unit = languageCode == 'en' ? ' mi.' : ' km.';
     return '$distance$unit';
-  }
-
-  /// Stub implementation - returns hardcoded distance
-  /// TODO: Port full Haversine formula from returnDistance function
-  String _calculateDistanceStub(Position userPos, double lat, double lng) {
-    // Placeholder calculation
-    return '0.5';
   }
 
   Widget _buildAddressRow() {
@@ -515,7 +528,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     if (street.isEmpty) return neighbourhood;
     if (neighbourhood.isEmpty) return street;
 
-    // Stub implementation - TODO: Port streetAndNeighbourhoodLength function
-    return '$street, $neighbourhood';
+    // Use streetAndNeighbourhoodLength function from address_formatter.dart
+    return streetAndNeighbourhoodLength(neighbourhood, street);
   }
 }

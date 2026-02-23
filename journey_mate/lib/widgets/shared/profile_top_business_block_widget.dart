@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../theme/app_colors.dart';
 import '../../models/lat_lng.dart';
+import '../../providers/app_providers.dart';
 import '../../services/custom_functions/distance_calculator.dart';
 import '../../services/custom_functions/address_formatter.dart';
 import '../../services/custom_functions/hours_formatter.dart';
@@ -27,7 +29,7 @@ import '../../services/custom_actions/determine_status_and_color.dart';
 /// - Hours messaging via openClosesAt
 ///
 /// All data passed via props (no Riverpod dependencies).
-class ProfileTopBusinessBlockWidget extends StatefulWidget {
+class ProfileTopBusinessBlockWidget extends ConsumerStatefulWidget {
   const ProfileTopBusinessBlockWidget({
     super.key,
     required this.openingHours,
@@ -81,12 +83,12 @@ class ProfileTopBusinessBlockWidget extends StatefulWidget {
   final String? businessType;
 
   @override
-  State<ProfileTopBusinessBlockWidget> createState() =>
+  ConsumerState<ProfileTopBusinessBlockWidget> createState() =>
       _ProfileTopBusinessBlockWidgetState();
 }
 
 class _ProfileTopBusinessBlockWidgetState
-    extends State<ProfileTopBusinessBlockWidget> {
+    extends ConsumerState<ProfileTopBusinessBlockWidget> {
   // ============================================================================
   // STATE VARIABLES
   // ============================================================================
@@ -134,7 +136,7 @@ class _ProfileTopBusinessBlockWidgetState
         // 4. languageCode
         Localizations.localeOf(context).languageCode,
         // 5. translationsCache
-        {}, // TODO: Wire up translationsCacheProvider
+        ref.read(translationsCacheProvider),
       );
 
       // Update status text
@@ -292,7 +294,7 @@ class _ProfileTopBusinessBlockWidgetState
       widget.openingHours,
       DateTime.now(),
       Localizations.localeOf(context).languageCode,
-      {}, // TODO: Wire up translationsCacheProvider
+      ref.read(translationsCacheProvider),
     );
 
     return Row(
