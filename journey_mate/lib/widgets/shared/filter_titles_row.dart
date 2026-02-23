@@ -17,10 +17,10 @@ import '../../theme/app_typography.dart';
 /// - height: Row height (typically 50px)
 ///
 /// Design:
-/// - 3 equal-width columns (36% / 33% / 31% per design system)
+/// - 3 columns with flex distribution (36% / 33% / 31% per design system)
 /// - Active tab: orange text + 2px bottom border
 /// - Inactive tabs: gray text, no border
-/// - Uses ts(context, key) for translation
+/// - Uses td(ref, key) for translation
 class FilterTitlesRow extends ConsumerWidget {
   const FilterTitlesRow({
     super.key,
@@ -71,34 +71,36 @@ class FilterTitlesRow extends ConsumerWidget {
   }
 
   /// Builds a single tab button with appropriate styling and borders
-  Widget _buildTabButton(WidgetRef ref, int tabIndex, double width) {
+  Widget _buildTabButton(WidgetRef ref, int tabIndex, int flex) {
     final isSelected = _isSelected(tabIndex);
     final title = td(ref, _getTranslationKey(tabIndex));
 
-    return GestureDetector(
-      onTap: () => onTabChanged(tabIndex),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isSelected ? AppColors.accent : Colors.transparent,
-              width: _borderThickness,
+    return Expanded(
+      flex: flex,
+      child: GestureDetector(
+        onTap: () => onTabChanged(tabIndex),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          height: height,
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isSelected ? AppColors.accent : Colors.transparent,
+                width: _borderThickness,
+              ),
             ),
           ),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          title,
-          style: AppTypography.label.copyWith(
-            color: _getTitleColor(tabIndex),
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          alignment: Alignment.center,
+          child: Text(
+            title,
+            style: AppTypography.label.copyWith(
+              color: _getTitleColor(tabIndex),
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
         ),
       ),
     );
@@ -106,21 +108,14 @@ class FilterTitlesRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final totalWidth = width ?? MediaQuery.of(context).size.width;
-
-    // Exact column widths per design system: 36% / 33% / 31%
-    final locationWidth = totalWidth * 0.36;
-    final typeWidth = totalWidth * 0.33;
-    final needsWidth = totalWidth * 0.31;
-
     return SizedBox(
-      width: totalWidth,
+      width: width ?? MediaQuery.of(context).size.width,
       height: height,
       child: Row(
         children: [
-          _buildTabButton(ref, _locationTabIndex, locationWidth),
-          _buildTabButton(ref, _typeTabIndex, typeWidth),
-          _buildTabButton(ref, _needsTabIndex, needsWidth),
+          _buildTabButton(ref, _locationTabIndex, 36), // 36% flex
+          _buildTabButton(ref, _typeTabIndex, 33),     // 33% flex
+          _buildTabButton(ref, _needsTabIndex, 31),    // 31% flex
         ],
       ),
     );
