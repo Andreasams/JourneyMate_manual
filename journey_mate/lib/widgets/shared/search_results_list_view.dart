@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,6 +14,8 @@ import '../../services/custom_functions/hours_formatter.dart';
 import '../../services/custom_functions/distance_calculator.dart';
 import '../../services/custom_functions/address_formatter.dart';
 import '../../services/translation_service.dart';
+import '../../services/analytics_service.dart';
+import '../../services/api_service.dart';
 import 'restaurant_list_shimmer_widget.dart';
 
 /// A performant ListView displaying search results for businesses.
@@ -52,6 +55,30 @@ class _SearchResultsListViewState
 
   /// Cache for status colors per business (keyed by business_id)
   final Map<int, Color?> _statusColorCache = {};
+
+  // ---------------------------------------------------------------------------
+  // Analytics
+  // ---------------------------------------------------------------------------
+
+  /// Fires a fire-and-forget `business_clicked` analytics event.
+  void _trackBusinessClick(int businessId, int clickPosition) {
+    final searchState = ref.read(searchStateProvider);
+    unawaited(ApiService.instance.postAnalytics(
+      eventType: 'business_clicked',
+      deviceId: AnalyticsService.instance.deviceId ?? 'unknown',
+      sessionId: AnalyticsService.instance.currentSessionId ?? 'unknown',
+      userId: AnalyticsService.instance.userId ?? 'unknown',
+      eventData: {
+        'businessId': businessId,
+        'clickPosition': clickPosition,
+        'filterSessionId': searchState.currentFilterSessionId,
+        'timeOnListSeconds':
+            AnalyticsService.instance.getSessionDurationSeconds(),
+        'totalResults': searchState.searchResultsCount,
+      },
+      timestamp: DateTime.now().toIso8601String(),
+    ));
+  }
 
   // ---------------------------------------------------------------------------
   // Computed Properties
@@ -97,7 +124,10 @@ class _SearchResultsListViewState
         final businessId = _getBusinessId(businessData);
 
         return GestureDetector(
-          onTap: () => widget.onBusinessTap?.call(businessId),
+          onTap: () {
+            _trackBusinessClick(businessId, index);
+            widget.onBusinessTap?.call(businessId);
+          },
           child: _BusinessListItem(
             key: ValueKey('business_$businessId'),
             businessData: businessData,
