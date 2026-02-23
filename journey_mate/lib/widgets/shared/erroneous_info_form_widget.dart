@@ -68,14 +68,14 @@ class _ErroneousInfoFormWidgetState
 
     if (message.isEmpty) {
       setState(() {
-        _messageError = ts(context, 'erroneous_info_error_message_required');
+        _messageError = td(ref, 'erroneous_info_error_message_required');
       });
       return false;
     }
 
     if (message.length < 10) {
       setState(() {
-        _messageError = ts(context, 'erroneous_info_error_message_too_short');
+        _messageError = td(ref, 'erroneous_info_error_message_too_short');
       });
       return false;
     }
@@ -125,14 +125,14 @@ class _ErroneousInfoFormWidgetState
       } else {
         setState(() {
           _submissionError =
-              ts(context, 'erroneous_info_error_submission_failed');
+              td(ref, 'erroneous_info_error_submission_failed');
           _isSubmitting = false;
         });
       }
     } catch (e) {
       if (!context.mounted) return;
       setState(() {
-        _submissionError = ts(context, 'erroneous_info_error_network');
+        _submissionError = td(ref, 'erroneous_info_error_network');
         _isSubmitting = false;
       });
     }
@@ -250,7 +250,7 @@ class _ErroneousInfoFormWidgetState
       children: [
         // Main title
         Text(
-          ts(context, 'erroneous_info_title_main'),
+          td(ref, 'erroneous_info_title_main'),
           style: AppTypography.pageTitle.copyWith(
             fontSize: 22,
             fontWeight: FontWeight.w600,
@@ -260,7 +260,7 @@ class _ErroneousInfoFormWidgetState
 
         // "Reporting information for" label
         Text(
-          ts(context, 'erroneous_info_subtitle_reporting_for'),
+          td(ref, 'erroneous_info_subtitle_reporting_for'),
           style: AppTypography.bodyRegular.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -284,7 +284,7 @@ class _ErroneousInfoFormWidgetState
 
         // Help text
         Text(
-          ts(context, 'erroneous_info_subtitle_main'),
+          td(ref, 'erroneous_info_subtitle_main'),
           style: AppTypography.bodyRegular.copyWith(
             fontWeight: FontWeight.w300,
           ),
@@ -306,7 +306,7 @@ class _ErroneousInfoFormWidgetState
             style: AppTypography.categoryHeading,
             children: [
               TextSpan(
-                text: ts(context, 'erroneous_info_title_message'),
+                text: td(ref, 'erroneous_info_title_message'),
               ),
               const TextSpan(
                 text: ' *',
@@ -318,7 +318,7 @@ class _ErroneousInfoFormWidgetState
 
         // Subtitle
         Text(
-          ts(context, 'erroneous_info_subtitle_message'),
+          td(ref, 'erroneous_info_subtitle_message'),
           style: AppTypography.bodyRegular.copyWith(
             fontWeight: FontWeight.w300,
           ),
@@ -337,7 +337,7 @@ class _ErroneousInfoFormWidgetState
             textAlignVertical: TextAlignVertical.top,
             style: AppTypography.bodyRegular,
             decoration: InputDecoration(
-              hintText: ts(context, 'erroneous_info_hint_message'),
+              hintText: td(ref, 'erroneous_info_hint_message'),
               hintStyle: AppTypography.bodyRegular.copyWith(
                 color: AppColors.textSecondary.withValues(alpha: 0.7),
               ),
@@ -422,7 +422,7 @@ class _ErroneousInfoFormWidgetState
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            ts(context, 'erroneous_info_success_message'),
+            td(ref, 'erroneous_info_success_message'),
             textAlign: TextAlign.center,
             style: AppTypography.categoryHeading.copyWith(
               color: AppColors.success,
@@ -430,7 +430,7 @@ class _ErroneousInfoFormWidgetState
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            ts(context, 'erroneous_info_success_navigate_away'),
+            td(ref, 'erroneous_info_success_navigate_away'),
             textAlign: TextAlign.center,
             style: AppTypography.bodyRegular.copyWith(
               fontWeight: FontWeight.w300,
@@ -498,7 +498,7 @@ class _ErroneousInfoFormWidgetState
                 ),
               )
             : Text(
-                ts(context, 'erroneous_info_button_submit'),
+                td(ref, 'erroneous_info_button_submit'),
                 style: AppTypography.button.copyWith(
                   color: Colors.white,
                 ),

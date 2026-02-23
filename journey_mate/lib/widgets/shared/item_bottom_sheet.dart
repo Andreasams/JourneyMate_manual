@@ -177,14 +177,14 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
     }
 
     // Fallback to translation cache (using app language)
-    return ts(context, key);
+    return td(ref, key);
   }
 
   /// Gets human-readable language name from language code
   /// Always uses translationsCache (app language) for consistency
   String _getLanguageName(String langCode) {
     final translationKey = 'lang_name_$langCode';
-    return ts(context, translationKey);
+    return td(ref, translationKey);
   }
 
   /// Gets display name for currency (e.g., "Danish Krone (kr.)")
@@ -486,10 +486,10 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
     final String displayText;
 
     if (option.type == 'language') {
-      final template = ts(context, 'menu_view_dish_in_param');
+      final template = td(ref, 'menu_view_dish_in_param');
       displayText = template.replaceAll('{language}', option.displayName);
     } else {
-      final template = ts(context, 'menu_view_price_in_param');
+      final template = td(ref, 'menu_view_price_in_param');
       displayText = template.replaceAll('{currency}', option.displayName);
     }
 
@@ -1003,7 +1003,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
     final hasVariations = widget.hasVariations ?? false;
 
     if (hasVariations) {
-      final fromText = ts(context, 'price_from');
+      final fromText = td(ref, 'price_from');
       return fromText.isNotEmpty
           ? '$fromText $formattedPrice'
           : 'From $formattedPrice';
@@ -1239,7 +1239,7 @@ class _MenuOption {
 /// ============================================================================
 
 /// Displays a single modifier group with its options and selection constraints
-class _ModifierGroupDisplay extends StatelessWidget {
+class _ModifierGroupDisplay extends ConsumerWidget {
   const _ModifierGroupDisplay({
     required this.modifierGroup,
     required this.chosenCurrency,
@@ -1272,7 +1272,7 @@ class _ModifierGroupDisplay extends StatelessWidget {
   static const double _modifierItemSpacing = 2.0;
 
   /// Gets UI text: API translations first, then translationsCache
-  String _getUIText(BuildContext context, String key) {
+  String _getUIText(WidgetRef ref, String key) {
     // Try API translations first (for switched language)
     if (uiTranslations != null) {
       final value = uiTranslations![key];
@@ -1282,7 +1282,7 @@ class _ModifierGroupDisplay extends StatelessWidget {
     }
 
     // Use static translations (for initial app language)
-    return ts(context, key);
+    return td(ref, key);
   }
 
   String _getGroupType() {
@@ -1309,32 +1309,32 @@ class _ModifierGroupDisplay extends StatelessWidget {
     return _getGroupType() == 'Variation';
   }
 
-  String _buildConstraintText(BuildContext context, _SelectionConstraints constraints) {
+  String _buildConstraintText(WidgetRef ref, _SelectionConstraints constraints) {
     final min = constraints.minSelections;
     final max = constraints.maxSelections;
 
     if (constraints.isRequired && min == max && min > 0) {
-      return '${_getUIText(context, 'modifier_required')} • ${_getUIText(context, 'modifier_choose_exactly')} $min';
+      return '${_getUIText(ref, 'modifier_required')} • ${_getUIText(ref, 'modifier_choose_exactly')} $min';
     }
 
     if (constraints.isRequired && min > 0 && max > min) {
-      return '${_getUIText(context, 'modifier_required')} • ${_getUIText(context, 'modifier_choose_between')} $min-$max';
+      return '${_getUIText(ref, 'modifier_required')} • ${_getUIText(ref, 'modifier_choose_between')} $min-$max';
     }
 
     if (constraints.isRequired && min > 0) {
-      return '${_getUIText(context, 'modifier_required')} • ${_getUIText(context, 'modifier_choose_at_least')} $min';
+      return '${_getUIText(ref, 'modifier_required')} • ${_getUIText(ref, 'modifier_choose_at_least')} $min';
     }
 
     if (!constraints.isRequired && max > 0) {
-      return '${_getUIText(context, 'modifier_optional')} • ${_getUIText(context, 'modifier_choose_up_to')} $max';
+      return '${_getUIText(ref, 'modifier_optional')} • ${_getUIText(ref, 'modifier_choose_up_to')} $max';
     }
 
     if (!constraints.isRequired && min > 0 && max > min) {
-      return '${_getUIText(context, 'modifier_optional')} • ${_getUIText(context, 'modifier_choose_between')} $min-$max';
+      return '${_getUIText(ref, 'modifier_optional')} • ${_getUIText(ref, 'modifier_choose_between')} $min-$max';
     }
 
     if (!constraints.isRequired) {
-      return _getUIText(context, 'modifier_optional');
+      return _getUIText(ref, 'modifier_optional');
     }
 
     return '';
@@ -1345,22 +1345,22 @@ class _ModifierGroupDisplay extends StatelessWidget {
     return '$name ${description.isNotEmpty ? '($description)' : ''}';
   }
 
-  String _getGroupTypeLabel(BuildContext context) {
+  String _getGroupTypeLabel(WidgetRef ref) {
     final type = _getGroupType().toLowerCase();
     final key = 'modifier_type_${type.replaceAll('-', '')}';
-    return _getUIText(context, key);
+    return _getUIText(ref, key);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final modifiers = _getModifiers();
     final constraints = _getConstraints();
-    final constraintText = _buildConstraintText(context, constraints);
+    final constraintText = _buildConstraintText(ref, constraints);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildGroupHeader(context),
+        _buildGroupHeader(context, ref),
         if (constraintText.isNotEmpty)
           _buildConstraintTextWidget(constraintText),
         ..._buildModifiersList(modifiers),
@@ -1368,8 +1368,8 @@ class _ModifierGroupDisplay extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupHeader(BuildContext context) {
-    final typeLabel = _getGroupTypeLabel(context);
+  Widget _buildGroupHeader(BuildContext context, WidgetRef ref) {
+    final typeLabel = _getGroupTypeLabel(ref);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: _headerBottomSpacing),

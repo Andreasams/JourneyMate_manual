@@ -67,24 +67,24 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
 
       // Validate name
       if (_nameController.text.trim().isEmpty) {
-        _nameError = ts(context, 'contact_form_error_name_required');
+        _nameError = td(ref, 'contact_form_error_name_required');
       }
 
       // Validate contact (email or phone)
       if (_contactController.text.trim().isEmpty) {
-        _contactError = ts(context, 'contact_form_error_contact_required');
+        _contactError = td(ref, 'contact_form_error_contact_required');
       }
 
       // Validate subject
       if (_subjectController.text.trim().isEmpty) {
-        _subjectError = ts(context, 'contact_form_error_subject_required');
+        _subjectError = td(ref, 'contact_form_error_subject_required');
       }
 
       // Validate message (required and minimum length)
       if (_messageController.text.trim().isEmpty) {
-        _messageError = ts(context, 'contact_form_error_message_required');
+        _messageError = td(ref, 'contact_form_error_message_required');
       } else if (_messageController.text.trim().length < 10) {
-        _messageError = ts(context, 'contact_form_error_message_too_short');
+        _messageError = td(ref, 'contact_form_error_message_too_short');
       }
     });
 
@@ -125,12 +125,12 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
         });
       } else {
         setState(() {
-          _submissionError = ts(context, 'contact_form_error_submission');
+          _submissionError = td(ref, 'contact_form_error_submission');
         });
       }
     } catch (e) {
       setState(() {
-        _submissionError = ts(context, 'contact_form_error_submission');
+        _submissionError = td(ref, 'contact_form_error_submission');
       });
     } finally {
       setState(() => _isSubmitting = false);
@@ -151,7 +151,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
         children: [
           // Main title
           Text(
-            ts(context, 'contact_form_title_main'),
+            td(ref, 'contact_form_title_main'),
             style: GoogleFonts.roboto(
               fontSize: 20,
               fontWeight: FontWeight.w500,
@@ -162,7 +162,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
 
           // Main subtitle
           Text(
-            ts(context, 'contact_form_subtitle_main'),
+            td(ref, 'contact_form_subtitle_main'),
             style: GoogleFonts.roboto(
               fontSize: 14,
               fontWeight: FontWeight.w300,
@@ -181,11 +181,11 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           if (!_isSubmitted) ...[
             // Name field
             _buildFieldSection(
-              title: ts(context, 'contact_form_title_name'),
+              title: td(ref, 'contact_form_title_name'),
               subtitle: null,
               controller: _nameController,
               error: _nameError,
-              hint: ts(context, 'contact_form_hint_name'),
+              hint: td(ref, 'contact_form_hint_name'),
               maxLines: 1,
               onChanged: () {
                 if (_nameError != null) {
@@ -197,11 +197,11 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
 
             // Contact field (email or phone)
             _buildFieldSection(
-              title: ts(context, 'contact_form_title_contact'),
-              subtitle: ts(context, 'contact_form_subtitle_contact'),
+              title: td(ref, 'contact_form_title_contact'),
+              subtitle: td(ref, 'contact_form_subtitle_contact'),
               controller: _contactController,
               error: _contactError,
-              hint: ts(context, 'contact_form_hint_contact'),
+              hint: td(ref, 'contact_form_hint_contact'),
               maxLines: 1,
               onChanged: () {
                 if (_contactError != null) {
@@ -213,11 +213,11 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
 
             // Subject field
             _buildFieldSection(
-              title: ts(context, 'contact_form_title_subject'),
-              subtitle: ts(context, 'contact_form_subtitle_subject'),
+              title: td(ref, 'contact_form_title_subject'),
+              subtitle: td(ref, 'contact_form_subtitle_subject'),
               controller: _subjectController,
               error: _subjectError,
-              hint: ts(context, 'contact_form_hint_subject'),
+              hint: td(ref, 'contact_form_hint_subject'),
               maxLines: 1,
               onChanged: () {
                 if (_subjectError != null) {
@@ -229,11 +229,11 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
 
             // Message field (multiline)
             _buildFieldSection(
-              title: ts(context, 'contact_form_title_message'),
-              subtitle: ts(context, 'contact_form_subtitle_message'),
+              title: td(ref, 'contact_form_title_message'),
+              subtitle: td(ref, 'contact_form_subtitle_message'),
               controller: _messageController,
               error: _messageError,
-              hint: ts(context, 'contact_form_hint_message'),
+              hint: td(ref, 'contact_form_hint_message'),
               maxLines: 6,
               onChanged: () {
                 if (_messageError != null) {
@@ -366,7 +366,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
                 ),
               )
             : Text(
-                ts(context, 'contact_form_button_submit'),
+                td(ref, 'contact_form_button_submit'),
                 style: AppTypography.button.copyWith(color: Colors.white),
               ),
       ),
@@ -391,7 +391,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           ),
           SizedBox(height: AppSpacing.md),
           Text(
-            ts(context, 'contact_form_success_message'),
+            td(ref, 'contact_form_success_message'),
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
               fontSize: 16,
@@ -401,7 +401,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           ),
           SizedBox(height: AppSpacing.sm),
           Text(
-            ts(context, 'contact_form_success_navigate_away'),
+            td(ref, 'contact_form_success_navigate_away'),
             textAlign: TextAlign.center,
             style: AppTypography.helper.copyWith(color: AppColors.textSecondary),
           ),

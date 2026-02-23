@@ -84,23 +84,23 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
 
       // Validate topic selection
       if (_selectedTopic == null) {
-        _topicError = ts(context, 'feedback_form_error_topic_required');
+        _topicError = td(ref, 'feedback_form_error_topic_required');
       }
 
       // Validate message (required and minimum length)
       if (_messageController.text.trim().isEmpty) {
-        _messageError = ts(context, 'feedback_form_error_message_required');
+        _messageError = td(ref, 'feedback_form_error_message_required');
       } else if (_messageController.text.trim().length < 10) {
-        _messageError = ts(context, 'feedback_form_error_message_too_short');
+        _messageError = td(ref, 'feedback_form_error_message_too_short');
       }
 
       // Conditional validation: if requireContact is true, name and contact are required
       if (_requireContact) {
         if (_nameController.text.trim().isEmpty) {
-          _nameError = ts(context, 'feedback_form_error_name_required');
+          _nameError = td(ref, 'feedback_form_error_name_required');
         }
         if (_contactController.text.trim().isEmpty) {
-          _contactError = ts(context, 'feedback_form_error_contact_required');
+          _contactError = td(ref, 'feedback_form_error_contact_required');
         }
       }
     });
@@ -123,7 +123,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
     final languageCode = Localizations.localeOf(context).languageCode;
 
     // Get localized topic label (sent as-is to API)
-    final topicLabel = ts(context, _selectedTopic!);
+    final topicLabel = td(ref, _selectedTopic!);
 
     try {
       final body = <String, dynamic>{
@@ -152,12 +152,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         });
       } else {
         setState(() {
-          _submissionError = ts(context, 'feedback_form_error_submission');
+          _submissionError = td(ref, 'feedback_form_error_submission');
         });
       }
     } catch (e) {
       setState(() {
-        _submissionError = ts(context, 'feedback_form_error_submission');
+        _submissionError = td(ref, 'feedback_form_error_submission');
       });
     } finally {
       setState(() => _isSubmitting = false);
@@ -178,7 +178,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         children: [
           // Main title
           Text(
-            ts(context, 'feedback_form_title_main'),
+            td(ref, 'feedback_form_title_main'),
             style: GoogleFonts.roboto(
               fontSize: 20,
               fontWeight: FontWeight.w500,
@@ -189,7 +189,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
 
           // Main subtitle
           Text(
-            ts(context, 'feedback_form_subtitle_main'),
+            td(ref, 'feedback_form_subtitle_main'),
             style: GoogleFonts.roboto(
               fontSize: 14,
               fontWeight: FontWeight.w300,
@@ -240,14 +240,14 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
       children: [
         // Section title
         Text(
-          ts(context, 'feedback_form_title_topic'),
+          td(ref, 'feedback_form_title_topic'),
           style: AppTypography.label.copyWith(color: AppColors.textPrimary),
         ),
         SizedBox(height: AppSpacing.xs),
 
         // Section subtitle
         Text(
-          ts(context, 'feedback_form_subtitle_topic'),
+          td(ref, 'feedback_form_subtitle_topic'),
           style: GoogleFonts.roboto(
             fontSize: 14,
             fontWeight: FontWeight.w300,
@@ -283,7 +283,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                   ),
                 ),
                 child: Text(
-                  ts(context, topicKey),
+                  td(ref, topicKey),
                   style: AppTypography.chip.copyWith(
                     color: isSelected ? Colors.white : AppColors.textSecondary,
                   ),
@@ -313,7 +313,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Field title with required asterisk
         RichText(
           text: TextSpan(
-            text: ts(context, 'feedback_form_title_message'),
+            text: td(ref, 'feedback_form_title_message'),
             style: AppTypography.label.copyWith(color: AppColors.textPrimary),
             children: [
               TextSpan(
@@ -327,7 +327,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
 
         // Subtitle
         Text(
-          ts(context, 'feedback_form_subtitle_message'),
+          td(ref, 'feedback_form_subtitle_message'),
           style: GoogleFonts.roboto(
             fontSize: 14,
             fontWeight: FontWeight.w300,
@@ -347,7 +347,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           maxLines: 6,
           style: AppTypography.input,
           decoration: InputDecoration(
-            hintText: ts(context, 'feedback_form_hint_message'),
+            hintText: td(ref, 'feedback_form_hint_message'),
             hintStyle: AppTypography.placeholder,
             filled: true,
             fillColor: AppColors.bgInput,
@@ -394,14 +394,14 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
       children: [
         // Section title
         Text(
-          ts(context, 'feedback_form_title_contact_consent'),
+          td(ref, 'feedback_form_title_contact_consent'),
           style: AppTypography.label.copyWith(color: AppColors.textPrimary),
         ),
         SizedBox(height: AppSpacing.xs),
 
         // Section subtitle
         Text(
-          ts(context, 'feedback_form_subtitle_contact_consent'),
+          td(ref, 'feedback_form_subtitle_contact_consent'),
           style: GoogleFonts.roboto(
             fontSize: 14,
             fontWeight: FontWeight.w300,
@@ -445,7 +445,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                 child: Padding(
                   padding: EdgeInsets.only(top: 2), // Align with checkbox
                   child: Text(
-                    ts(context, 'feedback_form_checkbox_label'),
+                    td(ref, 'feedback_form_checkbox_label'),
                     style: AppTypography.bodyRegular.copyWith(color: AppColors.textSecondary),
                   ),
                 ),
@@ -469,7 +469,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             // Field title with required asterisk
             RichText(
               text: TextSpan(
-                text: ts(context, 'feedback_form_title_name'),
+                text: td(ref, 'feedback_form_title_name'),
                 style: AppTypography.label.copyWith(color: AppColors.textPrimary),
                 children: [
                   TextSpan(
@@ -492,7 +492,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
               maxLines: 1,
               style: AppTypography.input,
               decoration: InputDecoration(
-                hintText: ts(context, 'feedback_form_hint_name'),
+                hintText: td(ref, 'feedback_form_hint_name'),
                 hintStyle: AppTypography.placeholder,
                 filled: true,
                 fillColor: AppColors.bgInput,
@@ -540,7 +540,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             // Field title with required asterisk
             RichText(
               text: TextSpan(
-                text: ts(context, 'feedback_form_title_contact'),
+                text: td(ref, 'feedback_form_title_contact'),
                 style: AppTypography.label.copyWith(color: AppColors.textPrimary),
                 children: [
                   TextSpan(
@@ -554,7 +554,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
 
             // Subtitle
             Text(
-              ts(context, 'feedback_form_subtitle_contact'),
+              td(ref, 'feedback_form_subtitle_contact'),
               style: GoogleFonts.roboto(
                 fontSize: 14,
                 fontWeight: FontWeight.w300,
@@ -574,7 +574,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
               maxLines: 1,
               style: AppTypography.input,
               decoration: InputDecoration(
-                hintText: ts(context, 'feedback_form_hint_contact'),
+                hintText: td(ref, 'feedback_form_hint_contact'),
                 hintStyle: AppTypography.placeholder,
                 filled: true,
                 fillColor: AppColors.bgInput,
@@ -642,7 +642,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                 ),
               )
             : Text(
-                ts(context, 'feedback_form_button_submit'),
+                td(ref, 'feedback_form_button_submit'),
                 style: AppTypography.button.copyWith(color: Colors.white),
               ),
       ),
@@ -667,7 +667,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           ),
           SizedBox(height: AppSpacing.md),
           Text(
-            ts(context, 'feedback_form_success_message'),
+            td(ref, 'feedback_form_success_message'),
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
               fontSize: 16,
@@ -677,7 +677,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           ),
           SizedBox(height: AppSpacing.sm),
           Text(
-            ts(context, 'feedback_form_success_navigate_away'),
+            td(ref, 'feedback_form_success_navigate_away'),
             textAlign: TextAlign.center,
             style: AppTypography.helper.copyWith(color: AppColors.textSecondary),
           ),

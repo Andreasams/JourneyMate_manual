@@ -7,10 +7,10 @@
 ## Current Status
 
 **Phase:** Phase 8 (Integration polish & bug fixes) — IN PROGRESS
-**Deployment:** TestFlight grey screen bug — REAL FIX DEPLOYED (commit c0b84a4) 🚀 (2026-02-22)
-**Last completed task:** Fixed wrong translation endpoint path (2026-02-22)
-**Next task:** Test new TestFlight build to verify grey screen is ACTUALLY fixed
-**Blocked on:** Codemagic build in progress (~20-30 min)
+**Deployment:** TestFlight grey screen bug — AWAITING USER TESTING (commit c0b84a4) 🚀 (2026-02-22)
+**Last completed task:** Reverted error logging experiment (2026-02-23)
+**Next task:** User to test TestFlight build and report grey screen error details
+**Blocked on:** User testing on TestFlight
 
 **🔴 CRITICAL BUG FIXED (2026-02-22) — REAL ROOT CAUSE:**
 TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
@@ -52,6 +52,33 @@ TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
 - Phase 8: Delete kStaticTranslations map (~1,900 lines)
 - Phase 8: Integration polish, testing, production deployment prep
 - Phase 8: Clean git history (remove old Supabase secret)
+
+## Files changed this session (Error Logging Experiment - 2026-02-23)
+- `journey_mate/lib/main.dart` (modified then reverted) — Attempted to add comprehensive error logging
+  - Added: runZonedGuarded wrapper, FlutterError.onError, PlatformDispatcher.instance.onError handlers
+  - Added: Visual error overlay to display errors on screen instead of grey screen
+  - Commits: f519e32, c06a74d (created), 5ff2fd3, 1211a19 (reverted)
+  - **Result:** Reverted all changes at user request to preserve clean codebase
+  - **Reason:** Error logging did not produce crash reports, visual overlay not helpful
+
+## Decisions made this session (Error Logging Experiment - 2026-02-23)
+- **Error logging approach rejected:** Console logging + visual error overlay did not help debug grey screen on TestFlight/Windows workflow
+- **Codebase cleanliness:** User prefers clean files without unused experimental code
+- **Next approach:** User will manually test TestFlight build and report error details if grey screen persists
+
+## What the next session must do first (Error Logging Experiment - 2026-02-23)
+1. **Wait for user to test TestFlight build** (commit c0b84a4 - translation endpoint fix)
+2. **If grey screen persists:**
+   - User should manually explore app and identify which specific action triggers grey screen
+   - User should check BuildShip logs for missing API calls
+   - Consider alternative debugging: run release build locally with USB/Xcode console (Mac required)
+3. **If grey screen is fixed:** Proceed with Phase 8 remaining work (ts→td migration, delete hardcoded translations)
+
+## Open questions for user (Error Logging Experiment - 2026-02-23)
+- Has grey screen been tested on latest TestFlight build (commit c0b84a4)?
+- If grey screen persists, what specific action triggers it? (app launch, navigation, filter tap, etc.)
+
+---
 
 ## Files changed this session (Grey Screen Bug Fix - 2026-02-22)
 - `journey_mate/lib/main.dart` (modified) — Added filter loading + retry logic + error screen

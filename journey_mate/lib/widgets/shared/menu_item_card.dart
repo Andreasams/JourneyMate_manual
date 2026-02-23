@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
@@ -12,7 +13,7 @@ import '../../services/custom_functions/price_formatter.dart';
 /// and allergen warning indicators with zero state management dependencies.
 ///
 /// Design Source: Menu Full Page JSX + MenuDishesListView patterns
-class MenuItemCard extends StatelessWidget {
+class MenuItemCard extends ConsumerWidget {
   const MenuItemCard({
     super.key,
     required this.name,
@@ -50,7 +51,7 @@ class MenuItemCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final showAllergenWarning =
         allergenIds.isNotEmpty && !hasAllergenOverride;
     final hasBadgesOrWarning =
@@ -153,8 +154,8 @@ class MenuItemCard extends StatelessWidget {
                         ),
                         const SizedBox(width: AppSpacing.xs),
                         Text(
-                          ts(
-                            context,
+                          td(
+                            ref,
                             'menu_contains_allergens',
                           ).replaceAll('{count}', '${allergenIds.length}'),
                           style: AppTypography.bodySmall.copyWith(

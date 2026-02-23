@@ -44,7 +44,8 @@
       "Bash(node --version:*)",
       "Bash(node:*)",
       "Bash(for key in 0eehrkgn 6dww9uct 6kxja9sp 82y059ik bhki1oos d9nsgosc g440jonq iucaz964 tht0e2um)",
-      "Bash(do grep -n \"''$key''\" journey_mate/lib/services/translation_service.dart)"
+      "Bash(do grep -n \"''$key''\" journey_mate/lib/services/translation_service.dart)",
+      "Bash(git revert:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

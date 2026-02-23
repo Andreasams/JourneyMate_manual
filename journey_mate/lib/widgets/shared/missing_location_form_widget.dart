@@ -92,7 +92,7 @@ class _MissingLocationFormWidgetState
       final businessName = _businessNameController.text.trim();
       if (businessName.isEmpty) {
         _businessNameError =
-            ts(context, 'missing_location_error_name_required');
+            td(ref, 'missing_location_error_name_required');
         isValid = false;
       }
 
@@ -100,17 +100,17 @@ class _MissingLocationFormWidgetState
       final businessAddress = _businessAddressController.text.trim();
       if (businessAddress.isEmpty) {
         _businessAddressError =
-            ts(context, 'missing_location_error_address_required');
+            td(ref, 'missing_location_error_address_required');
         isValid = false;
       }
 
       // Validate message
       final message = _messageController.text.trim();
       if (message.isEmpty) {
-        _messageError = ts(context, 'missing_location_error_message_required');
+        _messageError = td(ref, 'missing_location_error_message_required');
         isValid = false;
       } else if (message.length < 10) {
-        _messageError = ts(context, 'missing_location_error_message_too_short');
+        _messageError = td(ref, 'missing_location_error_message_too_short');
         isValid = false;
       }
     });
@@ -206,17 +206,17 @@ class _MissingLocationFormWidgetState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          ts(context, 'missing_location_title_main'),
+          td(ref, 'missing_location_title_main'),
           style: AppTypography.sectionHeading,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          ts(context, 'missing_location_subtitle_main_1'),
+          td(ref, 'missing_location_subtitle_main_1'),
           style: AppTypography.bodyRegular,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          ts(context, 'missing_location_subtitle_main_2'),
+          td(ref, 'missing_location_subtitle_main_2'),
           style: AppTypography.bodyRegular,
         ),
       ],
@@ -228,12 +228,12 @@ class _MissingLocationFormWidgetState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildRequiredLabel(
-          ts(context, 'missing_location_title_business_name'),
+          td(ref, 'missing_location_title_business_name'),
         ),
         const SizedBox(height: AppSpacing.sm),
         _buildTextField(
           controller: _businessNameController,
-          hintText: ts(context, 'missing_location_hint_business_name'),
+          hintText: td(ref, 'missing_location_hint_business_name'),
           maxLines: 1,
           errorText: _businessNameError,
         ),
@@ -246,17 +246,17 @@ class _MissingLocationFormWidgetState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildRequiredLabel(
-          ts(context, 'missing_location_title_business_address'),
+          td(ref, 'missing_location_title_business_address'),
         ),
         const SizedBox(height: 6.0),
         Text(
-          ts(context, 'missing_location_subtitle_business_address'),
+          td(ref, 'missing_location_subtitle_business_address'),
           style: AppTypography.helper,
         ),
         const SizedBox(height: 6.0),
         _buildTextField(
           controller: _businessAddressController,
-          hintText: ts(context, 'missing_location_hint_business_address'),
+          hintText: td(ref, 'missing_location_hint_business_address'),
           maxLines: 1,
           errorText: _businessAddressError,
         ),
@@ -269,17 +269,17 @@ class _MissingLocationFormWidgetState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildRequiredLabel(
-          ts(context, 'missing_location_title_message'),
+          td(ref, 'missing_location_title_message'),
         ),
         const SizedBox(height: 6.0),
         Text(
-          ts(context, 'missing_location_subtitle_message'),
+          td(ref, 'missing_location_subtitle_message'),
           style: AppTypography.helper,
         ),
         const SizedBox(height: 6.0),
         _buildTextField(
           controller: _messageController,
-          hintText: ts(context, 'missing_location_hint_message'),
+          hintText: td(ref, 'missing_location_hint_message'),
           maxLines: 6,
           errorText: _messageError,
         ),
@@ -330,7 +330,7 @@ class _MissingLocationFormWidgetState
                   ),
                 )
               : Text(
-                  ts(context, 'missing_location_button_submit'),
+                  td(ref, 'missing_location_button_submit'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16.0,
@@ -361,7 +361,7 @@ class _MissingLocationFormWidgetState
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              ts(context, 'missing_location_success_message'),
+              td(ref, 'missing_location_success_message'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.success,
@@ -371,7 +371,7 @@ class _MissingLocationFormWidgetState
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              ts(context, 'missing_location_success_navigate_away'),
+              td(ref, 'missing_location_success_navigate_away'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.success.withValues(alpha:0.8),
@@ -407,7 +407,7 @@ class _MissingLocationFormWidgetState
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  ts(context, 'missing_location_error_submission'),
+                  td(ref, 'missing_location_error_submission'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.error,

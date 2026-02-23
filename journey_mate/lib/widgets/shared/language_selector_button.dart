@@ -92,7 +92,7 @@ class LanguageSelectorButton extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              _buildSheetHeader(context),
+              _buildSheetHeader(context, ref),
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -120,7 +120,7 @@ class LanguageSelectorButton extends ConsumerWidget {
   }
 
   /// Builds the sheet header with title and close button
-  Widget _buildSheetHeader(BuildContext context) {
+  Widget _buildSheetHeader(BuildContext context, WidgetRef ref) {
     return Container(
       height: 64.0,
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),

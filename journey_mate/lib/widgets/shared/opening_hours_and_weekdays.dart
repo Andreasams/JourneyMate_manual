@@ -14,7 +14,7 @@ import '../../services/translation_service.dart';
 /// - Responsive layout: cutoff times wrap to next line when font scale >= 1.1
 /// - Dynamically adjusts column width based on language character length
 /// - Automatically rebuilds when translations change
-class OpeningHoursAndWeekdays extends StatefulWidget {
+class OpeningHoursAndWeekdays extends ConsumerStatefulWidget {
   const OpeningHoursAndWeekdays({
     super.key,
     this.width,
