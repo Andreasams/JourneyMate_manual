@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/translation_service.dart';
+import '../../providers/filter_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -33,20 +34,42 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   late bool _onlyOpen;
   String _view = 'options'; // 'options' or 'stations'
 
-  // Mock train station data (TODO: Replace with real data)
-  final List<Map<String, dynamic>> _trainStations = [
-    {'id': 1, 'name': 'København H'},
-    {'id': 2, 'name': 'Nørreport'},
-    {'id': 3, 'name': 'Østerport'},
-    {'id': 4, 'name': 'Vesterport'},
-    {'id': 5, 'name': 'Christianshavn'},
-  ];
+  // Train station category ID (parent filter)
+  static const int _trainStationCategoryId = 7;
 
   @override
   void initState() {
     super.initState();
     _selectedSort = widget.currentSort;
     _onlyOpen = widget.onlyOpen;
+  }
+
+  /// Gets train station list from filter provider
+  /// Train stations have filter IDs in 10000+ range with parent_id = 7
+  List<Map<String, dynamic>> _getTrainStations() {
+    final filterState = ref.watch(filterProvider);
+
+    return filterState.when(
+      data: (state) {
+        final filterLookupMap = state.filterLookupMap;
+
+        // Get all filters with parent_id = 7 (Train Stations)
+        final stations = filterLookupMap.entries
+            .where((entry) => entry.value['parent_id'] == _trainStationCategoryId)
+            .map((entry) => {
+                  'id': entry.key,
+                  'name': entry.value['filter_name'] as String,
+                })
+            .toList();
+
+        // Sort alphabetically by name
+        stations.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+
+        return stations;
+      },
+      loading: () => [],
+      error: (e, stack) => [],
+    );
   }
 
   @override
@@ -87,19 +110,30 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   }
 
   Widget _buildStationsView() {
+    final trainStations = _getTrainStations();
+
     return Column(
       children: [
         _buildStationsHeader(),
         Divider(height: 1, color: AppColors.border),
         Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.zero,
-            itemCount: _trainStations.length,
-            itemBuilder: (context, index) {
-              final station = _trainStations[index];
-              return _buildStationOption(station);
-            },
-          ),
+          child: trainStations.isEmpty
+              ? Center(
+                  child: Text(
+                    td(ref, 'hours_no_data'), // Generic "No data" message
+                    style: AppTypography.bodyRegular.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: trainStations.length,
+                  itemBuilder: (context, index) {
+                    final station = trainStations[index];
+                    return _buildStationOption(station);
+                  },
+                ),
         ),
         _buildStationsFooter(),
       ],
