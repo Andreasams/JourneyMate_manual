@@ -6,11 +6,11 @@
 
 ## Current Status
 
-**Phase:** Phase 8 (Integration polish & bug fixes) — IN PROGRESS
+**Phase:** Phase 8A — Critical Production Blockers — IN PROGRESS
 **Deployment:** TestFlight grey screen bug — AWAITING USER TESTING (commit c0b84a4) 🚀 (2026-02-22)
-**Last completed task:** Reverted error logging experiment (2026-02-23)
-**Next task:** User to test TestFlight build and report grey screen error details
-**Blocked on:** User testing on TestFlight
+**Last completed task:** ✅ Phase 8A.2 Translation Migration COMPLETE (2026-02-23)
+**Next task:** Phase 8A.4 — Fix Critical TODOs (11 in search_results_list_view.dart, 3 in profile widgets)
+**Blocked on:** Nothing (proceeding with 8A.4 per user's requested order: 8A.2 → 8A.4 → 8A.1 → 8A.3 → 8A.6, skipping 8A.5)
 
 **🔴 CRITICAL BUG FIXED (2026-02-22) — REAL ROOT CAUSE:**
 TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
@@ -46,12 +46,85 @@ TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
   - Total in Supabase: 497 keys (355 used by app + 142 legacy)
   - 7 languages: en, da, de, fr, it, no, sv
 
-**⚠️ REMAINING WORK:**
-- Verify TestFlight build fixes grey screen issue
-- Phase 8: Switch all ts() calls to td() (100% dynamic translations)
-- Phase 8: Delete kStaticTranslations map (~1,900 lines)
-- Phase 8: Integration polish, testing, production deployment prep
-- Phase 8: Clean git history (remove old Supabase secret)
+**✅ PHASE 8A.2 COMPLETE (2026-02-23):**
+- Migrated ALL 176 ts(context, key) calls to td(ref, key)
+  - 68 calls in 13 pages (migrated first)
+  - 108 calls in 18 widgets (completed in this session)
+- Deleted kStaticTranslations map (3,352 lines removed)
+- Deleted ts() function
+- translation_service.dart: 3,443 → 39 lines (99% reduction)
+- Converted 8 widgets to ConsumerWidget/ConsumerStatefulWidget for ref access
+- flutter analyze: 0 errors, 0 warnings
+- 100% dynamic translations via Supabase BuildShip API (/languageText endpoint)
+
+**⚠️ REMAINING WORK (Phase 8A tasks per user's order):**
+- 8A.4: Fix Critical TODOs (11 in search_results_list_view.dart, 3 in profile widgets) — NEXT
+- 8A.1: Verify TestFlight build fixes grey screen issue
+- 8A.3: Clean git history (remove old Supabase secret from commit 29801392)
+- 8A.6: Final pre-release verification (full user journey testing)
+- 8A.5: Integration testing — SKIPPED per user request
+
+## Files changed this session (Phase 8A.2 Translation Migration - 2026-02-23)
+
+**PHASE 8A.2 COMPLETE ✅** — 100% Dynamic Translations Migration
+
+**Summary:**
+- Migrated all 176 ts(context, key) calls to td(ref, key) across 13 pages + 18 widgets
+- Deleted kStaticTranslations map (3,352 lines) from translation_service.dart
+- Deleted ts() function
+- File size: translation_service.dart reduced from 3,443 lines to 39 lines (99% reduction)
+- flutter analyze: 0 errors, 0 warnings
+
+**Files modified:**
+
+**Pages (13 files, 68 calls migrated):**
+- pages/menu_full_page.dart (1 call)
+- pages/settings/contact_us_page.dart (1 call)
+- pages/settings/share_feedback_page.dart (1 call)
+- pages/settings/missing_place_page.dart (1 call)
+- pages/business_information_page.dart (5 calls)
+- pages/gallery_full_page.dart (5 calls)
+- pages/welcome/welcome_page.dart (7 calls)
+- pages/settings/localization_page.dart (6 calls)
+- pages/search_page.dart (8 calls)
+- pages/app_settings_initiate_flow/app_settings_initiate_flow_page.dart (8 calls)
+- pages/business_profile_page.dart (10 calls)
+- pages/settings/settings_main_page.dart (10 calls)
+- pages/settings/location_sharing_page.dart (9 calls)
+
+**Widgets (18 files, 108 calls migrated):**
+
+*Batch 1 (8 trivial files, 14 calls):*
+- menu_categories_rows.dart (1 call)
+- nav_bar_widget.dart (1 call)
+- package_courses_display.dart (1 call)
+- search_results_list_view.dart (3 calls)
+- dietary_preferences_filter_widgets.dart (1 call)
+- selected_filters_btns.dart (4 calls)
+- user_feedback_buttons_page.dart (2 calls)
+- filter_titles_row.dart (1 call) — StatelessWidget → ConsumerWidget
+
+*Batch 2 (2 small files, 7 calls):*
+- sort_bottom_sheet.dart (3 calls) — StatefulWidget → ConsumerStatefulWidget
+- opening_hours_and_weekdays.dart (4 calls) — StatefulWidget → ConsumerStatefulWidget
+
+*Batch 3-4 (5 large form files, 88 calls via batch sed):*
+- contact_us_form_widget.dart (23 calls)
+- feedback_form_widget.dart (27 calls)
+- missing_location_form_widget.dart (19 calls)
+- erroneous_info_form_widget.dart (13 calls)
+- item_bottom_sheet.dart (6 calls + _ModifierGroupDisplay StatelessWidget → ConsumerWidget)
+
+*Final fixes (3 files):*
+- language_selector_button.dart (1 call, helper method signature fix)
+- menu_item_card.dart (1 call) — StatelessWidget → ConsumerWidget
+
+**Core file deleted:**
+- journey_mate/lib/services/translation_service.dart — Deleted kStaticTranslations map (lines 6-3400, ~3,352 lines) and ts() function (lines 3406-3428). File reduced from 3,443 lines to 39 lines containing only td() function.
+
+**Commits:**
+- 53e1737: refactor(translations): migrate pages and 10 widgets from ts() to td()
+- 13a5776: refactor(translations): complete Phase 8A.2 migration - final 8 widgets
 
 ## Files changed this session (Error Logging Experiment - 2026-02-23)
 - `journey_mate/lib/main.dart` (modified then reverted) — Attempted to add comprehensive error logging
@@ -60,6 +133,40 @@ TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
   - Commits: f519e32, c06a74d (created), 5ff2fd3, 1211a19 (reverted)
   - **Result:** Reverted all changes at user request to preserve clean codebase
   - **Reason:** Error logging did not produce crash reports, visual overlay not helpful
+
+## Decisions made this session (Phase 8A.2 Translation Migration - 2026-02-23)
+
+**Phase 8 Task Order:**
+- User decided to skip Phase 8A.5 (Integration Testing) and follow order: 8A.2 → 8A.4 → 8A.1 → 8A.3 → 8A.6
+- Reasoning: App unlikely to work without 8A.4 (Critical TODOs) being fixed first
+
+**Widget Migration Approach:**
+- Batch processing: Used `sed -i 's/ts(context,/td(ref,/g'` for 88 calls in 5 large form files (faster than manual)
+- Manual conversion: Handled complex widgets with method signature changes manually
+- Helper method pattern: Updated helper methods taking `BuildContext context` to take `WidgetRef ref` when they call td()
+- Widget conversion: StatelessWidget → ConsumerWidget, StatefulWidget → ConsumerStatefulWidget for ref access
+
+**Translation Service Architecture:**
+- Confirmed 100% dynamic translations is the end goal
+- All 355 app keys already in Supabase ui_translations table (Phase 6B complete)
+- No fallback to hardcoded translations (app shows error screen if BuildShip API fails)
+
+## What the next session must do first (Phase 8A.2 Complete - 2026-02-23)
+
+**✅ Phase 8A.2 is COMPLETE. Next task: Phase 8A.4 — Fix Critical TODOs**
+
+1. **Read Phase 8 implementation plan** (`C:\Users\Rikke\.claude\plans\polymorphic-soaring-honey.md`) — Task 8A.4 section
+2. **Read FlutterFlow custom code sources:**
+   - `_flutterflow_export/lib/custom_code/actions/determine_status_and_color.dart` — Open/closed status logic
+   - `_flutterflow_export/lib/custom_code/actions/open_closes_at.dart` — Human-readable open/closed text
+   - `_flutterflow_export/lib/custom_code/functions/return_distance.dart` — Haversine distance calculation
+   - `_flutterflow_export/lib/custom_code/functions/street_and_neighbourhood_length.dart` — Address formatting
+3. **Port FlutterFlow logic to journey_mate/lib/services/custom_functions/**
+4. **Replace 11 TODOs in search_results_list_view.dart** with function calls
+5. **Replace 3 TODOs in profile widgets** (translationsCacheProvider wiring)
+6. **Test with real business data** (different times of day, business hours, user location)
+7. **Run flutter analyze** (must return 0 errors)
+8. **Commit** with message: "feat(search): implement critical business logic TODOs (Phase 8A.4)"
 
 ## Decisions made this session (Error Logging Experiment - 2026-02-23)
 - **Error logging approach rejected:** Console logging + visual error overlay did not help debug grey screen on TestFlight/Windows workflow
