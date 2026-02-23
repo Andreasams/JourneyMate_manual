@@ -918,7 +918,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final todayStr = _getTodayHoursRange();
 
     return Text(
-      'Today: $todayStr', // TODO: Add translation key for "Today:" prefix
+      '${td(ref, 'expandable_today_label')} $todayStr', // Space between label and time
       style: AppTypography.bodyRegular.copyWith(
         fontSize: 12.5,
         color: AppColors.textSecondary,
