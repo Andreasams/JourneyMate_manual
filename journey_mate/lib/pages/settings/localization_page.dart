@@ -232,8 +232,8 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
               eventData: {'source': 'localization_page'},
             ).catchError((_) => ApiCallResponse.failure('Analytics failed'));
 
-            // Open system settings
-            await ref.read(locationProvider.notifier).openSettings();
+            // Request location permission (shows iOS permission dialog)
+            await ref.read(locationProvider.notifier).requestPermission();
           },
           child: Text(
             td(ref, '3r57tlpr'), // "Turn on location sharing"
