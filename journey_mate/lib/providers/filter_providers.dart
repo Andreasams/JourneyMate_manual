@@ -68,7 +68,8 @@ class FilterNotifier extends AsyncNotifier<FilterState> {
     void traverse(dynamic node) {
       if (node is Map) {
         // Extract filter ID if present
-        final filterId = node['filter_id'];
+        // API returns 'id' field, not 'filter_id'
+        final filterId = node['id'] ?? node['filter_id'];
         if (filterId is int) {
           lookupMap[filterId] = node;
         }

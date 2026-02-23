@@ -19,9 +19,18 @@ class SearchStateNotifier extends Notifier<SearchState> {
   }
 
   /// Update search results from API response
+  /// Accepts either:
+  /// - A List of documents directly
+  /// - A Map containing a 'documents' key (full API response)
   void updateSearchResults(dynamic results, int count) {
+    // Normalize input: extract documents array if full response object passed
+    dynamic normalizedResults = results;
+    if (results is Map && results.containsKey('documents')) {
+      normalizedResults = results['documents'];
+    }
+
     state = state.copyWith(
-      searchResults: results,
+      searchResults: normalizedResults,
       searchResultsCount: count,
       hasActiveSearch: true,
     );

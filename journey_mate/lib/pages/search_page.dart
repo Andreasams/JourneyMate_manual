@@ -534,8 +534,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
 
     // Empty state
-    if (searchState.searchResults == null ||
-        (searchState.searchResults as List).isEmpty) {
+    final searchResults = searchState.searchResults;
+    final bool isEmpty = searchResults == null ||
+        (searchResults is List && searchResults.isEmpty) ||
+        (searchResults is Map &&
+         searchResults['documents'] is List &&
+         (searchResults['documents'] as List).isEmpty);
+
+    if (isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
