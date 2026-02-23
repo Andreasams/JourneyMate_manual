@@ -96,6 +96,8 @@ class _SearchResultsListViewState
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('📊 [6] SearchResultsListView.build() START');
+
     // Selective rebuild: ONLY when searchResults changes
     final searchResults = ref.watch(
       searchStateProvider.select((state) => state.searchResults),
@@ -103,6 +105,7 @@ class _SearchResultsListViewState
 
     // Show shimmer while loading
     if (searchResults == null) {
+      debugPrint('📊 [6a] searchResults null → returning shimmer');
       return const RestaurantListShimmerWidget();
     }
 
@@ -111,17 +114,22 @@ class _SearchResultsListViewState
 
     // Empty state
     if (documents.isEmpty) {
+      debugPrint('📊 [6b] documents empty → returning empty state');
       return _buildEmptyState();
     }
 
-    debugPrint('📊 SearchResultsListView: ${documents.length} items');
+    debugPrint('📊 [6c] documents.length=${documents.length}');
 
     // List of businesses
     // Wrapped in LayoutBuilder to fix Chrome web rendering issue
     // (ListView inside Expanded needs explicit height constraints on web)
     return LayoutBuilder(
       builder: (context, constraints) {
-        debugPrint('📐 LayoutBuilder constraints: maxHeight=${constraints.maxHeight}, maxWidth=${constraints.maxWidth}');
+        debugPrint('📐 [7] LISTVIEW LayoutBuilder: ${constraints.maxHeight}h × ${constraints.maxWidth}w');
+
+        if (constraints.maxHeight == 0) {
+          debugPrint('⚠️  [7] WARNING: maxHeight is ZERO - ListView will not render!');
+        }
 
         return SizedBox(
           height: constraints.maxHeight,
@@ -130,6 +138,7 @@ class _SearchResultsListViewState
             itemCount: documents.length,
             separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
             itemBuilder: (context, index) {
+              debugPrint('📋 [8] ListView itemBuilder called for index=$index');
               final businessData = documents[index];
               final businessId = _getBusinessId(businessData);
 
@@ -346,21 +355,29 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(minHeight: _imageSize),
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        border: Border.all(color: Colors.red, width: 2), // DEBUG: Structural visibility
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildImage(),
-          const SizedBox(width: 8),
-          Expanded(child: _buildInfoColumn()),
-        ],
-      ),
+    debugPrint('🏪 [9] _BusinessListItem.build() for: $_businessName');
+
+    return LayoutBuilder(
+      builder: (context, itemConstraints) {
+        debugPrint('📐 [10] ITEM LayoutBuilder: ${itemConstraints.maxHeight}h × ${itemConstraints.maxWidth}w');
+
+        return Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(minHeight: _imageSize),
+          decoration: BoxDecoration(
+            color: AppColors.bgCard,
+            border: Border.all(color: Colors.red, width: 2), // DEBUG: Structural visibility
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildImage(),
+              const SizedBox(width: 8),
+              Expanded(child: _buildInfoColumn()),
+            ],
+          ),
+        );
+      },
     );
   }
 

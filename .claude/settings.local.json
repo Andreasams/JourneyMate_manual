@@ -49,7 +49,9 @@
       "Bash(journey_mate/lib/services/custom_functions/hours_formatter.dart:*)",
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch:*)",
       "Bash(git remote add:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "WebSearch",
+      "WebFetch(domain:pub.dev)"
     ]
   },
   "enableAllProjectMcpServers": true,

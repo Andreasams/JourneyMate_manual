@@ -377,59 +377,82 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ),
         ],
       ),
-      body: Container(
-        color: const Color(0x4DFFFF00), // DEBUG: Make Column visible (yellow 30%)
-        child: Column(
-          children: [
-            // Selected filters chips
-            if (searchState.filtersUsedForSearch.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.sm,
-                ),
-                child: SelectedFiltersBtns(
-                  filters: searchState.filtersUsedForSearch,
-                  languageCode: Localizations.localeOf(context).languageCode,
-                  translationsCache: translationsCache,
-                ),
-              ),
+      body: LayoutBuilder(
+        builder: (context, bodyConstraints) {
+          debugPrint('📐 [1] BODY LayoutBuilder: ${bodyConstraints.maxHeight}h × ${bodyConstraints.maxWidth}w');
 
-            // Location permission banner
-            if (!locationState.hasPermission) _buildLocationBanner(),
+          return Container(
+            color: const Color(0x4DFFFF00), // DEBUG: Yellow
+            child: LayoutBuilder(
+              builder: (context, containerConstraints) {
+                debugPrint('📐 [2] CONTAINER LayoutBuilder: ${containerConstraints.maxHeight}h × ${containerConstraints.maxWidth}w');
 
-            // Content with floating button
-            Expanded(
-              child: Stack(
-                children: [
-                  // Search results list
-                  Container(
-                    color: const Color(0x4D0000FF), // DEBUG: Make content visible (blue 30%)
-                    child: _buildContent(),
-                  ),
-
-                  // Floating sort button
-                  Positioned(
-                    bottom: 12.0,
-                    right: AppSpacing.lg,
-                    child: FloatingActionButton.extended(
-                      onPressed: _openSortBottomSheet,
-                      backgroundColor: AppColors.bgCard,
-                      elevation: 4,
-                      label: Text(
-                        td(ref, 'sort_$_currentSort'),
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textPrimary,
+                return Column(
+                  children: [
+                    // Selected filters chips
+                    if (searchState.filtersUsedForSearch.isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.sm,
+                        ),
+                        child: SelectedFiltersBtns(
+                          filters: searchState.filtersUsedForSearch,
+                          languageCode: Localizations.localeOf(context).languageCode,
+                          translationsCache: translationsCache,
                         ),
                       ),
-                      icon: Icon(Icons.sort, color: AppColors.accent, size: 20),
+
+                    // Location permission banner
+                    if (!locationState.hasPermission) _buildLocationBanner(),
+
+                    // Content with floating button
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, expandedConstraints) {
+                          debugPrint('📐 [3] EXPANDED LayoutBuilder: ${expandedConstraints.maxHeight}h × ${expandedConstraints.maxWidth}w');
+
+                          return Stack(
+                            children: [
+                              // Search results list
+                              Container(
+                                color: const Color(0x4D0000FF), // DEBUG: Blue
+                                child: LayoutBuilder(
+                                  builder: (context, contentConstraints) {
+                                    debugPrint('📐 [4] CONTENT CONTAINER LayoutBuilder: ${contentConstraints.maxHeight}h × ${contentConstraints.maxWidth}w');
+                                    return _buildContent();
+                                  },
+                                ),
+                              ),
+
+                              // Floating sort button
+                              Positioned(
+                                bottom: 12.0,
+                                right: AppSpacing.lg,
+                                child: FloatingActionButton.extended(
+                                  onPressed: _openSortBottomSheet,
+                                  backgroundColor: AppColors.bgCard,
+                                  elevation: 4,
+                                  label: Text(
+                                    td(ref, 'sort_$_currentSort'),
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  icon: Icon(Icons.sort, color: AppColors.accent, size: 20),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              },
             ),
-          ],
-        ),
+          );
+        },
       ),
       bottomNavigationBar: const NavBarWidget(pageIsSearchResults: true),
     );
@@ -518,17 +541,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Widget _buildContent() {
     final searchState = ref.watch(searchStateProvider);
 
-    debugPrint('🔍 _buildContent: _isLoading=$_isLoading, searchResults=${searchState.searchResults?.runtimeType}, _errorMessage=$_errorMessage');
+    debugPrint('📊 [5] _buildContent called: loading=$_isLoading, hasResults=${searchState.searchResults != null}, error=$_errorMessage');
 
     // Loading state
     if (_isLoading && searchState.searchResults == null) {
-      debugPrint('🔍 Showing loading shimmer');
+      debugPrint('📊 [5a] Returning shimmer widget');
       return const RestaurantListShimmerWidget();
     }
 
     // Error state
     if (_errorMessage != null) {
-      debugPrint('🔍 Showing error state: $_errorMessage');
+      debugPrint('📊 [5b] Returning error widget');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -568,7 +591,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
          (searchResults['documents'] as List).isEmpty);
 
     if (isEmpty) {
-      debugPrint('🔍 Showing empty state');
+      debugPrint('📊 [5c] Returning empty state widget');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -595,7 +618,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
 
     // Results list
-    debugPrint('🔍 Showing SearchResultsListView');
+    debugPrint('📊 [5d] Returning SearchResultsListView');
     final locationState = ref.watch(locationProvider);
     Position? userLocation;
     if (locationState.hasPermission) {
