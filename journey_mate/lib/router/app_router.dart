@@ -34,7 +34,10 @@ final appRouter = GoRouter(
     // Phase 7.3.2: Search (COMPLETE ✅)
     GoRoute(
       path: '/search',
-      builder: (context, state) => const SearchPage(),
+      pageBuilder: (context, state) => NoTransitionPage<void>(
+        key: state.pageKey,
+        child: const SearchPage(),
+      ),
     ),
 
     // Phase 7.3: Business Profile (COMPLETE ✅)
@@ -76,7 +79,10 @@ final appRouter = GoRouter(
     // Phase 7.7: Settings Main (COMPLETE ✅)
     GoRoute(
       path: '/settings',
-      builder: (context, state) => const SettingsMainPage(),
+      pageBuilder: (context, state) => NoTransitionPage<void>(
+        key: state.pageKey,
+        child: const SettingsMainPage(),
+      ),
     ),
 
     // App Settings Initiate Flow (English onboarding wizard)
