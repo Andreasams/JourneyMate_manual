@@ -17,6 +17,9 @@ final localizationProvider =
 });
 
 class LocalizationNotifier extends Notifier<LocalizationState> {
+  /// Cache for exchange rates to reduce API calls
+  final Map<String, double> _exchangeRateCache = {};
+
   @override
   LocalizationState build() {
     return LocalizationState.initial();
@@ -103,12 +106,18 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
     return currencyConfigByLanguage[languageCode.toLowerCase()] ?? ['DKK'];
   }
 
-  /// Fetches exchange rate from BuildShip API
+  /// Fetches exchange rate from BuildShip API (with caching)
   Future<double> _fetchExchangeRate(String currencyCode) async {
     try {
       // DKK has 1:1 rate (base currency)
       if (currencyCode == 'DKK') {
         return 1.0;
+      }
+
+      // Check cache first
+      if (_exchangeRateCache.containsKey(currencyCode)) {
+        debugPrint('💾 Using cached exchange rate for $currencyCode: ${_exchangeRateCache[currencyCode]}');
+        return _exchangeRateCache[currencyCode]!;
       }
 
       // Call BuildShip API: GET /exchangerate?to_currency={code}
@@ -124,16 +133,21 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
       // Response format: [{"rate": 7.5}] or {"rate": 7.5}
       final dynamic body = response.jsonBody;
 
+      double rate = 1.0;
       if (body is List && body.isNotEmpty) {
-        final rate = body[0]['rate'] as num;
-        return rate.toDouble();
+        rate = (body[0]['rate'] as num).toDouble();
       } else if (body is Map && body.containsKey('rate')) {
-        final rate = body['rate'] as num;
-        return rate.toDouble();
+        rate = (body['rate'] as num).toDouble();
+      } else {
+        debugPrint('⚠️ Unexpected exchange rate response format');
+        return 1.0; // Fallback
       }
 
-      debugPrint('⚠️ Unexpected exchange rate response format');
-      return 1.0; // Fallback
+      // Cache the rate for future use
+      _exchangeRateCache[currencyCode] = rate;
+      debugPrint('✅ Cached exchange rate for $currencyCode: $rate');
+
+      return rate;
     } catch (e) {
       debugPrint('❌ Exchange rate fetch failed: $e');
       return 1.0; // Fallback

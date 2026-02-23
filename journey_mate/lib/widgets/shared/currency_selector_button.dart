@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -86,28 +88,6 @@ class _CurrencySelectorButtonState
   // Currency Configuration
   // ─────────────────────────────────────────────────────────────────────────────
 
-  /// Default currency by language (used for language change fallback)
-  // ignore: unused_element
-  String _getDefaultCurrencyForLanguage(String languageCode) {
-    const defaults = {
-      'en': 'USD',
-      'de': 'EUR',
-      'sv': 'SEK',
-      'no': 'NOK',
-      'da': 'DKK',
-      'es': 'EUR',
-      'fi': 'EUR',
-      'nl': 'EUR',
-      'pl': 'PLN',
-      'uk': 'UAH',
-      'ja': 'JPY',
-      'ko': 'USD', // No KRW in list, fallback to USD
-      'zh': 'CNY',
-    };
-
-    return defaults[languageCode] ?? _defaultCurrencyCode;
-  }
-
   /// Returns filtered currency codes based on language
   /// Uses same logic as FlutterFlow getCurrencyOptionsForLanguage()
   static List<String> _getCurrenciesForLanguage(String languageCode) {
@@ -153,6 +133,7 @@ class _CurrencySelectorButtonState
   }
 
   /// Gets the currency symbol
+  /// Only includes symbols for currencies available in _getCurrenciesForLanguage()
   String _getCurrencySymbol(String currencyCode) {
     const symbols = {
       'DKK': 'kr.',
@@ -161,11 +142,6 @@ class _CurrencySelectorButtonState
       'EUR': '€',
       'SEK': 'kr.',
       'NOK': 'kr.',
-      'PLN': 'zł',
-      'JPY': '¥',
-      'CNY': '¥',
-      'UAH': '₴',
-      'CHF': 'CHF',
     };
 
     return symbols[currencyCode] ?? currencyCode;
@@ -231,9 +207,6 @@ class _CurrencySelectorButtonState
 
   /// Updates currency code and fetches exchange rate
   Future<void> _updateCurrency(String currencyCode) async {
-    // Capture language code before async operations
-    final languageCode = Localizations.localeOf(context).languageCode;
-
     try {
       // Fetch exchange rate from BuildShip API
       final exchangeRate = await _fetchExchangeRate(currencyCode);
@@ -246,21 +219,26 @@ class _CurrencySelectorButtonState
 
       if (!mounted) return;
 
-      // Track analytics (fire-and-forget)
-      ApiService.instance.postAnalytics(
-        eventType: 'currency_changed',
-        deviceId: '', // Handled by ApiService
-        sessionId: '', // Handled by ApiService
-        userId: '', // Handled by ApiService
-        eventData: {
-          'to_currency': currencyCode,
-          'language_code': languageCode,
-        },
-        timestamp: DateTime.now().toIso8601String(),
-      ).catchError((e) {
-        debugPrint('⚠️ Analytics tracking failed: $e');
-        return ApiCallResponse.failure('Analytics failed');
-      });
+      // Capture language code AFTER await to ensure accuracy
+      final languageCode = Localizations.localeOf(context).languageCode;
+
+      // Track analytics (fire-and-forget using unawaited)
+      unawaited(
+        ApiService.instance.postAnalytics(
+          eventType: 'currency_changed',
+          deviceId: '', // Handled by ApiService
+          sessionId: '', // Handled by ApiService
+          userId: '', // Handled by ApiService
+          eventData: {
+            'to_currency': currencyCode,
+            'language_code': languageCode,
+          },
+          timestamp: DateTime.now().toIso8601String(),
+        ).catchError((e) {
+          debugPrint('⚠️ Analytics tracking failed: $e');
+          return ApiCallResponse.failure('Analytics failed');
+        }),
+      );
     } catch (e) {
       debugPrint('❌ Currency update failed: $e');
       // Graceful degradation - keep current currency
@@ -282,6 +260,23 @@ class _CurrencySelectorButtonState
 
       if (!response.succeeded) {
         debugPrint('⚠️ Exchange rate API failed: ${response.statusCode}');
+
+        // Track failed currency change (fire-and-forget)
+        unawaited(
+          ApiService.instance.postAnalytics(
+            eventType: 'currency_change_failed',
+            deviceId: '',
+            sessionId: '',
+            userId: '',
+            eventData: {
+              'to_currency': currencyCode,
+              'reason': 'api_failed',
+              'status_code': response.statusCode.toString(),
+            },
+            timestamp: DateTime.now().toIso8601String(),
+          ).catchError((e) => ApiCallResponse.failure('Analytics failed')),
+        );
+
         return 1.0; // Fallback
       }
 
@@ -342,6 +337,8 @@ class _CurrencySelectorButtonState
     if (_lastKnownLanguage != null &&
         _lastKnownLanguage != currentLanguageCode) {
       // Update currency for new language asynchronously
+      // NOTE: This is safe from build loops because _updateCurrencyForLanguageChange()
+      // only updates provider state (not widget state), so it doesn't trigger setState.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updateCurrencyForLanguageChange(currentLanguageCode);
       });

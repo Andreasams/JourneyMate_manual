@@ -72,6 +72,12 @@ class _LanguageSelectorButtonState
   /// Tracks if overlay is currently visible
   bool _isOverlayVisible = false;
 
+  /// Tracks last language change time for debouncing
+  static DateTime? _lastLanguageChangeTime;
+
+  /// Cooldown period between language changes (prevents race conditions)
+  static const _languageChangeCooldown = Duration(milliseconds: 500);
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Lifecycle
   // ─────────────────────────────────────────────────────────────────────────────
@@ -168,6 +174,15 @@ class _LanguageSelectorButtonState
 
     // Skip if selecting same language
     if (newLanguageCode == widget.currentLanguageCode) return;
+
+    // Debounce: prevent rapid language changes that could cause race conditions
+    final now = DateTime.now();
+    if (_lastLanguageChangeTime != null &&
+        now.difference(_lastLanguageChangeTime!) < _languageChangeCooldown) {
+      debugPrint('⏱️ Language change debounced (too soon after last change)');
+      return;
+    }
+    _lastLanguageChangeTime = now;
 
     try {
       // Persist language to SharedPreferences
