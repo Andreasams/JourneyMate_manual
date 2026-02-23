@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../services/translation_service.dart';
 import '../../providers/filter_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/search_providers.dart';
