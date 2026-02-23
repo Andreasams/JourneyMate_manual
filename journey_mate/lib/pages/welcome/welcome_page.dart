@@ -38,6 +38,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   DateTime? _pageStartTime;
   bool _buttonsVisible = false;
   bool _isLoadingSearch = false;
+  bool _hasTrackedPageView = false; // Prevent duplicate tracking
 
   // ============================================================
   // LIFECYCLE
@@ -312,7 +313,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
   /// Track page_viewed analytics event on dispose
   Future<void> _trackPageView() async {
-    if (_pageStartTime == null) return;
+    if (_pageStartTime == null || _hasTrackedPageView) return;
+    _hasTrackedPageView = true; // Prevent duplicate calls
 
     try {
       final duration = DateTime.now().difference(_pageStartTime!);

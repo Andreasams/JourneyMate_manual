@@ -349,7 +349,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             _currentSort = sortBy;
             _onlyOpen = onlyOpen;
           });
-          _executeSearch(ref.read(searchStateProvider).currentSearchText);
+          // Save search text to local variable to avoid ref access after unmount
+          final searchText = ref.read(searchStateProvider).currentSearchText;
+          _executeSearch(searchText);
         },
       ),
     );
@@ -490,7 +492,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   .read(locationProvider.notifier)
                   .requestPermission();
               if (granted && mounted) {
-                _executeSearch(ref.read(searchStateProvider).currentSearchText);
+                final searchText = ref.read(searchStateProvider).currentSearchText;
+                _executeSearch(searchText);
               }
             },
             child: Text(
