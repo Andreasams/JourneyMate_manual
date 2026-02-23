@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/translation_service.dart';
 import '../../providers/filter_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/search_providers.dart';
+import '../../providers/settings_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -11,36 +13,42 @@ import '../../theme/app_radius.dart';
 
 /// LanguageSelectorButton - Settings button for language selection
 ///
-/// Displays current language in a Material Design dropdown. Selecting a new
-/// language triggers localization update, translation reload, and filter reload.
+/// Displays current language with a chevron icon. Tapping opens a modal bottom
+/// sheet with 7 language options (en, da, de, fr, it, no, sv). Selecting a new
+/// language triggers localization update, translation reload, filter reload,
+/// and currency auto-suggestion.
 ///
 /// Props:
 /// - currentLanguageCode: Current language code (e.g., 'en', 'da')
 /// - onLanguageSelected: Callback with new language code
 /// - width: Button width
+/// - height: Button height (defaults to 50px)
 ///
 /// Provider Dependencies:
-/// - localizationProvider: Read current language
+/// - localizationProvider: Trigger currency auto-suggestion after language change
 /// - translationsCacheProvider: Trigger reload after language change
 /// - filterProvider: Trigger reload after language change
+/// - searchStateProvider: Invalidate cache (results are language-specific)
 ///
 /// Design:
-/// - Material Design DropdownButton
-/// - Floating label: "Language" (from translation key)
-/// - 7 language options: da, en, de, sv, no, it, fr
-/// - Native language names (Dansk, English, Deutsch, etc.)
-/// - 50px height, white background, border, orange focus state
+/// - Button: white background, border (#e8e8e8), parameterized height
+/// - Displays current language name (e.g., "English", "Dansk")
+/// - Chevron icon on right
+/// - Bottom sheet with 7 language options (radio-style selection)
+/// - Language names in native form (Dansk, not Danish)
 class LanguageSelectorButton extends ConsumerWidget {
   const LanguageSelectorButton({
     super.key,
     required this.currentLanguageCode,
     required this.onLanguageSelected,
     this.width,
+    this.height,
   });
 
   final String currentLanguageCode;
   final Function(String) onLanguageSelected;
   final double? width;
+  final double? height;
 
   // Language names in their native form (MUST NOT be translated)
   static const Map<String, String> _languageNames = {
@@ -64,7 +72,152 @@ class LanguageSelectorButton extends ConsumerWidget {
     'fr', // French
   ];
 
-  /// Handles language change: save preference, reload translations + filters, invalidate cache
+  // Translation keys
+  static const String _languageLabelKey = 'settings_language_label';
+  static const String _selectLanguageTitleKey = 'settings_select_language_title';
+
+  // Layout constants
+  static const double _borderRadius = 12.0;
+  static const double _iconSize = 24.0;
+
+  /// Opens the language selector bottom sheet
+  void _showLanguageSelector(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        maxChildSize: 0.9,
+        minChildSize: 0.3,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: AppColors.bgCard,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppRadius.bottomSheet),
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildSheetHeader(context, ref),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.sm,
+                  ),
+                  itemCount: _languageOrder.length,
+                  itemBuilder: (context, index) {
+                    final languageCode = _languageOrder[index];
+                    return _buildLanguageOption(
+                      context,
+                      ref,
+                      languageCode,
+                      currentLanguageCode == languageCode,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds the sheet header with title and close button
+  Widget _buildSheetHeader(BuildContext context, WidgetRef ref) {
+    return Container(
+      height: 64.0,
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Stack(
+        children: [
+          // Swipe bar indicator
+          Positioned(
+            top: 8.0,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                width: 80.0,
+                height: 4.0,
+                decoration: BoxDecoration(
+                  color: AppColors.textPrimary,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ),
+          // Title
+          Center(
+            child: Text(
+              td(ref, _selectLanguageTitleKey),
+              style: AppTypography.sectionHeading,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds a single language option with radio button
+  Widget _buildLanguageOption(
+    BuildContext context,
+    WidgetRef ref,
+    String languageCode,
+    bool isSelected,
+  ) {
+    final languageName = _languageNames[languageCode] ?? languageCode.toUpperCase();
+
+    return InkWell(
+      onTap: () async {
+        Navigator.of(context).pop();
+        await _handleLanguageChange(context, ref, languageCode);
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: Row(
+          children: [
+            // Radio button
+            Container(
+              width: 24.0,
+              height: 24.0,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? AppColors.accent : AppColors.border,
+                  width: 2.0,
+                ),
+              ),
+              child: isSelected
+                  ? Center(
+                      child: Container(
+                        width: 12.0,
+                        height: 12.0,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+            SizedBox(width: AppSpacing.md),
+            // Language name
+            Text(
+              languageName,
+              style: AppTypography.bodyRegular.copyWith(
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Handles language change: persist, reload translations + filters, invalidate cache, auto-suggest currency
   Future<void> _handleLanguageChange(
     BuildContext context,
     WidgetRef ref,
@@ -87,6 +240,12 @@ class LanguageSelectorButton extends ConsumerWidget {
       // Invalidate search cache (results are language-specific)
       ref.read(searchStateProvider.notifier).invalidateCache();
       debugPrint('🌍 Language changed, search cache invalidated');
+
+      // ✨ NEW: Auto-suggest currency for new language
+      // This will auto-switch if current currency not available in new language
+      // Note: This is a no-op if currency is already compatible
+      await ref.read(localizationProvider.notifier).updateCurrencyForLanguageChange(newLanguageCode);
+      debugPrint('💰 Currency auto-suggestion triggered for language: $newLanguageCode');
 
       // Notify parent callback
       onLanguageSelected(newLanguageCode);
@@ -118,56 +277,40 @@ class LanguageSelectorButton extends ConsumerWidget {
     final languageName = _languageNames[currentLanguageCode] ?? currentLanguageCode.toUpperCase();
 
     return GestureDetector(
-      onTap: () {
-        // Open dropdown programmatically by using a hidden button
-        // We'll trigger the dropdown via the actual DropdownButton below
-      },
+      onTap: () => _showLanguageSelector(context, ref),
       child: Container(
         width: width,
-        height: 50.0,
+        height: height ?? 50.0, // ← FIXED: respect parameter
         decoration: BoxDecoration(
           color: AppColors.bgCard,
-          borderRadius: BorderRadius.circular(AppRadius.input),
-          border: Border.all(color: AppColors.border, width: 1.0),
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(_borderRadius),
         ),
-        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 12.0),
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              languageName,
-              style: AppTypography.bodyRegular,
-            ),
-            DropdownButton<String>(
-              value: currentLanguageCode,
-              icon: Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: AppColors.textTertiary,
-                size: 24.0,
-              ),
-              dropdownColor: AppColors.bgCard,
-              borderRadius: BorderRadius.circular(AppRadius.input),
-              elevation: 4,
-              underline: const SizedBox.shrink(),
-              selectedItemBuilder: (context) {
-                // Return empty widgets for selected item (we show it separately)
-                return _languageOrder.map((code) => const SizedBox.shrink()).toList();
-              },
-              items: _languageOrder.map((code) {
-                final name = _languageNames[code] ?? code.toUpperCase();
-                return DropdownMenuItem<String>(
-                  value: code,
-                  child: Text(
-                    name,
-                    style: AppTypography.bodyRegular,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  td(ref, _languageLabelKey),
+                  style: AppTypography.helper.copyWith(
+                    color: AppColors.textTertiary,
                   ),
-                );
-              }).toList(),
-              onChanged: (newLanguage) async {
-                if (newLanguage != null && newLanguage != currentLanguageCode) {
-                  await _handleLanguageChange(context, ref, newLanguage);
-                }
-              },
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Text(
+                  languageName,
+                  style: AppTypography.bodyRegular,
+                ),
+              ],
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: AppColors.textTertiary,
+              size: _iconSize,
             ),
           ],
         ),

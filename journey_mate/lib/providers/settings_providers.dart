@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'provider_state_classes.dart';
+import '../services/api_service.dart';
 
 // ============================================================
 // LOCALIZATION PROVIDER (with persistence)
@@ -60,6 +61,83 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
   /// Reset to default currency
   Future<void> resetToDefault() async {
     await setCurrency('DKK', 1.0);
+  }
+
+  /// Auto-suggests currency based on language change
+  /// If current currency is not available in new language, switches to default
+  Future<void> updateCurrencyForLanguageChange(String newLanguageCode) async {
+    try {
+      final currentCurrency = state.currencyCode.isEmpty ? 'DKK' : state.currencyCode;
+      final availableCurrencies = _getCurrenciesForLanguage(newLanguageCode);
+
+      // If current currency not available in new language, switch to default (first option)
+      if (!availableCurrencies.contains(currentCurrency)) {
+        final defaultCurrency = availableCurrencies.first;
+
+        // Fetch exchange rate for new currency
+        final exchangeRate = await _fetchExchangeRate(defaultCurrency);
+
+        // Update currency with new rate
+        await setCurrency(defaultCurrency, exchangeRate);
+        debugPrint('💱 Auto-switched currency to $defaultCurrency for language $newLanguageCode');
+      } else {
+        debugPrint('✓ Currency $currentCurrency is available for language $newLanguageCode, no change needed');
+      }
+    } catch (e) {
+      debugPrint('❌ Error updating currency for language change: $e');
+    }
+  }
+
+  /// Returns filtered currency codes based on language
+  /// Uses same logic as FlutterFlow getCurrencyOptionsForLanguage()
+  static List<String> _getCurrenciesForLanguage(String languageCode) {
+    const currencyConfigByLanguage = {
+      'en': ['USD', 'GBP', 'DKK'],
+      'da': ['DKK'],
+      'de': ['EUR', 'DKK'],
+      'fr': ['EUR', 'DKK'],
+      'it': ['EUR', 'DKK'],
+      'no': ['NOK', 'DKK'],
+      'sv': ['SEK', 'DKK'],
+    };
+    return currencyConfigByLanguage[languageCode.toLowerCase()] ?? ['DKK'];
+  }
+
+  /// Fetches exchange rate from BuildShip API
+  Future<double> _fetchExchangeRate(String currencyCode) async {
+    try {
+      // DKK has 1:1 rate (base currency)
+      if (currencyCode == 'DKK') {
+        return 1.0;
+      }
+
+      // Call BuildShip API: GET /exchangerate?to_currency={code}
+      final response = await ApiService.instance.getExchangeRate(
+        toCurrency: currencyCode,
+      );
+
+      if (!response.succeeded) {
+        debugPrint('⚠️ Exchange rate API failed: ${response.statusCode}');
+        return 1.0; // Fallback
+      }
+
+      // Response format: [{"rate": 7.5}] or {"rate": 7.5}
+      final dynamic body = response.jsonBody;
+
+      if (body is List && body.isNotEmpty) {
+        final rate = body[0]['rate'] as num;
+        return rate.toDouble();
+      } else if (body is Map && body.containsKey('rate')) {
+        final rate = body['rate'] as num;
+        return rate.toDouble();
+      }
+
+      debugPrint('⚠️ Unexpected exchange rate response format');
+      return 1.0; // Fallback
+    } catch (e) {
+      debugPrint('❌ Exchange rate fetch failed: $e');
+      return 1.0; // Fallback
+    }
   }
 }
 

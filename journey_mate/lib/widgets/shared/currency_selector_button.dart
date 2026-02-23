@@ -5,21 +5,21 @@ import '../../providers/settings_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
 
-/// A button that displays the currently selected currency and opens a
-/// dropdown selector on tap.
+/// A button that displays the currently selected currency and opens an
+/// overlay selector on tap.
 ///
 /// **State Management:**
-/// - Uses local state for language change detection
+/// - Uses local state for overlay management (GlobalKey, OverlayEntry)
 /// - Reads currency from `localizationProvider`
 /// - Updates currency via `localizationProvider.notifier.setCurrency()`
 ///
 /// **Features:**
 /// - Displays currency name and symbol (e.g., "Danish Krone (kr.)")
-/// - Opens Material Design dropdown with language-specific currencies
-/// - Currency filtering by language:
+/// - Opens overlay with language-specific currencies:
 ///   - Danish: DKK only
 ///   - English: USD, GBP, DKK
 ///   - German/French/Italian: EUR, DKK
@@ -27,12 +27,14 @@ import '../../theme/app_typography.dart';
 ///   - Norwegian: NOK, DKK
 /// - Auto-switches currency when language changes (if current currency not available)
 /// - Fetches exchange rates via BuildShip API
+/// - Overlay dismisses on selection or outside tap
+/// - Smart positioning with 4px gap between button and overlay
 /// - Analytics tracking for currency changes
 ///
 /// **FlutterFlow Migration Notes:**
-/// - Migrated from overlay to Material Design DropdownButtonFormField
-/// - Added language-specific currency filtering (getCurrencyOptionsForLanguage logic)
+/// - Migrated from FFAppState to localizationProvider (Riverpod 3.x)
 /// - Removed markUserEngaged() calls (ActivityScope handles automatically)
+/// - Added language-specific currency filtering (getCurrencyOptionsForLanguage logic)
 /// - Uses BuildShip API for exchange rates
 class CurrencySelectorButton extends ConsumerStatefulWidget {
   const CurrencySelectorButton({
@@ -52,14 +54,33 @@ class CurrencySelectorButton extends ConsumerStatefulWidget {
 class _CurrencySelectorButtonState
     extends ConsumerState<CurrencySelectorButton> {
   // ─────────────────────────────────────────────────────────────────────────────
-  // State
+  // State & Keys
   // ─────────────────────────────────────────────────────────────────────────────
+
+  /// Global key to get button position for overlay placement
+  final GlobalKey _buttonKey = GlobalKey();
+
+  /// Tracks overlay entry for manual dismissal
+  OverlayEntry? _overlayEntry;
+
+  /// Tracks if overlay is currently visible
+  bool _isOverlayVisible = false;
 
   /// Tracks the last known language to detect changes
   String? _lastKnownLanguage;
 
   /// Default currency code
   static const String _defaultCurrencyCode = 'DKK';
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Lifecycle
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  @override
+  void dispose() {
+    _dismissOverlay();
+    super.dispose();
+  }
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Currency Configuration
@@ -151,12 +172,55 @@ class _CurrencySelectorButtonState
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // Overlay Management
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /// Shows the currency selection overlay
+  void _showOverlay(BuildContext context) {
+    if (_isOverlayVisible) return;
+
+    final renderBox =
+        _buttonKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final buttonSize = renderBox.size;
+    final buttonPosition = renderBox.localToGlobal(Offset.zero);
+
+    _overlayEntry = OverlayEntry(
+      builder: (overlayContext) => _buildOverlay(
+        context: context,
+        buttonPosition: buttonPosition,
+        buttonWidth: buttonSize.width,
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    setState(() {
+      _isOverlayVisible = true;
+    });
+  }
+
+  /// Dismisses the overlay
+  void _dismissOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    if (mounted) {
+      setState(() {
+        _isOverlayVisible = false;
+      });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // Currency Selection & Exchange Rate
   // ─────────────────────────────────────────────────────────────────────────────
 
-  /// Handles currency selection from dropdown
+  /// Handles currency selection from overlay
   Future<void> _handleCurrencySelection(String newCurrencyCode) async {
     final currentCurrency = _getEffectiveCurrencyCode();
+
+    // Dismiss overlay immediately for responsive feel
+    _dismissOverlay();
 
     // Skip if selecting same currency
     if (newCurrencyCode == currentCurrency) return;
@@ -254,6 +318,7 @@ class _CurrencySelectorButtonState
       if (!availableCurrencies.contains(currentCurrency)) {
         final defaultCurrency = availableCurrencies.first;
         await _updateCurrency(defaultCurrency);
+        debugPrint('💱 Auto-switched currency to $defaultCurrency for language $newLanguageCode');
       }
     } catch (e) {
       debugPrint('❌ Error updating currency for language change: $e');
@@ -261,7 +326,7 @@ class _CurrencySelectorButtonState
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Build
+  // Build: Main
   // ─────────────────────────────────────────────────────────────────────────────
 
   @override
@@ -285,69 +350,132 @@ class _CurrencySelectorButtonState
     // Update last known language
     _lastKnownLanguage = currentLanguageCode;
 
-    // Get filtered currencies for current language
-    final availableCurrencies = _getCurrenciesForLanguage(currentLanguageCode);
-
-    final effectiveValue = availableCurrencies.contains(currentCurrency)
-        ? currentCurrency
-        : availableCurrencies.first;
-
     return GestureDetector(
-      onTap: () {
-        // Open dropdown programmatically by using a hidden button
-        // We'll trigger the dropdown via the actual DropdownButton below
-      },
+      onTap: () => _showOverlay(context),
       child: Container(
+        key: _buttonKey,
         width: widget.width,
-        height: 50.0,
+        height: widget.height ?? 50.0, // ← FIXED: respect parameter
         decoration: BoxDecoration(
-          color: AppColors.bgInput,
-          borderRadius: BorderRadius.circular(AppRadius.input),
-          border: Border.all(color: AppColors.border, width: 1.0),
+          color: AppColors.bgSurface,
+          borderRadius: BorderRadius.circular(AppRadius.chip),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _getCurrencyDisplayLabel(context, effectiveValue),
-              style: AppTypography.bodyRegular.copyWith(
-                fontWeight: FontWeight.w300,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _getCurrencyDisplayLabel(context, currentCurrency),
+                style: AppTypography.bodyRegular.copyWith(
+                  fontWeight: FontWeight.w300,
+                ),
               ),
-            ),
-            DropdownButton<String>(
-              value: effectiveValue,
-              icon: Icon(
-                Icons.keyboard_arrow_down_rounded,
+              Icon(
+                _isOverlayVisible
+                    ? Icons.keyboard_arrow_up_rounded
+                    : Icons.keyboard_arrow_down_rounded,
                 color: AppColors.textSecondary,
                 size: 24.0,
               ),
-              dropdownColor: AppColors.bgSurface,
-              borderRadius: BorderRadius.circular(AppRadius.chip),
-              elevation: 4,
-              underline: const SizedBox.shrink(),
-              selectedItemBuilder: (context) {
-                // Return empty widgets for selected item (we show it separately)
-                return availableCurrencies.map((code) => const SizedBox.shrink()).toList();
-              },
-              items: availableCurrencies.map((code) {
-                return DropdownMenuItem<String>(
-                  value: code,
-                  child: Text(
-                    _getCurrencyDisplayLabel(context, code),
-                    style: AppTypography.bodyRegular.copyWith(
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
-                );
-              }).toList(),
-              onChanged: (newCurrency) {
-                if (newCurrency != null && newCurrency != effectiveValue) {
-                  _handleCurrencySelection(newCurrency);
-                }
-              },
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Build: Overlay
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /// Builds the complete overlay positioned below the button
+  Widget _buildOverlay({
+    required BuildContext context,
+    required Offset buttonPosition,
+    required double buttonWidth,
+  }) {
+    return Stack(
+      children: [
+        // Invisible barrier to detect outside taps
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: _dismissOverlay,
+            child: Container(color: Colors.transparent),
+          ),
+        ),
+        // Currency selection overlay
+        Positioned(
+          left: buttonPosition.dx,
+          top: buttonPosition.dy + (widget.height ?? 50.0) + AppSpacing.xs,
+          child: _buildOverlayContent(context, buttonWidth),
+        ),
+      ],
+    );
+  }
+
+  /// Builds the overlay content container
+  Widget _buildOverlayContent(BuildContext context, double width) {
+    // Get filtered currencies for current language
+    final currentLanguageCode = Localizations.localeOf(context).languageCode;
+    final availableCurrencies = _getCurrenciesForLanguage(currentLanguageCode);
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        width: width,
+        decoration: BoxDecoration(
+          color: AppColors.bgSurface,
+          borderRadius: BorderRadius.circular(AppRadius.chip),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 4.0,
+              spreadRadius: 1.0,
+              offset: const Offset(0, 2),
             ),
           ],
+        ),
+        padding: const EdgeInsets.only(
+          left: AppSpacing.md,
+          right: AppSpacing.md,
+          top: AppSpacing.xs,
+          bottom: AppSpacing.xs,
+        ),
+        child: _buildCurrencyList(context, availableCurrencies),
+      ),
+    );
+  }
+
+  /// Builds the list of currency options
+  Widget _buildCurrencyList(BuildContext context, List<String> currencies) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: currencies.map((currencyCode) {
+        return _buildCurrencyItem(context, currencyCode);
+      }).toList(),
+    );
+  }
+
+  /// Builds a single currency item
+  Widget _buildCurrencyItem(BuildContext context, String currencyCode) {
+    return InkWell(
+      onTap: () => _handleCurrencySelection(currencyCode),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.only(
+          left: AppSpacing.xs,
+          top: AppSpacing.md,
+          bottom: AppSpacing.md,
+        ),
+        child: Text(
+          _getCurrencyDisplayLabel(context, currencyCode),
+          style: AppTypography.bodyRegular.copyWith(
+            fontWeight: FontWeight.w300,
+          ),
         ),
       ),
     );
