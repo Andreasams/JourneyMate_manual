@@ -8,9 +8,9 @@
 
 **Phase:** Phase 8A — Critical Production Blockers — IN PROGRESS
 **Deployment:** TestFlight grey screen bug — AWAITING USER TESTING (commit c0b84a4) 🚀 (2026-02-22)
-**Last completed task:** ✅ Phase 8A.2 Translation Migration COMPLETE (2026-02-23)
-**Next task:** Phase 8A.4 — Fix Critical TODOs (11 in search_results_list_view.dart, 3 in profile widgets)
-**Blocked on:** Nothing (proceeding with 8A.4 per user's requested order: 8A.2 → 8A.4 → 8A.1 → 8A.3 → 8A.6, skipping 8A.5)
+**Last completed task:** ✅ Phase 8A.4 Critical TODOs COMPLETE (2026-02-23)
+**Next task:** Phase 8A.1 — Verify TestFlight grey screen fix (awaiting user testing)
+**Blocked on:** User needs to test latest TestFlight build and report results
 
 **🔴 CRITICAL BUG FIXED (2026-02-22) — REAL ROOT CAUSE:**
 TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
@@ -57,12 +57,69 @@ TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
 - flutter analyze: 0 errors, 0 warnings
 - 100% dynamic translations via Supabase BuildShip API (/languageText endpoint)
 
+**✅ PHASE 8A.4 COMPLETE (2026-02-23):**
+- Created determineStatusAndColor function (business_status.dart, 310 lines)
+  - Calculates open/closed/opening soon/closing soon status
+  - Handles complex business hours: 5 time slots/day, overnight hours, 30-min thresholds
+  - Returns Map with status text + color (green=open, red=closed)
+- Wired up 4 business logic functions in search_results_list_view.dart:
+  - determineStatusAndColor → replaced _calculateStatusStub
+  - openClosesAt → replaced _getTimingTextStub
+  - returnDistance → replaced _calculateDistanceStub
+  - streetAndNeighbourhoodLength → replaced address formatting stub
+- Fixed profile_top_business_block_widget.dart:
+  - Converted StatefulWidget → ConsumerStatefulWidget for ref access
+  - Wired translationsCacheProvider at 2 locations (lines 137, 297)
+- All 14 critical TODOs resolved (11 in search, 3 in profile)
+- flutter analyze: 0 errors, 0 warnings
+
 **⚠️ REMAINING WORK (Phase 8A tasks per user's order):**
-- 8A.4: Fix Critical TODOs (11 in search_results_list_view.dart, 3 in profile widgets) — NEXT
-- 8A.1: Verify TestFlight build fixes grey screen issue
+- 8A.1: Verify TestFlight build fixes grey screen issue — NEXT (awaiting user testing)
 - 8A.3: Clean git history (remove old Supabase secret from commit 29801392)
 - 8A.6: Final pre-release verification (full user journey testing)
 - 8A.5: Integration testing — SKIPPED per user request
+
+## Files changed this session (Phase 8A.4 Critical TODOs - 2026-02-23)
+
+**PHASE 8A.4 COMPLETE ✅** — Business Logic Implementation
+
+**Summary:**
+- Created determineStatusAndColor function (business_status.dart, 310 lines)
+- Replaced all 14 stub implementations with production-ready business logic
+- Wired up 4 custom functions in search results + profile widgets
+- Converted profile widget to ConsumerStatefulWidget for ref access
+- flutter analyze: 0 errors, 0 warnings
+
+**Files modified:**
+
+**New file:**
+- journey_mate/lib/services/custom_functions/business_status.dart (310 lines)
+  - determineStatusAndColor function
+  - Calculates open/closed/opening soon/closing soon status
+  - Handles complex business hours scenarios
+  - Returns Map with status text and color indicator
+
+**Modified files:**
+- journey_mate/lib/widgets/shared/search_results_list_view.dart
+  - Added imports: business_status, hours_formatter, distance_calculator, address_formatter, LatLng
+  - Replaced _calculateStatusStub with determineStatusAndColor call
+  - Replaced _getTimingTextStub with openClosesAt call
+  - Replaced _calculateDistanceStub with returnDistance call (using LatLng)
+  - Replaced address formatting stub with streetAndNeighbourhoodLength call
+  - All 11 TODOs resolved
+
+- journey_mate/lib/widgets/shared/profile_top_business_block_widget.dart
+  - Added imports: flutter_riverpod, app_providers
+  - Converted StatefulWidget → ConsumerStatefulWidget
+  - Converted State → ConsumerState
+  - Updated createState return type to ConsumerState
+  - Wired translationsCacheProvider at 2 locations (replaced empty {} maps)
+  - All 3 TODOs resolved
+
+**Commits:**
+- ea9d4ab: feat(search): implement critical business logic TODOs (Phase 8A.4 complete)
+
+---
 
 ## Files changed this session (Phase 8A.2 Translation Migration - 2026-02-23)
 
