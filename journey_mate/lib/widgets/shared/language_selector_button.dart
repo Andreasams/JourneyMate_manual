@@ -13,10 +13,12 @@ import '../../theme/app_radius.dart';
 
 /// LanguageSelectorButton - Settings button for language selection
 ///
-/// Displays current language with a chevron icon. Tapping opens a modal bottom
-/// sheet with 7 language options (en, da, de, fr, it, no, sv). Selecting a new
-/// language triggers localization update, translation reload, filter reload,
-/// and currency auto-suggestion.
+/// Displays current language with a chevron icon. Tapping opens a custom
+/// overlay dropdown with 7 language options (en, da, de, fr, it, no, sv).
+/// Selecting a new language triggers localization update, translation reload,
+/// filter reload, and currency auto-suggestion.
+///
+/// **IDENTICAL UI TO CurrencySelectorButton** — both use custom overlay pattern
 ///
 /// Props:
 /// - currentLanguageCode: Current language code (e.g., 'en', 'da')
@@ -33,10 +35,11 @@ import '../../theme/app_radius.dart';
 /// Design:
 /// - Button: white background, border (#e8e8e8), parameterized height
 /// - Displays current language name (e.g., "English", "Dansk")
-/// - Chevron icon on right
-/// - Bottom sheet with 7 language options (radio-style selection)
+/// - Chevron down/up icon on right
+/// - Custom overlay dropdown positioned 4px below button
+/// - Overlay matches button width
 /// - Language names in native form (Dansk, not Danish)
-class LanguageSelectorButton extends ConsumerWidget {
+class LanguageSelectorButton extends ConsumerStatefulWidget {
   const LanguageSelectorButton({
     super.key,
     required this.currentLanguageCode,
@@ -49,6 +52,40 @@ class LanguageSelectorButton extends ConsumerWidget {
   final Function(String) onLanguageSelected;
   final double? width;
   final double? height;
+
+  @override
+  ConsumerState<LanguageSelectorButton> createState() =>
+      _LanguageSelectorButtonState();
+}
+
+class _LanguageSelectorButtonState
+    extends ConsumerState<LanguageSelectorButton> {
+  // ─────────────────────────────────────────────────────────────────────────────
+  // State & Keys
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /// Global key to get button position for overlay placement
+  final GlobalKey _buttonKey = GlobalKey();
+
+  /// Tracks overlay entry for manual dismissal
+  OverlayEntry? _overlayEntry;
+
+  /// Tracks if overlay is currently visible
+  bool _isOverlayVisible = false;
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Lifecycle
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  @override
+  void dispose() {
+    _dismissOverlay();
+    super.dispose();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Language Configuration
+  // ─────────────────────────────────────────────────────────────────────────────
 
   // Language names in their native form (MUST NOT be translated)
   static const Map<String, String> _languageNames = {
@@ -72,158 +109,66 @@ class LanguageSelectorButton extends ConsumerWidget {
     'fr', // French
   ];
 
-  // Translation keys
-  static const String _languageLabelKey = 'settings_language_label';
-  static const String _selectLanguageTitleKey = 'settings_select_language_title';
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Data Retrieval
+  // ─────────────────────────────────────────────────────────────────────────────
 
-  // Layout constants
-  static const double _borderRadius = 12.0;
-  static const double _iconSize = 24.0;
-
-  /// Opens the language selector bottom sheet
-  void _showLanguageSelector(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
-        maxChildSize: 0.9,
-        minChildSize: 0.3,
-        builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: AppColors.bgCard,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppRadius.bottomSheet),
-            ),
-          ),
-          child: Column(
-            children: [
-              _buildSheetHeader(context, ref),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.sm,
-                  ),
-                  itemCount: _languageOrder.length,
-                  itemBuilder: (context, index) {
-                    final languageCode = _languageOrder[index];
-                    return _buildLanguageOption(
-                      context,
-                      ref,
-                      languageCode,
-                      currentLanguageCode == languageCode,
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  /// Gets the language display name
+  String _getLanguageDisplayName(String languageCode) {
+    return _languageNames[languageCode] ?? languageCode.toUpperCase();
   }
 
-  /// Builds the sheet header with title and close button
-  Widget _buildSheetHeader(BuildContext context, WidgetRef ref) {
-    return Container(
-      height: 64.0,
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Stack(
-        children: [
-          // Swipe bar indicator
-          Positioned(
-            top: 8.0,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: 80.0,
-                height: 4.0,
-                decoration: BoxDecoration(
-                  color: AppColors.textPrimary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-          ),
-          // Title
-          Center(
-            child: Text(
-              td(ref, _selectLanguageTitleKey),
-              style: AppTypography.sectionHeading,
-            ),
-          ),
-        ],
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Overlay Management
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /// Shows the language selection overlay
+  void _showOverlay(BuildContext context) {
+    if (_isOverlayVisible) return;
+
+    final renderBox =
+        _buttonKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final buttonSize = renderBox.size;
+    final buttonPosition = renderBox.localToGlobal(Offset.zero);
+
+    _overlayEntry = OverlayEntry(
+      builder: (overlayContext) => _buildOverlay(
+        context: context,
+        buttonPosition: buttonPosition,
+        buttonWidth: buttonSize.width,
       ),
     );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    setState(() {
+      _isOverlayVisible = true;
+    });
   }
 
-  /// Builds a single language option with radio button
-  Widget _buildLanguageOption(
-    BuildContext context,
-    WidgetRef ref,
-    String languageCode,
-    bool isSelected,
-  ) {
-    final languageName = _languageNames[languageCode] ?? languageCode.toUpperCase();
-
-    return InkWell(
-      onTap: () async {
-        Navigator.of(context).pop();
-        await _handleLanguageChange(context, ref, languageCode);
-      },
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-        child: Row(
-          children: [
-            // Radio button
-            Container(
-              width: 24.0,
-              height: 24.0,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? AppColors.accent : AppColors.border,
-                  width: 2.0,
-                ),
-              ),
-              child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: 12.0,
-                        height: 12.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.accent,
-                        ),
-                      ),
-                    )
-                  : null,
-            ),
-            SizedBox(width: AppSpacing.md),
-            // Language name
-            Text(
-              languageName,
-              style: AppTypography.bodyRegular.copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  /// Dismisses the overlay
+  void _dismissOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    if (mounted) {
+      setState(() {
+        _isOverlayVisible = false;
+      });
+    }
   }
 
-  /// Handles language change: persist, reload translations + filters, invalidate cache, auto-suggest currency
-  Future<void> _handleLanguageChange(
-    BuildContext context,
-    WidgetRef ref,
-    String newLanguageCode,
-  ) async {
-    if (newLanguageCode == currentLanguageCode) return;
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Language Selection
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /// Handles language selection from overlay
+  Future<void> _handleLanguageSelection(String newLanguageCode) async {
+    // Dismiss overlay immediately for responsive feel
+    _dismissOverlay();
+
+    // Skip if selecting same language
+    if (newLanguageCode == widget.currentLanguageCode) return;
 
     try {
       // Persist language to SharedPreferences
@@ -241,16 +186,14 @@ class LanguageSelectorButton extends ConsumerWidget {
       ref.read(searchStateProvider.notifier).invalidateCache();
       debugPrint('🌍 Language changed, search cache invalidated');
 
-      // ✨ NEW: Auto-suggest currency for new language
-      // This will auto-switch if current currency not available in new language
-      // Note: This is a no-op if currency is already compatible
+      // Auto-suggest currency for new language
       await ref.read(localizationProvider.notifier).updateCurrencyForLanguageChange(newLanguageCode);
       debugPrint('💰 Currency auto-suggestion triggered for language: $newLanguageCode');
 
       // Notify parent callback
-      onLanguageSelected(newLanguageCode);
+      widget.onLanguageSelected(newLanguageCode);
 
-      if (context.mounted) {
+      if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Language changed to ${_languageNames[newLanguageCode]}'),
@@ -260,7 +203,7 @@ class LanguageSelectorButton extends ConsumerWidget {
       }
     } catch (e) {
       debugPrint('❌ Error changing language: $e');
-      if (context.mounted) {
+      if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to change language'),
@@ -272,47 +215,136 @@ class LanguageSelectorButton extends ConsumerWidget {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Build: Main
+  // ─────────────────────────────────────────────────────────────────────────────
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final languageName = _languageNames[currentLanguageCode] ?? currentLanguageCode.toUpperCase();
+  Widget build(BuildContext context) {
+    final languageName = _getLanguageDisplayName(widget.currentLanguageCode);
 
     return GestureDetector(
-      onTap: () => _showLanguageSelector(context, ref),
+      onTap: () => _showOverlay(context),
+      child: Container(
+        key: _buttonKey,
+        width: widget.width,
+        height: widget.height ?? 50.0,
+        decoration: BoxDecoration(
+          color: AppColors.bgSurface,
+          borderRadius: BorderRadius.circular(AppRadius.chip),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                languageName,
+                style: AppTypography.bodyRegular.copyWith(
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+              Icon(
+                _isOverlayVisible
+                    ? Icons.keyboard_arrow_up_rounded
+                    : Icons.keyboard_arrow_down_rounded,
+                color: AppColors.textSecondary,
+                size: 24.0,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Build: Overlay
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /// Builds the complete overlay positioned below the button
+  Widget _buildOverlay({
+    required BuildContext context,
+    required Offset buttonPosition,
+    required double buttonWidth,
+  }) {
+    return Stack(
+      children: [
+        // Invisible barrier to detect outside taps
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: _dismissOverlay,
+            child: Container(color: Colors.transparent),
+          ),
+        ),
+        // Language selection overlay
+        Positioned(
+          left: buttonPosition.dx,
+          top: buttonPosition.dy + (widget.height ?? 50.0) + AppSpacing.xs,
+          child: _buildOverlayContent(context, buttonWidth),
+        ),
+      ],
+    );
+  }
+
+  /// Builds the overlay content container
+  Widget _buildOverlayContent(BuildContext context, double width) {
+    return Material(
+      color: Colors.transparent,
       child: Container(
         width: width,
-        height: height ?? 50.0, // ← FIXED: respect parameter
         decoration: BoxDecoration(
-          color: AppColors.bgCard,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(_borderRadius),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  td(ref, _languageLabelKey),
-                  style: AppTypography.helper.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xs),
-                Text(
-                  languageName,
-                  style: AppTypography.bodyRegular,
-                ),
-              ],
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: AppColors.textTertiary,
-              size: _iconSize,
+          color: AppColors.bgSurface,
+          borderRadius: BorderRadius.circular(AppRadius.chip),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 4.0,
+              spreadRadius: 1.0,
+              offset: const Offset(0, 2),
             ),
           ],
+        ),
+        padding: const EdgeInsets.only(
+          left: AppSpacing.md,
+          right: AppSpacing.md,
+          top: AppSpacing.xs,
+          bottom: AppSpacing.xs,
+        ),
+        child: _buildLanguageList(context),
+      ),
+    );
+  }
+
+  /// Builds the list of language options
+  Widget _buildLanguageList(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: _languageOrder.map((languageCode) {
+        return _buildLanguageItem(context, languageCode);
+      }).toList(),
+    );
+  }
+
+  /// Builds a single language item
+  Widget _buildLanguageItem(BuildContext context, String languageCode) {
+    return InkWell(
+      onTap: () => _handleLanguageSelection(languageCode),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.only(
+          left: AppSpacing.xs,
+          top: AppSpacing.md,
+          bottom: AppSpacing.md,
+        ),
+        child: Text(
+          _getLanguageDisplayName(languageCode),
+          style: AppTypography.bodyRegular.copyWith(
+            fontWeight: FontWeight.w300,
+          ),
         ),
       ),
     );
