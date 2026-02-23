@@ -293,45 +293,57 @@ class _CurrencySelectorButtonState
         : availableCurrencies.first;
 
     return Container(
-      height: 50.0,
       width: widget.width,
+      height: 50.0,
       decoration: BoxDecoration(
         color: AppColors.bgInput,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(color: AppColors.border, width: 1.0),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-      child: DropdownButton<String>(
-        value: effectiveValue,
-        style: AppTypography.bodyRegular.copyWith(
-          fontWeight: FontWeight.w300,
-        ),
-        icon: Icon(
-          Icons.keyboard_arrow_down_rounded,
-          color: AppColors.textSecondary,
-          size: 24.0,
-        ),
-        dropdownColor: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(AppRadius.chip),
-        elevation: 4,
-        isExpanded: true,
-        underline: const SizedBox.shrink(), // Remove default underline
-        items: availableCurrencies.map((code) {
-          return DropdownMenuItem<String>(
-            value: code,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Row(
+        children: [
+          Expanded(
             child: Text(
-              _getCurrencyDisplayLabel(context, code),
+              _getCurrencyDisplayLabel(context, effectiveValue),
               style: AppTypography.bodyRegular.copyWith(
                 fontWeight: FontWeight.w300,
               ),
             ),
-          );
-        }).toList(),
-        onChanged: (newCurrency) {
-          if (newCurrency != null && newCurrency != effectiveValue) {
-            _handleCurrencySelection(newCurrency);
-          }
-        },
+          ),
+          DropdownButton<String>(
+            value: effectiveValue,
+            icon: Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: AppColors.textSecondary,
+              size: 24.0,
+            ),
+            dropdownColor: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(AppRadius.chip),
+            elevation: 4,
+            underline: const SizedBox.shrink(),
+            selectedItemBuilder: (context) {
+              // Return empty widgets for selected item (we show it separately to the left)
+              return availableCurrencies.map((code) => const SizedBox.shrink()).toList();
+            },
+            items: availableCurrencies.map((code) {
+              return DropdownMenuItem<String>(
+                value: code,
+                child: Text(
+                  _getCurrencyDisplayLabel(context, code),
+                  style: AppTypography.bodyRegular.copyWith(
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (newCurrency) {
+              if (newCurrency != null && newCurrency != effectiveValue) {
+                _handleCurrencySelection(newCurrency);
+              }
+            },
+          ),
+        ],
       ),
     );
   }

@@ -66,9 +66,6 @@ class LanguageSelectorButton extends ConsumerWidget {
   // Translation keys
   static const String _languageLabelKey = 'settings_language_label';
 
-  // Layout constants
-  static const double _buttonHeight = 50.0;
-
   /// Handles language change: reload translations + filters
   Future<void> _handleLanguageChange(
     BuildContext context,
@@ -112,7 +109,6 @@ class LanguageSelectorButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
-      height: _buttonHeight,
       width: width,
       decoration: BoxDecoration(
         color: AppColors.bgCard,
@@ -123,22 +119,32 @@ class LanguageSelectorButton extends ConsumerWidget {
         horizontal: AppSpacing.lg,
         vertical: 8.0,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          // Floating label
-          Text(
-            td(ref, _languageLabelKey),
-            style: AppTypography.helper.copyWith(
-              color: AppColors.textTertiary,
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Floating label
+                Text(
+                  td(ref, _languageLabelKey),
+                  style: AppTypography.helper.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                // Selected language (displayed as text, not in dropdown)
+                Text(
+                  _languageNames[currentLanguageCode] ?? currentLanguageCode.toUpperCase(),
+                  style: AppTypography.bodyRegular,
+                ),
+              ],
             ),
           ),
-          SizedBox(height: AppSpacing.xs),
-          // Dropdown
+          // Dropdown button (invisible, only shows icon and opens dropdown)
           DropdownButton<String>(
             value: currentLanguageCode,
-            style: AppTypography.bodyRegular,
             icon: Icon(
               Icons.keyboard_arrow_down_rounded,
               color: AppColors.textTertiary,
@@ -147,8 +153,11 @@ class LanguageSelectorButton extends ConsumerWidget {
             dropdownColor: AppColors.bgCard,
             borderRadius: BorderRadius.circular(AppRadius.input),
             elevation: 4,
-            isExpanded: true,
             underline: const SizedBox.shrink(),
+            selectedItemBuilder: (context) {
+              // Return empty widgets for selected item (we show it separately above)
+              return _languageOrder.map((code) => const SizedBox.shrink()).toList();
+            },
             items: _languageOrder.map((code) {
               final languageName = _languageNames[code] ?? code.toUpperCase();
               return DropdownMenuItem<String>(
