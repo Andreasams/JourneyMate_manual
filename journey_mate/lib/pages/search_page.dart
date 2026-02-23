@@ -49,6 +49,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   // Sort state
   String _currentSort = 'match';
   bool _onlyOpen = false;
+  String _viewMode = 'liste'; // 'liste' or 'kort'
 
   // Filter overlay state
   int _activeFilterTab = 0;
@@ -412,6 +413,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
                   // 3-button filter row
                   _buildFilterButtonRow(filterCounts),
+                  SizedBox(height: AppSpacing.md),
+
+                  // Liste/Kort view toggle
+                  _buildViewToggle(),
                 ],
               ),
             ),
@@ -629,18 +634,110 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
+  Widget _buildViewToggle() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Row(
+        children: [
+          // Liste button (left)
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _viewMode = 'liste'),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: _viewMode == 'liste' ? Color(0xFFf5f5f5) : Colors.white,
+                  border: Border.all(color: Color(0xFFe8e8e8), width: 1.5),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    bottomLeft: Radius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Liste',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.bodyRegular.copyWith(
+                    fontWeight: _viewMode == 'liste' ? FontWeight.w600 : FontWeight.w400,
+                    color: _viewMode == 'liste' ? AppColors.textPrimary : Color(0xFF999999),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Kort button (right) - overlaps border with negative margin
+          Expanded(
+            child: Transform.translate(
+              offset: Offset(-1.5, 0), // Overlap left border
+              child: GestureDetector(
+                onTap: () => setState(() => _viewMode = 'kort'),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: _viewMode == 'kort' ? Color(0xFFf5f5f5) : Colors.white,
+                    border: Border.all(color: Color(0xFFe8e8e8), width: 1.5),
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(8),
+                      bottomRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Kort',
+                    textAlign: TextAlign.center,
+                    style: AppTypography.bodyRegular.copyWith(
+                      fontWeight: _viewMode == 'kort' ? FontWeight.w600 : FontWeight.w400,
+                      color: _viewMode == 'kort' ? AppColors.textPrimary : Color(0xFF999999),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSortButton() {
-    return FloatingActionButton.extended(
-      onPressed: _openSortBottomSheet,
-      backgroundColor: AppColors.bgCard,
-      elevation: 4,
-      label: Text(
-        td(ref, 'sort_$_currentSort'),
-        style: AppTypography.bodySmall.copyWith(
-          color: AppColors.textPrimary,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.accent,
+        borderRadius: BorderRadius.circular(20), // Pill shape
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _openSortBottomSheet,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.sort,
+                  size: 12,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 5),
+                Text(
+                  td(ref, 'sort_$_currentSort'),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      icon: Icon(Icons.sort, color: AppColors.accent, size: 20),
     );
   }
 
@@ -803,6 +900,30 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   ? td(ref, 'search_no_results_with_query')
                       .replaceAll('{query}', searchState.currentSearchText)
                   : td(ref, 'search_no_results'),
+              style: AppTypography.bodyRegular.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Map view placeholder (JSX: "Kortvisning - Kommer snart")
+    if (_viewMode == 'kort') {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.map_outlined,
+              size: 64,
+              color: AppColors.textTertiary,
+            ),
+            SizedBox(height: AppSpacing.lg),
+            Text(
+              'Kortvisning - Kommer snart',
               style: AppTypography.bodyRegular.copyWith(
                 color: AppColors.textSecondary,
               ),
