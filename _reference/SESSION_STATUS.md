@@ -8,9 +8,9 @@
 
 **Phase:** Phase 8A — Critical Production Blockers — IN PROGRESS
 **Deployment:** TestFlight grey screen bug — AWAITING USER TESTING (commit c0b84a4) 🚀 (2026-02-22)
-**Last completed task:** ✅ Phase 8A.4 Critical TODOs COMPLETE (2026-02-23)
-**Next task:** Phase 8A.1 — Verify TestFlight grey screen fix (awaiting user testing)
-**Blocked on:** User needs to test latest TestFlight build and report results
+**Last completed task:** ✅ Phase 8A.3 Git History Cleanup COMPLETE (2026-02-23)
+**Next task:** Phase 8A.6 — Final pre-release verification (or 8A.1 if user tests TestFlight first)
+**Blocked on:** User decision on next priority (verification testing vs TestFlight testing)
 
 **🔴 CRITICAL BUG FIXED (2026-02-22) — REAL ROOT CAUSE:**
 TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
@@ -73,13 +73,73 @@ TestFlight grey screen was caused by **WRONG ENDPOINT PATH**:
 - All 14 critical TODOs resolved (11 in search, 3 in profile)
 - flutter analyze: 0 errors, 0 warnings
 
+**✅ PHASE 8A.3 COMPLETE (2026-02-23):**
+- Git history successfully cleaned using git-filter-repo
+- Removed _flutterflow_export/lib/backend/supabase/supabase.dart from ALL 135 commits
+- Supabase secret key completely removed from git history
+- Problematic commit 29801392 rewritten (SHA no longer exists)
+- Force pushed cleaned history to GitHub
+- Verified: 0 occurrences of 'sb_secret' in entire git history
+- Backup created at /c/Users/Rikke/Documents/JourneyMate-Organized-backup
+- Method used: git-filter-repo --path --invert-paths (more reliable than git filter-branch)
+
 **⚠️ REMAINING WORK (Phase 8A tasks per user's order):**
 - 8A.1: Verify TestFlight build fixes grey screen issue — NEXT (awaiting user testing)
-- 8A.3: Clean git history (remove old Supabase secret from commit 29801392)
 - 8A.6: Final pre-release verification (full user journey testing)
 - 8A.5: Integration testing — SKIPPED per user request
 
-## Files changed this session (Phase 8A.4 Critical TODOs - 2026-02-23)
+## Files changed this session (Phase 8A.3 Git History Cleanup - 2026-02-23)
+
+**PHASE 8A.3 COMPLETE ✅** — Git History Cleanup
+
+**Summary:**
+- Installed git-filter-repo via pip
+- Removed _flutterflow_export/lib/backend/supabase/supabase.dart from all 135 commits
+- Secret key (sb_secret__GvphoyO1LwG3OAgBb5kag_oNovHgFX) completely removed from git history
+- Force pushed cleaned history to GitHub (origin/main)
+- Verified cleanup by cloning fresh from GitHub - 0 occurrences of secret in entire history
+- Problematic commit 29801392 no longer exists (SHA changed during rewrite)
+
+**Commands executed:**
+```bash
+pip install git-filter-repo
+cd /c/Users/Rikke/Documents/JourneyMate-Organized
+python -m git_filter_repo --path _flutterflow_export/lib/backend/supabase/supabase.dart --invert-paths --force
+git remote add origin https://github.com/Andreasams/JourneyMate_manual.git
+git push origin main --force
+```
+
+**Verification:**
+```bash
+# Clone fresh from GitHub
+git clone https://github.com/Andreasams/JourneyMate_manual.git JourneyMate-verify
+cd JourneyMate-verify
+git grep 'sb_secret' $(git rev-list --all)  # Exit code 1 = no matches ✅
+git log --all --full-history -- '*supabase.dart'  # No output = file removed ✅
+```
+
+**Files modified:**
+- **None** — This task only modified git history, not working directory files
+- The file _flutterflow_export/lib/backend/supabase/supabase.dart still exists locally for reference
+- But it's already in .gitignore so won't be committed again
+
+**Git history changes:**
+- 135 commits rewritten
+- commit 29801392c072350ef8a92204f5366f6995b4dfeb → rewritten (new SHA)
+- Remote refs updated via force push
+- Origin remote temporarily removed by git-filter-repo, then re-added
+
+**Backup location:**
+- /c/Users/Rikke/Documents/JourneyMate-Organized-backup
+
+**Next actions:**
+- ✅ User should verify GitHub Security tab shows no alerts
+- ✅ Ready for Phase 8A.6 Final Pre-Release Verification
+- ⏭️ Or Phase 8A.1 if user wants to test TestFlight first
+
+---
+
+## Previous session: Files changed (Phase 8A.4 Critical TODOs - 2026-02-23)
 
 **PHASE 8A.4 COMPLETE ✅** — Business Logic Implementation
 
