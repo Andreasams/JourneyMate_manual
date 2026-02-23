@@ -380,30 +380,36 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       body: Stack(
         children: [
           // Main content
-          Column(
-            children: [
-              // Selected filters chips
-              if (searchState.filtersUsedForSearch.isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.sm,
+          Container(
+            color: const Color(0x4DFFFF00), // DEBUG: Make Column visible (yellow 30%)
+            child: Column(
+              children: [
+                // Selected filters chips
+                if (searchState.filtersUsedForSearch.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: SelectedFiltersBtns(
+                      filters: searchState.filtersUsedForSearch,
+                      languageCode: Localizations.localeOf(context).languageCode,
+                      translationsCache: translationsCache,
+                    ),
                   ),
-                  child: SelectedFiltersBtns(
-                    filters: searchState.filtersUsedForSearch,
-                    languageCode: Localizations.localeOf(context).languageCode,
-                    translationsCache: translationsCache,
+
+                // Location permission banner
+                if (!locationState.hasPermission) _buildLocationBanner(),
+
+                // Content
+                Expanded(
+                  child: Container(
+                    color: const Color(0x4D0000FF), // DEBUG: Make Expanded visible (blue 30%)
+                    child: _buildContent(),
                   ),
                 ),
-
-              // Location permission banner
-              if (!locationState.hasPermission) _buildLocationBanner(),
-
-              // Content
-              Expanded(
-                child: _buildContent(),
-              ),
-            ],
+              ],
+            ),
           ),
 
           // Floating sort button
