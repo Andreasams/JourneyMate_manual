@@ -7,7 +7,7 @@
 ## Current Status
 
 **Phase:** Phase 8 — Integration & Polish — IN PROGRESS
-**Last completed task:** ✅ Standardized Currency & Language Selectors to Dropdowns (2026-02-23)
+**Last completed task:** ✅ Fixed Selector Widget Regressions (2026-02-23)
 **Next task:** User testing & Phase 8 remaining tasks per SESSION_STATUS
 **Blocked on:** Nothing — ready for user testing or next Phase 8 task
 
@@ -37,12 +37,13 @@
 - ✅ All 12 pages implemented! Phase 7 is 100% complete.
 - ✅ App successfully built and deployed to TestFlight via Codemagic CI/CD
 - ✅ Welcome page mascot updated to journeymate_mascot.png (2026-02-22)
-- ✅ **Settings Selectors Standardized (2026-02-23):**
-  - CurrencySelectorButton → DropdownButton with language-specific filtering
-  - LanguageSelectorButton → DropdownButton with floating label
-  - Removed ~250 lines of custom overlay/bottom sheet code
-  - Consistent UI pattern across both selectors
-  - Auto-switch currency when language changes (if current not available)
+- ✅ **Selector Widget Regressions FIXED (2026-02-23 — commit 05fdea3):**
+  - Reverted broken dropdown refactor, restored overlay/bottom sheet pattern
+  - Fixed height parameter usage (90px in settings, 50px in welcome)
+  - Restored full-button clickability (entire button triggers overlay)
+  - Preserved language-specific currency filtering (good feature from refactor)
+  - Added currency auto-suggestion on language change (missing interdependence)
+  - All 5 regressions resolved (UI match, clickability, width, interdependence, height)
 - ✅ **Phase 6B Translation Migration COMPLETE (2026-02-22):**
   - All 355 app keys migrated to Supabase ui_translations
   - 191 FlutterFlow page keys (8-char IDs) uploaded
@@ -105,36 +106,47 @@
 - 8A.6: Final pre-release verification (full user journey testing)
 - 8A Integration testing — SKIPPED per user request
 
-## Files changed this session (Settings Selectors Refactor - 2026-02-23)
+## Files changed this session (Selector Widget Regression Fix - 2026-02-23)
 
-**STANDARDIZE CURRENCY & LANGUAGE SELECTORS TO DROPDOWNS ✅**
+**FIX SELECTOR WIDGET REGRESSIONS ✅** (Commit 05fdea3)
 
-**Summary:**
-- Refactored CurrencySelectorButton from custom overlay to Material Design DropdownButton
-- Added language-specific currency filtering (EN: USD/GBP/DKK, DA: DKK only, etc.)
-- Auto-switch currency when language changes (if current currency not available in new language)
-- Refactored LanguageSelectorButton from bottom sheet to Material Design DropdownButton
-- Both selectors now use consistent UI pattern
-- Removed ~250 lines of complex overlay/bottom sheet code
-- Net code reduction: ~265 lines (404 lines removed, 139 lines added)
-- flutter analyze: 0 errors, 0 warnings
+**Problem:**
+- Recent dropdown refactor (commit 5defedf) broke 5 critical aspects of selector widgets
+- User reported: UI doesn't match, only arrow clickable, dropdown too narrow, currency/language don't interact
+
+**Root Causes Identified:**
+1. **Wrong UI Pattern** — Changed from custom overlay to Material DropdownButton (architectural mismatch)
+2. **Height Ignored** — Hardcoded 50px instead of using widget.height parameter (should be 90px in settings)
+3. **Clickability Broken** — GestureDetector had empty onTap handler, only DropdownButton arrow clickable
+4. **Width Limited** — Material dropdown doesn't match button width (intrinsic sizing)
+5. **Interdependence Lost** — Language selector didn't trigger currency auto-suggestion
+
+**Solution Strategy:**
+- Selective revert: restore working overlay code from commit f91e688
+- Cherry-pick good features from refactor (language-specific currency filtering)
+- Add missing currency interdependence (BUNDLE spec requirement)
 
 **Files modified:**
-- `journey_mate/lib/widgets/shared/currency_selector_button.dart`
-  - Replaced custom overlay with DropdownButton wrapped in styled Container
-  - Added `_getCurrenciesForLanguage()` method (matches FlutterFlow getCurrencyOptionsForLanguage)
-  - Updated `_updateCurrencyForLanguageChange()` to auto-switch currency when language changes
-  - Removed overlay management code (~150 lines)
-  - Removed `_allCurrencies` field (now using filtered currencies per language)
-  - Removed unused `AppSpacing` import
-  - Header comment updated to reflect new dropdown pattern
+- `journey_mate/lib/widgets/shared/currency_selector_button.dart` (+100 lines)
+  - Restored custom overlay pattern (OverlayEntry, GlobalKey, _showOverlay, _dismissOverlay)
+  - Fixed height: `height: widget.height ?? 50.0` (was hardcoded 50.0)
+  - Fixed clickability: `GestureDetector(onTap: () => _showOverlay(context))` (was empty)
+  - Kept `_getCurrenciesForLanguage()` from refactor (language-specific filtering)
+  - Overlay now matches button width and positions 4px below
+  - Updated `_updateCurrencyForLanguageChange()` to use filtered currencies
 
-- `journey_mate/lib/widgets/shared/language_selector_button.dart`
-  - Replaced bottom sheet with DropdownButton
-  - Added floating label pattern for consistency
-  - Removed bottom sheet methods: `_showLanguageSelector()`, `_buildSheetHeader()`, `_buildLanguageOption()` (~100 lines)
-  - Removed unused `_selectLanguageTitleKey` field
-  - Header comment updated to reflect new dropdown pattern
+- `journey_mate/lib/widgets/shared/language_selector_button.dart` (+20 lines)
+  - Restored modal bottom sheet with DraggableScrollableSheet
+  - Restored radio button selection UI (was dropdown)
+  - Fixed height: `height: height ?? 50.0` (was hardcoded)
+  - **Added currency auto-suggestion:** calls `ref.read(localizationProvider.notifier).updateCurrencyForLanguageChange(newLanguageCode)`
+  - Kept SharedPreferences persistence and search cache invalidation from refactor
+
+- `journey_mate/lib/providers/settings_providers.dart` (+80 lines)
+  - Added `updateCurrencyForLanguageChange(String newLanguageCode)` method
+  - Added `_getCurrenciesForLanguage()` helper (currency filtering logic)
+  - Added `_fetchExchangeRate()` helper (BuildShip API call)
+  - Method checks if current currency available in new language, switches if not
 
 **Currency filtering by language:**
 - Danish (da): DKK only

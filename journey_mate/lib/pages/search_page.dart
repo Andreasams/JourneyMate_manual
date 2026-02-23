@@ -8,6 +8,7 @@ import '../providers/app_providers.dart';
 import '../providers/search_providers.dart';
 import '../providers/filter_providers.dart';
 import '../providers/settings_providers.dart';
+import '../providers/provider_state_classes.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
 import '../services/translation_service.dart';
@@ -36,12 +37,14 @@ class SearchPage extends ConsumerStatefulWidget {
 class _SearchPageState extends ConsumerState<SearchPage> {
   // Local state
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   Timer? _debounceTimer;
   ScrollController? _scrollController;
   DateTime? _pageStartTime;
   bool _isLoading = false;
   String? _errorMessage;
   int _requestId = 0;
+  bool _searchHasFocus = false;
 
   // Sort state
   String _currentSort = 'match';
@@ -54,6 +57,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void initState() {
     super.initState();
     _pageStartTime = DateTime.now();
+    _searchFocusNode.addListener(() {
+      setState(() => _searchHasFocus = _searchFocusNode.hasFocus);
+    });
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _initialize();
     });
@@ -65,6 +71,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     _debounceTimer?.cancel();
     _scrollController?.dispose();
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -362,137 +369,154 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final searchState = ref.watch(searchStateProvider);
     final translationsCache = ref.watch(translationsCacheProvider);
     final locationState = ref.watch(locationProvider);
+    final filterState = ref.watch(filterProvider);
+
+    // Calculate filter counts per category for badges
+    final filterCounts = _calculateFilterCounts(
+      searchState.filtersUsedForSearch,
+      filterState,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.bgPage,
       appBar: AppBar(
         backgroundColor: AppColors.bgPage,
         elevation: 0,
-        title: _buildSearchBar(),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            color: AppColors.textPrimary,
-            onPressed: _openFilterOverlay,
-          ),
-        ],
+        toolbarHeight: 0, // Minimal AppBar (status bar only)
       ),
-      body: LayoutBuilder(
-        builder: (context, bodyConstraints) {
-          debugPrint('📐 [1] BODY LayoutBuilder: ${bodyConstraints.maxHeight}h × ${bodyConstraints.maxWidth}w');
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Fixed header section
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.xs,
+                AppSpacing.lg,
+                0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // City header
+                  _buildCityHeader(),
+                  SizedBox(height: AppSpacing.md),
 
-          // WORKAROUND: Scaffold body receiving 0h - use MediaQuery for explicit height
-          final screenHeight = MediaQuery.of(context).size.height;
-          final appBarHeight = kToolbarHeight; // ~56px
-          final navBarHeight = 80.0; // NavBarWidget height
-          final availableHeight = screenHeight - appBarHeight - navBarHeight;
+                  // Search bar
+                  _buildSearchBar(),
+                  SizedBox(height: AppSpacing.lg),
 
-          debugPrint('📐 [1b] CALCULATED: screen=${screenHeight}h, available=${availableHeight}h');
+                  // Page title
+                  _buildPageTitle(searchState),
+                  SizedBox(height: AppSpacing.md),
 
-          return SizedBox(
-            height: availableHeight,
-            width: double.infinity,
-            child: Container(
-              height: availableHeight,
-              width: double.infinity,
-              color: const Color(0x4DFFFF00), // DEBUG: Yellow
-              child: LayoutBuilder(
-                builder: (context, containerConstraints) {
-                  debugPrint('📐 [2] CONTAINER LayoutBuilder: ${containerConstraints.maxHeight}h × ${containerConstraints.maxWidth}w');
-
-                return Column(
-                  children: [
-                    // Selected filters chips
-                    if (searchState.filtersUsedForSearch.isNotEmpty)
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: AppSpacing.sm,
-                        ),
-                        child: SelectedFiltersBtns(
-                          filters: searchState.filtersUsedForSearch,
-                          languageCode: Localizations.localeOf(context).languageCode,
-                          translationsCache: translationsCache,
-                        ),
-                      ),
-
-                    // Location permission banner
-                    if (!locationState.hasPermission) _buildLocationBanner(),
-
-                    // Content with floating button
-                    Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, expandedConstraints) {
-                          debugPrint('📐 [3] EXPANDED LayoutBuilder: ${expandedConstraints.maxHeight}h × ${expandedConstraints.maxWidth}w');
-
-                          return Stack(
-                            children: [
-                              // Search results list
-                              Container(
-                                color: const Color(0x4D0000FF), // DEBUG: Blue
-                                child: LayoutBuilder(
-                                  builder: (context, contentConstraints) {
-                                    debugPrint('📐 [4] CONTENT CONTAINER LayoutBuilder: ${contentConstraints.maxHeight}h × ${contentConstraints.maxWidth}w');
-                                    return _buildContent();
-                                  },
-                                ),
-                              ),
-
-                              // Floating sort button
-                              Positioned(
-                                bottom: 12.0,
-                                right: AppSpacing.lg,
-                                child: FloatingActionButton.extended(
-                                  onPressed: _openSortBottomSheet,
-                                  backgroundColor: AppColors.bgCard,
-                                  elevation: 4,
-                                  label: Text(
-                                    td(ref, 'sort_$_currentSort'),
-                                    style: AppTypography.bodySmall.copyWith(
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  icon: Icon(Icons.sort, color: AppColors.accent, size: 20),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              },
+                  // 3-button filter row
+                  _buildFilterButtonRow(filterCounts),
+                ],
+              ),
             ),
+
+            // Selected filters chips
+            if (searchState.filtersUsedForSearch.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(
+                  top: AppSpacing.md,
+                  bottom: AppSpacing.xs,
+                ),
+                child: SelectedFiltersBtns(
+                  filters: searchState.filtersUsedForSearch,
+                  languageCode: Localizations.localeOf(context).languageCode,
+                  translationsCache: translationsCache,
+                ),
+              ),
+
+            // Location permission banner
+            if (!locationState.hasPermission)
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.xs,
+                ),
+                child: _buildLocationBanner(),
+              ),
+
+            // Content with floating button
+            Expanded(
+              child: Stack(
+                children: [
+                  // Search results list
+                  _buildContent(),
+
+                  // Floating sort button
+                  Positioned(
+                    bottom: 12.0,
+                    right: AppSpacing.lg,
+                    child: _buildSortButton(),
+                  ),
+                ],
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
       bottomNavigationBar: const NavBarWidget(pageIsSearchResults: true),
     );
   }
 
+  Widget _buildCityHeader() {
+    return Row(
+      children: [
+        Icon(
+          Icons.location_on,
+          size: 14,
+          color: AppColors.accent,
+        ),
+        SizedBox(width: 5),
+        Text(
+          'København', // Hardcoded per CLAUDE.md (CityID = 17)
+          style: AppTypography.bodyRegular.copyWith(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSearchBar() {
-    return SizedBox(
+    return Container(
       height: 45,
+      decoration: BoxDecoration(
+        color: AppColors.bgInput,
+        borderRadius: BorderRadius.circular(AppRadius.input),
+        border: Border.all(
+          color: _searchHasFocus ? AppColors.accent : Colors.transparent,
+          width: 1.5,
+        ),
+      ),
       child: TextField(
         controller: _searchController,
+        focusNode: _searchFocusNode,
         onChanged: _onSearchTextChanged,
         onSubmitted: _executeSearch,
         style: AppTypography.input,
         decoration: InputDecoration(
           hintText: td(ref, 'search_placeholder'),
           hintStyle: AppTypography.placeholder,
-          filled: true,
-          fillColor: AppColors.bgInput,
+          filled: false,
+          prefixIcon: Icon(
+            Icons.search,
+            size: 17,
+            color: AppColors.textMuted,
+          ),
           contentPadding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
+            horizontal: AppSpacing.md,
+            vertical: 11,
           ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.input),
-            borderSide: BorderSide.none,
-          ),
+          border: InputBorder.none,
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, size: 20),
@@ -504,9 +528,165 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
+  Widget _buildPageTitle(SearchState searchState) {
+    final hasActiveFiltersOrSearch =
+        searchState.filtersUsedForSearch.isNotEmpty ||
+        searchState.currentSearchText.isNotEmpty;
+
+    final title = hasActiveFiltersOrSearch
+        ? 'Søgeresultater (${searchState.searchResultsCount})'
+        : 'Steder nær dig';
+
+    return Text(
+      title,
+      style: AppTypography.pageTitle.copyWith(
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  Widget _buildFilterButtonRow(Map<int, int> filterCounts) {
+    final filterCategories = [
+      {'titleId': 1, 'label': 'Lokation'},
+      {'titleId': 2, 'label': 'Type'},
+      {'titleId': 3, 'label': 'Behov'},
+    ];
+
+    return Row(
+      children: filterCategories.map((category) {
+        final titleId = category['titleId'] as int;
+        final label = category['label'] as String;
+        final count = filterCounts[titleId] ?? 0;
+        final isActive = _activeFilterTab == (titleId - 1);
+
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: titleId < 3 ? AppSpacing.sm : 0,
+            ),
+            child: _buildFilterButton(
+              label: label,
+              count: count,
+              isActive: isActive,
+              onTap: () => _openFilterOverlayAtTab(titleId - 1),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildFilterButton({
+    required String label,
+    required int count,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.accent : AppColors.bgCard,
+          border: Border.all(
+            color: isActive ? AppColors.accent : AppColors.border,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Center(
+              child: Text(
+                count > 0 && !isActive ? '$label ($count)' : label,
+                style: AppTypography.bodyRegular.copyWith(
+                  fontSize: 13.5,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  color: isActive ? AppColors.bgCard : AppColors.textSecondary,
+                ),
+              ),
+            ),
+            // Orange dot indicator (top-right)
+            if (count > 0 && !isActive)
+              Positioned(
+                top: 5,
+                right: 5,
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortButton() {
+    return FloatingActionButton.extended(
+      onPressed: _openSortBottomSheet,
+      backgroundColor: AppColors.bgCard,
+      elevation: 4,
+      label: Text(
+        td(ref, 'sort_$_currentSort'),
+        style: AppTypography.bodySmall.copyWith(
+          color: AppColors.textPrimary,
+        ),
+      ),
+      icon: Icon(Icons.sort, color: AppColors.accent, size: 20),
+    );
+  }
+
+  Map<int, int> _calculateFilterCounts(
+    List<int> activeFilters,
+    AsyncValue<FilterState> filterState,
+  ) {
+    return filterState.when(
+      data: (state) {
+        final counts = <int, int>{1: 0, 2: 0, 3: 0};
+        final filters = state.filtersForLanguage;
+
+        if (filters == null) return counts;
+
+        for (final filterId in activeFilters) {
+          // Find which title this filter belongs to
+          for (final title in filters) {
+            for (final category in title.categories) {
+              // Check if filter is in items
+              if (category.items.any((item) => item.id == filterId)) {
+                counts[title.id] = (counts[title.id] ?? 0) + 1;
+                break;
+              }
+              // Check if filter is in sub-items
+              for (final item in category.items) {
+                if (item.subItems?.any((sub) => sub.id == filterId) ?? false) {
+                  counts[title.id] = (counts[title.id] ?? 0) + 1;
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        return counts;
+      },
+      loading: () => {1: 0, 2: 0, 3: 0},
+      error: (e, stack) => {1: 0, 2: 0, 3: 0},
+    );
+  }
+
+  void _openFilterOverlayAtTab(int tabIndex) {
+    setState(() => _activeFilterTab = tabIndex);
+    _openFilterOverlay();
+  }
+
   Widget _buildLocationBanner() {
     return Container(
-      margin: EdgeInsets.all(AppSpacing.lg),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.orangeBg,
