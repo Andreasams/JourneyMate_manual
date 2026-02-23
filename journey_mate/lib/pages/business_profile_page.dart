@@ -416,8 +416,31 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
               icon: const Icon(Icons.info_outline),
               color: AppColors.textPrimary,
               onPressed: () {
-                // TODO: Show filter description sheet
-                debugPrint('Show filter descriptions');
+                // Show info dialog explaining how to view filter descriptions
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(
+                      td(ref, 'filterinfotitle'),
+                      style: AppTypography.sectionHeading,
+                    ),
+                    content: Text(
+                      td(ref, 'filterinfomessage'),
+                      style: AppTypography.bodyRegular,
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(
+                          td(ref, 'ok'),
+                          style: AppTypography.bodyRegular.copyWith(
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               },
             ),
         ],

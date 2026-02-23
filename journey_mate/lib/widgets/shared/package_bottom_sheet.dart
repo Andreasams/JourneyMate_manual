@@ -6,8 +6,11 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
+import '../../providers/app_providers.dart';
 import '../../services/translation_service.dart';
 import '../../services/custom_functions/price_formatter.dart';
+import '../../services/custom_functions/dietary_formatter.dart';
+import '../../services/custom_functions/allergen_formatter.dart';
 import 'package_courses_display.dart';
 
 /// A bottom sheet with nested navigation for viewing package details and menu items.
@@ -653,7 +656,7 @@ class _ItemDetailPage extends ConsumerWidget {
       child: Column(
         children: [
           _buildHeaderSection(hasImage),
-          _buildScrollableContent(ref),
+          _buildScrollableContent(context, ref),
         ],
       ),
     );
@@ -751,7 +754,7 @@ class _ItemDetailPage extends ConsumerWidget {
   }
 
   /// Builds the scrollable content area
-  Widget _buildScrollableContent(WidgetRef ref) {
+  Widget _buildScrollableContent(BuildContext context, WidgetRef ref) {
     return Expanded(
       child: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
@@ -767,7 +770,7 @@ class _ItemDetailPage extends ConsumerWidget {
               _buildItemDescription(),
               const SizedBox(height: _descriptionToDividerSpacing),
               _buildDivider(),
-              _buildAdditionalInformation(ref),
+              _buildAdditionalInformation(context, ref),
               const SizedBox(height: _bottomPadding),
             ],
           ),
@@ -869,7 +872,7 @@ class _ItemDetailPage extends ConsumerWidget {
   }
 
   /// Builds additional information section
-  Widget _buildAdditionalInformation(WidgetRef ref) {
+  Widget _buildAdditionalInformation(BuildContext context, WidgetRef ref) {
     final isBeverage = itemData['is_beverage'] as bool? ?? false;
 
     if (isBeverage) {
@@ -883,9 +886,9 @@ class _ItemDetailPage extends ConsumerWidget {
         children: [
           _buildInfoHeader(ref),
           const SizedBox(height: _infoHeaderSpacing),
-          _buildDietaryInformation(ref),
+          _buildDietaryInformation(context, ref),
           const SizedBox(height: _dietaryToAllergenSpacing),
-          _buildAllergenInformation(ref),
+          _buildAllergenInformation(context, ref),
           const SizedBox(height: _allergenToSourceSpacing),
           _buildInformationSource(ref),
         ],
@@ -906,9 +909,23 @@ class _ItemDetailPage extends ConsumerWidget {
   }
 
   /// Builds dietary preferences information
-  Widget _buildDietaryInformation(WidgetRef ref) {
-    // Note: convertDietaryPreferencesToString function needs to be implemented
-    // For now, showing placeholder
+  Widget _buildDietaryInformation(BuildContext context, WidgetRef ref) {
+    // Extract dietary data from item
+    final dietaryTypeIds = itemData['dietary_type_ids'] as List<dynamic>?;
+    final dietaryIds = dietaryTypeIds?.whereType<int>().toList();
+    final isBeverage = itemData['is_beverage'] as bool? ?? false;
+
+    // Get translations cache from provider
+    final translationsCache = ref.watch(translationsCacheProvider);
+
+    // Format dietary preferences
+    final dietaryText = convertDietaryPreferencesToString(
+      dietaryIds,
+      Localizations.localeOf(context).languageCode,
+      isBeverage,
+      translationsCache,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -921,7 +938,7 @@ class _ItemDetailPage extends ConsumerWidget {
           ),
         ),
         Text(
-          '',  // Placeholder until convertDietaryPreferencesToString is implemented
+          dietaryText ?? '',
           style: AppTypography.bodyRegular.copyWith(
             fontSize: _infoTextFontSize,
             fontWeight: _infoTextFontWeight,
@@ -933,9 +950,23 @@ class _ItemDetailPage extends ConsumerWidget {
   }
 
   /// Builds allergen information
-  Widget _buildAllergenInformation(WidgetRef ref) {
-    // Note: convertAllergiesToString function needs to be implemented
-    // For now, showing placeholder
+  Widget _buildAllergenInformation(BuildContext context, WidgetRef ref) {
+    // Extract allergen data from item
+    final allergyTypeIds = itemData['allergy_ids'] as List<dynamic>?;
+    final allergyIds = allergyTypeIds?.whereType<int>().toList();
+    final isBeverage = itemData['is_beverage'] as bool? ?? false;
+
+    // Get translations cache from provider
+    final translationsCache = ref.watch(translationsCacheProvider);
+
+    // Format allergens
+    final allergyText = convertAllergiesToString(
+      allergyIds,
+      Localizations.localeOf(context).languageCode,
+      isBeverage,
+      translationsCache,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -948,7 +979,7 @@ class _ItemDetailPage extends ConsumerWidget {
           ),
         ),
         Text(
-          '',  // Placeholder until convertAllergiesToString is implemented
+          allergyText ?? '',
           style: AppTypography.bodyRegular.copyWith(
             fontSize: _infoTextFontSize,
             fontWeight: _infoTextFontWeight,

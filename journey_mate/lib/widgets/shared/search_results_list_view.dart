@@ -12,6 +12,7 @@ import '../../services/custom_functions/business_status.dart';
 import '../../services/custom_functions/hours_formatter.dart';
 import '../../services/custom_functions/distance_calculator.dart';
 import '../../services/custom_functions/address_formatter.dart';
+import '../../services/translation_service.dart';
 import 'restaurant_list_shimmer_widget.dart';
 
 /// A performant ListView displaying search results for businesses.
@@ -144,7 +145,7 @@ class _SearchResultsListViewState
           ),
           const SizedBox(height: 16),
           Text(
-            'No results found', // TODO: Add translation key
+            td(ref, 'noresultsfound'),
             style: AppTypography.bodyRegular.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -523,7 +524,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final neighbourhood = _neighbourhoodName ?? '';
 
     if (street.isEmpty && neighbourhood.isEmpty) {
-      return 'Address unavailable'; // TODO: Add translation key
+      return td(ref, 'addressunavail');
     }
     if (street.isEmpty) return neighbourhood;
     if (neighbourhood.isEmpty) return street;

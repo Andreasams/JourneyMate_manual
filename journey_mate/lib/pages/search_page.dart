@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/app_providers.dart';
 import '../providers/search_providers.dart';
 import '../providers/filter_providers.dart';
@@ -569,8 +570,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       userLocation: userLocation,
       onBusinessTap: (businessId) {
         // Navigate to business profile
-        // TODO: Implement navigation after go_router is updated
-        debugPrint('Navigate to business: $businessId');
+        context.push('/business/$businessId');
       },
     );
   }

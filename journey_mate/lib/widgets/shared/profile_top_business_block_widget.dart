@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../theme/app_colors.dart';
 import '../../models/lat_lng.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/settings_providers.dart';
 import '../../services/custom_functions/distance_calculator.dart';
 import '../../services/custom_functions/address_formatter.dart';
 import '../../services/custom_functions/hours_formatter.dart';
@@ -363,13 +364,16 @@ class _ProfileTopBusinessBlockWidgetState
   // ============================================================================
 
   Widget _buildRow3TypePriceDistance() {
-    // Get price range text
+    // Get localization settings for currency conversion
+    final localization = ref.watch(localizationProvider);
+
+    // Get price range text with actual currency conversion
     final priceText = convertAndFormatPriceRange(
       widget.priceRangeMin.toDouble(),
       widget.priceRangeMax.toDouble(),
-      'DKK', // Source currency
-      1.0, // TODO: Get actual exchange rate from localizationProvider
-      'DKK', // TODO: Get target currency from localizationProvider
+      'DKK', // Source currency (business data is in DKK)
+      localization.exchangeRate,
+      localization.currencyCode,
     );
 
     // Calculate distance if user location and business location are available
