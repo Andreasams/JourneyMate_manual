@@ -1615,9 +1615,8 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   TextStyle _getFilterTextStyle(bool isSelected, bool isActive) {
     const baseFontWeight = FontWeight.w400;
-    final fontWeight = isSelected
-        ? FontWeight.values[baseFontWeight.value + 1]
-        : baseFontWeight;
+    // When selected, use next heavier weight (w500)
+    final fontWeight = isSelected ? FontWeight.w500 : baseFontWeight;
 
     return TextStyle(
       fontSize: _adjustedFontSize(14),
