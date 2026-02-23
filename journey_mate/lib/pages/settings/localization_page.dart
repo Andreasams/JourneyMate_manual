@@ -149,7 +149,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> {
             const SizedBox(height: AppSpacing.xs),
             const CurrencySelectorButton(
               width: double.infinity,
-              height: 90.0,
+              height: 50.0,
             ),
 
             const SizedBox(height: AppSpacing.md),
