@@ -157,28 +157,27 @@ class _SearchResultsListViewState
           final businessData = documents[index];
           final businessId = _getBusinessId(businessData);
 
-          return GestureDetector(
-            onTap: () {
-              _trackBusinessClick(businessId, index);
-              widget.onBusinessTap?.call(businessId);
+          return _BusinessListItem(
+            key: ValueKey('business_$businessId'),
+            businessData: businessData,
+            userLocation: widget.userLocation,
+            matchVariant: 'none', // No match categorization
+            activeFilterCount: 0,
+            itemIndex: index,
+            statusText: _statusTextCache[businessId],
+            statusColor: _statusColorCache[businessId],
+            onStatusLoaded: (text, color) {
+              if (mounted) {
+                setState(() {
+                  _statusTextCache[businessId] = text;
+                  _statusColorCache[businessId] = color;
+                });
+              }
             },
-            child: _BusinessListItem(
-              key: ValueKey('business_$businessId'),
-              businessData: businessData,
-              userLocation: widget.userLocation,
-              matchVariant: 'none', // No match categorization
-              activeFilterCount: 0,
-              statusText: _statusTextCache[businessId],
-              statusColor: _statusColorCache[businessId],
-              onStatusLoaded: (text, color) {
-                if (mounted) {
-                  setState(() {
-                    _statusTextCache[businessId] = text;
-                    _statusColorCache[businessId] = color;
-                  });
-                }
-              },
-            ),
+            onBusinessTap: (id) {
+              _trackBusinessClick(id, index);
+              widget.onBusinessTap?.call(id);
+            },
           );
         },
       ),
@@ -256,28 +255,27 @@ class _SearchResultsListViewState
     int itemIndex,
   ) {
     final businessId = _getBusinessId(businessData);
-    return GestureDetector(
-      onTap: () {
-        _trackBusinessClick(businessId, itemIndex);
-        widget.onBusinessTap?.call(businessId);
+    return _BusinessListItem(
+      key: ValueKey('business_$businessId'),
+      businessData: businessData,
+      userLocation: widget.userLocation,
+      matchVariant: matchVariant,
+      activeFilterCount: totalActiveFilters,
+      itemIndex: itemIndex,
+      statusText: _statusTextCache[businessId],
+      statusColor: _statusColorCache[businessId],
+      onStatusLoaded: (text, color) {
+        if (mounted) {
+          setState(() {
+            _statusTextCache[businessId] = text;
+            _statusColorCache[businessId] = color;
+          });
+        }
       },
-      child: _BusinessListItem(
-        key: ValueKey('business_$businessId'),
-        businessData: businessData,
-        userLocation: widget.userLocation,
-        matchVariant: matchVariant,
-        activeFilterCount: totalActiveFilters,
-        statusText: _statusTextCache[businessId],
-        statusColor: _statusColorCache[businessId],
-        onStatusLoaded: (text, color) {
-          if (mounted) {
-            setState(() {
-              _statusTextCache[businessId] = text;
-              _statusColorCache[businessId] = color;
-            });
-          }
-        },
-      ),
+      onBusinessTap: (id) {
+        _trackBusinessClick(id, itemIndex);
+        widget.onBusinessTap?.call(id);
+      },
     );
   }
 
@@ -398,18 +396,22 @@ class _BusinessListItem extends ConsumerStatefulWidget {
     required this.userLocation,
     required this.matchVariant,
     required this.activeFilterCount,
+    required this.itemIndex,
     this.statusText,
     this.statusColor,
     this.onStatusLoaded,
+    this.onBusinessTap,
   });
 
   final dynamic businessData;
   final Position? userLocation;
   final String matchVariant; // 'full', 'partial', 'none'
   final int activeFilterCount; // Total number of active filters
+  final int itemIndex; // Position in list for analytics
   final String? statusText;
   final Color? statusColor;
   final void Function(String? text, Color? color)? onStatusLoaded;
+  final void Function(int businessId)? onBusinessTap;
 
   @override
   ConsumerState<_BusinessListItem> createState() => _BusinessListItemState();
@@ -418,6 +420,7 @@ class _BusinessListItem extends ConsumerStatefulWidget {
 class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   String? _statusText;
   Color? _statusColor;
+  bool _isExpanded = false;
 
   // ---------------------------------------------------------------------------
   // Constants
@@ -452,11 +455,14 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   double? get _longitude => _getField<double>('longitude');
   String? get _street => _getField<String>('street');
   String? get _neighbourhoodName => _getField<String>('neighbourhood_name');
+  String? get _postalCode => _getField<String>('postal_code');
+  String? get _city => _getField<String>('city');
   int? get _priceRangeMin => _getField<int>('price_range_min');
   int? get _priceRangeMax => _getField<int>('price_range_max');
   dynamic get _openingHours => _getField<dynamic>('business_hours');
   int? get _matchCount => _getField<int>('matchCount');
   List<dynamic>? get _missedFilters => _getField<List<dynamic>>('missedFilters');
+  List<dynamic>? get _photos => _getField<List<dynamic>>('photos');
 
   String? get _businessType {
     final languageCode = Localizations.localeOf(context).languageCode;
@@ -550,22 +556,39 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(minHeight: _imageSize),
-              decoration: BoxDecoration(
-                color: AppColors.bgCard,
-                border: Border.all(color: _borderColor, width: 1.5),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildImage(),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildInfoColumn()),
-                ],
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              },
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(minHeight: _imageSize),
+                decoration: BoxDecoration(
+                  color: AppColors.bgCard,
+                  border: Border.all(color: _borderColor, width: 1.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Base card content
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildImage(),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildInfoColumn()),
+                      ],
+                    ),
+                    // Expanded preview section
+                    if (_isExpanded) _buildExpandedPreview(),
+                    // Collapse chevron (shown when NOT expanded)
+                    if (!_isExpanded) _buildCollapseChevron(),
+                  ],
+                ),
               ),
             ),
             // Partial match info box
@@ -806,6 +829,219 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       overflow: TextOverflow.ellipsis,
       style: AppTypography.bodyRegular.copyWith(
         color: AppColors.textSecondary,
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Expandable Card Preview
+  // ---------------------------------------------------------------------------
+
+  Widget _buildCollapseChevron() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Center(
+        child: Icon(
+          Icons.keyboard_arrow_down,
+          size: 20,
+          color: AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpandedPreview() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 12),
+        Container(
+          height: 1,
+          color: const Color(0xFFf2f2f2),
+        ),
+        const SizedBox(height: 12),
+        // Full address
+        _buildFullAddress(),
+        const SizedBox(height: 6),
+        // Today's hours
+        _buildTodayHours(),
+        const SizedBox(height: 12),
+        // Photo grid
+        if (_photos != null && _photos!.isNotEmpty) _buildPhotoGrid(),
+        if (_photos != null && _photos!.isNotEmpty) const SizedBox(height: 12),
+        // "See more" button
+        _buildSeeMoreButton(),
+      ],
+    );
+  }
+
+  Widget _buildFullAddress() {
+    final street = _street ?? '';
+    final postalCode = _postalCode ?? '';
+    final city = _city ?? '';
+
+    String fullAddress = '';
+    if (street.isNotEmpty) {
+      fullAddress = street;
+      if (postalCode.isNotEmpty || city.isNotEmpty) {
+        fullAddress += ', ';
+        if (postalCode.isNotEmpty) fullAddress += '$postalCode ';
+        if (city.isNotEmpty) fullAddress += city;
+      }
+    } else if (_neighbourhoodName?.isNotEmpty ?? false) {
+      fullAddress = _neighbourhoodName!;
+    } else {
+      fullAddress = td(ref, 'addressunavail');
+    }
+
+    return Text(
+      fullAddress,
+      style: AppTypography.bodyRegular.copyWith(
+        fontSize: 12.5,
+        color: const Color(0xFF888888),
+      ),
+    );
+  }
+
+  Widget _buildTodayHours() {
+    if (_openingHours == null) {
+      return Text(
+        td(ref, 'hours_no_data'),
+        style: AppTypography.bodyRegular.copyWith(
+          fontSize: 12.5,
+          color: AppColors.textSecondary,
+        ),
+      );
+    }
+
+    // Get today's hours string
+    final todayStr = _getTodayHoursRange();
+
+    return Text(
+      'Today: $todayStr', // TODO: Add translation key for "Today:" prefix
+      style: AppTypography.bodyRegular.copyWith(
+        fontSize: 12.5,
+        color: AppColors.textSecondary,
+      ),
+    );
+  }
+
+  /// Returns today's hours in format "HH:MM-HH:MM" or "Closed"
+  String _getTodayHoursRange() {
+    if (_openingHours == null || _openingHours is! Map) {
+      return td(ref, 'hours_no_data');
+    }
+
+    final businessHoursMap = Map<String, dynamic>.from(_openingHours);
+    final currentDay = (DateTime.now().weekday - 1) % 7; // Monday = 0
+    final dayKey = currentDay.toString();
+    final dayHours = businessHoursMap[dayKey];
+
+    if (dayHours == null || dayHours is! Map) {
+      return td(ref, 'hours_closed');
+    }
+
+    final dayHoursMap = Map<String, dynamic>.from(dayHours);
+
+    // Check if closed
+    final closed = dayHoursMap['closed'] == true ||
+        dayHoursMap['closed'] == 'true' ||
+        dayHoursMap['by_appointment_only'] == true ||
+        dayHoursMap['by_appointment_only'] == 'true';
+
+    if (closed) {
+      return td(ref, 'hours_closed');
+    }
+
+    // Get first time slot (most common case)
+    final openTime = dayHoursMap['opening_time_1']?.toString();
+    final closeTime = dayHoursMap['closing_time_1']?.toString();
+
+    if (openTime != null && closeTime != null) {
+      // Check if there are multiple slots
+      final slot2Open = dayHoursMap['opening_time_2']?.toString();
+      if (slot2Open != null) {
+        // Multiple slots - show first slot with indicator
+        return '$openTime-$closeTime +';
+      }
+      return '$openTime-$closeTime';
+    }
+
+    return td(ref, 'hours_no_data');
+  }
+
+  Widget _buildPhotoGrid() {
+    final photos = _photos!;
+    final displayPhotos = photos.take(8).toList(); // Max 8 photos per JSX
+
+    return SizedBox(
+      height: 60,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: displayPhotos.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 4),
+        itemBuilder: (context, index) {
+          final photoUrl = displayPhotos[index] is String
+              ? displayPhotos[index] as String
+              : displayPhotos[index]['url'] as String?;
+
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              photoUrl ?? _placeholderImageUrl,
+              width: 80,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 80,
+                  height: 60,
+                  color: AppColors.border,
+                  child: Icon(
+                    Icons.image_not_supported,
+                    color: AppColors.textTertiary,
+                    size: 24,
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSeeMoreButton() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton(
+        onPressed: () {
+          final businessId = _getField<int>('business_id') ?? 0;
+          widget.onBusinessTap?.call(businessId);
+        },
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              td(ref, 'expandable_show_more'),
+              style: AppTypography.bodyRegular.copyWith(
+                color: AppColors.accent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.arrow_forward,
+              size: 16,
+              color: AppColors.accent,
+            ),
+          ],
+        ),
       ),
     );
   }
