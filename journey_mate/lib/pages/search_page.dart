@@ -466,6 +466,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildCityHeader() {
+    // TODO Phase 6B: Add translation key 'city_copenhagen' to Supabase ui_translations
+    // For now, fallback to hardcoded Danish per CLAUDE.md (CityID = 17)
+    final cityName = td(ref, 'city_copenhagen');
+    final displayName = cityName == 'city_copenhagen' ? 'København' : cityName;
+
     return Row(
       children: [
         Icon(
@@ -475,7 +480,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
         SizedBox(width: 5),
         Text(
-          'København', // Hardcoded per CLAUDE.md (CityID = 17)
+          displayName,
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 13.5,
             fontWeight: FontWeight.w600,
@@ -533,9 +538,22 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         searchState.filtersUsedForSearch.isNotEmpty ||
         searchState.currentSearchText.isNotEmpty;
 
-    final title = hasActiveFiltersOrSearch
-        ? 'Søgeresultater (${searchState.searchResultsCount})'
-        : 'Steder nær dig';
+    // TODO Phase 6B: Add translation keys to Supabase ui_translations:
+    // - 'search_page_title_default' (en: "Places near you", da: "Steder nær dig")
+    // - 'search_page_title_results' (en: "Search results", da: "Søgeresultater")
+    String title;
+    if (hasActiveFiltersOrSearch) {
+      final resultsText = td(ref, 'search_page_title_results');
+      final displayText = resultsText == 'search_page_title_results'
+          ? 'Søgeresultater'
+          : resultsText;
+      title = '$displayText (${searchState.searchResultsCount})';
+    } else {
+      final defaultText = td(ref, 'search_page_title_default');
+      title = defaultText == 'search_page_title_default'
+          ? 'Steder nær dig'
+          : defaultText;
+    }
 
     return Text(
       title,
@@ -546,16 +564,18 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildFilterButtonRow(Map<int, int> filterCounts) {
+    // Use same translation keys as FilterTitlesRow widget
     final filterCategories = [
-      {'titleId': 1, 'label': 'Lokation'},
-      {'titleId': 2, 'label': 'Type'},
-      {'titleId': 3, 'label': 'Behov'},
+      {'titleId': 1, 'translationKey': 'filter_location'},
+      {'titleId': 2, 'translationKey': 'filter_type'},
+      {'titleId': 3, 'translationKey': 'filter_preferences'},
     ];
 
     return Row(
       children: filterCategories.map((category) {
         final titleId = category['titleId'] as int;
-        final label = category['label'] as String;
+        final translationKey = category['translationKey'] as String;
+        final label = td(ref, translationKey);
         final count = filterCounts[titleId] ?? 0;
         final isActive = _activeFilterTab == (titleId - 1);
 
