@@ -55,7 +55,7 @@ ElevatedButton(style: AppButtonStyles.primary, ...)
 | Constant | Hex | Usage |
 |----------|-----|-------|
 | `AppColors.textPrimary` | `#0f0f0f` | Headings, labels, important content |
-| `AppColors.textSecondary` | `#333333` | Body text, descriptions |
+| `AppColors.textSecondary` | `#555555` | Body text, descriptions |
 | `AppColors.textTertiary` | `#888888` | Hints, helper text |
 | `AppColors.textMuted` | `#999999` | Less important information |
 | `AppColors.textPlaceholder` | `#aaaaaa` | Input placeholders |
@@ -190,7 +190,7 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 
 | Style | Size | Weight | Usage |
 |-------|------|--------|-------|
-| `AppTypography.pageTitle` | 26px | w900 | Page titles (h2) |
+| `AppTypography.pageTitle` | 26px | w800 | Page titles (h2) |
 | `AppTypography.restaurantName` | 26px | w800 | Business names (h1) |
 | `AppTypography.sectionHeading` | 20px | w700 | Section headings (h3) |
 | `AppTypography.categoryHeading` | 18px | w700 | Category headings (h4) |
@@ -199,7 +199,7 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 
 | Style | Size | Weight | Usage |
 |-------|------|--------|-------|
-| `AppTypography.bodyRegular` | 16px | w500 | Body paragraphs, descriptions |
+| `AppTypography.bodyRegular` | 16px | w400 | Body paragraphs, descriptions |
 | `AppTypography.bodyMedium` | 16px | w500 | Emphasized body text |
 | `AppTypography.bodySmall` | 15px | w500 | Smaller body text |
 | `AppTypography.bodyTiny` | 14px | w400 | Tiny text, footnotes |
@@ -208,7 +208,7 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 
 | Style | Size | Weight | Usage |
 |-------|------|--------|-------|
-| `AppTypography.label` | 16px | w600 | Form field labels |
+| `AppTypography.label` | 16px | w500 | Form field labels |
 | `AppTypography.helper` | 14px | w400 | Helper text below fields |
 | `AppTypography.input` | 16px | w400 | Text inside input fields |
 | `AppTypography.placeholder` | 16px | w400 | Input placeholder text |
@@ -236,7 +236,7 @@ Text(
 // Form label
 Text(
   'Your name',
-  style: AppTypography.label,  // 16px, w500
+  style: AppTypography.label,  // 16px, w500, textPrimary
 )
 
 // Helper text
@@ -248,7 +248,7 @@ Text(
 // Body paragraph
 Text(
   'Description text...',
-  style: AppTypography.bodyRegular,  // 16px, w400
+  style: AppTypography.bodyRegular,  // 16px, w400, textSecondary
 )
 ```
 
@@ -592,112 +592,53 @@ AppConstants.animationSlow    // Duration(milliseconds: 500)
 
 ---
 
-## 10. Decision Checklist
+## 10. Verify Before Committing
 
-Before writing any UI code, ask:
+### Anti-Patterns
 
-### Colors
-- [ ] Am I using `AppColors.accent` for interactive elements?
-- [ ] Am I using `AppColors.green` ONLY for match confirmation?
-- [ ] Am I using the correct text color for hierarchy?
-
-### Spacing
-- [ ] Label to input: 8px (`AppSpacing.sm`)
-- [ ] Between fields: 20px (`AppSpacing.xl`)
-- [ ] Before button: 24px (`AppSpacing.xxl`)
-- [ ] Page padding: 24px (`AppSpacing.xxl`)
-
-### Border Radius
-- [ ] Input fields: 12px (`AppRadius.input`)
-- [ ] Buttons: 14px (`AppRadius.button`)
-- [ ] Cards: 16px (`AppRadius.card`)
-
-### Typography
-- [ ] Labels: `AppTypography.label` (16px, w500)
-- [ ] Helper text: `AppTypography.helper` (14px, w400)
-- [ ] Body: `AppTypography.bodyRegular` (16px, w400)
-- [ ] Headings: Appropriate heading style
-
-### Input Fields
-- [ ] Using `AppInputDecorations.standard()` or `.multiline()`
-- [ ] Wrapped in `SizedBox(height: 50)` for fixed height
-- [ ] Correct padding (16px horizontal, 14px vertical)
-
-### Buttons
-- [ ] Using `AppButtonStyles.primary` or `.secondary`
-- [ ] Full-width pattern: `SizedBox(width: double.infinity, height: 50)`
-- [ ] Correct border radius: 14px
-
----
-
-## 11. Anti-Patterns (Don't Do This)
-
-❌ **Hardcoding colors:**
+❌ **Hardcoded colors** → Use `AppColors.*`
 ```dart
 Color(0xFFE8751A)  // Wrong
 AppColors.accent   // Correct
 ```
 
-❌ **Hardcoding spacing:**
+❌ **Hardcoded spacing** → Use `AppSpacing.*`
 ```dart
 SizedBox(height: 20)      // Wrong
 SizedBox(height: AppSpacing.xl)  // Correct
 ```
 
-❌ **Wrong border radius:**
+❌ **Hardcoded radii** → Use `AppRadius.*`
 ```dart
 BorderRadius.circular(10)  // Wrong for inputs
 BorderRadius.circular(AppRadius.input)  // Correct (12px)
 ```
 
-❌ **Creating custom input decoration each time:**
+❌ **Custom input decorations** → Use `AppInputDecorations.*`
 ```dart
-InputDecoration(
-  filled: true,
-  fillColor: Color(0xFFF5F5F5),  // Wrong - duplicating logic
-  // ...
-)
-
-// Correct - use predefined
-AppInputDecorations.standard(hintText: '...')
+InputDecoration(filled: true, fillColor: Color(0xFFF5F5F5), ...)  // Wrong
+AppInputDecorations.standard(hintText: '...')  // Correct
 ```
 
-❌ **Inconsistent text styles:**
+❌ **Inline text styles** → Use `AppTypography.*`
 ```dart
 TextStyle(fontSize: 14, fontWeight: FontWeight.w500)  // Wrong
 AppTypography.label  // Correct
 ```
 
----
+### Quick Checks
 
-## 12. Migration Path
-
-When converting JSX to Flutter:
-
-1. **Colors:** Replace all hex codes with `AppColors.*`
-2. **Spacing:** Replace all hardcoded numbers with `AppSpacing.*`
-3. **Radii:** Use `AppRadius.*` for all border radius values
-4. **Typography:** Use `AppTypography.*` for all text
-5. **Inputs:** Use `AppInputDecorations.*` for all text fields
-6. **Buttons:** Use `AppButtonStyles.*` for all buttons
-
----
-
-## Recent Changes
-
-**Last Updated:** 2026-02-24
-
-### Documentation Structure (2026-02-24)
-- Added cross-references to ARCHITECTURE.md, CLAUDE.md, CONTRIBUTING.md at top
-- Moved Font Weight Mapping table to top of Typography section for better visibility
-- Updated implementation path reference (journey_mate/lib/theme/)
-
-### Design System Updates (2026-02-23)
-- Increased font weights across app: pageTitle (w900), label (w600), bodyRegular (w500)
-- Darkened textSecondary color from #555555 to #333333 for better readability
-- Welcome page: Split title into two lines, increased slogan/subtitle sizes
-- Settings page: Restored icons with +100 weight increase for all fonts
+| Area | Correct Token | Value |
+|------|---------------|-------|
+| Label to input gap | `AppSpacing.sm` | 8px |
+| Between form fields | `AppSpacing.xl` | 20px |
+| Page padding | `AppSpacing.xxl` | 24px |
+| Input radius | `AppRadius.input` | 12px |
+| Button radius | `AppRadius.button` | 14px |
+| Card radius | `AppRadius.card` | 16px |
+| Orange color | CTAs only | Never match status |
+| Green color | Match confirmation only | Never CTAs |
 
 ---
 
-**Status:** Complete - All design tokens implemented
+**Status:** Complete — All design tokens implemented | **Source of truth:** `journey_mate/lib/theme/` | **Last verified:** 2026-02-24
