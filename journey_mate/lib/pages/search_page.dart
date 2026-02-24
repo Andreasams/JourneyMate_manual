@@ -229,68 +229,78 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
+        initialChildSize: 0.84,
         minChildSize: 0.4,
         maxChildSize: 0.95,
         builder: (context, scrollController) {
-          return Container(
-            decoration: BoxDecoration(
-              color: AppColors.bgCard,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(AppRadius.bottomSheet),
-              ),
-            ),
-            child: Column(
-              children: [
-                // Swipe indicator
-                _buildSheetHandle(),
-
-                // 3-tab header
-                FilterTitlesRow(
-                  activeTabIndex: _activeFilterTab,
-                  onTabChanged: (index) {
-                    setState(() => _activeFilterTab = index);
-                  },
-                ),
-
-                // Filter content
-                Expanded(
-                  child: filterState.when(
-                    data: (state) => FilterOverlayWidget(
-                      filterData: state.filtersForLanguage,
-                      selectedTitleID: _mapTabIndexToTitleId(_activeFilterTab),
-                      activeFilterIds: searchState.filtersUsedForSearch,
-                      selectedFilterIds: searchState.filtersUsedForSearch,
-                      onSearchCompleted: (activeIds, count) async {
-                        // FilterOverlayWidget calls API internally
-                        // Just update our local state tracking
-                        if (mounted) {
-                          setState(() {
-                            // Trigger rebuild after filter change
-                          });
-                        }
-                      },
-                      onCloseOverlay: (selectedIds) async {
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                        }
-                      },
-                      searchTerm: searchState.currentSearchText,
-                      mayLoad: true,
-                      resultCount: searchState.searchResultsCount,
-                    ),
-                    loading: () => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    error: (e, _) => Center(
-                      child: Text('Failed to load filters: $e'),
-                    ),
+          // Use StatefulBuilder to manage local state within bottom sheet
+          return StatefulBuilder(
+            builder: (context, setBottomSheetState) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: AppColors.bgCard,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(AppRadius.bottomSheet),
                   ),
                 ),
-              ],
-            ),
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  children: [
+                    // Swipe indicator
+                    _buildSheetHandle(),
+
+                    // 3-tab header
+                    FilterTitlesRow(
+                      activeTabIndex: _activeFilterTab,
+                      onTabChanged: (index) {
+                        // Update both SearchPage state and bottom sheet state
+                        setState(() => _activeFilterTab = index);
+                        setBottomSheetState(() => _activeFilterTab = index);
+                      },
+                    ),
+
+                    // Filter content
+                    Expanded(
+                      child: filterState.when(
+                        data: (state) => FilterOverlayWidget(
+                          filterData: state.filtersForLanguage,
+                          selectedTitleID: _mapTabIndexToTitleId(_activeFilterTab),
+                          activeFilterIds: searchState.filtersUsedForSearch,
+                          selectedFilterIds: searchState.filtersUsedForSearch,
+                          onSearchCompleted: (activeIds, count) async {
+                            // FilterOverlayWidget calls API internally
+                            // Just update our local state tracking
+                            if (mounted) {
+                              setState(() {
+                                // Trigger rebuild after filter change
+                              });
+                            }
+                          },
+                          onCloseOverlay: (selectedIds) async {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                          },
+                          searchTerm: searchState.currentSearchText,
+                          mayLoad: true,
+                          resultCount: searchState.searchResultsCount,
+                        ),
+                        loading: () => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        error: (e, _) => Center(
+                          child: Text('Failed to load filters: $e'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           );
         },
       ),
