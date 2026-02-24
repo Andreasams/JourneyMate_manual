@@ -196,7 +196,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           Text(
             td(ref, 'feedback_form_subtitle_main'),
             style: GoogleFonts.roboto(
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.w300,
               color: AppColors.textSecondary,
             ),
@@ -246,7 +246,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section title
         Text(
           td(ref, 'feedback_form_title_topic'),
-          style: AppTypography.label.copyWith(color: AppColors.textPrimary),
+          style: AppTypography.label.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         SizedBox(height: AppSpacing.xs),
 
@@ -254,12 +257,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         Text(
           td(ref, 'feedback_form_subtitle_topic'),
           style: GoogleFonts.roboto(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w300,
             color: AppColors.textSecondary,
           ),
         ),
-        SizedBox(height: AppSpacing.sm),
+        SizedBox(height: AppSpacing.md),
 
         // Topic chips
         Wrap(
@@ -319,7 +322,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         RichText(
           text: TextSpan(
             text: td(ref, 'feedback_form_title_message'),
-            style: AppTypography.label.copyWith(color: AppColors.textPrimary),
+            style: AppTypography.label.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
             children: [
               TextSpan(
                 text: ' *',
@@ -334,12 +340,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         Text(
           td(ref, 'feedback_form_subtitle_message'),
           style: GoogleFonts.roboto(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w300,
             color: AppColors.textSecondary,
           ),
         ),
-        SizedBox(height: AppSpacing.sm),
+        SizedBox(height: AppSpacing.md),
 
         // Text field (multiline)
         TextField(
@@ -400,7 +406,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section title
         Text(
           td(ref, 'feedback_form_title_contact_consent'),
-          style: AppTypography.label.copyWith(color: AppColors.textPrimary),
+          style: AppTypography.label.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         SizedBox(height: AppSpacing.xs),
 
@@ -408,12 +417,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         Text(
           td(ref, 'feedback_form_subtitle_contact_consent'),
           style: GoogleFonts.roboto(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w300,
             color: AppColors.textSecondary,
           ),
         ),
-        SizedBox(height: AppSpacing.sm),
+        SizedBox(height: AppSpacing.md),
 
         // Checkbox row
         Row(
@@ -475,7 +484,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             RichText(
               text: TextSpan(
                 text: td(ref, 'feedback_form_title_name'),
-                style: AppTypography.label.copyWith(color: AppColors.textPrimary),
+                style: AppTypography.label.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
                 children: [
                   TextSpan(
                     text: ' *',
@@ -546,7 +558,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             RichText(
               text: TextSpan(
                 text: td(ref, 'feedback_form_title_contact'),
-                style: AppTypography.label.copyWith(color: AppColors.textPrimary),
+                style: AppTypography.label.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
                 children: [
                   TextSpan(
                     text: ' *',
@@ -561,12 +576,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             Text(
               td(ref, 'feedback_form_subtitle_contact'),
               style: GoogleFonts.roboto(
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: FontWeight.w300,
                 color: AppColors.textSecondary,
               ),
             ),
-            SizedBox(height: AppSpacing.sm),
+            SizedBox(height: AppSpacing.md),
 
             // Text field
             TextField(
