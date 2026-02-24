@@ -20,15 +20,15 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - [Analytics Architecture](#analytics-architecture) (lines 729-803) — Fire-and-forget, ActivityScope, 36 event types
 - [API Service Pattern](#api-service-pattern) (lines 461-517) — Singleton, cache, BuildShip integration
 - [Code Quality Standards](#code-quality-standards) (lines 806-845) — Flutter analyze, design tokens, algorithms
-- [Common Pitfalls](#common-pitfalls) (lines 848-1012) — 11 anti-patterns with fixes (⚠️ read before first commit)
+- [Common Pitfalls](#common-pitfalls) (lines 848-1080) — 11 anti-patterns with fixes (⚠️ read before first commit)
 - [Design Token System](#design-token-system) (lines 662-727) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 1015-1034) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 1065-1098) — CityID, favorites, filters, translations, engagement
+- [Documentation Philosophy](#documentation-philosophy) (lines 1083-1102) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 1133-1166) — CityID, favorites, filters, translations, engagement
 - [Philosophy](#philosophy) (lines 22-64) — Five core principles (design tokens, state, translations, analytics, widgets)
 - [Pre-Loading Architecture](#pre-loading-architecture) (lines 520-597) — Safe async pattern for instant page loads
 - [Project Structure](#project-structure) (lines 67-118) — File organization, 12 pages, 34 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 1038-1062) — Critical startup sequence in main.dart
-- [References](#references) (lines 1101-1110) — Links to other documentation files
+- [Provider Initialization Order](#provider-initialization-order) (lines 1106-1130) — Critical startup sequence in main.dart
+- [References](#references) (lines 1169-1178) — Links to other documentation files
 - [State Management](#state-management) (lines 121-260) — When to use what, provider catalog, Riverpod 3.x patterns
 - [Translation System](#translation-system) (lines 599-659) — Dynamic td() function, 355 keys, 7 languages
 - [Widget Patterns](#widget-patterns) (lines 263-458) — Self-contained widgets, page wrappers, bottom sheets
@@ -995,7 +995,12 @@ Future<void> onButtonTap() async {
 }
 ```
 
-### Pitfall #11: Using ref After Async Operations (Widget Might Unmount)
+### Pitfall #11: Using ref After Widget Might Unmount
+
+This pitfall has two common contexts where widgets can unmount and invalidate `ref`:
+
+#### Variation A: Async Operations
+
 ❌ **Bad:**
 ```dart
 Future<void> _fetchSearchResults() async {
@@ -1022,9 +1027,56 @@ Future<void> _fetchSearchResults() async {
 }
 ```
 
-**Why:** When a widget unmounts (user navigates away, parent rebuilds), `ref` becomes invalid because it relies on `BuildContext`. Saving the notifier before async operations captures a reference that remains safe even after unmount.
-
 **Common in:** Pre-loading pages (Welcome, Settings, App Setup Flow) that fetch search results before navigating to Search page.
+
+#### Variation B: dispose() Method
+
+❌ **Bad:**
+```dart
+class MyWidget extends ConsumerStatefulWidget { ... }
+
+class _MyWidgetState extends ConsumerState<MyWidget> {
+  @override
+  void dispose() {
+    // ⚠️ DANGER: Widget is already unmounting, ref may be invalid
+    ref.read(searchStateProvider.notifier).setFilters([...]);
+    // Error: "Using ref when widget is unmounted is unsafe"
+    super.dispose();
+  }
+}
+```
+
+✅ **Good:**
+```dart
+class MyWidget extends ConsumerStatefulWidget { ... }
+
+class _MyWidgetState extends ConsumerState<MyWidget> {
+  // Save notifier for safe disposal
+  late final SearchStateNotifier _savedSearchNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    // Save notifier BEFORE widget can unmount
+    _savedSearchNotifier = ref.read(searchStateProvider.notifier);
+  }
+
+  @override
+  void dispose() {
+    // Use saved notifier (safe even during unmount)
+    _savedSearchNotifier.setFilters([...]);
+    super.dispose();
+  }
+}
+```
+
+**Common in:** Widgets that sync state on disposal (filter overlays, forms, bottom sheets).
+
+**Reference:** See commit `c998826` — "fix: prevent ref access in dispose() in filter overlay widget"
+
+---
+
+**Why:** When a widget unmounts (user navigates away, parent rebuilds, or `dispose()` is called), `ref` becomes invalid because it relies on `BuildContext`. Saving the notifier early (before async operations OR in `initState()`) captures a reference that remains safe even after unmount.
 
 ---
 

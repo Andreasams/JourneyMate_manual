@@ -167,6 +167,7 @@ Each scenario below provides:
 4. **DESIGN_SYSTEM_flutter.md** → Button Styles (search for "AppButtonStyles")
 5. **ARCHITECTURE.md** → API Service Pattern (lines 461-517)
 6. **ARCHITECTURE.md** → Common Pitfall #8 (lines 937-949)
+7. **ARCHITECTURE.md** → Common Pitfall #11 Variation B (lines 998-1080)
 
 **Critical warnings:**
 - ⚠️ Form state (TextEditingController, validation) → local State variables, NOT providers
@@ -174,6 +175,7 @@ Each scenario below provides:
 - ⚠️ Use `AppInputDecorations.standard()` for consistent input styling
 - ⚠️ Dispose controllers in `dispose()` method
 - ⚠️ Use `context.mounted` after async submit operations
+- ⚠️ If syncing state in `dispose()`, save notifier in `initState()` (Pitfall #11 Variation B)
 
 **Reference files:**
 - `journey_mate/lib/widgets/shared/contact_us_form_widget.dart` — Complete form pattern
@@ -241,6 +243,7 @@ Each scenario below provides:
 4. **_reference/PROVIDERS_REFERENCE.md** → filterProvider (search for "filterProvider")
 5. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 412-458)
 6. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 520-597)
+7. **ARCHITECTURE.md** → Common Pitfall #11 (lines 998-1080)
 
 **Critical warnings:**
 - ⚠️ CityID is always 17 (Copenhagen) — use `AppConstants.kDefaultCityId`
@@ -248,6 +251,7 @@ Each scenario below provides:
 - ⚠️ Search results pre-loaded on Welcome/Settings pages for instant Search page
 - ⚠️ Filter panel is bottom sheet (NOT inline overlay) — tab selection is local state
 - ⚠️ Match categorization (full/partial/other) handled by BuildShip, not Flutter
+- ⚠️ Filter overlays that sync state on close: save notifier in `initState()`, use in `dispose()` (Pitfall #11 Variation B)
 
 **Reference files:**
 - `journey_mate/lib/pages/search_page.dart` — Complete search implementation
@@ -331,6 +335,7 @@ Each scenario below provides:
 ### Navigation Guide Changelog
 
 **2026-02-24:** Initial 12-scenario guide created with targeted reading lists
+**2026-02-24:** Updated Scenarios 6 & 9 to reference expanded Common Pitfall #11 (dispose pattern)
 
 ---
 
