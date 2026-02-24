@@ -80,6 +80,9 @@ void main() async {
 
   // ── 8. Background: check location permission + service status ──
   unawaited(container.read(locationProvider.notifier).checkPermission());
+
+  // ── 9. Background: fetch exchange rate for stored currency ──
+  unawaited(container.read(localizationProvider.notifier).loadExchangeRateForCurrentCurrency());
 }
 
 /// Loads translations and filters in the background with retry logic.

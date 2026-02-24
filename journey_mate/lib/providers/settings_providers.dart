@@ -45,6 +45,29 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
     }
   }
 
+  /// Fetches exchange rate for the current currency code and updates state.
+  /// Called at app startup to ensure exchange rate matches stored currency.
+  /// Gracefully handles failures (rate stays at 1.0 if fetch fails).
+  Future<void> loadExchangeRateForCurrentCurrency() async {
+    final currencyCode = state.currencyCode;
+
+    // Skip if no currency set or if DKK (base currency, rate = 1.0)
+    if (currencyCode.isEmpty || currencyCode == 'DKK') {
+      debugPrint('💱 Exchange rate load skipped (currency: $currencyCode)');
+      return;
+    }
+
+    try {
+      debugPrint('💱 Fetching exchange rate for $currencyCode...');
+      final rate = await _fetchExchangeRate(currencyCode);
+      setExchangeRate(rate);
+      debugPrint('✅ Exchange rate loaded: $currencyCode = $rate');
+    } catch (e) {
+      debugPrint('⚠️ Failed to load exchange rate for $currencyCode: $e');
+      // Graceful failure - rate stays at 1.0 (acceptable for DKK base)
+    }
+  }
+
   /// Set currency code and exchange rate (persists code only)
   Future<void> setCurrency(String code, double rate) async {
     try {
