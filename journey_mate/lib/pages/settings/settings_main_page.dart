@@ -109,7 +109,8 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
 
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
-        ref.read(searchStateProvider.notifier).updateSearchResults(
+        // Use saved notifier (safe even if widget unmounted)
+        searchNotifier.updateSearchResults(
           response.jsonBody,
           resultCount,
         );
