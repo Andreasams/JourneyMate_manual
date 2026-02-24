@@ -158,4 +158,4 @@ These decisions have been confirmed and must not be re-debated:
 ---
 
 **Last Updated:** February 2026
-**For deep dives:** See ARCHITECTURE.md (how app is built), DESIGN_SYSTEM_flutter.md (design tokens), PROVIDERS_REFERENCE.md (state catalog), BUILDSHIP_API_REFERENCE.md (API contracts)
+**For deep dives:** See ARCHITECTURE.md (how app is built), DESIGN_SYSTEM_flutter.md (design tokens), PROVIDERS_REFERENCE.md (state catalog), BUILDSHIP_API_REFERENCE.md (API contracts), DIRECTORY_STRUCTURE.md (file organization)

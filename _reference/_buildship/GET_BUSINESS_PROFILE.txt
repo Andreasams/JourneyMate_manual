@@ -1,0 +1,223 @@
+URL: https://wvb8ww.buildship.run/getBusinessProfile
+---
+
+import { createClient } from '@supabase/supabase-js';
+
+// --- Type Definitions ---
+interface NodeInputs {
+  supabaseUrl: string;
+  supabaseKey: string;
+  businessId: number;
+  languageCode: string;
+}
+
+interface NodeScriptOptions {
+  logging: any;
+  env: any;
+  getBuildShipFile: any;
+}
+
+interface CombinedBusinessData {
+  businessInfo: any;
+  gallery: {
+    interior: string[];
+    food: string[];
+    outdoor: string[];
+    menu: string[];
+  };
+  menuCategories: any[];
+  exchangeRate: any;
+  error?: string;
+}
+
+/**
+ * Fetches complete business information with numerical price ranges for localization.
+ * Transforms nested Supabase response into flat structure with separate price range fields.
+ * @param inputs - Required inputs including Supabase credentials, business ID, and language code.
+ * @param options - Script options including logging utility.
+ * @returns Combined business data with numerical price ranges for currency conversion.
+ */
+export default async function getBusinessCompleteInfo(
+  { supabaseUrl, supabaseKey, businessId, languageCode }: NodeInputs,
+  { logging, env, getBuildShipFile }: NodeScriptOptions,
+): Promise<CombinedBusinessData> {
+
+  logging.log("Starting getBusinessCompleteInfo with numerical price range support:", {
+    supabaseUrl: supabaseUrl ? "[PROVIDED]" : "[MISSING]",
+    supabaseKey: supabaseKey ? "[PROVIDED]" : "[MISSING]",
+    businessId: businessId || "[MISSING]",
+    languageCode: languageCode || "[MISSING]"
+  });
+
+  // --- Input Validation ---
+  if (!supabaseUrl) {
+    logging.log('ERROR: Missing required input "supabaseUrl".');
+    return { error: 'supabaseUrl is required' } as CombinedBusinessData;
+  }
+  
+  if (!supabaseKey) {
+    logging.log('ERROR: Missing required input "supabaseKey".');
+    return { error: 'supabaseKey is required' } as CombinedBusinessData;
+  }
+  
+  if (!businessId || typeof businessId !== 'number') {
+    logging.log('ERROR: Missing or invalid required input "businessId".');
+    return { error: 'businessId is required and must be a number' } as CombinedBusinessData;
+  }
+  
+  if (!languageCode) {
+    logging.log('ERROR: Missing required input "languageCode".');
+    return { error: 'languageCode is required' } as CombinedBusinessData;
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  try {
+    // --- Supabase RPC Call ---
+    logging.log(`Calling Supabase RPC 'get_business_complete_info' for business: ${businessId}, language: ${languageCode}`);
+    
+    const { data: businessData, error } = await supabase
+      .rpc('get_business_complete_info', {
+        p_business_id: businessId,
+        p_language_code: languageCode
+      });
+
+    if (error) {
+      logging.log('ERROR: Supabase RPC call failed.', { error: error.message, hint: error.hint });
+      return { error: `Database error: ${error.message}` } as CombinedBusinessData;
+    }
+
+    if (!businessData || !businessData.success) {
+      logging.log('ERROR: Invalid data returned from Supabase function.');
+      return { error: businessData?.error || 'Invalid data returned' } as CombinedBusinessData;
+    }
+
+    logging.log('INFO: Raw data retrieved, starting transformation with numerical price ranges.');
+
+    // --- Flatten Business Info (from nested business_profile) ---
+    const businessProfile = businessData.business_profile || {};
+    const businessInfo: any = {
+      // Core business fields
+      business_id: businessProfile.business_id,
+      business_name: businessProfile.business_name,
+      is_active: businessProfile.is_active,
+      business_type: businessProfile.business_type,
+      tags: businessProfile.tags,
+      typesense_id: businessProfile.typesense_id,
+      description: businessProfile.description,
+      last_reviewed_at: businessProfile.last_reviewed_at,
+      
+      // Numerical price range fields 
+      price_range_min: businessProfile.price_range_min,
+      price_range_max: businessProfile.price_range_max,
+      price_range_currency_code: businessProfile.price_range_currency_code,
+      
+      // Flatten address fields
+      address_id: businessProfile.address?.address_id,
+      street: businessProfile.address?.street,
+      postal_code: businessProfile.address?.postal_code,
+      city_id: businessProfile.address?.city_id,
+      city_name: businessProfile.address?.city_name,
+      postal_city: businessProfile.address?.postal_city,
+      neighbourhood_name: businessProfile.address?.neighbourhood_name,
+      latitude: businessProfile.address?.latitude,
+      longitude: businessProfile.address?.longitude,
+      location: businessProfile.address?.location,
+      google_maps_url: businessProfile.address?.google_maps_url,
+      
+      // Flatten profile picture fields
+      business_profile_picture_id: businessProfile.profile_picture?.business_profile_picture_id,
+      profile_picture_url: businessProfile.profile_picture?.url,
+      profile_picture_name: businessProfile.profile_picture?.name,
+      profile_picture_alt_text: businessProfile.profile_picture?.alt_text,
+      profile_picture_created_at: businessProfile.profile_picture?.created_at,
+      profile_picture_updated_at: businessProfile.profile_picture?.updated_at,
+      
+      // Flatten contact fields
+      website_url: businessProfile.contact?.website_url,
+      facebook_url: businessProfile.contact?.facebook_url,
+      instagram_url: businessProfile.contact?.instagram_url,
+      reservation_url: businessProfile.contact?.reservation_url,
+      general_phone: businessProfile.contact?.general_phone,
+      reservation_phone: businessProfile.contact?.reservation_phone,
+      general_email: businessProfile.contact?.general_email,
+      reservation_email: businessProfile.contact?.reservation_email,
+      
+      // Flatten brand/company fields
+      brand_id: businessProfile.brand?.brand_id,
+      brand_name: businessProfile.brand?.brand_name,
+      company_id: businessProfile.company?.company_id,
+      company_name: businessProfile.company?.company_name
+    };
+
+    // --- Transform Gallery Data ---
+    const galleryData = businessData.gallery || [];
+    const galleries = {
+      interior: galleryData
+        .filter((img: any) => img.category_name === 'Interior')
+        .map((img: any) => img.image_url),
+      food: galleryData
+        .filter((img: any) => img.category_name === 'Food')
+        .map((img: any) => img.image_url),
+      outdoor: galleryData
+        .filter((img: any) => img.category_name === 'Outdoor')
+        .map((img: any) => img.image_url),
+      menu: galleryData
+        .filter((img: any) => img.category_name === 'Menu')
+        .map((img: any) => img.image_url)
+    };
+
+    // --- Transform Menu Categories ---
+    const menuCategories = businessData.menu_structure || [];
+
+    // --- Extract Exchange Rate Data ---
+    const exchangeRate = businessData.exchange_rate || null;
+
+    // --- Build Final Response ---
+    const result: CombinedBusinessData = {
+      businessInfo,
+      gallery: galleries,
+      menuCategories: menuCategories,
+      exchangeRate: exchangeRate
+    };
+
+    // Log transformation summary with price range info
+    logging.log('INFO: Successfully transformed data with numerical price ranges.', {
+      businessId: businessInfo.business_id,
+      businessName: businessInfo.business_name,
+      priceRange: {
+        min: businessInfo.price_range_min,
+        max: businessInfo.price_range_max,
+        currency: businessInfo.price_range_currency_code
+      },
+      hasAddress: !!businessInfo.street,
+      hasProfilePicture: !!businessInfo.profile_picture_url,
+      galleryImageCounts: {
+        interior: galleries.interior.length,
+        food: galleries.food.length,
+        outdoor: galleries.outdoor.length,
+        menu: galleries.menu.length
+      },
+      menuCategoriesCount: menuCategories.length,
+      exchangeRateInfo: exchangeRate ? {
+        fromCurrency: exchangeRate.from_currency,
+        toCurrency: exchangeRate.to_currency,
+        rate: exchangeRate.rate,
+        languageCode: exchangeRate.language_code
+      } : null,
+      businessInfoFieldCount: Object.keys(businessInfo).length
+    });
+
+    return result;
+
+  } catch (error: any) {
+    logging.log('ERROR: Business information retrieval and transformation failed.', { 
+      error: error.message, 
+      stack: error.stack,
+      businessId: businessId,
+      languageCode: languageCode
+    });
+    
+    return { error: `Processing error: ${error.message}` } as CombinedBusinessData;
+  }
+}

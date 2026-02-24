@@ -258,7 +258,7 @@ if (response.statusCode == 200 && response.jsonBody != null) {
 2. **API contracts** → Check `_reference/BUILDSHIP_API_REFERENCE.md`
 3. **State management** → Check `_reference/PROVIDERS_REFERENCE.md`
 4. **Design tokens** → Check `DESIGN_SYSTEM_flutter.md`
-5. **"Why was this built this way?"** → Read `pages/*/BUNDLE.md` (local file, not in Git)
+5. **"Why was this built this way?"** → Read `_reference/flutterflow_migration/pages/*/BUNDLE.md` (FlutterFlow migration documentation)
 
 ### Need More Help?
 

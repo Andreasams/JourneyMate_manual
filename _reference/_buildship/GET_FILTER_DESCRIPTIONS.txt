@@ -1,0 +1,119 @@
+URL: https://wvb8ww.buildship.run/filterDescriptions
+
+----
+
+import { createClient } from '@supabase/supabase-js';
+
+// --- Type Definitions ---
+interface NodeInputs {
+  supabaseUrl: string;
+  supabaseKey: string;
+  businessId: number;
+  languageCode: string;
+}
+
+interface NodeScriptOptions {
+  logging: any;
+  env: any;
+  getBuildShipFile: any;
+}
+
+interface FilterDescription {
+  filter_id: number;
+  description: string;
+}
+
+interface FilterDescriptionsResponse {
+  filterDescriptions: FilterDescription[];
+  error?: string;
+}
+
+/**
+ * Fetches business filter descriptions in the specified language.
+ * Retrieves filter descriptions from business_x_filter_translation table based on business filter associations.
+ * @param inputs - Required inputs including Supabase credentials, business ID, and language code.
+ * @param options - Script options including logging utility.
+ * @returns Array of filter descriptions with filter_id and description text.
+ */
+export default async function getBusinessFilterDescriptions(
+  { supabaseUrl, supabaseKey, businessId, languageCode }: NodeInputs,
+  { logging, env, getBuildShipFile }: NodeScriptOptions,
+): Promise<FilterDescriptionsResponse> {
+
+  logging.log("Starting getBusinessFilterDescriptions:", {
+    supabaseUrl: supabaseUrl ? "[PROVIDED]" : "[MISSING]",
+    supabaseKey: supabaseKey ? "[PROVIDED]" : "[MISSING]",
+    businessId: businessId || "[MISSING]",
+    languageCode: languageCode || "[MISSING]"
+  });
+
+  // --- Input Validation ---
+  if (!supabaseUrl) {
+    logging.log('ERROR: Missing required input "supabaseUrl".');
+    return { error: 'supabaseUrl is required' } as FilterDescriptionsResponse;
+  }
+  
+  if (!supabaseKey) {
+    logging.log('ERROR: Missing required input "supabaseKey".');
+    return { error: 'supabaseKey is required' } as FilterDescriptionsResponse;
+  }
+  
+  if (!businessId || typeof businessId !== 'number') {
+    logging.log('ERROR: Missing or invalid required input "businessId".');
+    return { error: 'businessId is required and must be a number' } as FilterDescriptionsResponse;
+  }
+  
+  if (!languageCode) {
+    logging.log('ERROR: Missing required input "languageCode".');
+    return { error: 'languageCode is required' } as FilterDescriptionsResponse;
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  try {
+    // --- Use Raw SQL Query to Avoid Schema Cache Issues ---
+    logging.log(`Fetching filter descriptions for business: ${businessId}, language: ${languageCode}`);
+    
+    const { data: filterData, error } = await supabase
+      .rpc('get_business_filter_descriptions', {
+        p_business_id: businessId,
+        p_language_code: languageCode
+      });
+
+    if (error) {
+      logging.log('ERROR: Supabase RPC call failed.', { error: error.message, hint: error.hint });
+      return { error: `Database error: ${error.message}` } as FilterDescriptionsResponse;
+    }
+
+    if (!filterData) {
+      logging.log('INFO: No filter descriptions found for this business and language.');
+      return { filterDescriptions: [] } as FilterDescriptionsResponse;
+    }
+
+    // --- Transform Data ---
+    const filterDescriptions: FilterDescription[] = filterData.map((item: any) => ({
+      filter_id: item.filter_id,
+      description: item.description || ''
+    }));
+
+    // --- Log Results ---
+    logging.log('INFO: Successfully retrieved filter descriptions.', {
+      businessId: businessId,
+      languageCode: languageCode,
+      descriptionsCount: filterDescriptions.length,
+      filterIds: filterDescriptions.map(fd => fd.filter_id)
+    });
+
+    return { filterDescriptions } as FilterDescriptionsResponse;
+
+  } catch (error: any) {
+    logging.log('ERROR: Filter description retrieval failed.', { 
+      error: error.message, 
+      stack: error.stack,
+      businessId: businessId,
+      languageCode: languageCode
+    });
+    
+    return { error: `Processing error: ${error.message}` } as FilterDescriptionsResponse;
+  }
+}

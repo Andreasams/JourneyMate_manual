@@ -52,7 +52,12 @@
       "Bash(git log:*)",
       "WebSearch",
       "WebFetch(domain:pub.dev)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(docx2txt:*)",
+      "Bash(/c/Users/Rikke/Documents/JourneyMate-Organized/_reference/NEW_TRANSLATION_KEYS.sql:*)",
+      "Bash(is unmounted\" errors when user navigates away during API calls.\n\nCompletes ref safety fixes for all pre-loading pages:\n- welcome_page.dart \\(3 functions\\)\n- settings_main_page.dart \\(1 function\\)  \n- app_settings_initiate_flow_page.dart \\(1 function\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(while read commit)",
+      "Bash(do git show --name-only --pretty=format: \"$commit\")"
     ]
   },
   "enableAllProjectMcpServers": true,

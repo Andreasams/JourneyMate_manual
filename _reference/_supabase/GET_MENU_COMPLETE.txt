@@ -1,0 +1,271 @@
+
+/*
+PURPOSE: Retrieves complete menu structure with translations, dietary types, allergens, and modifiers
+for FlutterFlow client consumption, optimized for a single network round-trip.
+
+DEPENDENCIES:
+  - MenuItem: Core menu item records with display properties and filter arrays
+  - MenuCategory: Category groupings with beverage flags and display ordering
+  - Menu: Top-level menu containers linking categories to businesses, includes authentic_languages
+  - Product_SKU: Pricing information for base items and variation modifiers
+  - MenuItemImage: Primary item images (display_order = 0)
+  - MenuItem_DietaryType: Inherent dietary compliance (item IS this type)
+  - MenuItem_DietaryTypeCanBeMade: Adaptable dietary compliance (item CAN BE MADE this type)
+  - MenuItem_Allergy: Allergen associations for filtering
+  - ModifierGroup, Modifier: Customization options with nested structure
+  - MenuItem_ModifierGroup: Item-specific modifier overrides (excluded modifiers, custom min/max)
+  - ModifierGroup_Modifier: Modifier membership and display ordering
+  - MenuItemTranslation, MenuCategoryTranslation, ModifierGroupTranslation, ModifierTranslation: Localized content
+
+OUTPUT STRUCTURE:
+  {
+    "menu_version": TIMESTAMP,           -- Cache invalidation key from most recent MenuItem update
+    "menu_items": [...],                  -- Array of menu items with translations and modifiers
+    "categories": [...],                  -- Array of categories with member item IDs
+    "availableRestrictions": [...],       -- Dietary type IDs for restrictions (IS type)
+    "availablePreferences": [...],        -- Dietary type IDs for preferences (IS type)
+    "availableCanBeMadeRestrictions": [], -- Dietary type IDs for restrictions (CAN BE MADE)
+    "availableCanBeMadePreferences": [],  -- Dietary type IDs for preferences (CAN BE MADE)
+    "availableAllergies": [...]           -- Allergen IDs present across menu
+  }
+
+MENU ITEM AUTHENTIC LANGUAGES:
+  Each menu item includes authentic_languages array from its parent Menu record.
+  Enables client to offer "view in original language" feature by querying
+  MenuItemTranslation with the item's translation_id and desired authentic language_code.
+  Array contains 1-3 language codes representing languages in which the menu was originally written.
+
+DIETARY TYPE SEPARATION:
+  - dietary_type_ids: Items from MenuItem_DietaryType (inherent compliance)
+  - dietary_type_can_be_made_ids: Items from MenuItem_DietaryTypeCanBeMade (adaptable upon request)
+  - Enables client filtering with allergen override awareness
+
+MODIFIER PRICING LOGIC:
+  Three pricing strategies based on modifier configuration:
+  1. VARIATION MODIFIERS (type='Variation'): Distinct product SKUs with independent pricing
+     - Price retrieved from Product_SKU where variation_modifier_id matches modifier
+     - Used for size variations, protein choices, etc. that represent complete product alternatives
+  2. REFERENCED MENU ITEMS (use_referenced_item_price=true): Modifiers that reference another menu item
+     - Price retrieved from Product_SKU of the referenced menu item's default SKU
+     - Used for "dish" type modifiers that add an entire menu item to an order
+  3. PRICE ADJUSTMENTS (all others): Simple price modifications to base item
+     - Price taken from Modifier.add_on_price field
+     - Used for ingredient additions, customizations, etc.
+
+PROCESS FLOW:
+  1. Calculate menu_version from most recent MenuItem update timestamp
+  2. Build menu_items array with translations, pricing, images, dietary/allergen arrays, authentic languages, and modifier groups
+  3. Build categories array with translated names and ordered member item IDs
+  4. Aggregate available dietary restrictions/preferences from both IS and CAN BE MADE tables
+  5. Aggregate available allergen IDs across all menu items
+  6. Return consolidated JSONB response
+*/
+DECLARE
+  v_menu_version TIMESTAMPTZ;
+  v_menu_items JSONB;
+  v_categories JSONB;
+  v_dietary_restrictions INTEGER[];
+  v_dietary_preferences INTEGER[];
+  v_dietary_can_be_made_restrictions INTEGER[];
+  v_dietary_can_be_made_preferences INTEGER[];
+  v_allergen_ids INTEGER[];
+BEGIN
+
+  SELECT MAX(mi.updated_at)
+  INTO v_menu_version
+  FROM "MenuItem" mi
+  JOIN "MenuCategory" mc ON mi.menu_category_id = mc.menu_category_id
+  JOIN "Menu" m ON mc.menu_id = m.menu_id
+  WHERE m.business_id = p_business_id;
+
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'menu_item_id', mi.menu_item_id,
+      'item_name', COALESCE(mit.name, mi.name),
+      'item_description', COALESCE(mit.description, mi.description),
+      'base_price', sku.price,
+      'is_price_per_person', mi.is_price_per_person,
+      'item_image_url', img.url,
+      'is_beverage', mc.is_beverage,
+      'display_order', mi.display_order,
+      'language_code', p_language_code,
+      'business_id', p_business_id,
+      'authentic_languages', COALESCE(m.authentic_languages, ARRAY[]::TEXT[]),
+      
+      'dietary_type_ids', COALESCE(
+        (SELECT array_agg(DISTINCT dietary_type_id)
+         FROM "MenuItem_DietaryType" 
+         WHERE menu_item_id = mi.menu_item_id),
+        ARRAY[]::INTEGER[]
+      ),
+      
+      'dietary_type_can_be_made_ids', COALESCE(
+        (SELECT array_agg(DISTINCT dietary_type_id)
+         FROM "MenuItem_DietaryTypeCanBeMade" 
+         WHERE menu_item_id = mi.menu_item_id),
+        ARRAY[]::INTEGER[]
+      ),
+      
+      'allergy_ids', COALESCE(
+        (SELECT array_agg(DISTINCT ma.allergy_id ORDER BY ma.allergy_id)
+         FROM "MenuItem_Allergy" ma
+         WHERE ma.menu_item_id = mi.menu_item_id),
+        ARRAY[]::INTEGER[]
+      ),
+      
+      'item_modifier_groups', COALESCE(
+        (SELECT jsonb_agg(
+          jsonb_build_object(
+            'modifier_group_id', mg.modifier_group_id,
+            'name', COALESCE(mgt.name, mg.name),
+            'description', COALESCE(mgt.description, mg.description),
+            'type', mg.type,
+            'display_order', COALESCE(mimgr.display_order, mg.food_display_order),
+            'min_selections', COALESCE(mimgr.custom_min_selections, mg.min_selections),
+            'max_selections', COALESCE(mimgr.custom_max_selections, mg.max_selections),
+            
+            'modifiers', COALESCE(
+  (SELECT jsonb_agg(
+    jsonb_build_object(
+      'modifier_id', mod.modifier_id,
+      'name', COALESCE(modt.name, mod.name),
+      'description', CASE 
+          WHEN mod.type = 'dish' THEN NULL
+          ELSE COALESCE(modt.description, mod.description)
+      END,
+      'price', CASE
+          WHEN mg.type = 'Variation' THEN
+              COALESCE(
+                  (SELECT ps.price 
+                   FROM "Product_SKU" ps
+                   WHERE ps.variation_modifier_id = mod.modifier_id
+                     AND ps.menu_item_id = mi.menu_item_id
+                     AND ps.is_active = true
+                   LIMIT 1),
+                  0
+              )
+          WHEN mod.use_referenced_item_price = true AND mod.reference_menu_item_id IS NOT NULL THEN
+              (SELECT COALESCE(ps.price, 0) 
+               FROM "Product_SKU" ps
+               WHERE ps.menu_item_id = mod.reference_menu_item_id
+                 AND ps.is_active = true
+                 AND ps.is_default = true
+               LIMIT 1)
+          ELSE
+              COALESCE(mod.add_on_price, 0)
+      END,
+      'display_order', mgm.display_order
+    ) ORDER BY mgm.display_order
+  )
+  FROM "ModifierGroup_Modifier" mgm
+  JOIN "Modifier" mod ON mgm.modifier_id = mod.modifier_id
+  LEFT JOIN "ModifierTranslation" modt 
+    ON mod.translation_id = modt.translation_id
+    AND modt.language_code = p_language_code
+  WHERE mgm.modifier_group_id = mg.modifier_group_id
+  AND (mimgr.excluded_modifier_ids IS NULL OR NOT (mod.modifier_id = ANY(mimgr.excluded_modifier_ids)))
+  ),
+  '[]'::JSONB
+)
+          ) ORDER BY COALESCE(mimgr.display_order, mg.food_display_order)
+        )
+        FROM "MenuItem_ModifierGroup" mimgr
+        JOIN "ModifierGroup" mg ON mimgr.modifier_group_id = mg.modifier_group_id
+        LEFT JOIN "ModifierGroupTranslation" mgt 
+          ON mg.translation_id = mgt.translation_id
+          AND mgt.language_code = p_language_code
+        WHERE mimgr.menu_item_id = mi.menu_item_id
+        ),
+        '[]'::JSONB
+      )
+    ) ORDER BY mi.display_order
+  )
+  INTO v_menu_items
+  FROM "MenuItem" mi
+  JOIN "MenuCategory" mc ON mi.menu_category_id = mc.menu_category_id
+  JOIN "Menu" m ON mc.menu_id = m.menu_id
+  LEFT JOIN "Product_SKU" sku ON sku.menu_item_id = mi.menu_item_id AND sku.is_default = true AND sku.is_active = true
+  LEFT JOIN "MenuItemTranslation" mit 
+    ON mi.translation_id = mit.translation_id
+    AND mit.language_code = p_language_code
+  LEFT JOIN (
+    SELECT menu_item_id, url, display_order
+    FROM "MenuItemImage"
+    WHERE display_order = 0 OR display_order IS NULL
+  ) img ON img.menu_item_id = mi.menu_item_id
+  WHERE m.business_id = p_business_id
+  AND sku.sku_id IS NOT NULL;
+
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'category_id', mc.menu_category_id,
+      'menu_id', mc.menu_id,
+      'category_name', COALESCE(mct.name, mc.name),
+      'category_description', COALESCE(mct.description, mc.description),
+      'category_type', 
+        CASE 
+          WHEN mc.purpose = 'menu_package' THEN 'menu_package'
+          ELSE 'a la carte'
+        END,
+      'is_beverage', mc.is_beverage,
+      'display_order', mc.display_order,
+      'menu_display_order', m.display_order,
+      'language_code', p_language_code,
+      
+      'menu_item_ids', COALESCE(
+        (SELECT array_agg(mi.menu_item_id ORDER BY mi.display_order)
+         FROM "MenuItem" mi
+         JOIN "Product_SKU" sku ON sku.menu_item_id = mi.menu_item_id AND sku.is_default = true AND sku.is_active = true
+         WHERE mi.menu_category_id = mc.menu_category_id),
+        ARRAY[]::INTEGER[]
+      )
+    ) ORDER BY m.display_order, mc.display_order
+  )
+  INTO v_categories
+  FROM "MenuCategory" mc
+  JOIN "Menu" m ON mc.menu_id = m.menu_id
+  LEFT JOIN "MenuCategoryTranslation" mct 
+    ON mc.translation_id = mct.translation_id
+    AND mct.language_code = p_language_code
+  WHERE m.business_id = p_business_id;
+
+  SELECT 
+    array_agg(DISTINCT dietary_type_id ORDER BY dietary_type_id) FILTER (WHERE dietary_type_id IN (1, 3, 4, 5)),
+    array_agg(DISTINCT dietary_type_id ORDER BY dietary_type_id) FILTER (WHERE dietary_type_id IN (2, 6, 7))
+  INTO v_dietary_restrictions, v_dietary_preferences
+  FROM "MenuItem" mi
+  JOIN "MenuCategory" mc ON mi.menu_category_id = mc.menu_category_id
+  JOIN "Menu" m ON mc.menu_id = m.menu_id
+  JOIN "MenuItem_DietaryType" mdt ON mi.menu_item_id = mdt.menu_item_id
+  WHERE m.business_id = p_business_id;
+
+  SELECT 
+    array_agg(DISTINCT dietary_type_id ORDER BY dietary_type_id) FILTER (WHERE dietary_type_id IN (1, 3, 4, 5)),
+    array_agg(DISTINCT dietary_type_id ORDER BY dietary_type_id) FILTER (WHERE dietary_type_id IN (2, 6, 7))
+  INTO v_dietary_can_be_made_restrictions, v_dietary_can_be_made_preferences
+  FROM "MenuItem" mi
+  JOIN "MenuCategory" mc ON mi.menu_category_id = mc.menu_category_id
+  JOIN "Menu" m ON mc.menu_id = m.menu_id
+  JOIN "MenuItem_DietaryTypeCanBeMade" mdtcbm ON mi.menu_item_id = mdtcbm.menu_item_id
+  WHERE m.business_id = p_business_id;
+
+  SELECT array_agg(DISTINCT ma.allergy_id ORDER BY ma.allergy_id)
+  INTO v_allergen_ids
+  FROM "MenuItem" mi
+  JOIN "MenuCategory" mc ON mi.menu_category_id = mc.menu_category_id
+  JOIN "Menu" m ON mc.menu_id = m.menu_id
+  JOIN "MenuItem_Allergy" ma ON mi.menu_item_id = ma.menu_item_id
+  WHERE m.business_id = p_business_id;
+
+  RETURN jsonb_build_object(
+    'menu_version', v_menu_version,
+    'menu_items', COALESCE(v_menu_items, '[]'::JSONB),
+    'categories', COALESCE(v_categories, '[]'::JSONB),
+    'availableRestrictions', COALESCE(v_dietary_restrictions, ARRAY[]::INTEGER[]),
+    'availablePreferences', COALESCE(v_dietary_preferences, ARRAY[]::INTEGER[]),
+    'availableCanBeMadeRestrictions', COALESCE(v_dietary_can_be_made_restrictions, ARRAY[]::INTEGER[]),
+    'availableCanBeMadePreferences', COALESCE(v_dietary_can_be_made_preferences, ARRAY[]::INTEGER[]),
+    'availableAllergies', COALESCE(v_allergen_ids, ARRAY[]::INTEGER[])
+  );
+
+END;

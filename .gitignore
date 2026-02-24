@@ -18,27 +18,18 @@ _flutterflow_export/
 .DS_Store
 Thumbs.db
 
-# Historical migration documentation (keep locally, don't commit)
-# These were scaffolding docs from FlutterFlow migration (Phase 1-7)
-# Useful for understanding "why was this built this way?" but not needed in Git
-pages/*/BUNDLE*.md
-pages/*/GAP_ANALYSIS*.md
-pages/*/PAGE_README*.md
-pages/*/DESIGN_README*.md
-pages/*/VERIFICATION_REPORT*.md
-shared/actions/MASTER_README_*.md
-shared/widgets/MASTER_README_*.md
-shared/functions/MASTER_README_*.md
+# Historical migration documentation (now organized in _reference/flutterflow_migration/)
+# These docs are now tracked in Git as reference material
 
-# Archived migration docs (these ARE tracked for historical context)
-# Note: Archive files are intentionally tracked in Git
+# Development/debugging images (manual reference only)
+images_for_debugging/
 
-# Old planning documents (no longer relevant)
-IMPLEMENTATION_PLAN.txt
-MASTER_TRANSLATION_KEYS.md
-LESSONS_LEARNED_jsx_to_flutter.md
-INFO.plist.txt
-MAIN.dart.txt
+# Temporary/local development files
+*.tmp
+*.log
+
+# Note: config/AuthKey_NXG563P998.p8 is tracked in Git (already committed)
+# If you need to remove it from history, use git-filter-repo or BFG Repo-Cleaner
 
 # Note: The following ARE tracked in Git (guidance and reference docs):
 #  - CLAUDE.md (session instructions)
