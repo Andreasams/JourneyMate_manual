@@ -82,8 +82,10 @@ String? convertAndFormatPrice(
   final originalCode = originalCurrencyCode.toUpperCase();
 
   // Convert price (skip conversion if same currency)
+  // Note: exchangeRate represents "1 target currency = X DKK"
+  // So to convert FROM DKK TO target, we divide
   final convertedPrice =
-      originalCode == targetCode ? basePrice : basePrice * exchangeRate;
+      originalCode == targetCode ? basePrice : basePrice / exchangeRate;
 
   // Get currency formatting rules from central function
   final rulesJson = getCurrencyFormattingRules(targetCode);

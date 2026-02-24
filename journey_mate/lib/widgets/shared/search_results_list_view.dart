@@ -428,7 +428,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   // Constants
   // ---------------------------------------------------------------------------
 
-  static const double _imageSize = 50.0; // JSX spec: 50×50px avatar
+  static const double _imageSize = 42.0; // Reduced from 50px for less prominence
   static const String _placeholderImageUrl =
       'https://tlqfuazpshfaozdvmcbh.supabase.co/storage/v1/object/public/profilepic_restaurants/placeholder.webp';
 
@@ -943,16 +943,32 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final closeTime = dayHoursMap['closing_time_1']?.toString();
 
     if (openTime != null && closeTime != null) {
+      // Strip seconds from time format (08:00:00 -> 08:00)
+      final formattedOpen = _formatTime(openTime);
+      final formattedClose = _formatTime(closeTime);
+
       // Check if there are multiple slots
       final slot2Open = dayHoursMap['opening_time_2']?.toString();
       if (slot2Open != null) {
         // Multiple slots - show first slot with indicator
-        return '$openTime-$closeTime +';
+        return '$formattedOpen-$formattedClose +';
       }
-      return '$openTime-$closeTime';
+      return '$formattedOpen-$formattedClose';
     }
 
     return td(ref, 'hours_no_data');
+  }
+
+  /// Helper to strip seconds from time string (HH:MM:SS -> HH:MM)
+  String _formatTime(String time) {
+    // If time contains seconds (e.g., "08:00:00"), strip them
+    if (time.length > 5 && time.contains(':')) {
+      final parts = time.split(':');
+      if (parts.length >= 2) {
+        return '${parts[0]}:${parts[1]}';
+      }
+    }
+    return time;
   }
 
   Widget _buildPhotoGrid() {

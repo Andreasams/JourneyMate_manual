@@ -392,7 +392,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             Padding(
               padding: EdgeInsets.fromLTRB(
                 AppSpacing.xl, // 20px per JSX
-                AppSpacing.xs,
+                AppSpacing.xsm, // 6px (was 4px xs, now 6px for more space)
                 AppSpacing.xl, // 20px per JSX
                 0,
               ),
@@ -651,7 +651,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ),
               ),
               child: Text(
-                'Liste',
+                td(ref, 'view_toggle_list'), // Use translation key
                 textAlign: TextAlign.center,
                 style: AppTypography.bodyRegular.copyWith(
                   fontWeight: _viewMode == 'liste' ? FontWeight.w600 : FontWeight.w400,
@@ -678,7 +678,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   ),
                 ),
                 child: Text(
-                  'Kort',
+                  td(ref, 'view_toggle_map'), // Use translation key
                   textAlign: TextAlign.center,
                   style: AppTypography.bodyRegular.copyWith(
                     fontWeight: _viewMode == 'kort' ? FontWeight.w600 : FontWeight.w400,
@@ -938,7 +938,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ),
             SizedBox(height: AppSpacing.lg),
             Text(
-              'Kortvisning - Kommer snart',
+              td(ref, 'map_coming_soon'), // Use translation key
               style: AppTypography.bodyRegular.copyWith(
                 color: AppColors.textSecondary,
               ),

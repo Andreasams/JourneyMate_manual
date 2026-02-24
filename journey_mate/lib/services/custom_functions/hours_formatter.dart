@@ -49,7 +49,7 @@ String openClosesAt(
     return translations[key]?[lang] ?? defaultValue;
   }
 
-  // Helper: Convert "HH:MM" time string to minutes since midnight
+  // Helper: Convert "HH:MM" or "HH:MM:SS" time string to minutes since midnight
   int convertTimeToMinutes(String? time) {
     if (time == null || time.isEmpty) return -1;
 
@@ -71,6 +71,22 @@ String openClosesAt(
       return -1;
     } catch (e) {
       return -1;
+    }
+  }
+
+  // Helper: Format time string to HH:MM (strip seconds if present)
+  String formatTimeString(String? time) {
+    if (time == null || time.isEmpty) return '';
+
+    try {
+      final parts = time.split(':');
+      if (parts.length >= 2) {
+        // Return only HH:MM, stripping seconds
+        return '${parts[0]}:${parts[1]}';
+      }
+      return time;
+    } catch (e) {
+      return time;
     }
   }
 
@@ -292,7 +308,7 @@ String openClosesAt(
 
     // Determine if open and which closing time to use
     if (todayStatus['isOpen'] == true) {
-      final closingTime = todayStatus['closingTime'];
+      final closingTime = formatTimeString(todayStatus['closingTime']);
       final isOvernight = todayStatus['isOvernightClose'] == true;
 
       if (isOvernight) {
@@ -303,7 +319,7 @@ String openClosesAt(
     }
 
     if (yesterdayStatus['isOpen'] == true) {
-      final closingTime = yesterdayStatus['closingTime'];
+      final closingTime = formatTimeString(yesterdayStatus['closingTime']);
       return '${getLocalizedMessage('hours_closes_at', 'til')} $closingTime';
     }
 
@@ -314,7 +330,7 @@ String openClosesAt(
       currentMinutes,
     );
 
-    final nextOpenTime = nextOpening['time'];
+    final nextOpenTime = formatTimeString(nextOpening['time']);
     final offsetDays = nextOpening['offsetDays'] as int;
 
     if (offsetDays == -1) {
