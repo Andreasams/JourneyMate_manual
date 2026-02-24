@@ -17,11 +17,13 @@ class SortBottomSheet extends ConsumerStatefulWidget {
     required this.onlyOpen,
     this.selectedStation,
     required this.onSortChanged,
+    required this.openPlacesCount,
   });
 
   final String currentSort;
   final bool onlyOpen;
   final int? selectedStation;
+  final int openPlacesCount; // Count of open places matching current filters
   final void Function(String sortBy, bool onlyOpen, int? station)
       onSortChanged;
 
@@ -146,18 +148,21 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // Left-align title
         children: [
           // Swipe indicator
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.border,
-              borderRadius: BorderRadius.circular(2),
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           SizedBox(height: AppSpacing.md),
-          // Title
+          // Title - left-aligned
           Text(
             td(ref, 'sort_sheet_title'),
             style: AppTypography.sectionHeading,
@@ -169,40 +174,84 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
 
   Widget _buildOnlyOpenToggle() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-      child: GestureDetector(
-        onTap: () {
-          setState(() => _onlyOpen = !_onlyOpen);
-          widget.onSortChanged(_selectedSort, _onlyOpen, widget.selectedStation);
-        },
-        behavior: HitTestBehavior.opaque,
-        child: Row(
-          children: [
-            // Checkbox
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: _onlyOpen ? AppColors.accent : Colors.transparent,
-                border: Border.all(
-                  color: _onlyOpen ? AppColors.accent : AppColors.border,
-                  width: 2,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.border, width: 1),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() => _onlyOpen = !_onlyOpen);
+            widget.onSortChanged(_selectedSort, _onlyOpen, widget.selectedStation);
+          },
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm + 2,
+            ),
+            decoration: BoxDecoration(
+              color: _onlyOpen ? AppColors.greenBg : AppColors.bgCard,
+              border: Border.all(
+                color: _onlyOpen
+                    ? AppColors.greenBorder
+                    : AppColors.border,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Row(
+              children: [
+                // Checkbox - green when selected
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: _onlyOpen ? AppColors.green : Colors.transparent,
+                    border: _onlyOpen
+                        ? null
+                        : Border.all(
+                            color: AppColors.border,
+                            width: 1.5,
+                          ),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: _onlyOpen
+                      ? Icon(Icons.check, size: 11, color: Colors.white)
+                      : null,
                 ),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: _onlyOpen
-                  ? Icon(Icons.check, size: 14, color: Colors.white)
-                  : null,
+                SizedBox(width: AppSpacing.sm),
+                // Label
+                Expanded(
+                  child: Text(
+                    td(ref, 'filter_only_open'),
+                    style: AppTypography.bodyRegular.copyWith(
+                      fontWeight: _onlyOpen ? FontWeight.w600 : FontWeight.w400,
+                      color: _onlyOpen
+                          ? AppColors.green
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                // Count display when selected
+                if (_onlyOpen)
+                  Text(
+                    '${widget.openPlacesCount} ${td(ref, 'sort_places_label')}',
+                    style: AppTypography.bodyRegular.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.green,
+                    ),
+                  ),
+              ],
             ),
-            SizedBox(width: AppSpacing.sm),
-            // Label
-            Expanded(
-              child: Text(
-                td(ref, 'filter_only_open'),
-                style: AppTypography.bodyRegular,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -210,51 +259,69 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
 
   Widget _buildSortOption(String sortKey, String translationKey) {
     final isSelected = _selectedSort == sortKey;
-    return ListTile(
-      title: Text(
-        td(ref, translationKey),
-        style: AppTypography.bodyRegular.copyWith(
-          color: isSelected ? AppColors.accent : AppColors.textPrimary,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+    return Container(
+      color: isSelected ? AppColors.bgPage : Colors.transparent,
+      child: ListTile(
+        title: Text(
+          td(ref, translationKey),
+          style: AppTypography.bodyRegular.copyWith(
+            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
         ),
+        trailing: isSelected
+            ? Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 11,
+                ),
+              )
+            : null,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        onTap: () {
+          setState(() => _selectedSort = sortKey);
+          widget.onSortChanged(sortKey, _onlyOpen, widget.selectedStation);
+          Navigator.pop(context);
+        },
       ),
-      trailing: isSelected
-          ? Icon(Icons.check, color: AppColors.accent, size: 24)
-          : null,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
-      onTap: () {
-        setState(() => _selectedSort = sortKey);
-        widget.onSortChanged(sortKey, _onlyOpen, widget.selectedStation);
-        Navigator.pop(context);
-      },
     );
   }
 
   Widget _buildSortOptionWithSubmenu(String sortKey, String translationKey) {
     final isSelected = _selectedSort == sortKey;
-    return ListTile(
-      title: Text(
-        td(ref, translationKey),
-        style: AppTypography.bodyRegular.copyWith(
-          color: isSelected ? AppColors.accent : AppColors.textPrimary,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+    return Container(
+      color: isSelected ? AppColors.bgPage : Colors.transparent,
+      child: ListTile(
+        title: Text(
+          td(ref, translationKey),
+          style: AppTypography.bodyRegular.copyWith(
+            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
         ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: AppColors.textSecondary,
+          size: 24,
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        onTap: () {
+          setState(() => _view = 'stations');
+        },
       ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: AppColors.textSecondary,
-        size: 24,
-      ),
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
-      onTap: () {
-        setState(() => _view = 'stations');
-      },
     );
   }
 
@@ -301,26 +368,41 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     final stationName = station['name'] as String;
     final isSelected = widget.selectedStation == stationId;
 
-    return ListTile(
-      title: Text(
-        stationName,
-        style: AppTypography.bodyRegular.copyWith(
-          color: isSelected ? AppColors.accent : AppColors.textPrimary,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+    return Container(
+      color: isSelected ? AppColors.bgPage : Colors.transparent,
+      child: ListTile(
+        title: Text(
+          stationName,
+          style: AppTypography.bodyRegular.copyWith(
+            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
         ),
+        trailing: isSelected
+            ? Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 11,
+                ),
+              )
+            : null,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        onTap: () {
+          setState(() => _selectedSort = 'station');
+          widget.onSortChanged('station', _onlyOpen, stationId);
+          Navigator.pop(context);
+        },
       ),
-      trailing: isSelected
-          ? Icon(Icons.check, color: AppColors.accent, size: 24)
-          : null,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
-      onTap: () {
-        setState(() => _selectedSort = 'station');
-        widget.onSortChanged('station', _onlyOpen, stationId);
-        Navigator.pop(context);
-      },
     );
   }
 

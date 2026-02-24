@@ -331,12 +331,16 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   void _openSortBottomSheet() {
+    final searchState = ref.read(searchStateProvider);
+    final openPlacesCount = _onlyOpen ? searchState.searchResultsCount : 0;
+
     showModalBottomSheet(
       context: context,
       builder: (context) => SortBottomSheet(
         currentSort: _currentSort,
         onlyOpen: _onlyOpen,
         selectedStation: null,
+        openPlacesCount: openPlacesCount,
         onSortChanged: (sortBy, onlyOpen, station) {
           setState(() {
             _currentSort = sortBy;

@@ -82,10 +82,10 @@ String? convertAndFormatPrice(
   final originalCode = originalCurrencyCode.toUpperCase();
 
   // Convert price (skip conversion if same currency)
-  // Note: exchangeRate represents "1 target currency = X DKK"
-  // So to convert FROM DKK TO target, we divide
+  // Note: exchangeRate represents "1 DKK = X target currency"
+  // So to convert FROM DKK TO target, we multiply
   final convertedPrice =
-      originalCode == targetCode ? basePrice : basePrice / exchangeRate;
+      originalCode == targetCode ? basePrice : basePrice * exchangeRate;
 
   // Get currency formatting rules from central function
   final rulesJson = getCurrencyFormattingRules(targetCode);
@@ -134,6 +134,20 @@ String? convertAndFormatPriceRange(
   double exchangeRate,
   String targetCurrencyCode,
 ) {
+  // Get currency formatting rules to extract symbol directly (preserves periods in "kr.")
+  final rulesJson = getCurrencyFormattingRules(targetCurrencyCode);
+  if (rulesJson == null) return null;
+
+  final Map<String, dynamic> rules;
+  try {
+    rules = jsonDecode(rulesJson);
+  } catch (e) {
+    return null;
+  }
+
+  final symbol = rules['symbol'] as String;
+  final isPrefix = rules['isPrefix'] as bool;
+
   final formattedMin = convertAndFormatPrice(
     minPrice,
     originalCurrencyCode,
@@ -150,19 +164,11 @@ String? convertAndFormatPriceRange(
 
   if (formattedMin == null || formattedMax == null) return null;
 
-  // Extract numeric parts (remove symbols and spaces)
-  final minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,]'), '');
-  final maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,]'), '');
+  // Extract numeric parts only (preserve decimal points, remove symbols and spaces)
+  final minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,.]'), '').trim();
+  final maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,.]'), '').trim();
 
-  // Extract symbol from either formatted price
-  final symbol = formattedMin.contains(RegExp(r'[^\d\s,.-]'))
-      ? formattedMin.replaceAll(RegExp(r'[\d\s,.-]'), '').trim()
-      : '';
-
-  // Check if symbol is prefix or suffix
-  final isPrefix = formattedMin.startsWith(symbol);
-
-  // Build range string
+  // Build range string using symbol from rules (not extracted from formatted string)
   if (isPrefix) {
     return '$symbol$minNumeric-$maxNumeric';
   } else {
