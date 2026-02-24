@@ -30,18 +30,20 @@ Map<String, dynamic> determineStatusAndColor(
   const openColor = Color(0xFF1a9456); // AppColors.success
   const closedColor = Color(0xFFFF5963); // AppColors.error
 
-  final effectiveLanguageCode = languageCode ?? 'en';
-
-  // Helper: Get localized message
+  // Helper: Get localized message from translation cache
   String getLocalizedMessage(String key, String defaultValue) {
-    final lang = effectiveLanguageCode.toLowerCase();
-    final translations = {
-      'status_open': {'en': 'Open', 'da': 'Åben'},
-      'status_closed': {'en': 'Closed', 'da': 'Lukket'},
-      'status_opening_soon': {'en': 'Opening soon', 'da': 'Åbner snart'},
-      'status_closing_soon': {'en': 'Closing soon', 'da': 'Lukker snart'},
-    };
-    return translations[key]?[lang] ?? defaultValue;
+    if (translationsCache != null && translationsCache is Map) {
+      try {
+        final cache = translationsCache as Map<String, dynamic>;
+        final translation = cache[key];
+        if (translation != null && translation is String && translation.isNotEmpty) {
+          return translation;
+        }
+      } catch (e) {
+        // Fall through to default
+      }
+    }
+    return defaultValue;
   }
 
   // Guard: Validate inputs

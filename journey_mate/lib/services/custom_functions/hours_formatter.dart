@@ -21,32 +21,18 @@ String openClosesAt(
 
   // Helper: Get localized message from translation cache
   String getLocalizedMessage(String key, String defaultValue) {
-    // TODO: Implement translation cache lookup
-    // For now, return default values based on language
-    final lang = languageCode?.toLowerCase() ?? 'en';
-
-    final translations = {
-      'hours_closes_at': {'en': 'til', 'da': 'til'},
-      'hours_closes_tomorrow': {
-        'en': 'closes tomorrow at',
-        'da': 'lukker i morgen kl.'
-      },
-      'hours_closes_tonight': {
-        'en': 'closes tonight at',
-        'da': 'lukker i nat kl.'
-      },
-      'hours_opens_at': {'en': 'opens at', 'da': 'åbner kl.'},
-      'hours_opens_tomorrow': {
-        'en': 'opens tomorrow at',
-        'da': 'åbner i morgen kl.'
-      },
-      'hours_no_data': {
-        'en': 'No hours available',
-        'da': 'Ingen åbningstider'
-      },
-    };
-
-    return translations[key]?[lang] ?? defaultValue;
+    if (translationsCache != null && translationsCache is Map) {
+      try {
+        final cache = translationsCache as Map<String, dynamic>;
+        final translation = cache[key];
+        if (translation != null && translation is String && translation.isNotEmpty) {
+          return translation;
+        }
+      } catch (e) {
+        // Fall through to default
+      }
+    }
+    return defaultValue;
   }
 
   // Helper: Convert "HH:MM" or "HH:MM:SS" time string to minutes since midnight
