@@ -68,18 +68,11 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     _pageStartTime = DateTime.now();
 
     try {
-      // Load localization preferences (currency)
-      await ref.read(localizationProvider.notifier).loadFromPreferences();
-
       // Check if user has language set (determines returning vs new user)
+      // SP is already cached from main.dart — this is instant
       final prefs = await SharedPreferences.getInstance();
       final languageCode = prefs.getString('user_language_code');
       final isReturningUser = languageCode != null && languageCode.isNotEmpty;
-
-      // Load translations if returning user
-      if (isReturningUser) {
-        await ref.read(translationsCacheProvider.notifier).loadTranslations(languageCode);
-      }
 
       // Request location permission if never asked (shows iOS dialog on first launch)
       ref.read(locationProvider.notifier).requestPermissionIfNeeded();
@@ -123,11 +116,11 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         return;
       }
 
-      // Get user location if permission granted (with timeout)
+      // Get user location if usable (with timeout)
       String? userLocation;
       try {
         final locationState = ref.read(locationProvider);
-        if (locationState.hasPermission) {
+        if (locationState.isLocationUsable) {
           final position = await Geolocator.getCurrentPosition(
             locationSettings: const LocationSettings(
               accuracy: LocationAccuracy.medium,

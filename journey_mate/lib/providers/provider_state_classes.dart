@@ -445,29 +445,37 @@ class LocalizationState {
 // LOCATION STATE
 // ============================================================
 
-/// Location permission state
+/// Location permission and service state
 class LocationState {
   final bool hasPermission;
+  final bool isServiceEnabled;
   final bool isBannerDismissed;
 
   const LocationState({
     required this.hasPermission,
+    required this.isServiceEnabled,
     required this.isBannerDismissed,
   });
+
+  /// Whether location is actually usable (service on + permission granted)
+  bool get isLocationUsable => isServiceEnabled && hasPermission;
 
   factory LocationState.initial() {
     return const LocationState(
       hasPermission: false,
+      isServiceEnabled: false,
       isBannerDismissed: false,
     );
   }
 
   LocationState copyWith({
     bool? hasPermission,
+    bool? isServiceEnabled,
     bool? isBannerDismissed,
   }) {
     return LocationState(
       hasPermission: hasPermission ?? this.hasPermission,
+      isServiceEnabled: isServiceEnabled ?? this.isServiceEnabled,
       isBannerDismissed: isBannerDismissed ?? this.isBannerDismissed,
     );
   }

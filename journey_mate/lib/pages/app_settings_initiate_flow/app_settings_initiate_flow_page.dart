@@ -77,15 +77,9 @@ class _AppSettingsInitiateFlowPageState
     _pageStartTime = DateTime.now();
 
     try {
-      // Load localization preferences (currency)
-      await ref.read(localizationProvider.notifier).loadFromPreferences();
-
-      // Load current language code from SharedPreferences
+      // Load current language code from SharedPreferences (cached, instant)
       final prefs = await SharedPreferences.getInstance();
       final languageCode = prefs.getString('user_language_code') ?? 'en';
-
-      // Check location permission (fire-and-forget, don't block UI)
-      ref.read(locationProvider.notifier).checkPermission();
 
       // Update local state
       if (mounted) {
@@ -141,7 +135,7 @@ class _AppSettingsInitiateFlowPageState
       String? userLocation;
       try {
         final locationState = ref.read(locationProvider);
-        if (locationState.hasPermission) {
+        if (locationState.isLocationUsable) {
           final position = await Geolocator.getCurrentPosition(
             locationSettings: const LocationSettings(
               accuracy: LocationAccuracy.medium,

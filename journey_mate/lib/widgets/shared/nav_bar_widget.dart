@@ -10,6 +10,7 @@ import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
 import '../../providers/search_providers.dart';
+import '../../providers/settings_providers.dart';
 
 /// Bottom navigation bar with 2 tabs: Search and Account
 ///
@@ -35,16 +36,14 @@ class NavBarWidget extends ConsumerStatefulWidget {
 }
 
 class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
-  /// Gets current user location with fallback
+  /// Gets current user location with fallback, using provider state
   Future<Position?> _getUserLocation() async {
     try {
-      // Check permission first
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      final locationState = ref.read(locationProvider);
+      if (!locationState.isLocationUsable) {
         return null;
       }
 
-      // Get current position with new LocationSettings API
       return await Geolocator.getCurrentPosition(
         locationSettings: LocationSettings(
           accuracy: LocationAccuracy.medium,
@@ -52,7 +51,6 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
         ),
       );
     } catch (e) {
-      // Return null on any error (permission denied, timeout, etc.)
       return null;
     }
   }

@@ -21,6 +21,11 @@ class AccessibilityNotifier extends Notifier<AccessibilityState> {
     return AccessibilityState.initial();
   }
 
+  /// Synchronous initialization from pre-read SharedPreferences values
+  void initializeFromPrefs({required bool isBoldTextEnabled, required double fontScale}) {
+    state = AccessibilityState(isBoldTextEnabled: isBoldTextEnabled, fontScale: fontScale);
+  }
+
   /// Load accessibility settings from preferences
   Future<void> loadFromPreferences() async {
     try {
@@ -72,6 +77,11 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
   @override
   AnalyticsState build() {
     return AnalyticsState.initial();
+  }
+
+  /// Synchronous initialization from pre-read device ID
+  void initializeFromPrefs({required String deviceId}) {
+    state = state.copyWith(deviceId: deviceId);
   }
 
   /// Initialize analytics (load or create device ID)

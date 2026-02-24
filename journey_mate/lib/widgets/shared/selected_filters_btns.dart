@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../providers/search_providers.dart';
+import '../../providers/settings_providers.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -330,17 +331,20 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       // Remove filter from state
       ref.read(searchStateProvider.notifier).toggleFilter(filterId);
 
-      // Get user location
+      // Get user location (only if location is usable)
       Position? position;
-      try {
-        position = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            timeLimit: Duration(seconds: 5),
-          ),
-        );
-      } catch (_) {
-        position = null;
+      final locationState = ref.read(locationProvider);
+      if (locationState.isLocationUsable) {
+        try {
+          position = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: Duration(seconds: 5),
+            ),
+          );
+        } catch (_) {
+          position = null;
+        }
       }
 
       final userLocation = position != null
@@ -408,17 +412,20 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       // Clear all filters in state
       ref.read(searchStateProvider.notifier).clearFilters();
 
-      // Get user location
+      // Get user location (only if location is usable)
       Position? position;
-      try {
-        position = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            timeLimit: Duration(seconds: 5),
-          ),
-        );
-      } catch (_) {
-        position = null;
+      final locationState = ref.read(locationProvider);
+      if (locationState.isLocationUsable) {
+        try {
+          position = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: Duration(seconds: 5),
+            ),
+          );
+        } catch (_) {
+          position = null;
+        }
       }
 
       final userLocation = position != null

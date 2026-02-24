@@ -77,7 +77,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
       String? userLocation;
       try {
         final locationState = ref.read(locationProvider);
-        if (locationState.hasPermission) {
+        if (locationState.isLocationUsable) {
           final position = await Geolocator.getCurrentPosition(
             locationSettings: const LocationSettings(
               accuracy: LocationAccuracy.medium,

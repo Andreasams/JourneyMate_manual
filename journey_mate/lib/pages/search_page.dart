@@ -97,12 +97,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Future<void> _initialize() async {
     debugPrint('🔍 SearchPage: Initializing...');
 
-    // Check location permission
-    final hasPermission = await _checkLocationPermission();
-    debugPrint('🔍 Location permission: $hasPermission');
-    if (mounted) {
-      ref.read(locationProvider.notifier).setPermission(hasPermission);
-    }
+    // Refresh location state (checks both service + permission)
+    await ref.read(locationProvider.notifier).checkPermission();
 
     // Load initial results if no cached results
     final searchState = ref.read(searchStateProvider);
@@ -114,17 +110,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       await _executeSearch('');
     } else {
       debugPrint('🔍 Using cached search results');
-    }
-  }
-
-  Future<bool> _checkLocationPermission() async {
-    try {
-      final permission = await Geolocator.checkPermission();
-      return permission == LocationPermission.always ||
-          permission == LocationPermission.whileInUse;
-    } catch (e) {
-      debugPrint('Location permission check error: $e');
-      return false;
     }
   }
 
@@ -155,9 +140,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final searchState = ref.read(searchStateProvider);
     final locationState = ref.read(locationProvider);
 
-    // Get user location if permission granted
+    // Get user location if usable (service on + permission granted)
     Position? position;
-    if (locationState.hasPermission) {
+    if (locationState.isLocationUsable) {
       try {
         position = await Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
@@ -434,8 +419,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             if (searchState.filtersUsedForSearch.isNotEmpty)
               SizedBox(height: AppSpacing.md),
 
-            // Location permission banner (show if no permission AND not dismissed)
-            if (!locationState.hasPermission && !locationState.isBannerDismissed)
+            // Location permission banner (show if location not usable AND not dismissed)
+            if (!locationState.isLocationUsable && !locationState.isBannerDismissed)
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl), // 20px per JSX
                 child: _buildLocationBanner(),
@@ -953,7 +938,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     debugPrint('📊 [5d] Returning SearchResultsListView');
     final locationState = ref.watch(locationProvider);
     Position? userLocation;
-    if (locationState.hasPermission) {
+    if (locationState.isLocationUsable) {
       // Will be fetched by SearchResultsListView
     }
 

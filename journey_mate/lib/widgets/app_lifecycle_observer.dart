@@ -17,17 +17,17 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
       debugPrint('💚 AppLifecycleObserver: App resumed');
       await AnalyticsService.instance.engagementTracker.onAppResumed();
 
-      // Check location permission on resume (detect permission changes via Settings)
+      // Check location permission on resume (detect permission/service changes via Settings)
       final locationNotifier = container.read(locationProvider.notifier);
-      final previousPermission = container.read(locationProvider).hasPermission;
+      final previousState = container.read(locationProvider);
 
       await locationNotifier.checkPermission();
-      final currentPermission = container.read(locationProvider).hasPermission;
+      final currentState = container.read(locationProvider);
 
-      // Reset dismissal if permission newly granted via Settings
-      if (!previousPermission && currentPermission) {
+      // Reset dismissal if location newly usable (service + permission) via Settings
+      if (!previousState.isLocationUsable && currentState.isLocationUsable) {
         await locationNotifier.resetBannerDismissal();
-        debugPrint('✅ Location granted via Settings, dismissal reset');
+        debugPrint('✅ Location now usable via Settings, dismissal reset');
       }
     } else if (state == AppLifecycleState.paused) {
       debugPrint('⏸️ AppLifecycleObserver: App paused');

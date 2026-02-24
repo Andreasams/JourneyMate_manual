@@ -386,6 +386,44 @@ class AnalyticsService {
   String? get currentFilterSessionId => _currentFilterSessionId;
   bool get isFirstSession => _isFirstSession;
 
+  /// Initialize analytics with an already-loaded SharedPreferences instance.
+  /// Eliminates redundant SharedPreferences.getInstance() calls during startup.
+  Future<void> initializeWithPrefs(SharedPreferences prefs) async {
+    try {
+      // Get or create device ID using existing SP instance
+      String? deviceId = prefs.getString('analytics_device_id');
+      if (deviceId == null) {
+        deviceId = const Uuid().v4();
+        await prefs.setString('analytics_device_id', deviceId);
+        debugPrint('📱 Created new device_id: ${deviceId.substring(0, 8)}...');
+      } else {
+        debugPrint('📱 Existing device_id: ${deviceId.substring(0, 8)}...');
+      }
+      _deviceId = deviceId;
+      _userId = deviceId;
+
+      // Detect first session
+      final launchedFlag = prefs.getString('has_launched_before');
+      if (launchedFlag == 'true') {
+        _isFirstSession = false;
+      } else {
+        await prefs.setString('has_launched_before', 'true');
+        _isFirstSession = true;
+      }
+
+      // Start engagement tracking
+      await engagementTracker.startNewSession();
+
+      debugPrint('✅ Analytics initialized (with prefs)');
+      debugPrint('   Device: ${_deviceId?.substring(0, 8)}...');
+      debugPrint('   Session: ${currentSessionId?.substring(0, 8)}...');
+      debugPrint('   First session: $_isFirstSession');
+    } catch (e, s) {
+      debugPrint('❌ Analytics init failed: $e');
+      debugPrint('$s');
+    }
+  }
+
   /// Initialize analytics and start engagement tracking
   Future<void> initialize() async {
     try {

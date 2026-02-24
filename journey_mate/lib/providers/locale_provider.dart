@@ -33,6 +33,12 @@ class LocaleNotifier extends Notifier<Locale> {
     return const Locale('en');
   }
 
+  /// Synchronous initialization from pre-read SharedPreferences values
+  void initializeFromPrefs({required String languageCode}) {
+    state = Locale(languageCode);
+    debugPrint('✅ Locale initialized: $languageCode');
+  }
+
   /// Initialize locale from SharedPreferences on app startup
   ///
   /// Called in main.dart after provider container is created

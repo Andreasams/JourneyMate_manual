@@ -28,7 +28,7 @@ class LocationStatusCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hasPermission = ref.watch(locationProvider).hasPermission;
+    final hasPermission = ref.watch(locationProvider).isLocationUsable;
 
     return Material(
       color: Colors.transparent,

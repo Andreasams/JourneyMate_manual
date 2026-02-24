@@ -25,6 +25,12 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
     return LocalizationState.initial();
   }
 
+  /// Synchronous initialization from pre-read SharedPreferences values
+  void initializeFromPrefs({required String currencyCode}) {
+    state = state.copyWith(currencyCode: currencyCode);
+    debugPrint('✅ Loaded currency: $currencyCode');
+  }
+
   /// Load currency code from SharedPreferences
   Future<void> loadFromPreferences() async {
     try {
@@ -172,20 +178,29 @@ class LocationNotifier extends Notifier<LocationState> {
     return LocationState.initial();
   }
 
-  /// Check current location permission status
+  /// Check current location permission and service status
   Future<void> checkPermission() async {
     try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       final permission = await Geolocator.checkPermission();
 
       final hasPermission = permission == LocationPermission.always ||
           permission == LocationPermission.whileInUse;
 
-      state = state.copyWith(hasPermission: hasPermission);
-      debugPrint('✅ Location permission: $permission');
+      state = state.copyWith(
+        hasPermission: hasPermission,
+        isServiceEnabled: serviceEnabled,
+      );
+      debugPrint('✅ Location service: $serviceEnabled, permission: $permission');
     } catch (e) {
       debugPrint('⚠️ Error checking location permission: $e');
-      state = state.copyWith(hasPermission: false);
+      state = state.copyWith(hasPermission: false, isServiceEnabled: false);
     }
+  }
+
+  /// Synchronous initialization from pre-read SharedPreferences values
+  void initializeFromPrefs({required bool isBannerDismissed}) {
+    state = state.copyWith(isBannerDismissed: isBannerDismissed);
   }
 
   /// Load banner dismissal state from SharedPreferences
@@ -234,10 +249,12 @@ class LocationNotifier extends Notifier<LocationState> {
 
       // Reset dismissal flag if permission granted
       if (granted) {
+        final serviceEnabled = await Geolocator.isLocationServiceEnabled();
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(_kBannerDismissedKey, false);
         state = state.copyWith(
           hasPermission: true,
+          isServiceEnabled: serviceEnabled,
           isBannerDismissed: false,
         );
         debugPrint('✅ Location granted, banner dismissal reset');
@@ -275,10 +292,12 @@ class LocationNotifier extends Notifier<LocationState> {
 
       if (status.isGranted) {
         // Already enabled — reset dismissal flag and open settings for management
+        final serviceEnabled = await Geolocator.isLocationServiceEnabled();
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(_kBannerDismissedKey, false);
         state = state.copyWith(
           hasPermission: true,
+          isServiceEnabled: serviceEnabled,
           isBannerDismissed: false,
         );
         await ph.openAppSettings();
@@ -296,10 +315,12 @@ class LocationNotifier extends Notifier<LocationState> {
 
       // Reset dismissal flag if permission granted
       if (result.isGranted) {
+        final serviceEnabled = await Geolocator.isLocationServiceEnabled();
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(_kBannerDismissedKey, false);
         state = state.copyWith(
           hasPermission: true,
+          isServiceEnabled: serviceEnabled,
           isBannerDismissed: false,
         );
       } else {
@@ -328,15 +349,24 @@ class LocationNotifier extends Notifier<LocationState> {
 
         if (result.isGranted) {
           // Reset banner dismissal on grant (matches requestPermission/enableLocation pattern)
+          final serviceEnabled = await Geolocator.isLocationServiceEnabled();
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool(_kBannerDismissedKey, false);
-          state = state.copyWith(hasPermission: true, isBannerDismissed: false);
+          state = state.copyWith(
+            hasPermission: true,
+            isServiceEnabled: serviceEnabled,
+            isBannerDismissed: false,
+          );
         } else {
           state = state.copyWith(hasPermission: false);
         }
         debugPrint('✅ Location permission first request: $result');
       } else if (status.isGranted) {
-        state = state.copyWith(hasPermission: true);
+        final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        state = state.copyWith(
+          hasPermission: true,
+          isServiceEnabled: serviceEnabled,
+        );
       }
       // If permanentlyDenied, restricted, or limited — do nothing (silent)
     } catch (e) {
