@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -270,30 +271,38 @@ class _AppSettingsInitiateFlowPageState
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(AppSpacing.lg),
+          padding: EdgeInsets.all(AppSpacing.xxl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Section Heading
+              // Main page title
               Text(
                 td(ref, '0aq8qo7g'), // "Localization"
-                style: AppTypography.label,
+                style: GoogleFonts.roboto(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
               ),
               SizedBox(height: AppSpacing.sm),
 
-              // Section Description
+              // Main subtitle
               Text(
                 td(ref, 'lup5v7ii'), // "Select your preferred language..."
-                style: AppTypography.bodyRegular.copyWith(
+                style: GoogleFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
                   color: AppColors.textSecondary,
                 ),
               ),
-              SizedBox(height: AppSpacing.xxxl),
+              SizedBox(height: 28), // Tighter first gap
 
-              // Language Section
+              // Language Section Title
               Text(
                 td(ref, 's3movlvc'), // "Language"
-                style: AppTypography.label,
+                style: AppTypography.label.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               SizedBox(height: AppSpacing.sm),
               LanguageSelectorButton(
@@ -301,19 +310,21 @@ class _AppSettingsInitiateFlowPageState
                 onLanguageSelected: _handleLanguageSelected,
                 width: double.infinity,
               ),
-              SizedBox(height: AppSpacing.xxxl),
+              SizedBox(height: AppSpacing.xxl), // Increased section spacing
 
-              // Currency Section
+              // Currency Section Title
               Text(
                 td(ref, 'elv468gp'), // "Currency"
-                style: AppTypography.label,
+                style: AppTypography.label.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               SizedBox(height: AppSpacing.sm),
               const CurrencySelectorButton(
                 width: double.infinity,
                 height: 50.0,
               ),
-              SizedBox(height: AppSpacing.sm),
+              SizedBox(height: AppSpacing.md),
 
               // Exchange Rate Note
               Text(
@@ -323,7 +334,7 @@ class _AppSettingsInitiateFlowPageState
                   color: AppColors.textTertiary,
                 ),
               ),
-              SizedBox(height: AppSpacing.xxxl),
+              SizedBox(height: 40), // Space before button
 
               // Complete Setup Button
               SizedBox(
