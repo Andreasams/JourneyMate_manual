@@ -458,7 +458,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   String? get _street => _getField<String>('street');
   String? get _neighbourhoodName => _getField<String>('neighbourhood_name');
   String? get _postalCode => _getField<String>('postal_code');
-  String? get _city => _getField<String>('city');
+  String? get _city => _getField<String>('postal_city'); // API returns 'postal_city', not 'city'
   int? get _priceRangeMin => _getField<int>('price_range_min');
   int? get _priceRangeMax => _getField<int>('price_range_max');
   dynamic get _openingHours => _getField<dynamic>('business_hours');
