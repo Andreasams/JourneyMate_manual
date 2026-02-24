@@ -8,6 +8,8 @@ import '../../providers/app_providers.dart';
 import '../../providers/filter_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_radius.dart';
 import '../../models/lat_lng.dart';
 import '../../services/custom_functions/price_formatter.dart';
 import '../../services/custom_functions/business_status.dart';
@@ -87,8 +89,7 @@ class _SearchResultsListViewState
 
   /// Item separator height based on font scale
   double get _itemSeparatorHeight {
-    final fontScale = ref.watch(accessibilityProvider).isBoldTextEnabled;
-    return fontScale ? 4.0 : 2.0;
+    return AppSpacing.sm; // Static 8px per JSX
   }
 
   // ---------------------------------------------------------------------------
@@ -208,10 +209,12 @@ class _SearchResultsListViewState
     // Build sections list
     final sections = <Widget>[];
     int itemIndex = 0;
+    bool isFirstSection = true;
 
     // Full match section
     if (fullMatch.isNotEmpty) {
-      sections.add(_buildSectionHeader('full'));
+      sections.add(_buildSectionHeader('full', isFirst: isFirstSection));
+      isFirstSection = false;
       for (final doc in fullMatch) {
         sections.add(_buildBusinessCard(doc, 'full', totalActiveFilters, itemIndex++));
         sections.add(SizedBox(height: _itemSeparatorHeight));
@@ -220,7 +223,8 @@ class _SearchResultsListViewState
 
     // Partial match section
     if (partialMatch.isNotEmpty) {
-      sections.add(_buildSectionHeader('partial'));
+      sections.add(_buildSectionHeader('partial', isFirst: isFirstSection));
+      isFirstSection = false;
       for (final doc in partialMatch) {
         sections.add(_buildBusinessCard(doc, 'partial', totalActiveFilters, itemIndex++));
         sections.add(SizedBox(height: _itemSeparatorHeight));
@@ -229,7 +233,7 @@ class _SearchResultsListViewState
 
     // No match section
     if (noMatch.isNotEmpty) {
-      sections.add(_buildSectionHeader('none'));
+      sections.add(_buildSectionHeader('none', isFirst: isFirstSection));
       for (final doc in noMatch) {
         sections.add(_buildBusinessCard(doc, 'none', totalActiveFilters, itemIndex++));
         sections.add(SizedBox(height: _itemSeparatorHeight));
@@ -273,7 +277,7 @@ class _SearchResultsListViewState
     );
   }
 
-  Widget _buildSectionHeader(String section) {
+  Widget _buildSectionHeader(String section, {bool isFirst = false}) {
     final String labelKey;
     final Color color;
     final IconData? icon;
@@ -299,12 +303,17 @@ class _SearchResultsListViewState
     }
 
     return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 8),
+      padding: EdgeInsets.only(
+        left: 0,  // JSX relies on content padding, not explicit
+        right: 0,
+        top: isFirst ? 0 : AppSpacing.xxl, // 0px first, 24px subsequent
+        bottom: AppSpacing.msm, // 10px per JSX
+      ),
       child: Row(
         children: [
           if (icon != null) ...[
             Icon(icon, size: 11, color: color),
-            const SizedBox(width: 4),
+            const SizedBox(width: 5), // 5px per JSX
           ],
           Text(
             td(ref, labelKey),
@@ -420,7 +429,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   // Constants
   // ---------------------------------------------------------------------------
 
-  static const double _imageSize = 84.0;
+  static const double _imageSize = 50.0; // JSX spec: 50×50px avatar
   static const String _placeholderImageUrl =
       'https://tlqfuazpshfaozdvmcbh.supabase.co/storage/v1/object/public/profilepic_restaurants/placeholder.webp';
 
@@ -469,8 +478,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   // ---------------------------------------------------------------------------
 
   double get _rowSpacing {
-    final fontScale = ref.watch(accessibilityProvider).isBoldTextEnabled;
-    return fontScale ? 4.0 : 2.0;
+    return AppSpacing.xxs; // Static 2px per JSX
   }
 
   /// Returns border color based on match variant
@@ -562,9 +570,9 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
                 decoration: BoxDecoration(
                   color: AppColors.bgCard,
                   border: Border.all(color: _borderColor, width: 1.5),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.card), // 16px per JSX
                 ),
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.mlg), // 14px per JSX
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -596,7 +604,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   Widget _buildImage() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(5),
+      borderRadius: BorderRadius.circular(AppRadius.logoSmall), // 13px per JSX
       child: Image.network(
         _profilePicture ?? _placeholderImageUrl,
         width: _imageSize,
@@ -633,11 +641,28 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   Widget _buildNameRow() {
     debugPrint('🔍   _buildNameRow(): ${_businessName ?? "Business"}');
-    return Text(
-      _businessName ?? 'Business',
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: AppTypography.cardRestaurantName,
+    final distanceText = _getDistanceText();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(
+            _businessName ?? 'Business',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.cardRestaurantName,
+          ),
+        ),
+        if (distanceText != null) ...[
+          const SizedBox(width: 8), // Prevent text collision
+          Text(
+            distanceText,
+            style: AppTypography.cardDistance, // 12px w500
+          ),
+        ],
+      ],
     );
   }
 
@@ -652,18 +677,18 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       children: [
         Text(
           statusText,
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.cardDetail.copyWith( // Now 12.5px
             color: statusColor,
             fontWeight: statusText.toLowerCase() == 'closed'
                 ? FontWeight.w600
-                : FontWeight.normal,
+                : FontWeight.w400,
           ),
         ),
         if (timingText != null && timingText.isNotEmpty) ...[
           const SizedBox(width: 4),
           Text(
             '•',
-            style: AppTypography.bodyRegular.copyWith(
+            style: AppTypography.cardDetail.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
@@ -671,9 +696,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           Flexible(
             child: Text(
               timingText,
-              style: AppTypography.bodyRegular.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.cardDetail, // 12.5px, no override needed
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -715,9 +738,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           _businessType!,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppTypography.bodyRegular.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.cardDetail, // 12.5px per JSX
         ),
       ));
     }
@@ -729,38 +750,18 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         items.addAll([
           const SizedBox(width: 4),
           Text('•',
-              style: AppTypography.bodyRegular
+              style: AppTypography.cardDetail
                   .copyWith(color: AppColors.textSecondary)),
           const SizedBox(width: 4),
         ]);
       }
       items.add(Text(
         priceRange,
-        style: AppTypography.bodyRegular.copyWith(
-          color: AppColors.textSecondary,
-        ),
+        style: AppTypography.cardDetail, // 12.5px per JSX
       ));
     }
 
-    // Distance
-    final distanceText = _getDistanceText();
-    if (distanceText != null) {
-      if (items.isNotEmpty) {
-        items.addAll([
-          const SizedBox(width: 4),
-          Text('•',
-              style: AppTypography.bodyRegular
-                  .copyWith(color: AppColors.textSecondary)),
-          const SizedBox(width: 4),
-        ]);
-      }
-      items.add(Text(
-        distanceText,
-        style: AppTypography.bodyRegular.copyWith(
-          color: AppColors.textSecondary,
-        ),
-      ));
-    }
+    // Distance is now in name row - removed from here
 
     return Row(mainAxisSize: MainAxisSize.min, children: items);
   }
@@ -821,9 +822,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       address,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: AppTypography.bodyRegular.copyWith(
-        color: AppColors.textSecondary,
-      ),
+      style: AppTypography.cardDetail, // 12.5px per JSX
     );
   }
 
@@ -833,11 +832,14 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   Widget _buildCollapseChevron() {
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
+      padding: EdgeInsets.only(
+        top: AppSpacing.xsm,  // 6px per JSX
+        bottom: 4,            // 4px per JSX
+      ),
       child: Center(
         child: Icon(
           Icons.keyboard_arrow_down,
-          size: 20,
+          size: 14, // Approximate 14×8px SVG
           color: AppColors.textSecondary,
         ),
       ),
@@ -1023,7 +1025,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           children: [
             Text(
               td(ref, 'expandable_show_more'),
-              style: AppTypography.bodyRegular.copyWith(
+              style: AppTypography.cardDetail.copyWith( // 12.5px base
                 color: AppColors.accent,
                 fontWeight: FontWeight.w600,
               ),
@@ -1084,7 +1086,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         : '';
 
     return Container(
-      margin: const EdgeInsets.only(top: 10, left: 12, right: 12),
+      margin: EdgeInsets.only(top: AppSpacing.msm), // 10px top, 0 left/right
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
       decoration: BoxDecoration(
         color: const Color(0xFFfef8f2), // Light orange background
