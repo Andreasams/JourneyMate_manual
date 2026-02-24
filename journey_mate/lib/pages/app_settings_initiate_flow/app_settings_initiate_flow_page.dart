@@ -194,7 +194,7 @@ class _AppSettingsInitiateFlowPageState
   // ============================================================
 
   Future<void> _handleCompleteSetup() async {
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     // Check if cached results are fresh
     final searchNotifier = ref.read(searchStateProvider.notifier);
@@ -202,11 +202,7 @@ class _AppSettingsInitiateFlowPageState
 
     debugPrint('🔧 Setup: Complete tapped (cache fresh: $hasFreshCache)');
 
-    // Track analytics before navigating
-    await _trackPageView();
-
-    // Navigate immediately (don't block on API call)
-    if (!mounted) return;
+    // Navigate immediately (analytics tracked in dispose, don't block navigation)
     context.go('/search');
 
     // If cache is stale or missing, fetch in background

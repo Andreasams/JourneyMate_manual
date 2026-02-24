@@ -35,7 +35,15 @@ class LocalizationPage extends ConsumerStatefulWidget {
 }
 
 class _LocalizationPageState extends ConsumerState<LocalizationPage> with WidgetsBindingObserver {
+  // ============================================================
+  // LOCAL STATE
+  // ============================================================
+
   DateTime? _pageStartTime;
+
+  // ============================================================
+  // LIFECYCLE
+  // ============================================================
 
   @override
   void initState() {
@@ -78,10 +86,18 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
     }
   }
 
+  // ============================================================
+  // LOCATION PERMISSION
+  // ============================================================
+
   /// Check current location permission status
   Future<void> _checkLocationPermission() async {
     await ref.read(locationProvider.notifier).checkPermission();
   }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +125,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -202,6 +218,10 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
       ),
     );
   }
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
 
   /// Builds state-dependent action button for location permission
   Widget _buildLocationActionButton() {

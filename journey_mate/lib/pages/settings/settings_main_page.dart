@@ -32,7 +32,15 @@ class SettingsMainPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
+  // ============================================================
+  // LOCAL STATE
+  // ============================================================
+
   DateTime? _pageStartTime;
+
+  // ============================================================
+  // LIFECYCLE
+  // ============================================================
 
   @override
   void initState() {
@@ -44,6 +52,10 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
       _preFetchSearchResults();
     });
   }
+
+  // ============================================================
+  // PRE-FETCH SEARCH RESULTS
+  // ============================================================
 
   /// Pre-fetch search results for fast navigation to Search tab
   Future<void> _preFetchSearchResults() async {
@@ -134,12 +146,20 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
     super.dispose();
   }
 
+  // ============================================================
+  // HELPERS
+  // ============================================================
+
   Future<void> _launchURL(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +170,12 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
           children: [
             // Main content
             Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 40.0, 20.0, 80.0), // Bottom padding for NavBar, extra top padding
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,    // 20px left
+                AppSpacing.huge,  // 40px top
+                AppSpacing.xl,    // 20px right
+                80.0,             // 80px bottom for NavBar clearance
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

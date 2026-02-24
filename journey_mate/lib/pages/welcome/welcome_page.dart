@@ -178,22 +178,19 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
   /// Handle "Continue" button for new users → English setup flow
   Future<void> _handleEnglishSetup() async {
-    if (!mounted) return;
+    if (!context.mounted) return;
 
-    // Track analytics before navigating away
-    await _trackPageView();
-
-    // Navigate to English setup wizard
-    if (!mounted) return;
+    // Navigate to English setup wizard (analytics tracked in dispose)
     context.push('/set-language-currency');
   }
 
   /// Handle "Fortsæt på dansk" button → Danish quick path
   /// Saves preferences, pre-fetches search, navigates immediately
   Future<void> _handleDanishDirect() async {
-    if (!mounted) return;
-
     try {
+      // Capture router before async operations
+      final router = GoRouter.of(context);
+
       // 1. Save language preference
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_language_code', 'da');
@@ -204,19 +201,15 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       // 3. Set currency to DKK
       await ref.read(localizationProvider.notifier).setCurrency('DKK', 1.0);
 
-      // 4. Track analytics
-      await _trackPageView();
+      // Navigate immediately (analytics tracked in dispose, don't block navigation)
+      router.go('/search');
 
-      // 5. Navigate immediately (don't block on search API)
-      if (!mounted) return;
-      context.go('/search');
-
-      // 6. Fetch search results in background (SearchPage will show shimmer)
+      // Fetch search results in background (SearchPage will show shimmer)
       _fetchDanishSearchBackground();
 
     } catch (e) {
       debugPrint('❌ Danish direct flow error: $e');
-      if (mounted) {
+      if (context.mounted) {
         _showErrorDialog();
       }
     }
@@ -275,7 +268,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   /// Handle "Continue" button for returning users → Navigate immediately
   /// NEW: Uses pre-fetched results if available, or shows shimmer while loading
   Future<void> _handleReturningUserContinue() async {
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     // Check if cached results are fresh
     final searchNotifier = ref.read(searchStateProvider.notifier);
@@ -283,11 +276,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
     debugPrint('👋 Welcome: Continue tapped (cache fresh: $hasFreshCache)');
 
-    // Track analytics before navigating
-    await _trackPageView();
-
-    // Navigate immediately (don't block on API call)
-    if (!mounted) return;
+    // Navigate immediately (analytics tracked in dispose, don't block navigation)
     context.go('/search');
 
     // If cache is stale, fetch in background (SearchPage will show shimmer)
@@ -504,22 +493,25 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               // Buttons (conditional based on user type)
               if (_buttonsVisible) ...[
                 // Primary "Continue" button (always shown)
-                ElevatedButton(
-                  onPressed: _isReturningUser
-                      ? _handleReturningUserContinue
-                      : _handleEnglishSetup,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    minimumSize: const Size(270, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.button),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _isReturningUser
+                        ? _handleReturningUserContinue
+                        : _handleEnglishSetup,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.button),
+                      ),
+                      elevation: 0,
                     ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    td(ref, 'd2mrwxr4'), // "Continue" / "Fortsæt"
-                    style: AppTypography.button.copyWith(
-                      color: Colors.white,
+                    child: Text(
+                      td(ref, 'd2mrwxr4'), // "Continue" / "Fortsæt"
+                      style: AppTypography.button.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -527,24 +519,27 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 // Secondary "Fortsæt på dansk" button (only for new users)
                 if (!_isReturningUser) ...[
                   const SizedBox(height: AppSpacing.md),
-                  OutlinedButton(
-                    onPressed: _handleDanishDirect,
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: AppColors.bgPage,
-                      side: const BorderSide(
-                        color: AppColors.accent,
-                        width: 2,
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton(
+                      onPressed: _handleDanishDirect,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: AppColors.bgPage,
+                        side: const BorderSide(
+                          color: AppColors.accent,
+                          width: 2,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.button),
+                        ),
+                        elevation: 0,
                       ),
-                      minimumSize: const Size(270, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.button),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      td(ref, 'cuy6esxb'), // "Fortsæt på dansk"
-                      style: AppTypography.button.copyWith(
-                        color: AppColors.accent,
+                      child: Text(
+                        td(ref, 'cuy6esxb'), // "Fortsæt på dansk"
+                        style: AppTypography.button.copyWith(
+                          color: AppColors.accent,
+                        ),
                       ),
                     ),
                   ),
