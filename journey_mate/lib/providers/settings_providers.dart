@@ -314,4 +314,33 @@ class LocationNotifier extends Notifier<LocationState> {
       debugPrint('⚠️ Error enabling location: $e');
     }
   }
+
+  /// Request permission if never asked before (safe to call on every launch).
+  /// On iOS: status == denied means "never asked". After first denial,
+  /// status becomes permanentlyDenied, so this becomes a no-op.
+  Future<void> requestPermissionIfNeeded() async {
+    try {
+      final status = await ph.Permission.locationWhenInUse.status;
+
+      if (status.isDenied) {
+        // Never asked before — show native iOS permission dialog
+        final result = await ph.Permission.locationWhenInUse.request();
+
+        if (result.isGranted) {
+          // Reset banner dismissal on grant (matches requestPermission/enableLocation pattern)
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool(_kBannerDismissedKey, false);
+          state = state.copyWith(hasPermission: true, isBannerDismissed: false);
+        } else {
+          state = state.copyWith(hasPermission: false);
+        }
+        debugPrint('✅ Location permission first request: $result');
+      } else if (status.isGranted) {
+        state = state.copyWith(hasPermission: true);
+      }
+      // If permanentlyDenied, restricted, or limited — do nothing (silent)
+    } catch (e) {
+      debugPrint('⚠️ Error requesting location permission: $e');
+    }
+  }
 }

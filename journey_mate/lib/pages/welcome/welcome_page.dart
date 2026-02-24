@@ -81,8 +81,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         await ref.read(translationsCacheProvider.notifier).loadTranslations(languageCode);
       }
 
-      // Check location permission (fire-and-forget, don't block UI)
-      ref.read(locationProvider.notifier).checkPermission();
+      // Request location permission if never asked (shows iOS dialog on first launch)
+      ref.read(locationProvider.notifier).requestPermissionIfNeeded();
 
       // Update UI state
       if (mounted) {
