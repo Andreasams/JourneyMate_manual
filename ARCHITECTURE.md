@@ -12,10 +12,26 @@
 This document explains **how the JourneyMate app is built**. Read this to understand the architectural patterns, state management approach, widget conventions, and code quality standards that ensure all future development maintains consistency.
 
 **Quick Navigation:**
-- New to the project? Read [Philosophy](#philosophy) and [State Management](#state-management)
-- Adding a feature? See [Widget Patterns](#widget-patterns) and [Design Token System](#design-token-system)
-- Debugging? Check [Common Pitfalls](#common-pitfalls) and [Code Quality Standards](#code-quality-standards)
-- API work? See [API Service Pattern](#api-service-pattern)
+- **Working on a specific task?** See **CLAUDE.md → Task-Based Navigation Guide** (12 scenarios with 10-30 minute targeted reading lists)
+- **New to the project?** Read [Philosophy](#philosophy) (lines 22-64) and [State Management](#state-management) (lines 121-260) for 60-minute deep dive
+- **Need a specific section?** Use alphabetical index below for direct access
+
+**Section Index (Alphabetical):**
+- [Analytics Architecture](#analytics-architecture) (lines 729-803) — Fire-and-forget, ActivityScope, 36 event types
+- [API Service Pattern](#api-service-pattern) (lines 461-517) — Singleton, cache, BuildShip integration
+- [Code Quality Standards](#code-quality-standards) (lines 806-845) — Flutter analyze, design tokens, algorithms
+- [Common Pitfalls](#common-pitfalls) (lines 848-1012) — 11 anti-patterns with fixes (⚠️ read before first commit)
+- [Design Token System](#design-token-system) (lines 662-727) — Quick lookup tables for colors, spacing, typography
+- [Documentation Philosophy](#documentation-philosophy) (lines 1015-1034) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 1065-1098) — CityID, favorites, filters, translations, engagement
+- [Philosophy](#philosophy) (lines 22-64) — Five core principles (design tokens, state, translations, analytics, widgets)
+- [Pre-Loading Architecture](#pre-loading-architecture) (lines 520-597) — Safe async pattern for instant page loads
+- [Project Structure](#project-structure) (lines 67-118) — File organization, 12 pages, 34 widgets, 8 providers
+- [Provider Initialization Order](#provider-initialization-order) (lines 1038-1062) — Critical startup sequence in main.dart
+- [References](#references) (lines 1101-1110) — Links to other documentation files
+- [State Management](#state-management) (lines 121-260) — When to use what, provider catalog, Riverpod 3.x patterns
+- [Translation System](#translation-system) (lines 599-659) — Dynamic td() function, 355 keys, 7 languages
+- [Widget Patterns](#widget-patterns) (lines 263-458) — Self-contained widgets, page wrappers, bottom sheets
 
 ---
 

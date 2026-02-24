@@ -1,5 +1,7 @@
 # BuildShip API Reference
 
+**Working on a specific task?** See **CLAUDE.md → Task-Based Navigation Guide** (Scenario 3: Integrating with BuildShip API) for targeted reading. Otherwise, browse the complete API contracts below.
+
 Source: `_reference/_buildship/` — actual BuildShip node scripts
 All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 **No direct Supabase SDK calls from Flutter.**

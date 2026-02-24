@@ -1,6 +1,8 @@
 # PROVIDERS_REFERENCE.md
 ## Complete reference for all Riverpod providers (Phase 5 output)
 
+**Working on a specific task?** See **CLAUDE.md → Task-Based Navigation Guide** (Scenario 5: Modifying State Management) for targeted reading. Otherwise, browse the full provider catalog below.
+
 **Created:** 2026-02-21
 **For:** Phase 7 page implementation
 
