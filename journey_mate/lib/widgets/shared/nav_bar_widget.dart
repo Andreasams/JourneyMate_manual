@@ -166,33 +166,30 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
     // positioning and safe areas. Unnecessary wrappers caused excessive height.
     return Container(
       width: double.infinity,
-      height: 64.0, // Standard Material bottom nav height with balanced spacing
+      height: 90.0, // Increased height for more breathing room
       decoration: BoxDecoration(
         color: AppColors.bgPage,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 11.0), // Equal spacing top/bottom
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Search tab
-            _buildTabButton(
-              icon: Icons.search,
-              label: td(ref, 'm4kntw8r'), // "Search"
-              isActive: searchTabActive,
-              onTap: _onSearchTabTap,
-            ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Search tab
+          _buildTabButton(
+            icon: Icons.search,
+            label: td(ref, 'm4kntw8r'), // "Search"
+            isActive: searchTabActive,
+            onTap: _onSearchTabTap,
+          ),
 
-            // Account tab
-            _buildTabButton(
-              icon: Icons.person,
-              label: td(ref, 'ykne5sdr'), // "Account"
-              isActive: accountTabActive,
-              onTap: _onAccountTabTap,
-            ),
-          ],
-        ),
+          // Account tab
+          _buildTabButton(
+            icon: Icons.person,
+            label: td(ref, 'ykne5sdr'), // "Account"
+            isActive: accountTabActive,
+            onTap: _onAccountTabTap,
+          ),
+        ],
       ),
     );
   }
@@ -219,21 +216,19 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 28), // Top padding
             // Icon
             Icon(
               icon,
               color: color,
               size: 24.0,
             ),
-            SizedBox(height: 2), // Reduced from 4 for tighter grouping
+            SizedBox(height: 4), // Small spacing between icon and label
 
             // Label
             Text(
               label,
               style: AppTypography.bodyRegular.copyWith(color: color),
             ),
-            SizedBox(height: 28), // Bottom padding
           ],
         ),
       ),
