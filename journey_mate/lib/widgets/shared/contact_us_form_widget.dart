@@ -157,11 +157,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           // Main title
           Text(
             td(ref, 'contact_form_title_main'),
-            style: GoogleFonts.roboto(
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
+            style: AppTypography.sectionHeading,
           ),
           SizedBox(height: AppSpacing.sm),
 

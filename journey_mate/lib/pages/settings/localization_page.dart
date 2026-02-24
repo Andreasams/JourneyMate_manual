@@ -131,6 +131,22 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
           children: [
             const SizedBox(height: AppSpacing.lg),
 
+            // Page title
+            Text(
+              td(ref, 'settings_page_title_localization'), // "Localization settings"
+              style: AppTypography.sectionHeading,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              td(ref, 'settings_page_subtitle_localization'), // "Configure your language, currency, and location preferences"
+              style: GoogleFonts.roboto(
+                fontSize: 14,
+                fontWeight: FontWeight.w300,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
+
             // Language Section
             Text(
               td(ref, 'phfch9og'), // "Language"
