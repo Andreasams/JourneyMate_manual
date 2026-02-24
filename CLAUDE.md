@@ -135,6 +135,8 @@ These decisions have been confirmed and must not be re-debated:
 
 12. **Filter column widths exact: 36%/33%/31%** — Required for visual design. Never approximate.
 
+13. **Flutter localization delegates required** — MaterialApp must include `supportedLocales` and `localizationsDelegates` for `Localizations.localeOf(context)` to work. Without these, currency filtering breaks (always shows English currencies). Fixed 2026-02-24.
+
 ---
 
 ## What NOT to Do

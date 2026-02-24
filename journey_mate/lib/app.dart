@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 import 'providers/locale_provider.dart';
@@ -28,6 +29,20 @@ class JourneyMateApp extends ConsumerWidget {
       title: 'JourneyMate',
       theme: theme,
       locale: locale, // ✅ Set locale dynamically
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('da'), // Danish
+        Locale('de'), // German
+        Locale('fr'), // French
+        Locale('it'), // Italian
+        Locale('no'), // Norwegian
+        Locale('sv'), // Swedish
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       routerConfig: appRouter,
       debugShowCheckedModeBanner: false,
       // ⚠️ Flutter 3.x: Use TextScaler.linear() not textScaleFactor
