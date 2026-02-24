@@ -139,12 +139,17 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPadding = keyboardHeight > 0
+        ? keyboardHeight + AppSpacing.lg
+        : AppSpacing.xxxl;
+
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         left: AppSpacing.xxl,
         right: AppSpacing.xxl,
         top: AppSpacing.xxl,
-        bottom: 140, // Extra bottom padding for keyboard
+        bottom: bottomPadding,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

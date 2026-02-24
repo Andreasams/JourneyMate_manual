@@ -81,9 +81,7 @@ class _ShareFeedbackPageState extends ConsumerState<ShareFeedbackPage> {
           style: AppTypography.categoryHeading,
         ),
       ),
-      body: const SingleChildScrollView(
-        child: FeedbackFormWidget(),
-      ),
+      body: const FeedbackFormWidget(),
     );
   }
 }

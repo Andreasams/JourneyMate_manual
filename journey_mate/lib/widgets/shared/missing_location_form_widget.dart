@@ -173,12 +173,17 @@ class _MissingLocationFormWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPadding = keyboardHeight > 0
+        ? keyboardHeight + AppSpacing.lg
+        : AppSpacing.xxxl;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         AppSpacing.lg,
         AppSpacing.lg,
         AppSpacing.lg,
-        140.0, // Extra bottom padding for keyboard
+        bottomPadding,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

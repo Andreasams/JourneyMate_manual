@@ -81,9 +81,7 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
           style: AppTypography.categoryHeading,
         ),
       ),
-      body: const SingleChildScrollView(
-        child: ContactUsFormWidget(),
-      ),
+      body: const ContactUsFormWidget(),
     );
   }
 }
