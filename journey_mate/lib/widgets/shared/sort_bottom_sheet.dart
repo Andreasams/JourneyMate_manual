@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/translation_service.dart';
 import '../../providers/filter_providers.dart';
+import '../../providers/settings_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -44,7 +45,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   }
 
   /// Gets train station list from filter provider
-  /// Train stations have filter IDs >= 10000
+  /// Train stations have 'type' == 'train_station' or specific parent_id
   List<Map<String, dynamic>> _getTrainStations() {
     final filterState = ref.watch(filterProvider);
 
@@ -52,10 +53,19 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
       data: (state) {
         final filterLookupMap = state.filterLookupMap;
 
-        // Get all filters with ID >= 10000 (Train Stations per API spec)
-        // API returns 'name' field, not 'filter_name'
+        // Get filters that are train stations
+        // Check type field or parent_id to distinguish from food items
         final stations = filterLookupMap.entries
-            .where((entry) => entry.key >= 10000)
+            .where((entry) {
+              final value = entry.value;
+              final type = value['type'] as String?;
+              final parentId = value['parent_id'];
+
+              // Filter by type 'train_station' or ID >= 10000 with parent_id = 7
+              // This excludes food items which have different parent_ids
+              return type == 'train_station' ||
+                     (entry.key >= 10000 && parentId == 7);
+            })
             .map((entry) => {
                   'id': entry.key,
                   'name': (entry.value['name'] as String?) ??
@@ -89,6 +99,10 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   }
 
   Widget _buildOptionsView() {
+    // Check if location is available
+    final locationState = ref.watch(locationProvider);
+    final hasLocation = locationState.isLocationUsable;
+
     return Column(
       children: [
         _buildHeader(),
@@ -99,7 +113,9 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             padding: EdgeInsets.zero,
             children: [
               _buildSortOption('match', 'sort_match'),
-              _buildSortOption('nearest', 'sort_nearest'),
+              // Only show "Nearest" if location is available
+              if (hasLocation)
+                _buildSortOption('nearest', 'sort_nearest'),
               _buildSortOptionWithSubmenu('station', 'sort_station'),
               _buildSortOption('price_low', 'sort_price_low'),
               _buildSortOption('price_high', 'sort_price_high'),
@@ -257,7 +273,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   Widget _buildSortOption(String sortKey, String translationKey) {
     final isSelected = _selectedSort == sortKey;
     return Container(
-      color: isSelected ? AppColors.bgPage : Colors.transparent,
+      color: isSelected ? AppColors.bgSurface : Colors.transparent,
       child: ListTile(
         title: Text(
           td(ref, translationKey),
@@ -283,7 +299,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             : null,
         contentPadding: EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
+          vertical: AppSpacing.sm,
         ),
         onTap: () {
           setState(() => _selectedSort = sortKey);
@@ -297,7 +313,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   Widget _buildSortOptionWithSubmenu(String sortKey, String translationKey) {
     final isSelected = _selectedSort == sortKey;
     return Container(
-      color: isSelected ? AppColors.bgPage : Colors.transparent,
+      color: isSelected ? AppColors.bgSurface : Colors.transparent,
       child: ListTile(
         title: Text(
           td(ref, translationKey),
@@ -313,7 +329,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
+          vertical: AppSpacing.sm,
         ),
         onTap: () {
           setState(() => _view = 'stations');
@@ -366,7 +382,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     final isSelected = widget.selectedStation == stationId;
 
     return Container(
-      color: isSelected ? AppColors.bgPage : Colors.transparent,
+      color: isSelected ? AppColors.bgSurface : Colors.transparent,
       child: ListTile(
         title: Text(
           stationName,
@@ -392,7 +408,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             : null,
         contentPadding: EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
+          vertical: AppSpacing.sm,
         ),
         onTap: () {
           setState(() => _selectedSort = 'station');
