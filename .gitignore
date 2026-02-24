@@ -18,18 +18,35 @@ _flutterflow_export/
 .DS_Store
 Thumbs.db
 
-# Development reference documentation (keep locally, exclude from git)
-/_reference/
-/pages/
-/shared/
+# Historical migration documentation (keep locally, don't commit)
+# These were scaffolding docs from FlutterFlow migration (Phase 1-7)
+# Useful for understanding "why was this built this way?" but not needed in Git
+pages/*/BUNDLE*.md
+pages/*/GAP_ANALYSIS*.md
+pages/*/PAGE_README*.md
+pages/*/DESIGN_README*.md
+pages/*/VERIFICATION_REPORT*.md
+shared/actions/MASTER_README_*.md
+shared/widgets/MASTER_README_*.md
+shared/functions/MASTER_README_*.md
 
-# Top-level design/planning documents (keep locally, exclude from git)
-DESIGN_SYSTEM_flutter.md
+# Archived migration docs (these ARE tracked for historical context)
+# Note: Archive files are intentionally tracked in Git
+
+# Old planning documents (no longer relevant)
 IMPLEMENTATION_PLAN.txt
 MASTER_TRANSLATION_KEYS.md
 LESSONS_LEARNED_jsx_to_flutter.md
 INFO.plist.txt
 MAIN.dart.txt
 
-# Note: CLAUDE.md intentionally tracked (project instructions for future devs)
-# Note: codemagic.yaml intentionally tracked (CI/CD configuration)
+# Note: The following ARE tracked in Git (guidance and reference docs):
+#  - CLAUDE.md (session instructions)
+#  - ARCHITECTURE.md (how app is built)
+#  - DESIGN_SYSTEM_flutter.md (design tokens)
+#  - CONTRIBUTING.md (developer onboarding)
+#  - _reference/BUILDSHIP_API_REFERENCE.md (API contracts)
+#  - _reference/PROVIDERS_REFERENCE.md (state catalog)
+#  - _reference/archive/MIGRATION_STATUS.md (Phase 1-7 history)
+#  - _reference/archive/PHASE7_PATTERNS.md (pattern discovery log)
+#  - codemagic.yaml (CI/CD configuration)
