@@ -196,12 +196,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           Text(
             td(ref, 'feedback_form_subtitle_main'),
             style: GoogleFonts.roboto(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.w300,
               color: AppColors.textSecondary,
             ),
           ),
-          SizedBox(height: AppSpacing.xxxl),
+          SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
           // Success state
           if (_isSubmitted) _buildSuccessMessage(),
@@ -213,18 +213,18 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           if (!_isSubmitted) ...[
             // Topic selection
             _buildTopicSection(),
-            SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xxl), // Increased from xl (20) to xxl (24)
 
             // Message field
             _buildMessageField(),
-            SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xxl), // Increased from xl (20) to xxl (24)
 
             // Contact consent checkbox
             _buildContactConsentSection(),
 
             // Conditional contact fields (shown only if checkbox enabled)
             if (_requireContact) ...[
-              SizedBox(height: AppSpacing.xl),
+              SizedBox(height: AppSpacing.xxl), // Increased from xl (20) to xxl (24)
               _buildContactFields(),
             ],
 
@@ -257,12 +257,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         Text(
           td(ref, 'feedback_form_subtitle_topic'),
           style: GoogleFonts.roboto(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w300,
             color: AppColors.textSecondary,
           ),
         ),
-        SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.sm),
 
         // Topic chips
         Wrap(
@@ -340,12 +340,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         Text(
           td(ref, 'feedback_form_subtitle_message'),
           style: GoogleFonts.roboto(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w300,
             color: AppColors.textSecondary,
           ),
         ),
-        SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.sm),
 
         // Text field (multiline)
         TextField(
@@ -359,7 +359,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           style: AppTypography.input,
           decoration: InputDecoration(
             hintText: td(ref, 'feedback_form_hint_message'),
-            hintStyle: AppTypography.placeholder,
+            hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
             filled: true,
             fillColor: AppColors.bgInput,
             contentPadding: EdgeInsets.all(12),
@@ -417,12 +417,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         Text(
           td(ref, 'feedback_form_subtitle_contact_consent'),
           style: GoogleFonts.roboto(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w300,
             color: AppColors.textSecondary,
           ),
         ),
-        SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.sm),
 
         // Checkbox row
         Row(
@@ -510,7 +510,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
               style: AppTypography.input,
               decoration: InputDecoration(
                 hintText: td(ref, 'feedback_form_hint_name'),
-                hintStyle: AppTypography.placeholder,
+                hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
                 filled: true,
                 fillColor: AppColors.bgInput,
                 contentPadding: EdgeInsets.all(16),
@@ -576,12 +576,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             Text(
               td(ref, 'feedback_form_subtitle_contact'),
               style: GoogleFonts.roboto(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w300,
                 color: AppColors.textSecondary,
               ),
             ),
-            SizedBox(height: AppSpacing.md),
+            SizedBox(height: AppSpacing.sm),
 
             // Text field
             TextField(
@@ -595,7 +595,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
               style: AppTypography.input,
               decoration: InputDecoration(
                 hintText: td(ref, 'feedback_form_hint_contact'),
-                hintStyle: AppTypography.placeholder,
+                hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
                 filled: true,
                 fillColor: AppColors.bgInput,
                 contentPadding: EdgeInsets.all(16),
