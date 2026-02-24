@@ -157,7 +157,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
-        ref.read(searchStateProvider.notifier).updateSearchResults(
+        // Use saved notifier (safe even if widget unmounted)
+        searchNotifier.updateSearchResults(
           response.jsonBody,
           resultCount,
         );
@@ -220,6 +221,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     try {
       debugPrint('👋 Welcome: Fetching Danish search results in background...');
 
+      // Save notifier before async operations (safe even if widget unmounted)
+      final searchNotifier = ref.read(searchStateProvider.notifier);
+
       // Get user location (if available)
       String? userLocation;
       try {
@@ -251,7 +255,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
-        ref.read(searchStateProvider.notifier).updateSearchResults(
+        // Use saved notifier (safe even if widget unmounted)
+        searchNotifier.updateSearchResults(
           response.jsonBody,
           resultCount,
         );
@@ -290,6 +295,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     try {
       debugPrint('👋 Welcome: Fetching search results in background...');
 
+      // Save notifier before async operations (safe even if widget unmounted)
+      final searchNotifier = ref.read(searchStateProvider.notifier);
+
       // Get stored language code
       final prefs = await SharedPreferences.getInstance();
       final languageCode = prefs.getString('user_language_code') ?? 'en';
@@ -325,7 +333,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
-        ref.read(searchStateProvider.notifier).updateSearchResults(
+        // Use saved notifier (safe even if widget unmounted)
+        searchNotifier.updateSearchResults(
           response.jsonBody,
           resultCount,
         );
