@@ -391,9 +391,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             // Fixed header section
             Padding(
               padding: EdgeInsets.fromLTRB(
-                AppSpacing.lg,
+                AppSpacing.xl, // 20px per JSX
                 AppSpacing.xs,
-                AppSpacing.lg,
+                AppSpacing.xl, // 20px per JSX
                 0,
               ),
               child: Column(
@@ -437,7 +437,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             // Location permission banner (show if no permission AND not dismissed)
             if (!locationState.hasPermission && !locationState.isBannerDismissed)
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl), // 20px per JSX
                 child: _buildLocationBanner(),
               ),
 
@@ -456,7 +456,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   // Floating sort button
                   Positioned(
                     bottom: 12.0,
-                    right: AppSpacing.lg,
+                    right: AppSpacing.xl, // 20px per JSX
                     child: _buildSortButton(),
                   ),
                 ],
@@ -474,14 +474,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       children: [
         Icon(
           Icons.location_on,
-          size: 14,
+          size: 15, // Increased from 14 to match JSX
           color: AppColors.accent,
         ),
         SizedBox(width: 5),
         Text(
           td(ref, '05aeogb1'), // FlutterFlow legacy key for Copenhagen
           style: AppTypography.bodyRegular.copyWith(
-            fontSize: 13.5,
+            fontSize: 15, // Increased from 13.5 to match JSX
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
@@ -957,12 +957,15 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       // Will be fetched by SearchResultsListView
     }
 
-    return SearchResultsListView(
-      userLocation: userLocation,
-      onBusinessTap: (businessId) {
-        // Navigate to business profile
-        context.push('/business/$businessId');
-      },
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl), // 20px per JSX
+      child: SearchResultsListView(
+        userLocation: userLocation,
+        onBusinessTap: (businessId) {
+          // Navigate to business profile
+          context.push('/business/$businessId');
+        },
+      ),
     );
   }
 }

@@ -165,17 +165,17 @@ class AppTypography {
     height: 1.2,
   );
 
-  /// Card detail text - Status, cuisine, price (12.5px, weight 400)
+  /// Card detail text - Status, cuisine, price (14px, weight 400)
   static const TextStyle cardDetail = TextStyle(
-    fontSize: 12.5,
+    fontSize: 14,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
     height: 1.3,
   );
 
-  /// Card distance - Right-aligned distance label (12px, weight 500)
+  /// Card distance - Right-aligned distance label (14px, weight 500)
   static const TextStyle cardDistance = TextStyle(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
     height: 1.3,

@@ -15,7 +15,6 @@ import '../../services/custom_functions/price_formatter.dart';
 import '../../services/custom_functions/business_status.dart';
 import '../../services/custom_functions/hours_formatter.dart';
 import '../../services/custom_functions/distance_calculator.dart';
-import '../../services/custom_functions/address_formatter.dart';
 import '../../services/translation_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
@@ -633,8 +632,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         _buildStatusRow(),
         SizedBox(height: _rowSpacing),
         _buildDetailsRow(),
-        SizedBox(height: _rowSpacing),
-        _buildAddressRow(),
+        // Address removed from collapsed state - only shows in expanded
       ],
     );
   }
@@ -815,16 +813,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     return result;
   }
 
-  Widget _buildAddressRow() {
-    final address = _formatAddress();
-    debugPrint('🔍   _buildAddressRow(): $address');
-    return Text(
-      address,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: AppTypography.cardDetail, // 12.5px per JSX
-    );
-  }
+  // Address removed from collapsed state - now only in expanded state via _buildFullAddress()
 
   // ---------------------------------------------------------------------------
   // Expandable Card Preview
@@ -1008,33 +997,41 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   Widget _buildSeeMoreButton() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: TextButton(
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
         onPressed: () {
           final businessId = _getField<int>('business_id') ?? 0;
           widget.onBusinessTap?.call(businessId);
         },
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.symmetric(vertical: 9), // 9px per JSX
+          backgroundColor: Colors.white, // White background per JSX
+          side: BorderSide(
+            color: Color(0xFFe8e8e8), // Grey border per JSX
+            width: 1.5,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10), // Pill shape per JSX
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               td(ref, 'expandable_show_more'),
-              style: AppTypography.cardDetail.copyWith( // 12.5px base
-                color: AppColors.accent,
+              style: AppTypography.cardDetail.copyWith( // 14px now
+                color: Color(0xFF555555), // Dark grey per JSX, not orange
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_forward,
-              size: 16,
-              color: AppColors.accent,
+            Text(
+              '→',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF555555),
+              ),
             ),
           ],
         ),
@@ -1119,19 +1116,5 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   // Helpers
   // ---------------------------------------------------------------------------
 
-  String _formatAddress() {
-    final street = _street ?? '';
-    final neighbourhood = _neighbourhoodName ?? '';
-
-    debugPrint('🔍     _formatAddress(): street=$street, neighbourhood=$neighbourhood');
-
-    if (street.isEmpty && neighbourhood.isEmpty) {
-      return td(ref, 'addressunavail');
-    }
-    if (street.isEmpty) return neighbourhood;
-    if (neighbourhood.isEmpty) return street;
-
-    // Use streetAndNeighbourhoodLength function from address_formatter.dart
-    return streetAndNeighbourhoodLength(neighbourhood, street);
-  }
+  // _formatAddress() removed - address now only shown in expanded state via _buildFullAddress()
 }
