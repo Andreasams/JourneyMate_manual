@@ -117,6 +117,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   FilterSelectionType _currentSelectionType = FilterSelectionType.none;
   int? _selectedNeighborhoodId;
 
+  /// Saved provider notifier for safe disposal (must be set before dispose)
+  late final SearchStateNotifier _savedSearchNotifier;
+
   /// =========================================================================
   /// CONSTANTS - STYLING
   /// =========================================================================
@@ -204,6 +207,10 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Save provider notifier for safe disposal (before widget can unmount)
+    _savedSearchNotifier = ref.read(searchStateProvider.notifier);
+
     _handleFirstLaunchCleanup();
     _setupFilterData();
 
@@ -233,13 +240,11 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   @override
   void dispose() {
-    // Sync selected filters to provider if changed
-    final currentFilters = ref.read(searchStateProvider).filtersUsedForSearch;
-    if (!listEquals(_selectedFilterIds.toList(), currentFilters)) {
-      ref.read(searchStateProvider.notifier).setFilters(
-            List<int>.from(_selectedFilterIds),
-          );
-    }
+    // Sync selected filters to provider (always sync to ensure consistency)
+    // Use saved notifier (safe even if widget unmounted)
+    _savedSearchNotifier.setFilters(
+      List<int>.from(_selectedFilterIds),
+    );
 
     WidgetsBinding.instance.removeObserver(this);
     _debounceTimer?.cancel();
