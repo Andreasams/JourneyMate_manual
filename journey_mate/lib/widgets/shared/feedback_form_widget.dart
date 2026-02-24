@@ -196,7 +196,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
               color: AppColors.textSecondary,
             ),
           ),
-          SizedBox(height: AppSpacing.xxl),
+          SizedBox(height: AppSpacing.xxxl),
 
           // Success state
           if (_isSubmitted) _buildSuccessMessage(),

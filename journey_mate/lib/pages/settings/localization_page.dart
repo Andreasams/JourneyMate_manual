@@ -134,7 +134,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
             // Language Section
             Text(
               td(ref, 'phfch9og'), // "Language"
-              style: AppTypography.sectionHeading,
+              style: AppTypography.label,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -152,12 +152,12 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
               },
             ),
 
-            const SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.xxxl),
 
             // Currency Section
             Text(
               td(ref, 'y0gzdnsp'), // "Currency"
-              style: AppTypography.sectionHeading,
+              style: AppTypography.label,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -178,12 +178,12 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
               style: AppTypography.helper,
             ),
 
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xxxl),
 
             // Location Section
             Text(
               td(ref, 'location_title_section'), // "Location"
-              style: AppTypography.sectionHeading,
+              style: AppTypography.label,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(

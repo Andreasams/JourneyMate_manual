@@ -273,7 +273,7 @@ class _AppSettingsInitiateFlowPageState
               // Section Heading
               Text(
                 td(ref, '0aq8qo7g'), // "Localization"
-                style: AppTypography.sectionHeading,
+                style: AppTypography.label,
               ),
               SizedBox(height: AppSpacing.sm),
 
@@ -284,7 +284,7 @@ class _AppSettingsInitiateFlowPageState
                   color: AppColors.textSecondary,
                 ),
               ),
-              SizedBox(height: AppSpacing.xl),
+              SizedBox(height: AppSpacing.xxxl),
 
               // Language Section
               Text(
@@ -297,7 +297,7 @@ class _AppSettingsInitiateFlowPageState
                 onLanguageSelected: _handleLanguageSelected,
                 width: double.infinity,
               ),
-              SizedBox(height: AppSpacing.xl),
+              SizedBox(height: AppSpacing.xxxl),
 
               // Currency Section
               Text(
@@ -319,7 +319,7 @@ class _AppSettingsInitiateFlowPageState
                   color: AppColors.textTertiary,
                 ),
               ),
-              SizedBox(height: AppSpacing.xxl * 2), // 48px spacing
+              SizedBox(height: AppSpacing.xxxl),
 
               // Complete Setup Button
               SizedBox(
