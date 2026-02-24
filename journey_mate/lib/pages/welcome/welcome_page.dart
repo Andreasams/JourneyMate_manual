@@ -410,6 +410,10 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Hide translated text until translations are loaded (prevents key ID flash)
+    final translationsCache = ref.watch(translationsCacheProvider);
+    final hasTranslations = translationsCache.isNotEmpty;
+
     return Scaffold(
       backgroundColor: AppColors.bgPage,
       body: SafeArea(
@@ -423,28 +427,29 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Heading - Split into two lines
-              Column(
-                children: [
-                  Text(
-                    td(ref, 'onboarding_title_welcome_prefix'), // "Welcome to"
-                    textAlign: TextAlign.center,
-                    style: AppTypography.restaurantName.copyWith(
-                      fontSize: 28, // Keep custom size for welcome
-                    ),
+              // "JourneyMate" always visible; translated prefix fades in
+              AnimatedOpacity(
+                opacity: hasTranslations ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  td(ref, 'onboarding_title_welcome_prefix'), // "Welcome to"
+                  textAlign: TextAlign.center,
+                  style: AppTypography.restaurantName.copyWith(
+                    fontSize: 28,
                   ),
-                  Text(
-                    'JourneyMate', // Hardcoded - never translated
-                    textAlign: TextAlign.center,
-                    style: AppTypography.restaurantName.copyWith(
-                      fontSize: 28,
-                    ),
-                  ),
-                ],
+                ),
+              ),
+              Text(
+                'JourneyMate', // Hardcoded - never translated
+                textAlign: TextAlign.center,
+                style: AppTypography.restaurantName.copyWith(
+                  fontSize: 28,
+                ),
               ),
 
               const SizedBox(height: AppSpacing.huge),
 
-              // Mascot Image
+              // Mascot Image (always visible immediately)
               Center(
                 child: Image.asset(
                   'assets/images/journeymate_mascot.png',
@@ -452,7 +457,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                   height: 180,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
-                    // If image fails to load, show placeholder
                     return const SizedBox(
                       width: 180,
                       height: 180,
@@ -468,32 +472,37 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
               const SizedBox(height: AppSpacing.huge),
 
-              // Tagline
-              Text(
-                td(ref, 'z6e1v2g7'), // "Go out, your way."
-                textAlign: TextAlign.center,
-                style: AppTypography.sectionHeading.copyWith(
-                  fontSize: 20, // Increased from 18px
-                  fontWeight: FontWeight.w600, // Increased from w500
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.sm),
-
-              // Description
-              Text(
-                td(ref, '0eehrkgn'), // "Discover restaurants, cafés, and..."
-                textAlign: TextAlign.center,
-                style: AppTypography.bodyRegular.copyWith(
-                  fontSize: 16, // Increased from 14px
-                  color: AppColors.textSecondary,
+              // Tagline + description fade in with translations
+              AnimatedOpacity(
+                opacity: hasTranslations ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                child: Column(
+                  children: [
+                    Text(
+                      td(ref, 'z6e1v2g7'), // "Go out, your way."
+                      textAlign: TextAlign.center,
+                      style: AppTypography.sectionHeading.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      td(ref, '0eehrkgn'), // "Discover restaurants, cafés, and..."
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodyRegular.copyWith(
+                        fontSize: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
               const SizedBox(height: AppSpacing.huge),
 
-              // Buttons (conditional based on user type)
-              if (_buttonsVisible) ...[
+              // Buttons fade in with translations
+              if (_buttonsVisible && hasTranslations) ...[
                 // Primary "Continue" button (always shown)
                 SizedBox(
                   width: double.infinity,
