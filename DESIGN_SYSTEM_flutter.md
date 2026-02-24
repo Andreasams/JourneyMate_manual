@@ -608,6 +608,8 @@ Scaffold(
   appBar: AppBar(
     backgroundColor: AppColors.bgPage,
     elevation: 0,
+    surfaceTintColor: Colors.transparent, // Material 3: prevent orange tint when scrolled
+    scrolledUnderElevation: 0, // Material 3: keep elevation at 0 when scrolled
     leading: IconButton(
       icon: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary),
       onPressed: () => Navigator.of(context).pop(),
@@ -640,6 +642,8 @@ Scaffold(
   ),
 )
 ```
+
+**Note:** As of commit `c97e48d` (2026-02-24), AppBar Material 3 properties (`surfaceTintColor`, `scrolledUnderElevation`) are configured in `journey_mate/lib/theme/app_theme.dart` and automatically applied to all AppBars. Individual pages do not need to specify these properties unless overriding the theme. See ARCHITECTURE.md → Common Pitfall #12 for theme-first approach.
 
 ---
 

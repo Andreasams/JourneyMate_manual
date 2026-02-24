@@ -20,7 +20,7 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - [Analytics Architecture](#analytics-architecture) (lines 729-803) — Fire-and-forget, ActivityScope, 36 event types
 - [API Service Pattern](#api-service-pattern) (lines 461-517) — Singleton, cache, BuildShip integration
 - [Code Quality Standards](#code-quality-standards) (lines 806-845) — Flutter analyze, design tokens, algorithms
-- [Common Pitfalls](#common-pitfalls) (lines 848-1080) — 11 anti-patterns with fixes (⚠️ read before first commit)
+- [Common Pitfalls](#common-pitfalls) (lines 848-1115) — 12 anti-patterns with fixes (⚠️ read before first commit)
 - [Design Token System](#design-token-system) (lines 662-727) — Quick lookup tables for colors, spacing, typography
 - [Documentation Philosophy](#documentation-philosophy) (lines 1083-1102) — Three types of docs, when to update
 - [Key Architectural Decisions](#key-architectural-decisions) (lines 1133-1166) — CityID, favorites, filters, translations, engagement
@@ -1023,6 +1023,80 @@ class _MyWidgetState extends ConsumerState<MyWidget> {
 ---
 
 **Why:** When a widget unmounts (user navigates away, parent rebuilds, or `dispose()` is called), `ref` becomes invalid because it relies on `BuildContext`. Saving the notifier early (before async operations OR in `initState()`) captures a reference that remains safe even after unmount.
+
+---
+
+### Pitfall #12: Checking Individual Implementations Before Theme Configuration
+
+**Problem:** When encountering a UI styling issue (colors, spacing, AppBar behavior, button styles), developers might search for individual widget implementations and attempt to fix each one separately, missing the centralized theme configuration.
+
+**Why it happens:**
+- Bottom-up search pattern: Grep for "AppBar" finds 10+ page files with explicit AppBar definitions
+- Individual properties (backgroundColor, elevation) look like custom overrides, not theme reliance
+- Mental model treats UI elements as standalone widgets instead of theme-styled components
+
+**Impact:**
+- Wasted effort modifying 10+ files when 1 theme change would suffice
+- Inconsistent fixes (easy to miss files)
+- Duplication of styling code
+
+**Example:** Material 3 orange tint when scrolling (commit `c97e48d`)
+
+❌ **Bad Approach** (bottom-up):
+```dart
+// Attempted to modify 10+ individual page AppBars
+// journey_mate/lib/pages/settings/share_feedback_page.dart
+appBar: AppBar(
+  backgroundColor: AppColors.bgPage,
+  elevation: 0,
+  surfaceTintColor: Colors.transparent, // ← Repeated 10+ times!
+  scrolledUnderElevation: 0,
+),
+
+// journey_mate/lib/pages/settings/contact_us_page.dart
+appBar: AppBar(
+  backgroundColor: AppColors.bgPage,
+  elevation: 0,
+  surfaceTintColor: Colors.transparent, // ← Duplication!
+  scrolledUnderElevation: 0,
+),
+
+// ... 8 more files with identical changes
+```
+
+✅ **Correct Approach** (theme-first):
+```dart
+// journey_mate/lib/theme/app_theme.dart
+// ONE centralized fix affects all AppBars automatically
+appBarTheme: AppBarTheme(
+  backgroundColor: AppColors.bgPage,
+  foregroundColor: AppColors.textPrimary,
+  elevation: 0,
+  surfaceTintColor: Colors.transparent, // ← Single source of truth
+  scrolledUnderElevation: 0, // ← Propagates to all pages
+  centerTitle: true,
+),
+```
+
+**Rule:** For ANY styling issue, always check theme configuration FIRST before modifying individual implementations.
+
+**Workflow:**
+1. ✅ **First**: Check `journey_mate/lib/theme/app_theme.dart` for centralized theme (ThemeData)
+2. ✅ **Second**: Verify which properties are theme-controlled vs. widget-specific
+3. ✅ **Third**: If theme-level fix possible, apply there (affects all widgets automatically)
+4. ✅ **Last**: Only modify individual widgets if truly custom behavior needed
+
+**Theme-controlled UI elements:**
+- AppBar: `ThemeData.appBarTheme` (backgroundColor, elevation, surfaceTintColor, scrolledUnderElevation, titleTextStyle)
+- ElevatedButton: `ThemeData.elevatedButtonTheme` (background, foreground, padding, shape)
+- TextField: `ThemeData.inputDecorationTheme` (border, fillColor, focusedBorder)
+- Card: `ThemeData.cardTheme` (color, elevation, shape)
+- Checkbox: `ThemeData.checkboxTheme` (fillColor, side)
+- BottomSheet: `ThemeData.bottomSheetTheme` (backgroundColor, shape)
+
+**Common in:** All pages with AppBars, forms with inputs, pages with buttons/cards.
+
+**Reference:** See commit `c97e48d` — "fix: remove Material 3 orange tint from AppBar when scrolling"
 
 ---
 

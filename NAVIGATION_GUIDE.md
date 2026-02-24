@@ -175,11 +175,13 @@ Each scenario below provides:
 - ⚠️ ALL colors must come from `AppColors` — no raw hex strings
 - ⚠️ ALL spacing must come from `AppSpacing` — no magic numbers
 - ⚠️ Changes propagate automatically across entire app (30 color constants, 8 spacing constants)
+- ⚠️ For UI styling issues (AppBar, buttons, inputs), check `app_theme.dart` FIRST before modifying individual widgets
 
 **Reference files:**
 - `journey_mate/lib/theme/app_colors.dart` — All 30 color constants
 - `journey_mate/lib/theme/app_spacing.dart` — All 8 spacing constants
 - `journey_mate/lib/theme/app_typography.dart` — All 14 text styles
+- `journey_mate/lib/theme/app_theme.dart` — Centralized ThemeData (AppBar, buttons, inputs, cards)
 - `DESIGN_SYSTEM_flutter.md` — Complete design system documentation (683 lines)
 
 ---
