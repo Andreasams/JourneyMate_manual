@@ -189,6 +189,8 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
               td(ref, 'location_description_permission'), // "Allow JourneyMate to show nearby restaurants..."
               style: AppTypography.bodyRegular,
             ),
+            // Intentionally larger spacing (lg instead of xs) for visual breathing room
+            // above the location sharing button — do not reduce to match other sections
             const SizedBox(height: AppSpacing.lg),
 
             // Status card (tappable — handles permission request / settings)
