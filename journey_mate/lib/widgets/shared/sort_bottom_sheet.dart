@@ -36,9 +36,6 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   late bool _onlyOpen;
   String _view = 'options'; // 'options' or 'stations'
 
-  // Train station category ID (parent filter)
-  static const int _trainStationCategoryId = 7;
-
   @override
   void initState() {
     super.initState();
@@ -47,7 +44,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   }
 
   /// Gets train station list from filter provider
-  /// Train stations have filter IDs in 10000+ range with parent_id = 7
+  /// Train stations have filter IDs >= 10000
   List<Map<String, dynamic>> _getTrainStations() {
     final filterState = ref.watch(filterProvider);
 
@@ -55,13 +52,14 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
       data: (state) {
         final filterLookupMap = state.filterLookupMap;
 
-        // Get all filters with parent_id = 7 (Train Stations)
-        // Null-safe: some station entries may have null filter_name
+        // Get all filters with ID >= 10000 (Train Stations per API spec)
+        // API returns 'name' field, not 'filter_name'
         final stations = filterLookupMap.entries
-            .where((entry) => entry.value['parent_id'] == _trainStationCategoryId)
+            .where((entry) => entry.key >= 10000)
             .map((entry) => {
                   'id': entry.key,
-                  'name': (entry.value['filter_name'] as String?) ?? '',
+                  'name': (entry.value['name'] as String?) ??
+                          (entry.value['filter_name'] as String?) ?? '',
                 })
             .where((s) => (s['name'] as String).isNotEmpty)
             .toList();
@@ -139,7 +137,6 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                   },
                 ),
         ),
-        _buildStationsFooter(),
       ],
     );
   }
@@ -406,33 +403,4 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     );
   }
 
-  Widget _buildStationsFooter() {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.bgPage,
-        border: Border(
-          top: BorderSide(color: AppColors.border, width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
-          Text(
-            '💡',
-            style: TextStyle(fontSize: 16),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              'I den færdige app vil dette sortere steder efter afstand til den valgte station via Typesense & BuildShip.',
-              style: AppTypography.bodyRegular.copyWith(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
