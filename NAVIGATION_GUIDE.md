@@ -150,6 +150,7 @@ Each scenario below provides:
 - ⚠️ Dispose controllers in `dispose()` method
 - ⚠️ Use `context.mounted` after async submit operations
 - ⚠️ If syncing state in `dispose()`, save notifier in `initState()` (Pitfall #11 Variation B)
+- ⚠️ Form page pattern: Section titles use w600 override, subtitles 14px/w300, placeholders 14px (see DESIGN_SYSTEM_flutter.md)
 
 **Reference files:**
 - `journey_mate/lib/widgets/shared/contact_us_form_widget.dart` — Complete form pattern

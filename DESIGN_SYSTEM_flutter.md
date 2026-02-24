@@ -436,6 +436,92 @@ Column(
 )
 ```
 
+### Form Page Pattern (Settings Forms)
+
+**Standard pattern for all settings form pages** (share_feedback, contact_us, missing_place, localization).
+
+This pattern creates visual hierarchy through **weight + color**, not size differences:
+
+```dart
+Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    // Main page title (if present)
+    Text(
+      'Main Title',
+      style: GoogleFonts.roboto(
+        fontSize: 20,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textPrimary,
+      ),
+    ),
+    SizedBox(height: AppSpacing.sm),  // 8px
+
+    // Main subtitle
+    Text(
+      'Description of the page',
+      style: GoogleFonts.roboto(
+        fontSize: 14,
+        fontWeight: FontWeight.w300,
+        color: AppColors.textSecondary,
+      ),
+    ),
+    SizedBox(height: 28),  // Tighter first gap (not 32px)
+
+    // Section title (heavier weight)
+    Text(
+      'Section Title',
+      style: AppTypography.label.copyWith(
+        fontWeight: FontWeight.w600,  // Override w500 → w600
+      ),
+    ),
+    SizedBox(height: AppSpacing.sm),  // 8px
+
+    // Section subtitle
+    Text(
+      'Section description',
+      style: GoogleFonts.roboto(
+        fontSize: 14,
+        fontWeight: FontWeight.w300,
+        color: AppColors.textSecondary,
+      ),
+    ),
+    SizedBox(height: AppSpacing.sm),  // 8px
+
+    // Input field with 14px placeholder
+    TextField(
+      decoration: InputDecoration(
+        hintText: 'Placeholder text',
+        hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
+      ),
+    ),
+
+    SizedBox(height: AppSpacing.xxl),  // 24px between sections
+
+    // Next section...
+  ],
+)
+```
+
+**Key Rules:**
+- Section titles: 16px, **w600**, textPrimary (darker, heavier)
+- Subtitles: **14px**, w300, textSecondary (lighter weight, lighter color)
+- Placeholders: **14px** (not default 16px)
+- First gap: **28px** (tighter than other sections)
+- Section spacing: **24px** (AppSpacing.xxl, not xl)
+
+**Rationale:** Consistent visual hierarchy across all settings forms. Weight (w600 vs w300) and color (textPrimary vs textSecondary) create clear distinction without size differences. Placeholders match subtitle size for visual consistency.
+
+**Example files:**
+- `journey_mate/lib/widgets/shared/feedback_form_widget.dart`
+- `journey_mate/lib/widgets/shared/contact_us_form_widget.dart`
+- `journey_mate/lib/widgets/shared/missing_location_form_widget.dart`
+- `journey_mate/lib/pages/settings/localization_page.dart`
+
+**Git references:** Commits `f20ceaf`, `9db531a` (2026-02-24)
+
+---
+
 ### Multi-Paragraph Text
 
 ```dart
@@ -628,14 +714,16 @@ AppTypography.label  // Correct
 
 ### Quick Checks
 
-| Area | Correct Token | Value |
-|------|---------------|-------|
-| Label to input gap | `AppSpacing.sm` | 8px |
-| Between form fields | `AppSpacing.xl` | 20px |
-| Page padding | `AppSpacing.xxl` | 24px |
-| Input radius | `AppRadius.input` | 12px |
-| Button radius | `AppRadius.button` | 14px |
-| Card radius | `AppRadius.card` | 16px |
+| Area | Correct Token | Value | Notes |
+|------|---------------|-------|-------|
+| Label to input gap | `AppSpacing.sm` | 8px | |
+| Between form fields | `AppSpacing.xl` | 20px | General forms |
+| Form page sections | `AppSpacing.xxl` | 24px | Settings forms only |
+| First gap (forms) | Custom `28` | 28px | After main subtitle |
+| Page padding | `AppSpacing.xxl` | 24px | |
+| Input radius | `AppRadius.input` | 12px | |
+| Button radius | `AppRadius.button` | 14px | |
+| Card radius | `AppRadius.card` | 16px | |
 | Orange color | CTAs only | Never match status |
 | Green color | Match confirmation only | Never CTAs |
 
