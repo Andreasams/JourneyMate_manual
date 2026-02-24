@@ -424,7 +424,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               Column(
                 children: [
                   Text(
-                    td(ref, '6dww9uct'), // "Welcome to" (translation updated by user)
+                    td(ref, 'onboarding_title_welcome_prefix'), // "Welcome to"
                     textAlign: TextAlign.center,
                     style: AppTypography.restaurantName.copyWith(
                       fontSize: 28, // Keep custom size for welcome
