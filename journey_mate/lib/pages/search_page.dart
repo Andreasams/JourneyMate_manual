@@ -417,35 +417,33 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
                   // Liste/Kort view toggle
                   _buildViewToggle(),
+                  SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),
 
             // Selected filters chips
             if (searchState.filtersUsedForSearch.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.only(
-                  top: AppSpacing.md,
-                  bottom: AppSpacing.xs,
-                ),
-                child: SelectedFiltersBtns(
-                  filters: searchState.filtersUsedForSearch,
-                  languageCode: Localizations.localeOf(context).languageCode,
-                  translationsCache: translationsCache,
-                ),
+              SelectedFiltersBtns(
+                filters: searchState.filtersUsedForSearch,
+                languageCode: Localizations.localeOf(context).languageCode,
+                translationsCache: translationsCache,
               ),
+
+            // Spacing after selected filters (if shown)
+            if (searchState.filtersUsedForSearch.isNotEmpty)
+              SizedBox(height: AppSpacing.md),
 
             // Location permission banner (show if no permission AND not dismissed)
             if (!locationState.hasPermission && !locationState.isBannerDismissed)
               Padding(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: _buildLocationBanner(),
               ),
+
+            // Spacing after location banner (if shown)
+            if (!locationState.hasPermission && !locationState.isBannerDismissed)
+              SizedBox(height: AppSpacing.md),
 
             // Content with floating button
             Expanded(
