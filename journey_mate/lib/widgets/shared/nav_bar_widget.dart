@@ -219,6 +219,7 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            SizedBox(height: 28), // Top padding
             // Icon
             Icon(
               icon,
@@ -232,6 +233,7 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
               label,
               style: AppTypography.bodyRegular.copyWith(color: color),
             ),
+            SizedBox(height: 28), // Bottom padding
           ],
         ),
       ),
