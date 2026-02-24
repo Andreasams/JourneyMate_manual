@@ -137,6 +137,22 @@ class AppTypography {
     height: 1.2,
   );
 
+  /// Filter tab - Filter panel tabs (14px, weight 500)
+  static const TextStyle filterTab = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textSecondary,
+    height: 1.3,
+  );
+
+  /// View toggle - List/Map toggle buttons (13.5px, weight 500)
+  static const TextStyle viewToggle = TextStyle(
+    fontSize: 13.5,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textSecondary,
+    height: 1.2,
+  );
+
   // ============================================================
   // CARD ELEMENTS
   // ============================================================

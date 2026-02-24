@@ -190,7 +190,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             setState(() => _onlyOpen = !_onlyOpen);
             widget.onSortChanged(_selectedSort, _onlyOpen, widget.selectedStation);
           },
-          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderRadius: BorderRadius.circular(AppRadius.chip),
           child: Container(
             padding: EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
@@ -204,7 +204,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                     : AppColors.border,
                 width: 1.5,
               ),
-              borderRadius: BorderRadius.circular(AppRadius.sm),
+              borderRadius: BorderRadius.circular(AppRadius.chip),
             ),
             child: Row(
               children: [

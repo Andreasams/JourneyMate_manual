@@ -14,7 +14,6 @@ import '../../theme/app_typography.dart';
 /// - activeTabIndex: Currently selected tab (0, 1, or 2)
 /// - onTabChanged: Callback when user taps a title
 /// - width: Row width
-/// - height: Row height (typically 50px)
 ///
 /// Design:
 /// - 3 columns with flex distribution (36% / 33% / 31% per design system)
@@ -27,13 +26,11 @@ class FilterTitlesRow extends ConsumerWidget {
     required this.activeTabIndex,
     required this.onTabChanged,
     this.width,
-    this.height = 50.0,
   });
 
   final int activeTabIndex;
   final Function(int) onTabChanged;
   final double? width;
-  final double height;
 
   // Tab indices
   static const int _locationTabIndex = 0;
@@ -47,6 +44,7 @@ class FilterTitlesRow extends ConsumerWidget {
 
   // Layout constants
   static const double _borderThickness = 2.0;
+  static const double _verticalPadding = 12.0;
 
   /// Returns whether the given tab is currently selected
   bool _isSelected(int tabIndex) => activeTabIndex == tabIndex;
@@ -81,7 +79,7 @@ class FilterTitlesRow extends ConsumerWidget {
         onTap: () => onTabChanged(tabIndex),
         behavior: HitTestBehavior.opaque,
         child: Container(
-          height: height,
+          padding: EdgeInsets.symmetric(vertical: _verticalPadding),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
@@ -93,7 +91,7 @@ class FilterTitlesRow extends ConsumerWidget {
           alignment: Alignment.center,
           child: Text(
             title,
-            style: AppTypography.label.copyWith(
+            style: AppTypography.filterTab.copyWith(
               color: _getTitleColor(tabIndex),
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
@@ -110,7 +108,6 @@ class FilterTitlesRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       width: width ?? MediaQuery.of(context).size.width,
-      height: height,
       child: Row(
         children: [
           _buildTabButton(ref, _locationTabIndex, 36), // 36% flex

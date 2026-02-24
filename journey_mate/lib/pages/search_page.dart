@@ -642,8 +642,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: Text(
                 td(ref, 'view_toggle_list'), // Use translation key
                 textAlign: TextAlign.center,
-                style: AppTypography.bodyRegular.copyWith(
-                  fontWeight: _viewMode == 'liste' ? FontWeight.w600 : FontWeight.w400,
+                style: AppTypography.viewToggle.copyWith(
+                  fontWeight: _viewMode == 'liste' ? FontWeight.w600 : FontWeight.w500,
                   color: _viewMode == 'liste' ? AppColors.textPrimary : Color(0xFF999999),
                 ),
               ),
@@ -669,8 +669,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 child: Text(
                   td(ref, 'view_toggle_map'), // Use translation key
                   textAlign: TextAlign.center,
-                  style: AppTypography.bodyRegular.copyWith(
-                    fontWeight: _viewMode == 'kort' ? FontWeight.w600 : FontWeight.w400,
+                  style: AppTypography.viewToggle.copyWith(
+                    fontWeight: _viewMode == 'kort' ? FontWeight.w600 : FontWeight.w500,
                     color: _viewMode == 'kort' ? AppColors.textPrimary : Color(0xFF999999),
                   ),
                 ),
