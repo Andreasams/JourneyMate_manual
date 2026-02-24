@@ -677,68 +677,14 @@ ref.read(localeProvider.notifier).setLocale('da');
 
 ## Design Token System
 
-**Full reference:** See `DESIGN_SYSTEM_flutter.md` (683 lines)
+**Full reference:** See **DESIGN_SYSTEM_flutter.md** — Complete token catalog with color palettes, spacing scale, typography styles, border radii, input decorations, button styles, and copy-paste UI patterns.
 
-### Quick Lookup Tables
-
-#### AppColors (30 constants)
-
-| Category | Constant | Hex | Usage |
-|----------|----------|-----|-------|
-| **Primary** | `accent` | `#e8751a` | CTAs, interactive elements, brand |
-| | `green` | `#1a9456` | Match confirmation (never CTAs) |
-| | `red` | `#c9403a` | Errors, closed status |
-| **Text** | `textPrimary` | `#0f0f0f` | Headings, labels |
-| | `textSecondary` | `#333333` | Body text |
-| | `textTertiary` | `#888888` | Hints |
-| **UI** | `bgPage` | `#ffffff` | Page background |
-| | `bgCard` | `#ffffff` | Card background |
-| | `border` | `#e8e8e8` | Default borders |
-| **Match Status** | `greenBg` | `#f0f9f3` | Full-match card bg |
-| | `greenBorder` | `#d0ecd8` | Full-match card border |
-| | `orangeBg` | `#fef8f2` | Partial-match card bg |
-| | `orangeBorder` | `#f0dcc8` | Partial-match card border |
+**Source files:** `journey_mate/lib/theme/` (8 files: `app_colors.dart`, `app_spacing.dart`, `app_typography.dart`, `app_radius.dart`, `app_constants.dart`, `app_button_styles.dart`, `app_input_decorations.dart`, `app_theme.dart`)
 
 **Critical Rules:**
-- Orange (`#e8751a`) ONLY for CTAs/interactive elements (never match status)
-- Green (`#1a9456`) ONLY for match confirmation (never CTAs)
-
-#### AppSpacing (8 constants)
-
-| Constant | Value | Usage |
-|----------|-------|-------|
-| `xs` | 4px | Minimal spacing |
-| `sm` | 8px | Label to input, between paragraphs |
-| `md` | 12px | Between chips |
-| `lg` | 16px | Standard spacing |
-| `xl` | 20px | Between form fields |
-| `xxl` | 24px | Page padding |
-| `xxxl` | 32px | Section spacing |
-| `huge` | 40px | Major section spacing |
-
-#### AppTypography (14 text styles)
-
-| Constant | Size | Weight | Usage |
-|----------|------|--------|-------|
-| `pageTitle` | 26px | w800 | Page headings |
-| `sectionTitle` | 20px | w700 | Section headings |
-| `cardTitle` | 18px | w600 | Card headings |
-| `bodyLarge` | 18px | w400 | Large body text |
-| `bodyRegular` | 16px | w400 | Standard body text |
-| `bodySmall` | 14px | w400 | Small body text |
-| `labelLarge` | 16px | w600 | Large labels |
-| `labelMedium` | 14px | w600 | Standard labels |
-| `labelSmall` | 12px | w600 | Small labels |
-
-#### AppRadius (7 constants)
-
-| Constant | Value | Usage |
-|----------|-------|-------|
-| `card` | 16px | Restaurant cards |
-| `button` | 12px | Buttons |
-| `chip` | 20px | Filter chips |
-| `input` | 8px | Input fields |
-| `bottomSheet` | 22px | Bottom sheet top corners |
+- Orange (`AppColors.accent`) ONLY for CTAs/interactive elements (never match status)
+- Green (`AppColors.green`) ONLY for match confirmation (never CTAs)
+- All colors via `AppColors.*`, spacing via `AppSpacing.*`, typography via `AppTypography.*`, radii via `AppRadius.*` — no raw hex, magic numbers, or inline TextStyle
 
 ---
 
