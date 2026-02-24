@@ -339,7 +339,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
           highlightColor: AppColors.bgInput.withAlpha((0.5 * 255).round()),
           child: Container(
             height: 48.0,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            padding: EdgeInsets.zero,
             child: Row(
               children: [
                 // Icon (if provided)
