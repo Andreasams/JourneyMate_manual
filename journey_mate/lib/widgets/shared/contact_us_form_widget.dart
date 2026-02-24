@@ -174,7 +174,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
               color: AppColors.textSecondary,
             ),
           ),
-          SizedBox(height: AppSpacing.xxxl),
+          SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
           // Success state
           if (_isSubmitted) _buildSuccessMessage(),
@@ -198,7 +198,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
                 }
               },
             ),
-            SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xxl), // Increased from xl (20) to xxl (24)
 
             // Contact field (email or phone)
             _buildFieldSection(
@@ -214,7 +214,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
                 }
               },
             ),
-            SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xxl), // Increased from xl (20) to xxl (24)
 
             // Subject field
             _buildFieldSection(
@@ -230,7 +230,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
                 }
               },
             ),
-            SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xxl), // Increased from xl (20) to xxl (24)
 
             // Message field (multiline)
             _buildFieldSection(
@@ -273,7 +273,10 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
         RichText(
           text: TextSpan(
             text: title,
-            style: AppTypography.label.copyWith(color: AppColors.textPrimary),
+            style: AppTypography.label.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
             children: [
               TextSpan(
                 text: ' *',
@@ -306,7 +309,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           style: AppTypography.input,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTypography.placeholder,
+            hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
             filled: true,
             fillColor: AppColors.bgInput,
             contentPadding: EdgeInsets.all(maxLines > 1 ? 12 : 16),

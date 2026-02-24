@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -133,14 +134,18 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
             // Language Section
             Text(
               td(ref, 'phfch9og'), // "Language"
-              style: AppTypography.label,
+              style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               td(ref, 'gl71ej9n'), // "Select your preferred language..."
-              style: AppTypography.bodyRegular,
+              style: GoogleFonts.roboto(
+                fontSize: 14,
+                fontWeight: FontWeight.w300,
+                color: AppColors.textSecondary,
+              ),
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.sm),
             LanguageSelectorButton(
               width: double.infinity,
               currentLanguageCode: currentLanguage,
@@ -151,19 +156,23 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
               },
             ),
 
-            const SizedBox(height: AppSpacing.xxxl),
+            const SizedBox(height: AppSpacing.xxl), // Reduced from xxxl (32) to xxl (24)
 
             // Currency Section
             Text(
               td(ref, 'y0gzdnsp'), // "Currency"
-              style: AppTypography.label,
+              style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               td(ref, 'n4pzujqg'), // "We can display prices..."
-              style: AppTypography.bodyRegular,
+              style: GoogleFonts.roboto(
+                fontSize: 14,
+                fontWeight: FontWeight.w300,
+                color: AppColors.textSecondary,
+              ),
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.sm),
             const CurrencySelectorButton(
               width: double.infinity,
               height: 50.0,
@@ -177,17 +186,21 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
               style: AppTypography.helper,
             ),
 
-            const SizedBox(height: AppSpacing.xxxl),
+            const SizedBox(height: AppSpacing.xxl), // Reduced from xxxl (32) to xxl (24)
 
             // Location Section
             Text(
               td(ref, 'location_title_section'), // "Location"
-              style: AppTypography.label,
+              style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               td(ref, 'location_description_permission'), // "Allow JourneyMate to show nearby restaurants..."
-              style: AppTypography.bodyRegular,
+              style: GoogleFonts.roboto(
+                fontSize: 14,
+                fontWeight: FontWeight.w300,
+                color: AppColors.textSecondary,
+              ),
             ),
             // Intentionally larger spacing (lg instead of xs) for visual breathing room
             // above the location sharing button — do not reduce to match other sections

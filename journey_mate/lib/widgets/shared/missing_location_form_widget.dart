@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
@@ -189,11 +190,11 @@ class _MissingLocationFormWidgetState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildIntroductionSection(),
-          const SizedBox(height: AppSpacing.xxxl),
+          const SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
           _buildBusinessNameSection(),
-          const SizedBox(height: AppSpacing.xxxl),
+          const SizedBox(height: AppSpacing.xxl), // Increased from xxxl (32) to xxl (24)
           _buildBusinessAddressSection(),
-          const SizedBox(height: AppSpacing.xxxl),
+          const SizedBox(height: AppSpacing.xxl), // Increased from xxxl (32) to xxl (24)
           _buildMessageSection(),
           const SizedBox(height: AppSpacing.huge),
           _buildSubmitArea(),
@@ -212,17 +213,25 @@ class _MissingLocationFormWidgetState
       children: [
         Text(
           td(ref, 'missing_location_title_main'),
-          style: AppTypography.label,
+          style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           td(ref, 'missing_location_subtitle_main_1'),
-          style: AppTypography.bodyRegular,
+          style: GoogleFonts.roboto(
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+            color: AppColors.textSecondary,
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           td(ref, 'missing_location_subtitle_main_2'),
-          style: AppTypography.bodyRegular,
+          style: GoogleFonts.roboto(
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+            color: AppColors.textSecondary,
+          ),
         ),
       ],
     );
@@ -253,12 +262,16 @@ class _MissingLocationFormWidgetState
         _buildRequiredLabel(
           td(ref, 'missing_location_title_business_address'),
         ),
-        const SizedBox(height: 6.0),
+        const SizedBox(height: AppSpacing.xs),
         Text(
           td(ref, 'missing_location_subtitle_business_address'),
-          style: AppTypography.helper,
+          style: GoogleFonts.roboto(
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+            color: AppColors.textSecondary,
+          ),
         ),
-        const SizedBox(height: 6.0),
+        const SizedBox(height: AppSpacing.sm),
         _buildTextField(
           controller: _businessAddressController,
           hintText: td(ref, 'missing_location_hint_business_address'),
@@ -276,12 +289,16 @@ class _MissingLocationFormWidgetState
         _buildRequiredLabel(
           td(ref, 'missing_location_title_message'),
         ),
-        const SizedBox(height: 6.0),
+        const SizedBox(height: AppSpacing.xs),
         Text(
           td(ref, 'missing_location_subtitle_message'),
-          style: AppTypography.helper,
+          style: GoogleFonts.roboto(
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+            color: AppColors.textSecondary,
+          ),
         ),
-        const SizedBox(height: 6.0),
+        const SizedBox(height: AppSpacing.sm),
         _buildTextField(
           controller: _messageController,
           hintText: td(ref, 'missing_location_hint_message'),
@@ -443,6 +460,7 @@ class _MissingLocationFormWidgetState
             text: text,
             style: AppTypography.label.copyWith(
               color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
           TextSpan(
@@ -474,6 +492,7 @@ class _MissingLocationFormWidgetState
           style: const TextStyle(fontSize: 14.0),
           decoration: InputDecoration(
             hintText: hintText,
+            hintStyle: const TextStyle(fontSize: 14.0, color: Color(0xFFAAAAAA)),
             filled: true,
             fillColor: AppColors.bgInput,
             border: OutlineInputBorder(
