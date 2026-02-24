@@ -448,20 +448,27 @@ class LocalizationState {
 /// Location permission state
 class LocationState {
   final bool hasPermission;
+  final bool isBannerDismissed;
 
   const LocationState({
     required this.hasPermission,
+    required this.isBannerDismissed,
   });
 
   factory LocationState.initial() {
-    return const LocationState(hasPermission: false);
+    return const LocationState(
+      hasPermission: false,
+      isBannerDismissed: false,
+    );
   }
 
   LocationState copyWith({
     bool? hasPermission,
+    bool? isBannerDismissed,
   }) {
     return LocationState(
       hasPermission: hasPermission ?? this.hasPermission,
+      isBannerDismissed: isBannerDismissed ?? this.isBannerDismissed,
     );
   }
 }

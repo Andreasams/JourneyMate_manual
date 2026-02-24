@@ -151,7 +151,11 @@ void main() async {
     return; // Stop app initialization
   }
 
-  await container.read(locationProvider.notifier).checkPermission();
+  // Load location permission and banner dismissal state in parallel
+  await Future.wait([
+    container.read(locationProvider.notifier).checkPermission(),
+    container.read(locationProvider.notifier).loadFromPreferences(),
+  ]);
 
   // Register lifecycle observer
   final appObserver = AppLifecycleObserver(container: container);

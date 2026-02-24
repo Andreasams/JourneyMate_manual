@@ -435,8 +435,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ),
               ),
 
-            // Location permission banner
-            if (!locationState.hasPermission)
+            // Location permission banner (show if no permission AND not dismissed)
+            if (!locationState.hasPermission && !locationState.isBannerDismissed)
               Padding(
                 padding: EdgeInsets.fromLTRB(
                   AppSpacing.lg,
@@ -781,49 +781,70 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildLocationBanner() {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.orangeBg,
-        borderRadius: BorderRadius.circular(AppRadius.filter),
-        border: Border.all(color: AppColors.orangeBorder),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.location_off,
-            color: AppColors.accent,
-            size: 20,
+    return Stack(
+      children: [
+        // Main banner content
+        Container(
+          padding: EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.orangeBg,
+            borderRadius: BorderRadius.circular(AppRadius.filter),
+            border: Border.all(color: AppColors.orangeBorder),
           ),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              td(ref, 'location_permission_denied'),
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              final granted = await ref
-                  .read(locationProvider.notifier)
-                  .requestPermission();
-              if (granted && mounted) {
-                final searchText = ref.read(searchStateProvider).currentSearchText;
-                _executeSearch(searchText);
-              }
-            },
-            child: Text(
-              td(ref, 'location_permission_enable'),
-              style: AppTypography.bodySmall.copyWith(
+          child: Row(
+            children: [
+              Icon(
+                Icons.location_off,
                 color: AppColors.accent,
-                fontWeight: FontWeight.w600,
+                size: 20,
               ),
-            ),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  td(ref, 'location_permission_denied'),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              SizedBox(width: AppSpacing.md), // Space for close button
+              TextButton(
+                onPressed: () async {
+                  final granted = await ref
+                      .read(locationProvider.notifier)
+                      .requestPermission();
+                  if (granted && mounted) {
+                    final searchText = ref.read(searchStateProvider).currentSearchText;
+                    _executeSearch(searchText);
+                  }
+                },
+                child: Text(
+                  td(ref, 'location_permission_enable'),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+
+        // Close button (top-right corner)
+        Positioned(
+          top: 4,
+          right: 4,
+          child: IconButton(
+            icon: Icon(Icons.close, size: 18, color: AppColors.textSecondary),
+            padding: EdgeInsets.all(4),
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            onPressed: () {
+              ref.read(locationProvider.notifier).dismissBanner();
+            },
+            tooltip: td(ref, 'dismiss'),
+          ),
+        ),
+      ],
     );
   }
 

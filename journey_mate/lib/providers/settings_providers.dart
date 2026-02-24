@@ -165,6 +165,8 @@ final locationProvider = NotifierProvider<LocationNotifier, LocationState>(() {
 });
 
 class LocationNotifier extends Notifier<LocationState> {
+  static const String _kBannerDismissedKey = 'location_banner_dismissed';
+
   @override
   LocationState build() {
     return LocationState.initial();
@@ -186,13 +188,62 @@ class LocationNotifier extends Notifier<LocationState> {
     }
   }
 
+  /// Load banner dismissal state from SharedPreferences
+  Future<void> loadFromPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isDismissed = prefs.getBool(_kBannerDismissedKey) ?? false;
+      state = state.copyWith(isBannerDismissed: isDismissed);
+      debugPrint('✅ Loaded banner dismissal state: $isDismissed');
+    } catch (e) {
+      debugPrint('⚠️ Failed to load banner dismissal preference: $e');
+    }
+  }
+
+  /// Dismiss the location permission banner
+  Future<void> dismissBanner() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_kBannerDismissedKey, true);
+      state = state.copyWith(isBannerDismissed: true);
+      debugPrint('✅ Banner dismissed and persisted');
+    } catch (e) {
+      debugPrint('⚠️ Failed to persist banner dismissal: $e');
+      state = state.copyWith(isBannerDismissed: true);
+    }
+  }
+
+  /// Reset banner dismissal flag (used when permission is granted via Settings)
+  Future<void> resetBannerDismissal() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_kBannerDismissedKey, false);
+      state = state.copyWith(isBannerDismissed: false);
+      debugPrint('✅ Banner dismissal reset');
+    } catch (e) {
+      debugPrint('⚠️ Failed to reset banner dismissal: $e');
+    }
+  }
+
   /// Request location permission
   Future<bool> requestPermission() async {
     try {
       final status = await ph.Permission.location.request();
 
       final granted = status.isGranted;
-      state = state.copyWith(hasPermission: granted);
+
+      // Reset dismissal flag if permission granted
+      if (granted) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_kBannerDismissedKey, false);
+        state = state.copyWith(
+          hasPermission: true,
+          isBannerDismissed: false,
+        );
+        debugPrint('✅ Location granted, banner dismissal reset');
+      } else {
+        state = state.copyWith(hasPermission: false);
+      }
 
       debugPrint('✅ Location permission requested: $status');
       return granted;
@@ -223,8 +274,13 @@ class LocationNotifier extends Notifier<LocationState> {
       final status = await ph.Permission.locationWhenInUse.status;
 
       if (status.isGranted) {
-        // Already enabled — open settings for management
-        state = state.copyWith(hasPermission: true);
+        // Already enabled — reset dismissal flag and open settings for management
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_kBannerDismissedKey, false);
+        state = state.copyWith(
+          hasPermission: true,
+          isBannerDismissed: false,
+        );
         await ph.openAppSettings();
         return;
       }
@@ -237,7 +293,18 @@ class LocationNotifier extends Notifier<LocationState> {
 
       // First time or soft-denied — show native iOS permission dialog
       final result = await ph.Permission.locationWhenInUse.request();
-      state = state.copyWith(hasPermission: result.isGranted);
+
+      // Reset dismissal flag if permission granted
+      if (result.isGranted) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_kBannerDismissedKey, false);
+        state = state.copyWith(
+          hasPermission: true,
+          isBannerDismissed: false,
+        );
+      } else {
+        state = state.copyWith(hasPermission: false);
+      }
 
       // If dialog resulted in permanent denial, open Settings as fallback
       if (result.isPermanentlyDenied) {
