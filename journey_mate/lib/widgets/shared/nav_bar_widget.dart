@@ -162,36 +162,36 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
     final searchTabActive = widget.pageIsSearchResults;
     final accountTabActive = !widget.pageIsSearchResults;
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: SafeArea(
-        child: Container(
-          width: double.infinity,
-          height: 70.0,
-          decoration: BoxDecoration(
-            color: AppColors.bgPage,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Search tab
-              _buildTabButton(
-                icon: Icons.search,
-                label: td(ref, 'm4kntw8r'), // "Search"
-                isActive: searchTabActive,
-                onTap: _onSearchTabTap,
-              ),
+    // No Align wrapper — Scaffold's bottomNavigationBar already positions at bottom.
+    // Align(bottomCenter) was causing the widget to expand to full screen height,
+    // leaving zero body space for the search results ListView.
+    return SafeArea(
+      child: Container(
+        width: double.infinity,
+        height: 70.0,
+        decoration: BoxDecoration(
+          color: AppColors.bgPage,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Search tab
+            _buildTabButton(
+              icon: Icons.search,
+              label: td(ref, 'm4kntw8r'), // "Search"
+              isActive: searchTabActive,
+              onTap: _onSearchTabTap,
+            ),
 
-              // Account tab
-              _buildTabButton(
-                icon: Icons.person,
-                label: td(ref, 'ykne5sdr'), // "Account"
-                isActive: accountTabActive,
-                onTap: _onAccountTabTap,
-              ),
-            ],
-          ),
+            // Account tab
+            _buildTabButton(
+              icon: Icons.person,
+              label: td(ref, 'ykne5sdr'), // "Account"
+              isActive: accountTabActive,
+              onTap: _onAccountTabTap,
+            ),
+          ],
         ),
       ),
     );

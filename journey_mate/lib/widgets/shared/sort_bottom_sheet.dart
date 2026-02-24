@@ -54,12 +54,14 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
         final filterLookupMap = state.filterLookupMap;
 
         // Get all filters with parent_id = 7 (Train Stations)
+        // Null-safe: some station entries may have null filter_name
         final stations = filterLookupMap.entries
             .where((entry) => entry.value['parent_id'] == _trainStationCategoryId)
             .map((entry) => {
                   'id': entry.key,
-                  'name': entry.value['filter_name'] as String,
+                  'name': (entry.value['filter_name'] as String?) ?? '',
                 })
+            .where((s) => (s['name'] as String).isNotEmpty)
             .toList();
 
         // Sort alphabetically by name

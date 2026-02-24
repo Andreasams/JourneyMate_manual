@@ -125,8 +125,8 @@ class _SearchResultsListViewState
     final showMatchSections = activeFilters.isNotEmpty;
 
     // List of businesses
-    // Wrapped in LayoutBuilder to fix Chrome web rendering issue
-    // (ListView inside Expanded needs explicit height constraints on web)
+    // LayoutBuilder kept for debug constraint logging.
+    // Parent Stack uses StackFit.expand to provide tight height constraints.
     return LayoutBuilder(
       builder: (context, constraints) {
         debugPrint('📐 [7] LISTVIEW LayoutBuilder: ${constraints.maxHeight}h × ${constraints.maxWidth}w');
@@ -146,41 +146,38 @@ class _SearchResultsListViewState
 
   /// Builds a flat list when no filters are active
   Widget _buildFlatList(List<dynamic> documents, BoxConstraints constraints) {
-    return SizedBox(
-      height: constraints.maxHeight,
-      child: ListView.separated(
-        padding: const EdgeInsets.only(bottom: 32.0),
-        itemCount: documents.length,
-        separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
-        itemBuilder: (context, index) {
-          debugPrint('📋 [8] ListView itemBuilder called for index=$index');
-          final businessData = documents[index];
-          final businessId = _getBusinessId(businessData);
+    return ListView.separated(
+      padding: const EdgeInsets.only(bottom: 32.0),
+      itemCount: documents.length,
+      separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
+      itemBuilder: (context, index) {
+        debugPrint('📋 [8] ListView itemBuilder called for index=$index');
+        final businessData = documents[index];
+        final businessId = _getBusinessId(businessData);
 
-          return _BusinessListItem(
-            key: ValueKey('business_$businessId'),
-            businessData: businessData,
-            userLocation: widget.userLocation,
-            matchVariant: 'none', // No match categorization
-            activeFilterCount: 0,
-            itemIndex: index,
-            statusText: _statusTextCache[businessId],
-            statusColor: _statusColorCache[businessId],
-            onStatusLoaded: (text, color) {
-              if (mounted) {
-                setState(() {
-                  _statusTextCache[businessId] = text;
-                  _statusColorCache[businessId] = color;
-                });
-              }
-            },
-            onBusinessTap: (id) {
-              _trackBusinessClick(id, index);
-              widget.onBusinessTap?.call(id);
-            },
-          );
-        },
-      ),
+        return _BusinessListItem(
+          key: ValueKey('business_$businessId'),
+          businessData: businessData,
+          userLocation: widget.userLocation,
+          matchVariant: 'none', // No match categorization
+          activeFilterCount: 0,
+          itemIndex: index,
+          statusText: _statusTextCache[businessId],
+          statusColor: _statusColorCache[businessId],
+          onStatusLoaded: (text, color) {
+            if (mounted) {
+              setState(() {
+                _statusTextCache[businessId] = text;
+                _statusColorCache[businessId] = color;
+              });
+            }
+          },
+          onBusinessTap: (id) {
+            _trackBusinessClick(id, index);
+            widget.onBusinessTap?.call(id);
+          },
+        );
+      },
     );
   }
 
@@ -239,12 +236,9 @@ class _SearchResultsListViewState
       }
     }
 
-    return SizedBox(
-      height: constraints.maxHeight,
-      child: ListView(
-        padding: const EdgeInsets.only(bottom: 32.0),
-        children: sections,
-      ),
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 32.0),
+      children: sections,
     );
   }
 

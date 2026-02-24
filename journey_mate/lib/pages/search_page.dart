@@ -450,6 +450,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             // Content with floating button
             Expanded(
               child: Stack(
+                fit: StackFit.expand,
                 children: [
                   // Search results list
                   _buildContent(),
@@ -748,27 +749,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return filterState.when(
       data: (state) {
         final counts = <int, int>{1: 0, 2: 0, 3: 0};
-        final filters = state.filtersForLanguage;
-
-        if (filters == null) return counts;
+        final lookupMap = state.filterLookupMap;
 
         for (final filterId in activeFilters) {
-          // Find which title this filter belongs to
-          for (final title in filters) {
-            for (final category in title.categories) {
-              // Check if filter is in items
-              if (category.items.any((item) => item.id == filterId)) {
-                counts[title.id] = (counts[title.id] ?? 0) + 1;
-                break;
-              }
-              // Check if filter is in sub-items
-              for (final item in category.items) {
-                if (item.subItems?.any((sub) => sub.id == filterId) ?? false) {
-                  counts[title.id] = (counts[title.id] ?? 0) + 1;
-                  break;
-                }
-              }
-            }
+          final titleId = _findTitleIdForFilter(filterId, lookupMap);
+          if (titleId != null) {
+            counts[titleId] = (counts[titleId] ?? 0) + 1;
           }
         }
 
@@ -777,6 +763,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       loading: () => {1: 0, 2: 0, 3: 0},
       error: (e, stack) => {1: 0, 2: 0, 3: 0},
     );
+  }
+
+  /// Traces a filter's parent chain up to find its title ID (1, 2, or 3).
+  int? _findTitleIdForFilter(int filterId, Map<int, dynamic> lookupMap) {
+    var current = lookupMap[filterId];
+    for (var i = 0; i < 10 && current != null; i++) {
+      final id = current['id'];
+      if (id == 1 || id == 2 || id == 3) return id as int;
+      final parentId = current['parent_id'];
+      if (parentId == null || !lookupMap.containsKey(parentId)) return null;
+      current = lookupMap[parentId];
+    }
+    return null;
   }
 
   void _openFilterOverlayAtTab(int tabIndex) {

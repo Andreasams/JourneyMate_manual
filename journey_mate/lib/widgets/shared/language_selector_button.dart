@@ -92,7 +92,9 @@ class _LanguageSelectorButtonState
 
   @override
   void dispose() {
-    _dismissOverlay();
+    // Clean up overlay entry directly without setState (widget is disposing)
+    _overlayEntry?.remove();
+    _overlayEntry = null;
     super.dispose();
   }
 
