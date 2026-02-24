@@ -216,4 +216,35 @@ class LocationNotifier extends Notifier<LocationState> {
       debugPrint('⚠️ Error opening app settings: $e');
     }
   }
+
+  /// Smart enable: shows permission dialog if first time, opens Settings if permanently denied
+  Future<void> enableLocation() async {
+    try {
+      final status = await ph.Permission.locationWhenInUse.status;
+
+      if (status.isGranted) {
+        // Already enabled — open settings for management
+        state = state.copyWith(hasPermission: true);
+        await ph.openAppSettings();
+        return;
+      }
+
+      if (status.isPermanentlyDenied) {
+        // User previously denied — dialog won't appear, must use Settings
+        await ph.openAppSettings();
+        return;
+      }
+
+      // First time or soft-denied — show native iOS permission dialog
+      final result = await ph.Permission.locationWhenInUse.request();
+      state = state.copyWith(hasPermission: result.isGranted);
+
+      // If dialog resulted in permanent denial, open Settings as fallback
+      if (result.isPermanentlyDenied) {
+        await ph.openAppSettings();
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error enabling location: $e');
+    }
+  }
 }

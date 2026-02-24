@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
-import '../../theme/app_radius.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
 import '../../services/analytics_service.dart';
@@ -192,13 +191,8 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
             ),
             const SizedBox(height: AppSpacing.xs),
 
-            // Status card
+            // Status card (tappable — handles permission request / settings)
             const LocationStatusCard(),
-
-            const SizedBox(height: AppSpacing.sm),
-
-            // Action button (state-dependent)
-            _buildLocationActionButton(),
 
             // Privacy note (only when disabled)
             if (!ref.watch(locationProvider).hasPermission) ...[
@@ -219,99 +213,4 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
     );
   }
 
-  // ============================================================
-  // HELPERS
-  // ============================================================
-
-  /// Builds state-dependent action button for location permission
-  Widget _buildLocationActionButton() {
-    final hasPermission = ref.watch(locationProvider).hasPermission;
-
-    if (!hasPermission) {
-      // STATE 1: Location OFF → Orange CTA button
-      return SizedBox(
-        width: double.infinity,
-        height: 50,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accent,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.button),
-            ),
-          ),
-          onPressed: () async {
-            // Track analytics
-            final analytics = AnalyticsService.instance;
-            ApiService.instance.postAnalytics(
-              eventType: 'location_enable_tapped',
-              deviceId: analytics.deviceId ?? '',
-              sessionId: analytics.currentSessionId ?? '',
-              userId: analytics.userId ?? '',
-              timestamp: DateTime.now().toIso8601String(),
-              eventData: {'source': 'localization_page'},
-            ).catchError((_) => ApiCallResponse.failure('Analytics failed'));
-
-            // Request location permission (shows iOS permission dialog)
-            await ref.read(locationProvider.notifier).requestPermission();
-          },
-          child: Text(
-            td(ref, '3r57tlpr'), // "Turn on location sharing"
-            style: AppTypography.button,
-          ),
-        ),
-      );
-    } else {
-      // STATE 2: Location ON → Bordered secondary button
-      return SizedBox(
-        width: double.infinity,
-        height: 50,
-        child: OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            foregroundColor: AppColors.textSecondary,
-            side: BorderSide(
-              color: AppColors.border,
-              width: 1.5,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.button),
-            ),
-          ),
-          onPressed: () {
-            // Track analytics
-            final analytics = AnalyticsService.instance;
-            ApiService.instance.postAnalytics(
-              eventType: 'location_manage_tapped',
-              deviceId: analytics.deviceId ?? '',
-              sessionId: analytics.currentSessionId ?? '',
-              userId: analytics.userId ?? '',
-              timestamp: DateTime.now().toIso8601String(),
-              eventData: {'source': 'localization_page'},
-            ).catchError((_) => ApiCallResponse.failure('Analytics failed'));
-
-            // Open system settings
-            ref.read(locationProvider.notifier).openSettings();
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                td(ref, 'location_button_manage'), // "Manage location settings"
-                style: AppTypography.button.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                size: 18,
-                color: AppColors.textTertiary,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-  }
 }
