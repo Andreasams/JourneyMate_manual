@@ -98,13 +98,18 @@ Static assets not directly used in the app but part of the project.
 ---
 
 ### `/config/` — Configuration & Keys
-Sensitive configuration files and API keys.
+Sensitive configuration files and API keys (local only, not in git).
 
 **Path:** `config/`
 **Contents:**
-- `AuthKey_NXG563P998.p8` — Apple App Store Connect API key
+- `AuthKey_NXG563P998.p8` — Apple App Store Connect API key (local only)
+- `README.md` — Setup instructions (tracked in git)
 
-**⚠️ Security:** This directory should be in `.gitignore` for production projects
+**⚠️ Security:**
+- This directory is in `.gitignore` (except README.md)
+- All sensitive files are excluded from version control
+- Never commit API keys, certificates, or secrets
+- See `config/README.md` for setup instructions
 
 ---
 
@@ -155,7 +160,7 @@ The following files were reorganized:
 | `PAGE_CONSISTENCY_ANALYSIS.md` | `_reference/PAGE_CONSISTENCY_ANALYSIS.md` | Reference document |
 | `journeymate_mascot.png` | `assets/journeymate_mascot.png` | Static asset |
 | `placefindr_launcher_icon_transparent_warm_beige.png` | `assets/placefindr_launcher_icon_transparent_warm_beige.png` | Static asset |
-| `AuthKey_NXG563P998.p8` | `config/AuthKey_NXG563P998.p8` | Configuration file |
+| `AuthKey_NXG563P998.p8` | `config/AuthKey_NXG563P998.p8` (local only, not in git) | Sensitive configuration |
 
 ---
 
@@ -184,9 +189,9 @@ The following files were reorganized:
 - Reference specs → `_reference/_buildship/` or `_reference/_supabase/`
 - Historical docs → `_reference/archive/`
 - Analysis reports → `_reference/`
-- Development images → `development_images/`
+- Development images → `images_for_debugging/` (ignored by git)
 - Static assets → `assets/`
-- Config/keys → `config/` (and add to `.gitignore`)
+- Config/keys → `config/` (always ignored by git, except README.md)
 
 **Keep root clean:** Only essential docs that Claude Code needs frequently should be in root.
 

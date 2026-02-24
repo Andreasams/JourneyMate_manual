@@ -24,12 +24,24 @@ Thumbs.db
 # Development/debugging images (manual reference only)
 images_for_debugging/
 
+# Sensitive configuration - DO NOT COMMIT
+config/*
+!config/README.md
+*.p8
+*.pem
+*.key
+.env
+.env.*
+secrets/
+credentials/
+
+# API keys and tokens
+**/api_keys.dart
+**/secrets.dart
+
 # Temporary/local development files
 *.tmp
 *.log
-
-# Note: config/AuthKey_NXG563P998.p8 is tracked in Git (already committed)
-# If you need to remove it from history, use git-filter-repo or BFG Repo-Cleaner
 
 # Note: The following ARE tracked in Git (guidance and reference docs):
 #  - CLAUDE.md (session instructions)
