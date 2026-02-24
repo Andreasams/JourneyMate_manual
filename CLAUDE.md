@@ -96,6 +96,7 @@ Before every commit:
 - [ ] Design tokens: All colors/spacing/typography from `App*` classes (no raw hex/numbers)
 - [ ] Color semantics: Orange for CTAs only, green for match confirmation only
 - [ ] State: No FFAppState, page-local state in widgets not providers, all text via `td(ref, key)`
+- [ ] Shared sources: Check theme (app_theme.dart) and shared widgets (lib/widgets/shared/) before modifying individual pages
 - [ ] Quality: `flutter analyze` clean, no unaddressed TODOs
 
 ---

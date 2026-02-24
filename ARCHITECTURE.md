@@ -1026,21 +1026,23 @@ class _MyWidgetState extends ConsumerState<MyWidget> {
 
 ---
 
-### Pitfall #12: Checking Individual Implementations Before Theme Configuration
+### Pitfall #12: Fixing Individual Implementations Before Checking Shared Source
 
-**Problem:** When encountering a UI styling issue (colors, spacing, AppBar behavior, button styles), developers might search for individual widget implementations and attempt to fix each one separately, missing the centralized theme configuration.
+**Problem:** When encountering UI issues (styling, spacing, positioning), developers might modify multiple individual page implementations instead of fixing the shared source (theme configuration or shared component).
 
 **Why it happens:**
-- Bottom-up search pattern: Grep for "AppBar" finds 10+ page files with explicit AppBar definitions
-- Individual properties (backgroundColor, elevation) look like custom overrides, not theme reliance
-- Mental model treats UI elements as standalone widgets instead of theme-styled components
+- Bottom-up search pattern finds individual implementations first
+- Mental model treats UI elements as standalone per page
+- Missing awareness of centralized theme or shared components in `lib/theme/` and `lib/widgets/shared/`
 
 **Impact:**
-- Wasted effort modifying 10+ files when 1 theme change would suffice
+- Wasted effort modifying N files when 1 fix would suffice
 - Inconsistent fixes (easy to miss files)
-- Duplication of styling code
+- Duplication of code
 
-**Example:** Material 3 orange tint when scrolling (commit `c97e48d`)
+---
+
+#### Case A: AppBar Styling (commit `c97e48d`)
 
 ❌ **Bad Approach** (bottom-up):
 ```dart
@@ -1078,13 +1080,46 @@ appBarTheme: AppBarTheme(
 ),
 ```
 
-**Rule:** For ANY styling issue, always check theme configuration FIRST before modifying individual implementations.
+---
+
+#### Case B: Bottom Navigation Positioning (commit `4fad9e5`)
+
+❌ **Bad Approach** (per-page customization):
+```dart
+// Settings page — custom navbar wrapper causing spacing bug
+return Scaffold(
+  body: SafeArea(
+    child: Stack(
+      children: [
+        Padding(padding: EdgeInsets.fromLTRB(20, 40, 20, 80), ...),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: const NavBarWidget(...), // ← Custom positioning wrapper
+        ),
+      ],
+    ),
+  ),
+);
+```
+
+✅ **Correct Approach** (shared component):
+```dart
+// Search + Settings pages — identical usage of shared component
+return Scaffold(
+  body: SafeArea(...),
+  bottomNavigationBar: const NavBarWidget(...), // ← Shared component, no wrappers
+);
+```
+
+---
+
+**Rule:** For ANY UI issue, always check shared sources FIRST before modifying individual pages.
 
 **Workflow:**
-1. ✅ **First**: Check `journey_mate/lib/theme/app_theme.dart` for centralized theme (ThemeData)
-2. ✅ **Second**: Verify which properties are theme-controlled vs. widget-specific
-3. ✅ **Third**: If theme-level fix possible, apply there (affects all widgets automatically)
-4. ✅ **Last**: Only modify individual widgets if truly custom behavior needed
+1. ✅ **First**: Check `lib/theme/app_theme.dart` for centralized theme (ThemeData)
+2. ✅ **Second**: Check `lib/widgets/shared/` for shared components
+3. ✅ **Third**: If fix needed, modify theme/shared component (affects all pages)
+4. ✅ **Last**: Only modify individual pages if truly page-specific behavior needed
 
 **Theme-controlled UI elements:**
 - AppBar: `ThemeData.appBarTheme` (backgroundColor, elevation, surfaceTintColor, scrolledUnderElevation, titleTextStyle)
@@ -1094,9 +1129,14 @@ appBarTheme: AppBarTheme(
 - Checkbox: `ThemeData.checkboxTheme` (fillColor, side)
 - BottomSheet: `ThemeData.bottomSheetTheme` (backgroundColor, shape)
 
-**Common in:** All pages with AppBars, forms with inputs, pages with buttons/cards.
+**Shared components:**
+- NavBarWidget (bottom navigation), FilterOverlayWidget, ContactUsFormWidget, FeedbackFormWidget, SelectedFiltersBtns
 
-**Reference:** See commit `c97e48d` — "fix: remove Material 3 orange tint from AppBar when scrolling"
+**Common in:** All pages with AppBars, bottom navigation, forms, inputs, buttons, cards.
+
+**References:**
+- Commit `c97e48d` — "fix: remove Material 3 orange tint from AppBar when scrolling"
+- Commit `4fad9e5` — "fix: align navbar spacing on search and settings pages"
 
 ---
 
