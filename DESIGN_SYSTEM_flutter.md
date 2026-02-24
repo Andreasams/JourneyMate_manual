@@ -128,6 +128,7 @@ const SizedBox(height: AppSpacing.sm)  // 8px
 | Constant | Value | Usage |
 |----------|-------|-------|
 | `AppRadius.chip` | 8px | Small chips, tags |
+| `AppRadius.checkbox` | 5px | Filter checkboxes (columns 2 & 3) |
 | `AppRadius.facility` | 9px | Facility/payment badges |
 | `AppRadius.filter` | 10px | Filter buttons, gallery inner corners |
 | `AppRadius.input` | 12px | **Input fields** (most common) |

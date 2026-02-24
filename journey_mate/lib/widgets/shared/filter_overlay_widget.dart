@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_constants.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_spacing.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../services/api_service.dart';
@@ -1550,7 +1552,13 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       );
     }
 
-    // Standard rendering for non-selected categories and all other columns
+    // Checkbox rendering for columns 2 and 3
+    if (filterType == 'item' || filterType == 'sub_item') {
+      return _buildFilterItemWithCheckbox(
+          filter, filterType, isSelected, isActive, displayText);
+    }
+
+    // Standard rendering for non-selected categories
     return GestureDetector(
       onTap: isActive ? () => _handleFilterSelection(filter) : null,
       child: Container(
@@ -1561,6 +1569,71 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         child: Text(
           displayText,
           style: _getFilterTextStyle(isSelected, isActive),
+        ),
+      ),
+    );
+  }
+
+  /// Builds filter item with checkbox for columns 2 (item) and 3 (sub_item).
+  ///
+  /// Checkbox size: 18×18px (same for both columns)
+  /// Border radius: 5px (same for both columns)
+  /// Gaps: 8px (col 2), 7px (col 3)
+  /// Checkmark size: 11px
+  Widget _buildFilterItemWithCheckbox(
+    dynamic filter,
+    String filterType,
+    bool isSelected,
+    bool isActive,
+    String displayText,
+  ) {
+    final isItemColumn = filterType == 'item';
+    const checkboxSize = 18.0; // Same size for both columns
+    const checkboxRadius = AppRadius.checkbox; // 5px for both
+    final checkboxGap = isItemColumn ? AppSpacing.sm : 7.0; // 8px : 7px
+    const checkIconSize = 11.0; // Same size for both
+
+    return GestureDetector(
+      onTap: isActive ? () => _handleFilterSelection(filter) : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: _itemPaddingHorizontal,
+          vertical: 15, // Increased from 12 for 48px tap target
+        ),
+        child: Row(
+          children: [
+            // Custom checkbox (Container-based, like sort_bottom_sheet.dart)
+            Container(
+              width: checkboxSize,
+              height: checkboxSize,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? (isActive ? _accentColor : _textDisabledColor)
+                    : _whiteColor,
+                border: isSelected
+                    ? null
+                    : Border.all(
+                        color: isActive
+                            ? const Color(0xFFCCCCCC) // #ccc from JSX
+                            : _textDisabledColor,
+                        width: 1.5,
+                      ),
+                borderRadius: BorderRadius.circular(checkboxRadius),
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check,
+                      size: checkIconSize, color: _whiteColor)
+                  : null,
+            ),
+            SizedBox(width: checkboxGap),
+            // Label text (existing styling)
+            Expanded(
+              child: Text(
+                displayText,
+                style: _getFilterTextStyle(isSelected, isActive),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -5,6 +5,9 @@ class AppRadius {
   /// 7-8px - Chips
   static const double chip = 8.0;
 
+  /// 5px - Checkbox (filter columns 2 & 3)
+  static const double checkbox = 5.0;
+
   /// 9px - Facilities/payments
   static const double facility = 9.0;
 
