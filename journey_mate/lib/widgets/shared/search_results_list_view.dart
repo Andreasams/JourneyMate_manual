@@ -423,6 +423,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   String? _statusText;
   Color? _statusColor;
   bool _isExpanded = false;
+  final PageController _galleryPageController = PageController();
+  int _currentGalleryPage = 0;
 
   // ---------------------------------------------------------------------------
   // Constants
@@ -465,6 +467,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   int? get _matchCount => _getField<int>('matchCount');
   List<dynamic>? get _missedFilters => _getField<List<dynamic>>('missedFilters');
   List<dynamic>? get _photos => _getField<List<dynamic>>('photos');
+  List<dynamic>? get _galleryImages => _getField<List<dynamic>>('gallery_images');
 
   String? get _businessType {
     final languageCode = Localizations.localeOf(context).languageCode;
@@ -514,6 +517,12 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadStatus());
     }
+  }
+
+  @override
+  void dispose() {
+    _galleryPageController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadStatus() async {
@@ -851,9 +860,9 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         // Today's hours
         _buildTodayHours(),
         const SizedBox(height: 12),
-        // Photo grid
-        if (_photos != null && _photos!.isNotEmpty) _buildPhotoGrid(),
-        if (_photos != null && _photos!.isNotEmpty) const SizedBox(height: 12),
+        // Swipeable gallery
+        if (_galleryImages != null && _galleryImages!.isNotEmpty) _buildSwipeableGallery(),
+        if (_galleryImages != null && _galleryImages!.isNotEmpty) const SizedBox(height: 12),
         // "See more" button
         _buildSeeMoreButton(),
       ],
@@ -971,44 +980,72 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     return time;
   }
 
-  Widget _buildPhotoGrid() {
-    final photos = _photos!;
-    final displayPhotos = photos.take(8).toList(); // Max 8 photos per JSX
+  Widget _buildSwipeableGallery() {
+    final galleryImages = _galleryImages!;
+    final displayImages = galleryImages.take(12).toList(); // Max 12 images
 
-    return SizedBox(
-      height: 60,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: displayPhotos.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 4),
-        itemBuilder: (context, index) {
-          final photoUrl = displayPhotos[index] is String
-              ? displayPhotos[index] as String
-              : displayPhotos[index]['url'] as String?;
+    return Column(
+      children: [
+        SizedBox(
+          height: 200, // Taller than JSX's 60px for better swipe UX
+          child: PageView.builder(
+            controller: _galleryPageController,
+            onPageChanged: (index) {
+              if (mounted) {
+                setState(() {
+                  _currentGalleryPage = index;
+                });
+              }
+            },
+            itemCount: displayImages.length,
+            itemBuilder: (context, index) {
+              final imageUrl = displayImages[index] is String
+                  ? displayImages[index] as String
+                  : displayImages[index]['url'] as String?;
 
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              photoUrl ?? _placeholderImageUrl,
-              width: 80,
-              height: 60,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 80,
-                  height: 60,
-                  color: AppColors.border,
-                  child: Icon(
-                    Icons.image_not_supported,
-                    color: AppColors.textTertiary,
-                    size: 24,
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    imageUrl ?? _placeholderImageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: AppColors.border,
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: AppColors.textTertiary,
+                          size: 32,
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Page indicators (dots)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            displayImages.length,
+            (index) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _currentGalleryPage == index
+                    ? AppColors.accent
+                    : const Color(0xFFd0d0d0),
+              ),
             ),
-          );
-        },
-      ),
+          ),
+        ),
+      ],
     );
   }
 
