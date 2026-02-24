@@ -133,6 +133,9 @@ class _AppSettingsInitiateFlowPageState
 
       debugPrint('🔧 Setup: Fetching search results for $languageCode...');
 
+      // Save notifier before async operations (safe even if widget unmounted)
+      final searchNotifier = ref.read(searchStateProvider.notifier);
+
       // Get user location (optional, with timeout)
       String? userLocation;
       try {
@@ -174,7 +177,8 @@ class _AppSettingsInitiateFlowPageState
 
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
-        ref.read(searchStateProvider.notifier).updateSearchResults(
+        // Use saved notifier (safe even if widget unmounted)
+        searchNotifier.updateSearchResults(
           response.jsonBody,
           resultCount,
         );
