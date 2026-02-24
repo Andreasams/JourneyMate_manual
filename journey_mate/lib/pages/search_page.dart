@@ -440,7 +440,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   translationsCache: translationsCache,
                 ),
                 loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               ),
 
             // Spacing after selected filters (if shown)
@@ -773,7 +773,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           return td(ref, 'sort_station');
         },
         loading: () => td(ref, 'sort_station'),
-        error: (_, __) => td(ref, 'sort_station'),
+        error: (_, _) => td(ref, 'sort_station'),
       );
     }
     return td(ref, 'sort_$_currentSort');

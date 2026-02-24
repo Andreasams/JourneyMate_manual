@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -252,17 +253,29 @@ final translationsCacheProvider =
 });
 
 class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
+  static const int _cacheDurationDays = 7; // Cache translations for 7 days
+
   @override
   Map<String, String> build() => {};
 
+  /// Synchronously initialize from cached translations (called at startup)
+  void initializeFromPrefs(Map<String, String> cachedTranslations) {
+    state = cachedTranslations;
+  }
+
   /// Loads translations from BuildShip for a specific language
+  /// Saves to SharedPreferences cache after successful fetch
   Future<void> loadTranslations(String languageCode) async {
     try {
       final response =
           await ApiService.instance.getUiTranslations(languageCode: languageCode);
 
       if (response.succeeded && response.jsonBody is Map) {
-        state = Map<String, String>.from(response.jsonBody);
+        final translations = Map<String, String>.from(response.jsonBody);
+        state = translations;
+
+        // Save to cache for next launch
+        _saveToCache(languageCode, translations);
       } else {
         debugPrint('⚠️ Failed to load translations for $languageCode');
         state = {};
@@ -270,6 +283,63 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
     } catch (e) {
       debugPrint('⚠️ Error loading translations: $e');
       state = {};
+    }
+  }
+
+  /// Save translations to SharedPreferences cache
+  Future<void> _saveToCache(String languageCode, Map<String, String> translations) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Convert map to JSON string using dart:convert
+      final jsonString = jsonEncode(translations);
+
+      await prefs.setString('translations_$languageCode', jsonString);
+      await prefs.setInt('translations_${languageCode}_timestamp', DateTime.now().millisecondsSinceEpoch);
+
+      debugPrint('✅ Cached ${translations.length} translations for $languageCode');
+    } catch (e) {
+      debugPrint('⚠️ Failed to cache translations: $e');
+      // Non-critical error - continue without caching
+    }
+  }
+
+  /// Check if cached translations exist and are fresh (< 7 days old)
+  static Future<bool> isCacheFresh(String languageCode) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final timestamp = prefs.getInt('translations_${languageCode}_timestamp');
+
+      if (timestamp == null) return false;
+
+      final cacheAge = DateTime.now().millisecondsSinceEpoch - timestamp;
+      final cacheDuration = Duration(days: _cacheDurationDays).inMilliseconds;
+
+      return cacheAge < cacheDuration;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Load cached translations from SharedPreferences (if available)
+  static Future<Map<String, String>> loadFromCache(String languageCode) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedJson = prefs.getString('translations_$languageCode');
+
+      if (cachedJson == null || cachedJson.isEmpty) {
+        return {};
+      }
+
+      // Parse JSON using dart:convert
+      final decoded = jsonDecode(cachedJson);
+      final translations = Map<String, String>.from(decoded as Map);
+
+      debugPrint('✅ Loaded ${translations.length} cached translations for $languageCode');
+      return translations;
+    } catch (e) {
+      debugPrint('⚠️ Failed to load cached translations: $e');
+      return {};
     }
   }
 

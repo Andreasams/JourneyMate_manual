@@ -11,27 +11,31 @@ import 'providers/locale_provider.dart';
 import 'widgets/app_lifecycle_observer.dart';
 import 'widgets/activity_scope.dart';
 
-/// Main entry point — optimized for fast startup.
+/// Main entry point — optimized for fast startup with translation caching.
 ///
-/// Strategy: Show welcome page in <200ms by deferring network calls.
+/// Strategy: Show welcome page in <200ms with cached translations loaded instantly.
 /// 1. Single SharedPreferences.getInstance() call
-/// 2. Batch-read all stored keys
+/// 2. Batch-read all stored keys + cached translations (7-day cache)
 /// 3. AnalyticsService.initializeWithPrefs() (only async: UUID write on first launch)
-/// 4. Synchronous provider initialization (no awaits)
-/// 5. runApp() — user sees welcome page
-/// 6. Background: load translations + filters, check location
+/// 4. Synchronous provider initialization (cached translations shown immediately)
+/// 5. runApp() — user sees welcome page with full translations
+/// 6. Background: refresh translations if stale (>7 days), load filters, check location
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ── 1. Single SharedPreferences load ──
   final prefs = await SharedPreferences.getInstance();
 
-  // ── 2. Batch-read all stored keys ──
+  // ── 2. Batch-read all stored keys + cached translations ──
   final storedLanguage = prefs.getString('user_language_code') ?? 'en';
   final storedCurrency = prefs.getString('user_currency_code') ?? 'DKK';
   final isBoldText = prefs.getBool('is_bold_text_enabled') ?? false;
   final fontScale = prefs.getDouble('font_scale') ?? 1.0;
   final isBannerDismissed = prefs.getBool('location_banner_dismissed') ?? false;
+
+  // Load cached translations from SharedPreferences (if available)
+  final cachedTranslations = await TranslationsCacheNotifier.loadFromCache(storedLanguage);
+  final isCacheFresh = await TranslationsCacheNotifier.isCacheFresh(storedLanguage);
 
   // ── 3. Initialize AnalyticsService (only async op: UUID write on first launch) ──
   await AnalyticsService.instance.initializeWithPrefs(prefs);
@@ -61,6 +65,10 @@ void main() async {
     isBannerDismissed: isBannerDismissed,
   );
 
+  container.read(translationsCacheProvider.notifier).initializeFromPrefs(
+    cachedTranslations,
+  );
+
   // ── 5. Register lifecycle observer ──
   final appObserver = AppLifecycleObserver(container: container);
   WidgetsBinding.instance.addObserver(appObserver);
@@ -75,8 +83,8 @@ void main() async {
     ),
   );
 
-  // ── 7. Background: load translations + filters (fire-and-forget with retry) ──
-  unawaited(_loadAppDataInBackground(container, storedLanguage));
+  // ── 7. Background: refresh translations + load filters (skip translations if cache is fresh) ──
+  unawaited(_loadAppDataInBackground(container, storedLanguage, isCacheFresh));
 
   // ── 8. Background: check location permission + service status ──
   unawaited(container.read(locationProvider.notifier).checkPermission());
@@ -86,24 +94,31 @@ void main() async {
 }
 
 /// Loads translations and filters in the background with retry logic.
-/// App is already visible — td() returns key IDs as fallback until loaded.
+/// App is already visible — cached translations are shown immediately.
+/// [skipTranslations] - If true, skip translation refresh (cache is fresh)
 Future<void> _loadAppDataInBackground(
   ProviderContainer container,
   String languageCode,
+  bool skipTranslations,
 ) async {
   const maxAttempts = 3;
   const retryDelay = Duration(seconds: 2);
 
   for (int attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      debugPrint('🔄 Loading translations + filters (attempt $attempt/$maxAttempts)');
+      if (skipTranslations) {
+        debugPrint('🔄 Loading filters (translations cached, skipping refresh)');
+        await container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode)
+            .timeout(const Duration(seconds: 10));
+      } else {
+        debugPrint('🔄 Loading translations + filters (attempt $attempt/$maxAttempts)');
+        await Future.wait([
+          container.read(translationsCacheProvider.notifier).loadTranslations(languageCode),
+          container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode),
+        ]).timeout(const Duration(seconds: 10));
+      }
 
-      await Future.wait([
-        container.read(translationsCacheProvider.notifier).loadTranslations(languageCode),
-        container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode),
-      ]).timeout(const Duration(seconds: 10));
-
-      debugPrint('✅ Translations + filters loaded successfully');
+      debugPrint('✅ Background data loaded successfully');
       return; // Success
     } catch (e) {
       debugPrint('⚠️ Attempt $attempt failed: $e');
@@ -112,7 +127,7 @@ Future<void> _loadAppDataInBackground(
         debugPrint('⏳ Waiting ${retryDelay.inSeconds}s before retry...');
         await Future.delayed(retryDelay);
       } else {
-        debugPrint('⚠️ All attempts failed — app functional with key ID fallback');
+        debugPrint('⚠️ All attempts failed — app functional with cached data');
       }
     }
   }
