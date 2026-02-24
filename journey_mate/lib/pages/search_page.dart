@@ -442,7 +442,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   AppSpacing.lg,
                   AppSpacing.md,
                   AppSpacing.lg,
-                  AppSpacing.xs,
+                  AppSpacing.md,
                 ),
                 child: _buildLocationBanner(),
               ),
