@@ -984,68 +984,45 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final galleryImages = _galleryImages!;
     final displayImages = galleryImages.take(12).toList(); // Max 12 images
 
-    return Column(
-      children: [
-        SizedBox(
-          height: 200, // Taller than JSX's 60px for better swipe UX
-          child: PageView.builder(
-            controller: _galleryPageController,
-            onPageChanged: (index) {
-              if (mounted) {
-                setState(() {
-                  _currentGalleryPage = index;
-                });
-              }
-            },
-            itemCount: displayImages.length,
-            itemBuilder: (context, index) {
-              final imageUrl = displayImages[index] is String
-                  ? displayImages[index] as String
-                  : displayImages[index]['url'] as String?;
+    return SizedBox(
+      height: 100,
+      child: PageView.builder(
+        controller: _galleryPageController,
+        onPageChanged: (index) {
+          if (mounted) {
+            setState(() {
+              _currentGalleryPage = index;
+            });
+          }
+        },
+        itemCount: displayImages.length,
+        itemBuilder: (context, index) {
+          final imageUrl = displayImages[index] is String
+              ? displayImages[index] as String
+              : displayImages[index]['url'] as String?;
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    imageUrl ?? _placeholderImageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: AppColors.border,
-                        child: Icon(
-                          Icons.image_not_supported,
-                          color: AppColors.textTertiary,
-                          size: 32,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 8),
-        // Page indicators (dots)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            displayImages.length,
-            (index) => Container(
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _currentGalleryPage == index
-                    ? AppColors.accent
-                    : const Color(0xFFd0d0d0),
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                imageUrl ?? _placeholderImageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: AppColors.border,
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: AppColors.textTertiary,
+                      size: 32,
+                    ),
+                  );
+                },
               ),
             ),
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 
