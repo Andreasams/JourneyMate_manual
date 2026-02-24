@@ -49,10 +49,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   // Sort state
   String _currentSort = 'match';
   bool _onlyOpen = false;
+  int? _selectedStation;
   String _viewMode = 'liste'; // 'liste' or 'kort'
 
   // Filter overlay state
   int _activeFilterTab = 0;
+  bool _isFilterSheetOpen = false;
 
   @override
   void initState() {
@@ -226,6 +228,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     if (!mounted) return;
 
+    setState(() => _isFilterSheetOpen = true);
+
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -305,6 +309,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         },
       ),
     );
+
+    // Reset state when sheet closes
+    if (mounted) {
+      setState(() => _isFilterSheetOpen = false);
+    }
   }
 
   Widget _buildSheetHandle() {
@@ -349,12 +358,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       builder: (context) => SortBottomSheet(
         currentSort: _currentSort,
         onlyOpen: _onlyOpen,
-        selectedStation: null,
+        selectedStation: _selectedStation,
         openPlacesCount: openPlacesCount,
         onSortChanged: (sortBy, onlyOpen, station) {
           setState(() {
             _currentSort = sortBy;
             _onlyOpen = onlyOpen;
+            _selectedStation = station;
           });
           // Save search text to local variable to avoid ref access after unmount
           final searchText = ref.read(searchStateProvider).currentSearchText;
@@ -391,7 +401,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             Padding(
               padding: EdgeInsets.fromLTRB(
                 AppSpacing.xl, // 20px per JSX
-                AppSpacing.xsm, // 6px (was 4px xs, now 6px for more space)
+                8, // 8px (increased from 6px for better visibility)
                 AppSpacing.xl, // 20px per JSX
                 0,
               ),
@@ -423,10 +433,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
             // Selected filters chips
             if (searchState.filtersUsedForSearch.isNotEmpty)
-              SelectedFiltersBtns(
-                filters: searchState.filtersUsedForSearch,
-                languageCode: Localizations.localeOf(context).languageCode,
-                translationsCache: translationsCache,
+              filterState.when(
+                data: (state) => SelectedFiltersBtns(
+                  filters: state.filtersForLanguage,
+                  languageCode: Localizations.localeOf(context).languageCode,
+                  translationsCache: translationsCache,
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
               ),
 
             // Spacing after selected filters (if shown)
@@ -562,7 +576,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         final translationKey = category['translationKey'] as String;
         final label = td(ref, translationKey);
         final count = filterCounts[titleId] ?? 0;
-        final isActive = _activeFilterTab == (titleId - 1);
+        final isActive = _isFilterSheetOpen && _activeFilterTab == (titleId - 1);
 
         return Expanded(
           child: Padding(
@@ -721,11 +735,15 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   color: Colors.white,
                 ),
                 SizedBox(width: 5),
-                Text(
-                  td(ref, 'sort_$_currentSort'),
-                  style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+                Flexible(
+                  child: Text(
+                    _getSortButtonText(),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
               ],
@@ -734,6 +752,31 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
       ),
     );
+  }
+
+  /// Get text for sort button - shows station name when station sort is active
+  String _getSortButtonText() {
+    if (_currentSort == 'station' && _selectedStation != null) {
+      // Get station name from filter provider
+      final filterState = ref.read(filterProvider);
+      return filterState.when(
+        data: (state) {
+          final filterLookupMap = state.filterLookupMap;
+          final stationData = filterLookupMap[_selectedStation];
+          if (stationData != null) {
+            final stationName = (stationData['name'] as String?) ??
+                               (stationData['filter_name'] as String?) ??
+                               td(ref, 'sort_station');
+            // Use translation key that will be updated in Supabase
+            return '${td(ref, 'sort_station')}: $stationName';
+          }
+          return td(ref, 'sort_station');
+        },
+        loading: () => td(ref, 'sort_station'),
+        error: (_, __) => td(ref, 'sort_station'),
+      );
+    }
+    return td(ref, 'sort_$_currentSort');
   }
 
   Map<int, int> _calculateFilterCounts(

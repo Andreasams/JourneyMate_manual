@@ -87,7 +87,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.62,
+      height: MediaQuery.of(context).size.height * 0.65,
       decoration: BoxDecoration(
         color: AppColors.bgCard,
         borderRadius: BorderRadius.vertical(
@@ -116,7 +116,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               // Only show "Nearest" if location is available
               if (hasLocation)
                 _buildSortOption('nearest', 'sort_nearest'),
-              _buildSortOptionWithSubmenu('station', 'sort_station'),
+              _buildSortOptionWithSubmenu('station', 'sort_station', widget.selectedStation),
               _buildSortOption('price_low', 'sort_price_low'),
               _buildSortOption('price_high', 'sort_price_high'),
               _buildSortOption('newest', 'sort_newest'),
@@ -310,17 +310,34 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     );
   }
 
-  Widget _buildSortOptionWithSubmenu(String sortKey, String translationKey) {
+  Widget _buildSortOptionWithSubmenu(String sortKey, String translationKey, int? selectedStationId) {
     final isSelected = _selectedSort == sortKey;
+
+    // Get station name if a station is selected
+    String displayText = td(ref, translationKey);
+    if (selectedStationId != null) {
+      final trainStations = _getTrainStations();
+      final selectedStation = trainStations.firstWhere(
+        (s) => s['id'] == selectedStationId,
+        orElse: () => {},
+      );
+      if (selectedStation.isNotEmpty) {
+        final stationName = selectedStation['name'] as String;
+        displayText = '${td(ref, translationKey)}: $stationName';
+      }
+    }
+
     return Container(
       color: isSelected ? AppColors.bgSurface : Colors.transparent,
       child: ListTile(
         title: Text(
-          td(ref, translationKey),
+          displayText,
           style: AppTypography.bodyRegular.copyWith(
             color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
         ),
         trailing: Icon(
           Icons.chevron_right,

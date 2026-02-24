@@ -137,10 +137,10 @@ class AppTypography {
     height: 1.2,
   );
 
-  /// Filter tab - Filter panel tabs (14px, weight 500)
+  /// Filter tab - Filter panel tabs (16px, weight 600)
   static const TextStyle filterTab = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
     color: AppColors.textSecondary,
     height: 1.3,
   );

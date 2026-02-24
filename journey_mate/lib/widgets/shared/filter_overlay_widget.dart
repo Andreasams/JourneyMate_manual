@@ -1084,7 +1084,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [
-          _buildHeader(),
           _buildFilterColumns(),
           _buildFooter(),
         ],
