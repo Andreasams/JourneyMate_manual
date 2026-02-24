@@ -517,6 +517,86 @@ ApiService.instance.clearCache(); // Clears all cached responses
 
 ---
 
+## Pre-Loading Architecture
+
+JourneyMate uses **pre-loading** to make the Search page feel instant. Search results are fetched on previous pages (Welcome, Settings, App Setup Flow), stored in global state, then displayed immediately when Search page loads.
+
+### Pattern
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Welcome/Settings/Setup Page                                  │
+│   ↓                                                          │
+│ User triggers action (Continue, language change, etc.)      │
+│   ↓                                                          │
+│ Save notifier = ref.read(searchStateProvider.notifier)      │ ← CRITICAL: Before async
+│   ↓                                                          │
+│ Navigate to Search Page immediately                         │
+│   ↓                                                          │
+│ Background: await ApiService.instance.search(...)           │ ← Widget unmounts here
+│   ↓                                                          │
+│ searchNotifier.updateSearchResults(...)                     │ ← Still works!
+│   └──> Updates GLOBAL searchStateProvider                   │
+│                                                              │
+├─────────────────────────────────────────────────────────────┤
+│ Search Page (loads)                                          │
+│   ↓                                                          │
+│ ref.watch(searchStateProvider)                              │ ← Reads global state
+│   ↓                                                          │
+│ Shows results OR shimmer if still loading                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Implementation
+
+**Pages that pre-load:**
+- `welcome_page.dart` - 3 functions (returning users, Danish direct, background fetch)
+- `settings_main_page.dart` - 1 function (entering settings)
+- `app_settings_initiate_flow_page.dart` - 1 function (language selection)
+
+**Safe async pattern:**
+```dart
+Future<void> _preFetchSearchResults() async {
+  try {
+    // 1. Save notifier BEFORE async operations
+    final searchNotifier = ref.read(searchStateProvider.notifier);
+
+    // 2. Check if cache is fresh (avoid redundant calls)
+    if (searchNotifier.isCacheFresh()) {
+      return;
+    }
+
+    // 3. Optional: Get user location (async)
+    final position = await Geolocator.getCurrentPosition(...);
+
+    // 4. Call search API (async)
+    final response = await ApiService.instance.search(...);
+
+    // 5. Update global state with saved notifier
+    //    Safe even if widget unmounted during steps 3-4
+    if (response.succeeded) {
+      searchNotifier.updateSearchResults(
+        response.jsonBody,
+        response.jsonBody['resultCount'],
+      );
+    }
+  } catch (e) {
+    // Fail silently - Search page will show shimmer
+  }
+}
+```
+
+**Key rules:**
+1. ✅ Save notifier with `ref.read()` BEFORE any `await`
+2. ✅ Use saved notifier variable, NOT `ref.read()` again after async
+3. ✅ Store in `searchStateProvider` (global state, persists across pages)
+4. ✅ Check `isCacheFresh()` to avoid redundant API calls
+5. ✅ Fail silently - Search page handles loading/error states
+
+**Why it works:** `searchStateProvider` is a `NotifierProvider` (global app-level state, like FFAppState in FlutterFlow). Updating it from a saved notifier reference works even after the originating widget unmounts.
+
+---
+
 ## Translation System
 
 ### Dynamic Translation Function: td(ref, key)
@@ -898,6 +978,37 @@ Future<void> onButtonTap() async {
   // ActivityScope handles engagement tracking automatically
 }
 ```
+
+### Pitfall #11: Using ref After Async Operations (Widget Might Unmount)
+❌ **Bad:**
+```dart
+Future<void> _fetchSearchResults() async {
+  // Start async operation
+  final response = await ApiService.instance.search(...);
+
+  // ⚠️ DANGER: Widget might have unmounted during await
+  ref.read(searchStateProvider.notifier).updateSearchResults(...);
+  // Error: "Using ref when widget is unmounted is unsafe"
+}
+```
+
+✅ **Good:**
+```dart
+Future<void> _fetchSearchResults() async {
+  // Save notifier BEFORE any async operations
+  final searchNotifier = ref.read(searchStateProvider.notifier);
+
+  // Async operations can now happen safely
+  final response = await ApiService.instance.search(...);
+
+  // Use saved notifier (safe even if widget unmounted)
+  searchNotifier.updateSearchResults(...);
+}
+```
+
+**Why:** When a widget unmounts (user navigates away, parent rebuilds), `ref` becomes invalid because it relies on `BuildContext`. Saving the notifier before async operations captures a reference that remains safe even after unmount.
+
+**Common in:** Pre-loading pages (Welcome, Settings, App Setup Flow) that fetch search results before navigating to Search page.
 
 ---
 
