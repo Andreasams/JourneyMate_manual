@@ -636,65 +636,62 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildViewToggle() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Row(
-        children: [
-          // Liste button (left)
-          Expanded(
+    return Row(
+      children: [
+        // Liste button (left)
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _viewMode = 'liste'),
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: _viewMode == 'liste' ? Color(0xFFf5f5f5) : Colors.white,
+                border: Border.all(color: Color(0xFFe8e8e8), width: 1.5),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  bottomLeft: Radius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Liste',
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyRegular.copyWith(
+                  fontWeight: _viewMode == 'liste' ? FontWeight.w600 : FontWeight.w400,
+                  color: _viewMode == 'liste' ? AppColors.textPrimary : Color(0xFF999999),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Kort button (right) - overlaps border with negative margin
+        Expanded(
+          child: Transform.translate(
+            offset: Offset(-1.5, 0), // Overlap left border
             child: GestureDetector(
-              onTap: () => setState(() => _viewMode = 'liste'),
+              onTap: () => setState(() => _viewMode = 'kort'),
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: _viewMode == 'liste' ? Color(0xFFf5f5f5) : Colors.white,
+                  color: _viewMode == 'kort' ? Color(0xFFf5f5f5) : Colors.white,
                   border: Border.all(color: Color(0xFFe8e8e8), width: 1.5),
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                    bottomRight: Radius.circular(8),
                   ),
                 ),
                 child: Text(
-                  'Liste',
+                  'Kort',
                   textAlign: TextAlign.center,
                   style: AppTypography.bodyRegular.copyWith(
-                    fontWeight: _viewMode == 'liste' ? FontWeight.w600 : FontWeight.w400,
-                    color: _viewMode == 'liste' ? AppColors.textPrimary : Color(0xFF999999),
+                    fontWeight: _viewMode == 'kort' ? FontWeight.w600 : FontWeight.w400,
+                    color: _viewMode == 'kort' ? AppColors.textPrimary : Color(0xFF999999),
                   ),
                 ),
               ),
             ),
           ),
-          // Kort button (right) - overlaps border with negative margin
-          Expanded(
-            child: Transform.translate(
-              offset: Offset(-1.5, 0), // Overlap left border
-              child: GestureDetector(
-                onTap: () => setState(() => _viewMode = 'kort'),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(
-                    color: _viewMode == 'kort' ? Color(0xFFf5f5f5) : Colors.white,
-                    border: Border.all(color: Color(0xFFe8e8e8), width: 1.5),
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(8),
-                      bottomRight: Radius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'Kort',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.bodyRegular.copyWith(
-                      fontWeight: _viewMode == 'kort' ? FontWeight.w600 : FontWeight.w400,
-                      color: _viewMode == 'kort' ? AppColors.textPrimary : Color(0xFF999999),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
