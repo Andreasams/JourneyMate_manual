@@ -166,30 +166,33 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
     // positioning and safe areas. Unnecessary wrappers caused excessive height.
     return Container(
       width: double.infinity,
-      height: 56.0, // Reduced from 70.0 (standard Material bottom nav height)
+      height: 64.0, // Standard Material bottom nav height with balanced spacing
       decoration: BoxDecoration(
         color: AppColors.bgPage,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Search tab
-          _buildTabButton(
-            icon: Icons.search,
-            label: td(ref, 'm4kntw8r'), // "Search"
-            isActive: searchTabActive,
-            onTap: _onSearchTabTap,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 11.0), // Equal spacing top/bottom
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Search tab
+            _buildTabButton(
+              icon: Icons.search,
+              label: td(ref, 'm4kntw8r'), // "Search"
+              isActive: searchTabActive,
+              onTap: _onSearchTabTap,
+            ),
 
-          // Account tab
-          _buildTabButton(
-            icon: Icons.person,
-            label: td(ref, 'ykne5sdr'), // "Account"
-            isActive: accountTabActive,
-            onTap: _onAccountTabTap,
-          ),
-        ],
+            // Account tab
+            _buildTabButton(
+              icon: Icons.person,
+              label: td(ref, 'ykne5sdr'), // "Account"
+              isActive: accountTabActive,
+              onTap: _onAccountTabTap,
+            ),
+          ],
+        ),
       ),
     );
   }

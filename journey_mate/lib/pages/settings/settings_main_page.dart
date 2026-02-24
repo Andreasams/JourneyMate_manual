@@ -167,122 +167,115 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
     return Scaffold(
       backgroundColor: AppColors.bgPage,
       body: SafeArea(
-        child: Stack(
-          children: [
-            // Main content
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,    // 20px left
-                AppSpacing.huge,  // 40px top
-                AppSpacing.xl,    // 20px right
-                80.0,             // 80px bottom for NavBar clearance
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Page title
-                    Text(
-                      td(ref, 'cpiiq0im'), // "Settings & account"
-                      style: AppTypography.pageTitle.copyWith(
-                        color: AppColors.accent,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxxl),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,    // 20px left
+            AppSpacing.huge,  // 40px top
+            AppSpacing.xl,    // 20px right
+            0,                // No bottom padding - handled by navbar
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Page title
+                Text(
+                  td(ref, 'cpiiq0im'), // "Settings & account"
+                  style: AppTypography.pageTitle.copyWith(
+                    color: AppColors.accent,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxxl),
 
-                    // Section 1: My JourneyMate
-                    _buildSection(
+                // Section 1: My JourneyMate
+                _buildSection(
+                  context,
+                  td(ref, '3tlbn2an'), // "My JourneyMate"
+                  [
+                    _buildSettingRow(
                       context,
-                      td(ref, '3tlbn2an'), // "My JourneyMate"
-                      [
-                        _buildSettingRow(
-                          context,
-                          label: td(ref, '290fbi5g'), // "Localization"
-                          icon: Icons.language_outlined,
-                          onTap: () {
-                            context.push('/settings/localization');
-                          },
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: AppSpacing.xxxl),
-
-                    // Section 2: Reach out
-                    _buildSection(
-                      context,
-                      td(ref, 'pb7qrt34'), // "Reach out"
-                      [
-                        _buildSettingRow(
-                          context,
-                          label: td(ref, '297ogtn9'), // "Are we missing a place?"
-                          icon: Icons.add_location_alt_outlined,
-                          onTap: () {
-                            context.push('/settings/missing-place');
-                          },
-                          showDividerAbove: false,
-                        ),
-                        _buildSettingRow(
-                          context,
-                          label: td(ref, 'uz83tnpj'), // "Share feedback"
-                          icon: Icons.feedback_outlined,
-                          onTap: () {
-                            context.push('/settings/feedback');
-                          },
-                        ),
-                        _buildSettingRow(
-                          context,
-                          label: td(ref, 'dme8eg1t'), // "Contact us"
-                          icon: Icons.mail_outline,
-                          onTap: () {
-                            context.push('/settings/contact');
-                          },
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: AppSpacing.xxxl),
-
-                    // Section 3: Resources
-                    _buildSection(
-                      context,
-                      td(ref, 'd952v5y4'), // "Resources"
-                      [
-                        _buildSettingRow(
-                          context,
-                          label: td(ref, '2v106a6z'), // "Terms of use"
-                          icon: Icons.description_outlined,
-                          onTap: () {
-                            _launchURL(
-                                'https://docs.google.com/document/d/1CAjvjWt73BgvBZSMUKiIyPbz2sZ5RiqCMGuD0R6KVpc/edit?usp=sharing');
-                          },
-                          showDividerAbove: false,
-                        ),
-                        _buildSettingRow(
-                          context,
-                          label: td(ref, 'gtmo283r'), // "Privacy policy"
-                          icon: Icons.privacy_tip_outlined,
-                          onTap: () {
-                            _launchURL(
-                                'https://docs.google.com/document/d/1nO_TaK-HB8-CV9FM8zs3uu0mYgCT4taO0nBSv2iHw3A/edit?usp=sharing');
-                          },
-                        ),
-                      ],
+                      label: td(ref, '290fbi5g'), // "Localization"
+                      icon: Icons.language_outlined,
+                      onTap: () {
+                        context.push('/settings/localization');
+                      },
                     ),
                   ],
                 ),
-              ),
-            ),
 
-            // NavBar at bottom
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: const NavBarWidget(
-                pageIsSearchResults: false,
-              ),
+                const SizedBox(height: AppSpacing.xxxl),
+
+                // Section 2: Reach out
+                _buildSection(
+                  context,
+                  td(ref, 'pb7qrt34'), // "Reach out"
+                  [
+                    _buildSettingRow(
+                      context,
+                      label: td(ref, '297ogtn9'), // "Are we missing a place?"
+                      icon: Icons.add_location_alt_outlined,
+                      onTap: () {
+                        context.push('/settings/missing-place');
+                      },
+                      showDividerAbove: false,
+                    ),
+                    _buildSettingRow(
+                      context,
+                      label: td(ref, 'uz83tnpj'), // "Share feedback"
+                      icon: Icons.feedback_outlined,
+                      onTap: () {
+                        context.push('/settings/feedback');
+                      },
+                    ),
+                    _buildSettingRow(
+                      context,
+                      label: td(ref, 'dme8eg1t'), // "Contact us"
+                      icon: Icons.mail_outline,
+                      onTap: () {
+                        context.push('/settings/contact');
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: AppSpacing.xxxl),
+
+                // Section 3: Resources
+                _buildSection(
+                  context,
+                  td(ref, 'd952v5y4'), // "Resources"
+                  [
+                    _buildSettingRow(
+                      context,
+                      label: td(ref, '2v106a6z'), // "Terms of use"
+                      icon: Icons.description_outlined,
+                      onTap: () {
+                        _launchURL(
+                            'https://docs.google.com/document/d/1CAjvjWt73BgvBZSMUKiIyPbz2sZ5RiqCMGuD0R6KVpc/edit?usp=sharing');
+                      },
+                      showDividerAbove: false,
+                    ),
+                    _buildSettingRow(
+                      context,
+                      label: td(ref, 'gtmo283r'), // "Privacy policy"
+                      icon: Icons.privacy_tip_outlined,
+                      onTap: () {
+                        _launchURL(
+                            'https://docs.google.com/document/d/1nO_TaK-HB8-CV9FM8zs3uu0mYgCT4taO0nBSv2iHw3A/edit?usp=sharing');
+                      },
+                    ),
+                  ],
+                ),
+
+                // Bottom spacing for navbar clearance
+                const SizedBox(height: 80.0),
+              ],
             ),
-          ],
+          ),
         ),
+      ),
+      bottomNavigationBar: const NavBarWidget(
+        pageIsSearchResults: false,
       ),
     );
   }
