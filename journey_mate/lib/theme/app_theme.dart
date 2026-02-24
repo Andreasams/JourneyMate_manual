@@ -25,6 +25,8 @@ ThemeData appTheme() {
       backgroundColor: AppColors.bgPage,
       foregroundColor: AppColors.textPrimary,
       elevation: 0,
+      surfaceTintColor: Colors.transparent, // Remove Material 3 tint overlay when scrolled
+      scrolledUnderElevation: 0, // Keep elevation at 0 when content scrolls under AppBar
       centerTitle: true,
       titleTextStyle: GoogleFonts.roboto(
         fontSize: 16,
