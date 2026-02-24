@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_constants.dart';
+import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
 import '../../providers/search_providers.dart';
@@ -162,37 +162,34 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
     final searchTabActive = widget.pageIsSearchResults;
     final accountTabActive = !widget.pageIsSearchResults;
 
-    // No Align wrapper — Scaffold's bottomNavigationBar already positions at bottom.
-    // Align(bottomCenter) was causing the widget to expand to full screen height,
-    // leaving zero body space for the search results ListView.
-    return SafeArea(
-      child: Container(
-        width: double.infinity,
-        height: 70.0,
-        decoration: BoxDecoration(
-          color: AppColors.bgPage,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Search tab
-            _buildTabButton(
-              icon: Icons.search,
-              label: td(ref, 'm4kntw8r'), // "Search"
-              isActive: searchTabActive,
-              onTap: _onSearchTabTap,
-            ),
+    // No Align or SafeArea wrapper — Scaffold's bottomNavigationBar already handles
+    // positioning and safe areas. Unnecessary wrappers caused excessive height.
+    return Container(
+      width: double.infinity,
+      height: 56.0, // Reduced from 70.0 (standard Material bottom nav height)
+      decoration: BoxDecoration(
+        color: AppColors.bgPage,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Search tab
+          _buildTabButton(
+            icon: Icons.search,
+            label: td(ref, 'm4kntw8r'), // "Search"
+            isActive: searchTabActive,
+            onTap: _onSearchTabTap,
+          ),
 
-            // Account tab
-            _buildTabButton(
-              icon: Icons.person,
-              label: td(ref, 'ykne5sdr'), // "Account"
-              isActive: accountTabActive,
-              onTap: _onAccountTabTap,
-            ),
-          ],
-        ),
+          // Account tab
+          _buildTabButton(
+            icon: Icons.person,
+            label: td(ref, 'ykne5sdr'), // "Account"
+            isActive: accountTabActive,
+            onTap: _onAccountTabTap,
+          ),
+        ],
       ),
     );
   }
@@ -225,16 +222,12 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
               color: color,
               size: 24.0,
             ),
-            SizedBox(height: 4), // Gap between icon and text
+            SizedBox(height: 2), // Reduced from 4 for tighter grouping
 
             // Label
             Text(
               label,
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: color,
-              ),
+              style: AppTypography.bodyRegular.copyWith(color: color),
             ),
           ],
         ),
