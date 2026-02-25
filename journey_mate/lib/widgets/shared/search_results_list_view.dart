@@ -130,7 +130,7 @@ class _SearchResultsListViewState
   /// Builds a flat list when no filters are active
   Widget _buildFlatList(List<dynamic> documents) {
     return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 32.0),
+      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0), // 16px top per JSX
       itemCount: documents.length,
       separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
       itemBuilder: (context, index) {
@@ -219,7 +219,7 @@ class _SearchResultsListViewState
     }
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 32.0),
+      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0), // 16px top per JSX
       children: sections,
     );
   }
