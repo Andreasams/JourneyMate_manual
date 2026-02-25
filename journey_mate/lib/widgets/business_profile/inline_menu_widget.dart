@@ -164,7 +164,7 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
                   _isExpanded
                       ? td(ref, 'menu_show_less')
                       : td(ref, 'menu_show_all')
-                          .replaceAll('{count}', allItems.length.toString()),
+                          .replaceAll('{count}', filteredItems.length.toString()),
                   style: AppTypography.bodyRegular.copyWith(
                     color: AppColors.accent,
                     fontWeight: FontWeight.w500,
@@ -173,6 +173,40 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
               ),
             ),
           ],
+
+          // "View full menu" button
+          SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: _handleViewFullMenuTap,
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.button),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    td(ref, 'menu_view_full_page'),
+                    style: AppTypography.bodyRegular.copyWith(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.xs),
+                  Icon(
+                    Icons.arrow_forward,
+                    color: AppColors.accent,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -555,5 +589,35 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
       debugPrint('Analytics error: $e');
       return ApiCallResponse.failure('Analytics failed');
     });
+  }
+
+  /// Handle "View full menu" button tap - navigate to full menu page
+  Future<void> _handleViewFullMenuTap() async {
+    // Track analytics
+    final analytics = AnalyticsService.instance;
+    ApiService.instance
+        .postAnalytics(
+      eventType: 'menu_full_page_opened',
+      deviceId: analytics.deviceId ?? '',
+      sessionId: analytics.currentSessionId ?? '',
+      userId: analytics.userId ?? '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {
+        'pageName': 'businessProfile',
+        'businessId': widget.businessId,
+      },
+    )
+        .catchError((e) {
+      debugPrint('Analytics error: $e');
+      return ApiCallResponse.failure('Analytics failed');
+    });
+
+    // Navigate to full menu page (existing route at /business/:id/menu)
+    if (mounted) {
+      await Navigator.pushNamed(
+        context,
+        '/business/${widget.businessId}/menu',
+      );
+    }
   }
 }

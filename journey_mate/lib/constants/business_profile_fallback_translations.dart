@@ -52,6 +52,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'menu_filters_edit': 'Edit',
     'menu_show_all': 'Show all {count} items',
     'menu_show_less': 'Show less',
+    'menu_view_full_page': 'View full menu',
 
     // Section Headings
     'opening_hours_heading': 'Opening Hours',
@@ -96,6 +97,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'menu_filters_edit': 'Rediger',
     'menu_show_all': 'Vis alle {count} retter',
     'menu_show_less': 'Vis mindre',
+    'menu_view_full_page': 'Vis på hel side',
 
     // Section Headings
     'opening_hours_heading': 'Åbningstider',
@@ -140,6 +142,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'menu_filters_edit': 'Bearbeiten',
     'menu_show_all': 'Alle {count} Gerichte anzeigen',
     'menu_show_less': 'Weniger anzeigen',
+    'menu_view_full_page': 'Vollständige Speisekarte anzeigen',
 
     // Section Headings
     'opening_hours_heading': 'Öffnungszeiten',
@@ -184,6 +187,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'menu_filters_edit': 'Editar',
     'menu_show_all': 'Mostrar todos los {count} platos',
     'menu_show_less': 'Mostrar menos',
+    'menu_view_full_page': 'Ver menú completo',
 
     // Section Headings
     'opening_hours_heading': 'Horario',
@@ -228,6 +232,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'menu_filters_edit': 'Modifier',
     'menu_show_all': 'Afficher tous les {count} plats',
     'menu_show_less': 'Afficher moins',
+    'menu_view_full_page': 'Voir le menu complet',
 
     // Section Headings
     'opening_hours_heading': 'Horaires',
@@ -272,6 +277,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'menu_filters_edit': 'Modifica',
     'menu_show_all': 'Mostra tutti i {count} piatti',
     'menu_show_less': 'Mostra meno',
+    'menu_view_full_page': 'Vedi menu completo',
 
     // Section Headings
     'opening_hours_heading': 'Orari',
@@ -316,6 +322,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'menu_filters_edit': 'Redigera',
     'menu_show_all': 'Visa alla {count} rätter',
     'menu_show_less': 'Visa mindre',
+    'menu_view_full_page': 'Visa hela menyn',
 
     // Section Headings
     'opening_hours_heading': 'Öppettider',
