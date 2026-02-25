@@ -140,7 +140,8 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
 
       // Store business profile data in provider
       if (profileResponse.succeeded) {
-        final businessData = profileResponse.jsonBody['business_profile'];
+        // API returns 'businessInfo' key (not 'business_profile' as documented)
+        final businessData = profileResponse.jsonBody['businessInfo'];
 
         if (businessData == null) {
           debugPrint('❌ Business not found: id=$businessIdInt');
@@ -151,11 +152,10 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
           return;
         }
 
-        final filters = (businessData['filters'] as List?)
-                ?.map((f) => f['filter_id'] as int)
-                .toList() ??
-            [];
-        final hours = profileResponse.jsonBody['business_hours'];
+        // Note: filters are directly in businessData, not in a separate array
+        // Gallery is at the top level, not nested
+        final filters = <int>[]; // TODO: Extract filters from businessData if available
+        final hours = businessData['business_hours'] ?? {};
 
         debugPrint('✅ Loaded: ${businessData['business_name']}');
 
@@ -175,6 +175,8 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
 
       // Store menu items in provider
       if (menuResponse.succeeded) {
+        debugPrint('📋 Menu response keys: ${menuResponse.jsonBody.keys.toList()}');
+
         ref.read(businessProvider.notifier).setMenuItems(
               menuResponse.jsonBody['menu_items'],
             );
