@@ -473,8 +473,8 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
 
     return Container(
       padding: EdgeInsets.only(
-        top: AppSpacing.mlg,      // 14px
-        bottom: AppSpacing.sm,     // 8px
+        top: AppSpacing.md,      // 12px - matches spacing between other elements
+        bottom: AppSpacing.md,   // 12px - matches spacing between other elements
       ),
       decoration: BoxDecoration(
         border: Border(
@@ -559,7 +559,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       backgroundColor: AppColors.greenBg,
       foregroundColor: AppColors.green,
       elevation: 0,
-      padding: const EdgeInsets.fromLTRB(12, 7, 10, 7),
+      padding: const EdgeInsets.fromLTRB(12, 9, 10, 9),
       minimumSize: Size.zero,
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       shape: RoundedRectangleBorder(
@@ -586,7 +586,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.only(right: _clearButtonSpacing),
+          padding: const EdgeInsets.only(right: _clearButtonSpacing + 2), // Add 2px gap
           child: _buildClearAllButton(),
         ),
       ),
@@ -601,7 +601,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
         backgroundColor: AppColors.bgPage,
         foregroundColor: AppColors.accent,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(
