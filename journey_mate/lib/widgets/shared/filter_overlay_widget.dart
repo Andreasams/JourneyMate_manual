@@ -110,11 +110,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// Debounce timer for search execution
   Timer? _debounceTimer;
 
-  /// Initial state for reset functionality
-  List<int>? _initialFilterIds;
-  int? _initialCategoryId;
-  int? _initialItemId;
-
   /// Selection type tracking (neighborhood/shopping/train station)
   FilterSelectionType _currentSelectionType = FilterSelectionType.none;
   int? _selectedNeighborhoodId;
@@ -136,8 +131,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   // Interactive button states (touch feedback)
   static const Color _buttonPressedColor = Color(0xFFdcdee0); // Light grey
-  final Color _buttonDefaultColor = AppColors.bgSurface; // Lighter grey
-  static const Color _buttonBorderColor = Color(0xFF9E9E9E); // Grey[500]
 
   // Column backgrounds
   final Color _leftColumnBackgroundColor = AppColors.bgSurface;
@@ -160,10 +153,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   // Spacing
   static const double _itemPaddingHorizontal = 8.0;
-  static const double _headerHeight = 44.0;
-  static const double _closeButtonSize = 32.0;
-  static const double _buttonBorderRadius = 8.0;
-  static const double _filterButtonHeight = 32.0;
   static const double _footerButtonHeight = 44.0;
 
   // Timing
@@ -268,7 +257,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     _rebuildFilterLookupMap();
     _initializeStateFromProps();
     _selectFirstCategory();
-    _captureInitialState();
   }
 
   void _rebuildFilterLookupMap() {
@@ -304,16 +292,10 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         widget.selectedFilterIds!.isNotEmpty;
     _isInitialState = !hasSearchTerm && !hasSelectedFilters;
     _searchPerformed = !_isInitialState;
-    _initialFilterIds = List<int>.from(widget.selectedFilterIds ?? []);
     if (widget.selectedFilterIds != null) {
       _selectedFilterIds.clear();
       _selectedFilterIds.addAll(widget.selectedFilterIds!);
     }
-  }
-
-  void _captureInitialState() {
-    _initialCategoryId = selectedCategoryId;
-    _initialItemId = selectedItemId;
   }
 
   /// =========================================================================
@@ -357,7 +339,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   void _handleTitleChanges(FilterOverlayWidget oldWidget) {
     if (oldWidget.selectedTitleID != widget.selectedTitleID) {
       _selectFirstCategory();
-      _captureInitialState();
     }
   }
 
@@ -872,62 +853,12 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   /// =========================================================================
-  /// FILTER REMOVAL
-  /// =========================================================================
-
-  Future<void> _handleFilterRemoval(int filterId) async {
-    setState(() {
-      // If removing a category 8 parent, also remove its sub-items
-      if (_isSearchableParentItem(filterId)) {
-        _removeAllSubItems(filterId);
-      }
-
-      _updateSelectionTypeOnRemoval(filterId);
-      _selectedFilterIds.remove(filterId);
-    });
-
-    ref.read(searchStateProvider.notifier).setFilters(
-          List<int>.from(_selectedFilterIds),
-        );
-
-    await _executeSearchAndTrackAnalytics();
-  }
-
-  void _updateSelectionTypeOnRemoval(int filterId) {
-    final selectionType = _getFilterSelectionType(filterId);
-    if (selectionType == FilterSelectionType.neighborhood) {
-      _selectedNeighborhoodId = null;
-      _reevaluateSelectionType();
-    }
-    if ((selectionType == FilterSelectionType.shoppingArea ||
-            selectionType == FilterSelectionType.trainStation) &&
-        _selectedNeighborhoodId == null) {
-      _currentSelectionType = FilterSelectionType.none;
-    }
-  }
-
-  void _reevaluateSelectionType() {
-    if (_selectedFilterIds.any((id) =>
-        _getFilterSelectionType(id) == FilterSelectionType.shoppingArea)) {
-      _currentSelectionType = FilterSelectionType.shoppingArea;
-    } else if (_selectedFilterIds.any((id) =>
-        _getFilterSelectionType(id) == FilterSelectionType.trainStation)) {
-      _currentSelectionType = FilterSelectionType.trainStation;
-    } else {
-      _currentSelectionType = FilterSelectionType.none;
-    }
-  }
-
-  /// =========================================================================
   /// RESET AND CLOSE
   /// =========================================================================
 
   Future<void> _handleReset() async {
     setState(() {
       _selectedFilterIds.clear();
-      _initialFilterIds = [];
-      _initialCategoryId = null;
-      _initialItemId = null;
       _currentSelectionType = FilterSelectionType.none;
       _selectedNeighborhoodId = null;
 
@@ -937,25 +868,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     });
 
     ref.read(searchStateProvider.notifier).setFilters(<int>[]);
-
-    await _executeSearchAndTrackAnalytics();
-  }
-
-  Future<void> _handleCloseButton() async {
-    setState(() {
-      _selectedFilterIds.clear();
-      if (_initialFilterIds != null && _initialFilterIds!.isNotEmpty) {
-        _selectedFilterIds.addAll(_initialFilterIds!);
-      }
-      selectedCategoryId = _initialCategoryId;
-      selectedItemId = _initialItemId;
-    });
-
-    ref.read(searchStateProvider.notifier).setFilters(
-          List<int>.from(_selectedFilterIds),
-        );
-
-    widget.onCloseOverlay?.call(List<int>.from(_selectedFilterIds));
 
     await _executeSearchAndTrackAnalytics();
   }
@@ -1031,42 +943,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       return _getUIText(_resultsSingularKey).replaceAll('{{count}}', '1');
     }
     return _getUIText(_resultsPluralKey).replaceAll('{{count}}', '$count');
-  }
-
-  String _getDisplayName(dynamic filter) {
-    if (filter == null) return '';
-
-    final filterId = filter['id'] as int?;
-    final parentId = filter['parent_id'] as int?;
-    final name = filter['name'] as String? ?? '';
-
-    if (filterId == null) return name;
-
-    final filterIdStr = filterId.toString();
-    final isDietaryComposite = filterIdStr.length == 6 &&
-        filterId != 592 &&
-        (filterIdStr.startsWith('593') ||
-            filterIdStr.startsWith('594') ||
-            filterIdStr.startsWith('595') ||
-            filterIdStr.startsWith('596') ||
-            filterIdStr.startsWith('597'));
-
-    if (isDietaryComposite && parentId != null) {
-      final parentFilter = _findFilterById(parentId);
-      final parentName = parentFilter?['name'] as String?;
-
-      if (parentName != null) {
-        final lowercasedName = _lowercaseFirstLetter(name);
-        return '$parentName $lowercasedName';
-      }
-    }
-
-    return name;
-  }
-
-  String _lowercaseFirstLetter(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toLowerCase() + text.substring(1);
   }
 
   /// =========================================================================
@@ -1159,305 +1035,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           Expanded(child: _buildResetButton()),
         ],
       ),
-    );
-  }
-
-  /// =========================================================================
-  /// HEADER WIDGETS
-  /// =========================================================================
-
-  Widget _buildSelectedFiltersRow() {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        _buildCloseButtonWithGradient(),
-        _buildSelectedFiltersScrollView(),
-      ],
-    );
-  }
-
-  Widget _buildCloseButtonWithGradient() {
-    return Positioned(
-      left: 0,
-      top: 0,
-      bottom: 0,
-      child: Center(
-        child: Container(
-          width: 44,
-          height: _filterButtonHeight,
-          padding: const EdgeInsets.only(right: 5),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Theme.of(context).scaffoldBackgroundColor,
-                Theme.of(context).scaffoldBackgroundColor,
-                Theme.of(context)
-                    .scaffoldBackgroundColor
-                    .withValues(alpha: 0.9),
-                Theme.of(context)
-                    .scaffoldBackgroundColor
-                    .withValues(alpha: 0.0),
-              ],
-              stops: const [0.0, 0.7, 0.85, 1.0],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: _whiteColor.withValues(alpha: 0.04),
-                blurRadius: 2,
-                offset: const Offset(2, 0),
-                spreadRadius: 1,
-              ),
-            ],
-          ),
-          child: _buildCloseButton(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectedFiltersScrollView() {
-    return Positioned(
-      left: 46,
-      top: 0,
-      bottom: 0,
-      right: 0,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: _buildSelectedFilterButtons(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCloseButton() {
-    return ElevatedButton(
-      onPressed: widget.onCloseOverlay != null ? _handleCloseButton : null,
-      style: _getCloseButtonStyle(),
-      child: Center(
-        child: Icon(Icons.close, size: 18, color: _textEnabledColor),
-      ),
-    );
-  }
-
-  ButtonStyle _getCloseButtonStyle() {
-    return ButtonStyle(
-      padding: WidgetStateProperty.all(EdgeInsets.zero),
-      fixedSize: WidgetStateProperty.all(
-          const Size(_closeButtonSize, _closeButtonSize)),
-      minimumSize: WidgetStateProperty.all(
-          const Size(_closeButtonSize, _closeButtonSize)),
-      shape: WidgetStateProperty.all<OutlinedBorder>(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(_buttonBorderRadius),
-          side: const BorderSide(color: _buttonBorderColor, width: 1),
-        ),
-      ),
-      backgroundColor: WidgetStateProperty.resolveWith<Color>((states) =>
-          states.contains(WidgetState.pressed)
-              ? _buttonPressedColor
-              : _buttonDefaultColor),
-      elevation: WidgetStateProperty.all(0),
-      overlayColor: WidgetStateProperty.all(_transparentColor),
-    );
-  }
-
-  List<Widget> _buildSelectedFilterButtons() {
-    if (_selectedFilterIds.isEmpty) return [];
-
-    // IDs that get "Parent + subitem" treatment
-    const parentPlusSubitemIds = {585, 586, 158, 159, 588};
-
-    // Group category 8 by parent
-    final cat8Parents = <int, List<int>>{}; // parentId -> [subitemIds]
-    final otherFilters = <int>[];
-
-    for (final filterId in _selectedFilterIds) {
-      final filter = _findFilterById(filterId);
-      if (filter == null) continue;
-
-      final parentId = filter['parent_id'] as int?;
-
-      // Check if this is a category 8 parent
-      if (_isSearchableParentItem(filterId)) {
-        cat8Parents.putIfAbsent(filterId, () => []);
-      }
-      // Check if this is a category 8 sub-item
-      else if (filter['type'] == 'sub_item' &&
-          parentId != null &&
-          _isSearchableParentItem(parentId)) {
-        cat8Parents.putIfAbsent(parentId, () => []);
-        cat8Parents[parentId]!.add(filterId);
-      } else {
-        otherFilters.add(filterId);
-      }
-    }
-
-    final widgets = <Widget>[];
-
-    // Build category 8 buttons
-    for (final entry in cat8Parents.entries) {
-      final parentId = entry.key;
-      final subitemIds = entry.value;
-
-      if (subitemIds.isEmpty) {
-        // Parent only - show parent button
-        widgets.add(_buildSelectedFilterButton(parentId));
-      } else {
-        final hasParentPlusSubitems =
-            subitemIds.any((id) => parentPlusSubitemIds.contains(id));
-
-        if (hasParentPlusSubitems) {
-          // Behavior 1: Combined button(s)
-          final behavior1Ids = subitemIds
-              .where((id) => parentPlusSubitemIds.contains(id))
-              .toList();
-          final behavior2Ids = subitemIds
-              .where((id) => !parentPlusSubitemIds.contains(id))
-              .toList();
-
-          // Add combined button for behavior 1 items
-          widgets.add(_buildCombinedCat8Button(parentId, behavior1Ids));
-
-          // Add individual buttons for behavior 2 items
-          for (final subId in behavior2Ids) {
-            widgets.add(_buildSelectedFilterButton(subId));
-          }
-        } else {
-          // Behavior 2: Subitem only buttons
-          for (final subId in subitemIds) {
-            widgets.add(_buildSelectedFilterButton(subId));
-          }
-        }
-      }
-    }
-
-    // Build other filter buttons
-    for (final filterId in otherFilters) {
-      widgets.add(_buildSelectedFilterButton(filterId));
-    }
-
-    return widgets;
-  }
-
-  Widget _buildCombinedCat8Button(int parentId, List<int> subitemIds) {
-    final parentFilter = _findFilterById(parentId);
-    final parentName = parentFilter?['name'] as String? ?? '';
-
-    // Build combined name
-    final subitemNames = subitemIds
-        .map((id) => _findFilterById(id)?['name'] as String?)
-        .where((name) => name != null)
-        .map((name) => _lowercaseFirstLetter(name!))
-        .toList();
-
-    String displayName;
-    if (parentId == 55) {
-      // Food truck uses dash
-      displayName = '$parentName - ${subitemNames.join(' and ')}';
-    } else {
-      // Bakery, Café - first item keeps its prefix, subsequent items drop "with"
-      final firstSubitem = subitemNames.first;
-      final remainingSubitems = subitemNames.skip(1).map((name) {
-        return name.startsWith('with ') ? name.substring(5) : name;
-      }).toList();
-
-      final allSubitems = [firstSubitem, ...remainingSubitems].join(' and ');
-      displayName = '$parentName $allSubitems';
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: SizedBox(
-        height: _filterButtonHeight,
-        child: ElevatedButton(
-          onPressed: () => _handleCombinedCat8Removal(parentId, subitemIds),
-          style: _getFilterButtonStyle(),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                displayName,
-                style: TextStyle(
-                  fontSize: _adjustedFontSize(12),
-                  fontWeight: FontWeight.w400,
-                  color: _textEnabledColor,
-                ),
-              ),
-              const SizedBox(width: 2),
-              const Icon(Icons.close, size: 12),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _handleCombinedCat8Removal(
-      int parentId, List<int> subitemIds) async {
-    setState(() {
-      // Remove all sub-items in this combined button
-      _selectedFilterIds.removeAll(subitemIds);
-    });
-
-    ref.read(searchStateProvider.notifier).setFilters(
-          List<int>.from(_selectedFilterIds),
-        );
-
-    await _executeSearchAndTrackAnalytics();
-  }
-
-  Widget _buildSelectedFilterButton(int filterId) {
-    final filter = _findFilterById(filterId);
-    if (filter == null) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: SizedBox(
-        height: _filterButtonHeight,
-        child: ElevatedButton(
-          onPressed: () => _handleFilterRemoval(filterId),
-          style: _getFilterButtonStyle(),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _getDisplayName(filter),
-                style: TextStyle(
-                    fontSize: _adjustedFontSize(12),
-                    fontWeight: FontWeight.w400,
-                    color: _textEnabledColor),
-              ),
-              const SizedBox(width: 2),
-              const Icon(Icons.close, size: 12),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  ButtonStyle _getFilterButtonStyle() {
-    return ButtonStyle(
-      padding:
-          WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 12)),
-      minimumSize: WidgetStateProperty.all(const Size(0, _filterButtonHeight)),
-      shape: WidgetStateProperty.all<OutlinedBorder>(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(_buttonBorderRadius),
-          side: const BorderSide(color: _buttonBorderColor, width: 1),
-        ),
-      ),
-      backgroundColor: WidgetStateProperty.resolveWith<Color>((states) =>
-          states.contains(WidgetState.pressed)
-              ? _buttonPressedColor
-              : _buttonDefaultColor),
-      elevation: WidgetStateProperty.all(0),
-      overlayColor: WidgetStateProperty.all(_transparentColor),
     );
   }
 
