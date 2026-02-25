@@ -635,7 +635,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             // Orange dot indicator (top-right)
             if (count > 0 && !isActive)
               Positioned(
-                top: 5,
+                top: 2,
                 right: 5,
                 child: Container(
                   width: 6,
