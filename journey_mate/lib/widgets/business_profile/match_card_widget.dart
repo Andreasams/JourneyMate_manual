@@ -32,20 +32,11 @@ class MatchCardWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final businessState = ref.watch(businessProvider);
     final filterDescriptions = businessState.filterDescriptions;
-    final matchPercentage = businessState.matchPercentage;
 
     // Hide if no filter descriptions available
     if (filterDescriptions.isEmpty) {
       return const SizedBox.shrink();
     }
-
-    // Determine if full match (100%)
-    final isFullMatch = matchPercentage >= 100.0;
-
-    // Conditional styling
-    final backgroundColor = isFullMatch ? AppColors.greenBg : AppColors.orangeBg;
-    final borderColor = isFullMatch ? AppColors.greenBorder : AppColors.orangeBorder;
-    final primaryColor = isFullMatch ? AppColors.green : AppColors.accent;
 
     // Split filters into matched and missed
     final matchedFilters = <Map<String, dynamic>>[];
@@ -62,6 +53,18 @@ class MatchCardWidget extends ConsumerWidget {
       }
     }
 
+    // Calculate counts
+    final matchedCount = matchedFilters.length;
+    final totalCount = filterDescriptions.length;
+
+    // Determine if full match (all filters matched)
+    final isFullMatch = matchedCount == totalCount && totalCount > 0;
+
+    // Conditional styling
+    final backgroundColor = isFullMatch ? AppColors.greenBg : AppColors.orangeBg;
+    final borderColor = isFullMatch ? AppColors.greenBorder : AppColors.orangeBorder;
+    final primaryColor = isFullMatch ? AppColors.green : AppColors.accent;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       child: GestureDetector(
@@ -77,12 +80,11 @@ class MatchCardWidget extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Match percentage
+              // Header: Match count
               Text(
-                td(ref, 'match_card_matches').replaceAll(
-                      '{percentage}',
-                      matchPercentage.toStringAsFixed(0),
-                    ),
+                td(ref, 'match_card_matches')
+                    .replaceAll('{count}', matchedCount.toString())
+                    .replaceAll('{total}', totalCount.toString()),
                 style: AppTypography.sectionHeading.copyWith(
                   color: primaryColor,
                 ),
