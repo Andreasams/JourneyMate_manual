@@ -19,6 +19,7 @@ import '../../services/translation_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
 import 'restaurant_list_shimmer_widget.dart';
+import 'image_gallery_widget.dart';
 
 /// A performant ListView displaying search results for businesses.
 ///
@@ -564,39 +565,44 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-              child: Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(minHeight: _imageSize),
-                decoration: BoxDecoration(
-                  color: AppColors.bgCard,
-                  border: Border.all(color: _borderColor, width: 1.5),
-                  borderRadius: BorderRadius.circular(AppRadius.card), // 16px per JSX
-                ),
-                padding: const EdgeInsets.all(AppSpacing.mlg), // 14px per JSX
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Base card content
-                    Row(
+            Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(minHeight: _imageSize),
+              decoration: BoxDecoration(
+                color: AppColors.bgCard,
+                border: Border.all(color: _borderColor, width: 1.5),
+                borderRadius: BorderRadius.circular(AppRadius.card), // 16px per JSX
+              ),
+              padding: const EdgeInsets.all(AppSpacing.mlg), // 14px per JSX
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Base card content - tappable to expand/collapse
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isExpanded = !_isExpanded;
+                      });
+                    },
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildImage(),
-                        const SizedBox(width: 12),
-                        Expanded(child: _buildInfoColumn()),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildImage(),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildInfoColumn()),
+                          ],
+                        ),
+                        // Collapse chevron (shown when NOT expanded)
+                        if (!_isExpanded) _buildCollapseChevron(),
                       ],
                     ),
-                    // Expanded preview section
-                    if (_isExpanded) _buildExpandedPreview(),
-                    // Collapse chevron (shown when NOT expanded)
-                    if (!_isExpanded) _buildCollapseChevron(),
-                  ],
-                ),
+                  ),
+                  // Expanded preview section - NOT tappable (images have their own tap handlers)
+                  if (_isExpanded) _buildExpandedPreview(),
+                ],
               ),
             ),
             // Partial match info box
@@ -982,39 +988,57 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final galleryImages = _galleryImages!;
     final displayImages = galleryImages.take(12).toList(); // Max 12 images
 
+    // Convert gallery images to URL strings for ImageGalleryWidget
+    final imageUrls = displayImages
+        .map((img) => img is String ? img : (img['url'] as String? ?? _placeholderImageUrl))
+        .toList();
+
     return SizedBox(
       height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: displayImages.length,
         itemBuilder: (context, index) {
-          final imageUrl = displayImages[index] is String
-              ? displayImages[index] as String
-              : displayImages[index]['url'] as String?;
+          final imageUrl = imageUrls[index];
 
           return Padding(
             padding: EdgeInsets.only(right: index < displayImages.length - 1 ? 8 : 0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: 100,
-                height: 100,
-                color: AppColors.bgInput, // Background color while loading
-                child: Image.network(
-                  imageUrl ?? _placeholderImageUrl,
+            child: GestureDetector(
+              onTap: () {
+                // Open full-screen image gallery
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => ImageGalleryWidget(
+                    imageUrls: imageUrls,
+                    currentIndex: index,
+                    categoryName: td(ref, 'gallery_food'), // Food category
+                  ),
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
                   width: 100,
                   height: 100,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppColors.border,
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: AppColors.textTertiary,
-                        size: 32,
-                      ),
-                    );
-                  },
+                  color: AppColors.bgInput, // Background color while loading
+                  child: Image.network(
+                    imageUrl,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover, // Changed from contain to cover to fill space
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: AppColors.border,
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: AppColors.textTertiary,
+                          size: 32,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
