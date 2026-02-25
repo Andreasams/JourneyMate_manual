@@ -119,7 +119,6 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               _buildSortOptionWithSubmenu('station', 'sort_station', widget.selectedStation),
               _buildSortOption('price_low', 'sort_price_low'),
               _buildSortOption('price_high', 'sort_price_high'),
-              _buildSortOption('newest', 'sort_newest'),
             ],
           ),
         ),
