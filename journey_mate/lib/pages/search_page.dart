@@ -186,10 +186,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             .toList() ?? [];
 
         debugPrint('🔍 Search: ${documents.length} results, ${activeIds.length} active filters');
-        if (documents.isNotEmpty) {
-          debugPrint('🔍 First document keys: ${(documents[0] as Map).keys.toList()}');
-          debugPrint('🔍 First document business_id: ${(documents[0] as Map)['business_id']}');
-        }
 
         ref.read(searchStateProvider.notifier).updateSearchResults(
           documents,
@@ -1014,8 +1010,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         userLocation: userLocation,
         onBusinessTap: (businessId) {
           // Navigate to business profile
-          debugPrint('🔍 onBusinessTap called with businessId=$businessId');
-          debugPrint('🔍 Navigating to /business/$businessId');
           context.push('/business/$businessId');
         },
       ),

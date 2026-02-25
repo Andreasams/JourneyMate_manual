@@ -104,8 +104,6 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
   // ============================================================================
 
   Future<void> _loadBusinessData() async {
-    debugPrint('🏢 BusinessProfilePage: Loading data for businessId=${widget.businessId}');
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -114,7 +112,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
     final languageCode = Localizations.localeOf(context).languageCode;
     final businessIdInt = int.parse(widget.businessId);
 
-    debugPrint('🏢 Parsed businessId as int: $businessIdInt');
+    debugPrint('🏢 Loading business profile: id=$businessIdInt');
 
     try {
       // Make 3 API calls in parallel
@@ -137,19 +135,15 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
       final menuResponse = results[1];
       final filterDescResponse = results[2];
 
-      debugPrint('🏢 Profile API response: succeeded=${profileResponse.succeeded}, error=${profileResponse.error}');
-      debugPrint('🏢 Profile response keys: ${profileResponse.jsonBody.keys.toList()}');
-
       // Check if page is still mounted after async calls
       if (!mounted) return;
 
       // Store business profile data in provider
       if (profileResponse.succeeded) {
         final businessData = profileResponse.jsonBody['business_profile'];
-        debugPrint('🏢 Business data: $businessData');
 
         if (businessData == null) {
-          debugPrint('❌ Business profile is null - business not found in database');
+          debugPrint('❌ Business not found: id=$businessIdInt');
           setState(() {
             _errorMessage = 'Business not found (ID: $businessIdInt)';
             _isLoading = false;
@@ -163,7 +157,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
             [];
         final hours = profileResponse.jsonBody['business_hours'];
 
-        debugPrint('🏢 Setting business data in provider: business_id=${businessData['business_id']}, name=${businessData['business_name']}');
+        debugPrint('✅ Loaded: ${businessData['business_name']}');
 
         ref.read(businessProvider.notifier).setCurrentBusiness(
               business: businessData,
@@ -171,7 +165,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
               hours: hours,
             );
       } else {
-        debugPrint('❌ Profile API call failed: ${profileResponse.error}');
+        debugPrint('❌ API error: ${profileResponse.error}');
         setState(() {
           _errorMessage = profileResponse.error ?? 'Failed to load business profile';
           _isLoading = false;
