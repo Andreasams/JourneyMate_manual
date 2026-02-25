@@ -336,9 +336,11 @@ class _SearchResultsListViewState
     if (businessData is Map) {
       // API returns 'business_id' (not 'id')
       final value = businessData['business_id'];
+      debugPrint('🔍 Extracting businessId: value=$value, type=${value.runtimeType}');
       if (value is int) return value;
       if (value is num) return value.toInt();
     }
+    debugPrint('❌ No business_id found in businessData: $businessData');
     return 0;
   }
 
@@ -1014,7 +1016,23 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       child: OutlinedButton(
         onPressed: () {
           final businessId = _getField<int>('business_id') ?? 0;
-          widget.onBusinessTap?.call(businessId);
+          debugPrint('🔍 See more tapped: businessId=$businessId');
+          debugPrint('🔍 Business data keys: ${(widget.businessData as Map?)?.keys.toList()}');
+
+          // Validate businessId before navigating
+          if (businessId > 0) {
+            widget.onBusinessTap?.call(businessId);
+          } else {
+            debugPrint('❌ Invalid businessId: $businessId - not navigating');
+            // Show error to user
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Unable to open business details'),
+                backgroundColor: AppColors.error,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
         },
         style: OutlinedButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 9), // 9px per JSX

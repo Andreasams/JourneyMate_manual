@@ -104,6 +104,8 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
   // ============================================================================
 
   Future<void> _loadBusinessData() async {
+    debugPrint('🏢 BusinessProfilePage: Loading data for businessId=${widget.businessId}');
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -111,6 +113,8 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
 
     final languageCode = Localizations.localeOf(context).languageCode;
     final businessIdInt = int.parse(widget.businessId);
+
+    debugPrint('🏢 Parsed businessId as int: $businessIdInt');
 
     try {
       // Make 3 API calls in parallel
@@ -133,23 +137,46 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
       final menuResponse = results[1];
       final filterDescResponse = results[2];
 
+      debugPrint('🏢 Profile API response: succeeded=${profileResponse.succeeded}, error=${profileResponse.error}');
+      debugPrint('🏢 Profile response keys: ${profileResponse.jsonBody.keys.toList()}');
+
       // Check if page is still mounted after async calls
       if (!mounted) return;
 
       // Store business profile data in provider
       if (profileResponse.succeeded) {
         final businessData = profileResponse.jsonBody['business_profile'];
+        debugPrint('🏢 Business data: $businessData');
+
+        if (businessData == null) {
+          debugPrint('❌ Business profile is null - business not found in database');
+          setState(() {
+            _errorMessage = 'Business not found (ID: $businessIdInt)';
+            _isLoading = false;
+          });
+          return;
+        }
+
         final filters = (businessData['filters'] as List?)
                 ?.map((f) => f['filter_id'] as int)
                 .toList() ??
             [];
         final hours = profileResponse.jsonBody['business_hours'];
 
+        debugPrint('🏢 Setting business data in provider: business_id=${businessData['business_id']}, name=${businessData['business_name']}');
+
         ref.read(businessProvider.notifier).setCurrentBusiness(
               business: businessData,
               filterIds: filters,
               hours: hours,
             );
+      } else {
+        debugPrint('❌ Profile API call failed: ${profileResponse.error}');
+        setState(() {
+          _errorMessage = profileResponse.error ?? 'Failed to load business profile';
+          _isLoading = false;
+        });
+        return;
       }
 
       // Store menu items in provider
