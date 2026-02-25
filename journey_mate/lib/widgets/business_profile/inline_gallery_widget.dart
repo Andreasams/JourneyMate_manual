@@ -12,52 +12,98 @@ import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
 import '../shared/image_gallery_widget.dart';
 
-/// Inline Gallery Widget - 3-column grid showing business photos
+/// Inline Gallery Widget - Tabbed gallery with swipeable content
 ///
 /// Features:
-/// - 3-column grid with 3px gap between images
+/// - 4 tabs: "Mad" (food), "Inde" (interior), "Ude" (outdoor), "Menu" (menu PDFs)
+/// - Horizontal tab chips (selected = orange bg, unselected = white)
+/// - Swipeable PageView content area
+/// - Visual indicator dots below content (current tab highlighted)
+/// - Tab selection syncs with swipe gestures
+/// - 3-column grid with 3px gap within each tab
 /// - Variable border radii (10/12/14px alternating) for visual interest
-/// - Shows first 9 images by default
-/// - "View all N photos" button if more than 9 images exist
-/// - Tap opens ImageGalleryWidget modal (full-screen gallery)
+/// - Taps open ImageGalleryWidget modal (full-screen gallery)
 /// - Self-contained (reads from businessProvider internally)
-/// - Shrink-wrapped and non-scrollable (part of main CustomScrollView)
 ///
 /// Design:
+/// - Tab chips: 8px gap, selected = orange bg + white text
 /// - Grid spacing: 3px (custom, not from AppSpacing)
 /// - Border radii: 10px, 12px, 14px alternating pattern
+/// - Indicator dots: 6px diameter, 4px gap, orange = active
 /// - Section heading: AppTypography.sectionHeading
 /// - 24px horizontal padding (AppSpacing.xxl)
-/// - 16px vertical spacing (AppSpacing.lg)
-class InlineGalleryWidget extends ConsumerWidget {
+/// - Matches JSX lines 318-377 in business_profile.jsx
+class InlineGalleryWidget extends ConsumerStatefulWidget {
   const InlineGalleryWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<InlineGalleryWidget> createState() =>
+      _InlineGalleryWidgetState();
+}
+
+class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
+  late PageController _pageController;
+  int _currentTabIndex = 0;
+
+  // Tab configuration: matches JSX tab order and API keys
+  static const _tabs = [
+    {'key': 'food', 'labelKey': 'gallery_tab_food'}, // "Mad"
+    {'key': 'menu', 'labelKey': 'gallery_tab_menu'}, // "Menu"
+    {'key': 'interior', 'labelKey': 'gallery_tab_interior'}, // "Inde"
+    {'key': 'outdoor', 'labelKey': 'gallery_tab_exterior'}, // "Ude"
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final business = ref.watch(businessProvider).currentBusiness;
-    final gallery = business?['gallery'] as List?;
+    final galleryData = business?['gallery'] as Map<String, dynamic>?;
 
-    // Hide if no gallery images
-    if (gallery == null || gallery.isEmpty) {
+    // Hide if no gallery data
+    if (galleryData == null || galleryData.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    // Build flat list of all image URLs
-    final allImageUrls = <String>[];
-    for (final image in gallery) {
-      final imageUrl = image['image_url'] as String?;
-      if (imageUrl != null && imageUrl.isNotEmpty) {
-        allImageUrls.add(imageUrl);
+    // Parse gallery categories from API response
+    final galleryCategories = <Map<String, dynamic>>[];
+    for (final tab in _tabs) {
+      final key = tab['key'] as String;
+      final images = galleryData[key] as List?;
+      final imageUrls = <String>[];
+
+      if (images != null) {
+        for (final image in images) {
+          if (image is String && image.isNotEmpty) {
+            imageUrls.add(image);
+          }
+        }
       }
+
+      galleryCategories.add({
+        'key': key,
+        'labelKey': tab['labelKey'],
+        'images': imageUrls,
+      });
     }
 
-    if (allImageUrls.isEmpty) {
+    // Check if any category has images
+    final hasAnyImages =
+        galleryCategories.any((cat) => (cat['images'] as List).isNotEmpty);
+
+    if (!hasAnyImages) {
       return const SizedBox.shrink();
     }
-
-    // Show first 9 images
-    final displayedImages = allImageUrls.take(9).toList();
-    final hasMore = allImageUrls.length > 9;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
@@ -71,72 +117,132 @@ class InlineGalleryWidget extends ConsumerWidget {
           ),
           SizedBox(height: AppSpacing.sm),
 
-          // 3-column grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 3.0,
-              mainAxisSpacing: 3.0,
-              childAspectRatio: 1.0, // Square images
-            ),
-            itemCount: displayedImages.length,
-            itemBuilder: (context, index) {
-              return _buildGalleryImage(
-                context,
-                ref,
-                displayedImages[index],
-                index,
-                allImageUrls,
-              );
-            },
-          ),
+          // Tab chips
+          _buildTabChips(galleryCategories),
+          SizedBox(height: AppSpacing.md),
 
-          // "View all N photos" button (if more than 9)
-          if (hasMore) ...[
-            SizedBox(height: AppSpacing.md),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => _handleViewAllTap(context, ref, allImageUrls),
-                style: TextButton.styleFrom(
-                  backgroundColor: AppColors.bgSurface,
-                  padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.button),
-                  ),
-                ),
-                child: Text(
-                  td(ref, 'gallery_view_all')
-                      .replaceAll('{count}', allImageUrls.length.toString()),
-                  style: AppTypography.bodyRegular.copyWith(
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
+          // Swipeable content area
+          SizedBox(
+            height: 300, // Fixed height for PageView
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              itemCount: galleryCategories.length,
+              itemBuilder: (context, index) {
+                final category = galleryCategories[index];
+                final images = category['images'] as List<String>;
+                return _buildGalleryGrid(images, category['key'] as String);
+              },
             ),
-          ],
+          ),
+          SizedBox(height: AppSpacing.sm),
+
+          // Visual indicator dots
+          _buildIndicatorDots(galleryCategories.length),
         ],
       ),
     );
   }
 
+  /// Build horizontal tab chips
+  Widget _buildTabChips(List<Map<String, dynamic>> categories) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: List.generate(categories.length, (index) {
+          final category = categories[index];
+          final labelKey = category['labelKey'] as String;
+          final images = category['images'] as List<String>;
+          final isSelected = _currentTabIndex == index;
+          final hasImages = images.isNotEmpty;
+
+          // Don't show tab if no images (graceful degradation)
+          if (!hasImages) {
+            return const SizedBox.shrink();
+          }
+
+          return Padding(
+            padding: EdgeInsets.only(right: AppSpacing.sm),
+            child: GestureDetector(
+              onTap: () => _onTabTapped(index),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.accent : Colors.white,
+                  border: Border.all(
+                    color: isSelected ? AppColors.accent : AppColors.border,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(AppRadius.button),
+                ),
+                child: Text(
+                  td(ref, labelKey),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: isSelected ? Colors.white : AppColors.textSecondary,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  /// Build 3-column grid for a category
+  Widget _buildGalleryGrid(List<String> images, String categoryKey) {
+    if (images.isEmpty) {
+      return Center(
+        child: Text(
+          td(ref, 'gallery_no_images'),
+          style: AppTypography.bodyRegular.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+      );
+    }
+
+    // Show first 9 images in grid
+    final displayedImages = images.take(9).toList();
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 3.0,
+        mainAxisSpacing: 3.0,
+        childAspectRatio: 1.0, // Square images
+      ),
+      itemCount: displayedImages.length,
+      itemBuilder: (context, index) {
+        return _buildGalleryImage(
+          displayedImages[index],
+          index,
+          images, // All images for modal
+          categoryKey,
+        );
+      },
+    );
+  }
+
   /// Build individual gallery image with variable border radius
   Widget _buildGalleryImage(
-    BuildContext context,
-    WidgetRef ref,
     String imageUrl,
     int index,
-    List<String> allImageUrls,
+    List<String> allImages,
+    String categoryKey,
   ) {
     // Variable border radii pattern: 10, 12, 14, 10, 12, 14, ...
     final radii = [10.0, 12.0, 14.0];
     final borderRadius = radii[index % 3];
 
     return GestureDetector(
-      onTap: () => _handleImageTap(context, ref, index, allImageUrls),
+      onTap: () => _handleImageTap(index, allImages, categoryKey),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
         child: CachedNetworkImage(
@@ -165,12 +271,56 @@ class InlineGalleryWidget extends ConsumerWidget {
     );
   }
 
+  /// Build visual indicator dots
+  Widget _buildIndicatorDots(int totalTabs) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(totalTabs, (index) {
+        final isActive = _currentTabIndex == index;
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 2.0),
+          width: 6.0,
+          height: 6.0,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isActive ? AppColors.accent : AppColors.border,
+          ),
+        );
+      }),
+    );
+  }
+
+  /// Handle tab chip tap - jump to page
+  void _onTabTapped(int index) {
+    setState(() {
+      _currentTabIndex = index;
+    });
+
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+
+    // Track analytics
+    _trackTabChange(index);
+  }
+
+  /// Handle page swipe - update selected tab
+  void _onPageChanged(int index) {
+    setState(() {
+      _currentTabIndex = index;
+    });
+
+    // Track analytics
+    _trackTabChange(index);
+  }
+
   /// Handle image tap - open ImageGalleryWidget modal
   Future<void> _handleImageTap(
-    BuildContext context,
-    WidgetRef ref,
     int index,
     List<String> imageUrls,
+    String categoryKey,
   ) async {
     // Track analytics
     final analytics = AnalyticsService.instance;
@@ -183,6 +333,7 @@ class InlineGalleryWidget extends ConsumerWidget {
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
         'pageName': 'businessProfile',
+        'category': categoryKey,
         'imageIndex': index,
       },
     )
@@ -200,49 +351,33 @@ class InlineGalleryWidget extends ConsumerWidget {
         builder: (context) => ImageGalleryWidget(
           currentIndex: index,
           imageUrls: imageUrls,
-          categoryName: td(ref, 'gallery_heading'), // "Gallery"
+          categoryName: td(ref, 'gallery_heading'),
         ),
       );
     }
   }
 
-  /// Handle "View all" button tap - open gallery at first image
-  Future<void> _handleViewAllTap(
-    BuildContext context,
-    WidgetRef ref,
-    List<String> imageUrls,
-  ) async {
-    // Track analytics
+  /// Track analytics for tab change
+  void _trackTabChange(int tabIndex) {
+    final tabKey = _tabs[tabIndex]['key'] as String;
+
     final analytics = AnalyticsService.instance;
     ApiService.instance
         .postAnalytics(
-      eventType: 'gallery_view_all_tapped',
+      eventType: 'gallery_tab_changed',
       deviceId: analytics.deviceId ?? '',
       sessionId: analytics.currentSessionId ?? '',
       userId: analytics.userId ?? '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
         'pageName': 'businessProfile',
-        'totalImages': imageUrls.length,
+        'tabIndex': tabIndex,
+        'tabKey': tabKey,
       },
     )
         .catchError((e) {
       debugPrint('Analytics error: $e');
       return ApiCallResponse.failure('Analytics failed');
     });
-
-    // Open full-screen gallery modal at first image
-    if (context.mounted) {
-      await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (context) => ImageGalleryWidget(
-          currentIndex: 0,
-          imageUrls: imageUrls,
-          categoryName: td(ref, 'gallery_heading'),
-        ),
-      );
-    }
   }
 }

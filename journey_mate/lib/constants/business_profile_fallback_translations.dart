@@ -38,6 +38,11 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Gallery
     'gallery_heading': 'Gallery',
     'gallery_view_all': 'View all {count} photos',
+    'gallery_tab_food': 'Food',
+    'gallery_tab_menu': 'Menu',
+    'gallery_tab_interior': 'Interior',
+    'gallery_tab_exterior': 'Outdoor',
+    'gallery_no_images': 'No images available',
 
     // Menu
     'menu_heading': 'Menu',
@@ -76,6 +81,11 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Gallery
     'gallery_heading': 'Galleri',
     'gallery_view_all': 'Se alle {count} billeder',
+    'gallery_tab_food': 'Mad',
+    'gallery_tab_menu': 'Menu',
+    'gallery_tab_interior': 'Inde',
+    'gallery_tab_exterior': 'Ude',
+    'gallery_no_images': 'Ingen billeder tilgængelige',
 
     // Menu
     'menu_heading': 'Menu',
@@ -114,6 +124,11 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Gallery
     'gallery_heading': 'Galerie',
     'gallery_view_all': 'Alle {count} Fotos anzeigen',
+    'gallery_tab_food': 'Essen',
+    'gallery_tab_menu': 'Menü',
+    'gallery_tab_interior': 'Innenraum',
+    'gallery_tab_exterior': 'Außenbereich',
+    'gallery_no_images': 'Keine Bilder verfügbar',
 
     // Menu
     'menu_heading': 'Speisekarte',
@@ -152,6 +167,11 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Gallery
     'gallery_heading': 'Galería',
     'gallery_view_all': 'Ver todas las {count} fotos',
+    'gallery_tab_food': 'Comida',
+    'gallery_tab_menu': 'Menú',
+    'gallery_tab_interior': 'Interior',
+    'gallery_tab_exterior': 'Exterior',
+    'gallery_no_images': 'No hay imágenes disponibles',
 
     // Menu
     'menu_heading': 'Menú',
@@ -190,6 +210,11 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Gallery
     'gallery_heading': 'Galerie',
     'gallery_view_all': 'Voir les {count} photos',
+    'gallery_tab_food': 'Nourriture',
+    'gallery_tab_menu': 'Menu',
+    'gallery_tab_interior': 'Intérieur',
+    'gallery_tab_exterior': 'Extérieur',
+    'gallery_no_images': 'Aucune image disponible',
 
     // Menu
     'menu_heading': 'Menu',
@@ -228,6 +253,11 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Gallery
     'gallery_heading': 'Galleria',
     'gallery_view_all': 'Vedi tutte le {count} foto',
+    'gallery_tab_food': 'Cibo',
+    'gallery_tab_menu': 'Menu',
+    'gallery_tab_interior': 'Interno',
+    'gallery_tab_exterior': 'Esterno',
+    'gallery_no_images': 'Nessuna immagine disponibile',
 
     // Menu
     'menu_heading': 'Menu',
@@ -266,6 +296,11 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Gallery
     'gallery_heading': 'Galleri',
     'gallery_view_all': 'Se alla {count} bilder',
+    'gallery_tab_food': 'Mat',
+    'gallery_tab_menu': 'Meny',
+    'gallery_tab_interior': 'Interiör',
+    'gallery_tab_exterior': 'Utomhus',
+    'gallery_no_images': 'Inga bilder tillgängliga',
 
     // Menu
     'menu_heading': 'Meny',
