@@ -79,11 +79,16 @@ class BusinessNotifier extends Notifier<BusinessState> {
     return null;
   }
 
-  /// Set filter descriptions and match percentage
-  void setFilterDescriptions(List<dynamic> descriptions, double matchPercentage) {
+  /// Set filter descriptions and match counts
+  void setFilterDescriptions(
+    List<dynamic> descriptions,
+    int matchedCount,
+    int totalCount,
+  ) {
     state = state.copyWith(
       filterDescriptions: descriptions,
-      matchPercentage: matchPercentage,
+      matchedCount: matchedCount,
+      totalCount: totalCount,
     );
   }
 

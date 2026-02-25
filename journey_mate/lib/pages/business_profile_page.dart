@@ -128,7 +128,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
     }
 
     try {
-      // Make 3 API calls in parallel
+      // Make 2 API calls in parallel (filter matching now done client-side)
       final results = await Future.wait([
         ApiService.instance.getBusinessProfile(
           businessId: businessIdInt,
@@ -138,15 +138,10 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
           businessId: businessIdInt,
           languageCode: languageCode,
         ),
-        ApiService.instance.getFilterDescriptions(
-          businessId: businessIdInt,
-          languageCode: languageCode,
-        ),
       ]);
 
       final profileResponse = results[0];
       final menuResponse = results[1];
-      final filterDescResponse = results[2];
 
       // Check if page is still mounted after async calls
       if (!mounted) return;
@@ -166,17 +161,30 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
           return;
         }
 
-        // Extract filters from tags or filters array if available
-        // For now, use empty list - filters will be handled separately
-        final filters = <int>[];
+        // Extract filter IDs from business filters array (new API structure)
+        final businessFilters = businessData['filters'] as List?;
+        final filterIds = <int>[];
+        if (businessFilters != null) {
+          for (final filter in businessFilters) {
+            if (filter is Map<String, dynamic>) {
+              final filterId = filter['filter_id'] as int?;
+              if (filterId != null) {
+                filterIds.add(filterId);
+              }
+            }
+          }
+        }
 
-        debugPrint('✅ API data loaded: ${businessData['business_name']}');
+        debugPrint('✅ API data loaded: ${businessData['business_name']} (${filterIds.length} filters)');
 
         ref.read(businessProvider.notifier).setCurrentBusiness(
               business: businessData,
-              filterIds: filters,
+              filterIds: filterIds,
               hours: businessHours,
             );
+
+        // Compute filter match data client-side (for MatchCardWidget)
+        _computeFilterMatchData(businessData, filterIds);
       } else {
         debugPrint('❌ API error: ${profileResponse.error}');
         setState(() {
@@ -208,19 +216,6 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
             );
       }
 
-      // Store filter descriptions in provider (for MatchCardWidget)
-      if (filterDescResponse.succeeded) {
-        final descriptions =
-            filterDescResponse.jsonBody['filterDescriptions'] as List? ?? [];
-        final matchPercentage =
-            (filterDescResponse.jsonBody['matchPercentage'] as num?)?.toDouble() ?? 0.0;
-
-        ref.read(businessProvider.notifier).setFilterDescriptions(
-              descriptions,
-              matchPercentage,
-            );
-      }
-
       // Start menu session (fire-and-forget analytics)
       _startMenuSession(businessIdInt);
 
@@ -243,6 +238,73 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
   // ============================================================================
   // ANALYTICS TRACKING
   // ============================================================================
+
+  /// Compute filter match data client-side by comparing search filters with business filters
+  void _computeFilterMatchData(
+    Map<String, dynamic> businessData,
+    List<int> businessFilterIds,
+  ) {
+    // Read user's search filters
+    final searchState = ref.read(searchStateProvider);
+    final searchFilters = searchState.filtersUsedForSearch;
+
+    // Hide match card if no search filters (user arrived via direct link, not search)
+    if (searchFilters.isEmpty) {
+      ref.read(businessProvider.notifier).setFilterDescriptions([], 0, 0);
+      return;
+    }
+
+    // Extract business filters array (new API structure)
+    final businessFilters = businessData['filters'] as List?;
+    if (businessFilters == null) {
+      ref.read(businessProvider.notifier).setFilterDescriptions([], 0, 0);
+      return;
+    }
+
+    // Build filter lookup map for business (filter_id -> filter object)
+    final businessFilterMap = <int, Map<String, dynamic>>{};
+    for (final filter in businessFilters) {
+      if (filter is Map<String, dynamic>) {
+        final filterId = filter['filter_id'] as int?;
+        if (filterId != null) {
+          businessFilterMap[filterId] = filter;
+        }
+      }
+    }
+
+    // Compare search filters with business filters
+    final filterDescriptions = <Map<String, dynamic>>[];
+    int matchedCount = 0;
+
+    for (final searchFilterId in searchFilters) {
+      final businessFilter = businessFilterMap[searchFilterId];
+      final isMatched = businessFilter != null;
+
+      if (isMatched) {
+        matchedCount++;
+      }
+
+      // Build filter description object
+      filterDescriptions.add({
+        'filter_id': searchFilterId,
+        'filter_name': businessFilter?['filter_name_translated'] ??
+            businessFilter?['filter_name'] ??
+            'Unknown Filter',
+        'filter_description': businessFilter?['filter_description'],
+        'matched': isMatched,
+      });
+    }
+
+    final totalCount = searchFilters.length;
+
+    debugPrint(
+        '🎯 Filter match: $matchedCount out of $totalCount (${filterDescriptions.length} descriptions)');
+
+    // Store in provider for MatchCardWidget
+    ref
+        .read(businessProvider.notifier)
+        .setFilterDescriptions(filterDescriptions, matchedCount, totalCount);
+  }
 
   void _startMenuSession(int businessId) {
     // Fire-and-forget analytics

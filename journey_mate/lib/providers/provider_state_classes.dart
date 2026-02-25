@@ -304,8 +304,9 @@ class BusinessState {
   final List<int> excludedAllergyIds; // Multi-exclude allergens
 
   // Filter match data (for MatchCardWidget)
-  final List<dynamic> filterDescriptions; // Filter descriptions from API
-  final double matchPercentage; // Match percentage (0.0-100.0)
+  final List<dynamic> filterDescriptions; // Filter descriptions with matched booleans
+  final int matchedCount; // Number of filters matched (client-side computed)
+  final int totalCount; // Total number of search filters
 
   const BusinessState({
     required this.currentBusiness,
@@ -318,7 +319,8 @@ class BusinessState {
     this.selectedDietaryPreferenceId,
     required this.excludedAllergyIds,
     required this.filterDescriptions,
-    required this.matchPercentage,
+    required this.matchedCount,
+    required this.totalCount,
   });
 
   factory BusinessState.initial() {
@@ -333,7 +335,8 @@ class BusinessState {
       selectedDietaryPreferenceId: null,
       excludedAllergyIds: [],
       filterDescriptions: [],
-      matchPercentage: 0.0,
+      matchedCount: 0,
+      totalCount: 0,
     );
   }
 
@@ -348,7 +351,8 @@ class BusinessState {
     int? selectedDietaryPreferenceId,
     List<int>? excludedAllergyIds,
     List<dynamic>? filterDescriptions,
-    double? matchPercentage,
+    int? matchedCount,
+    int? totalCount,
   }) {
     return BusinessState(
       currentBusiness: currentBusiness ?? this.currentBusiness,
@@ -361,7 +365,8 @@ class BusinessState {
       selectedDietaryPreferenceId: selectedDietaryPreferenceId ?? this.selectedDietaryPreferenceId,
       excludedAllergyIds: excludedAllergyIds ?? this.excludedAllergyIds,
       filterDescriptions: filterDescriptions ?? this.filterDescriptions,
-      matchPercentage: matchPercentage ?? this.matchPercentage,
+      matchedCount: matchedCount ?? this.matchedCount,
+      totalCount: totalCount ?? this.totalCount,
     );
   }
 
@@ -377,7 +382,8 @@ class BusinessState {
     int? selectedDietaryPreferenceId,
     List<int>? excludedAllergyIds,
     List<dynamic>? filterDescriptions,
-    double? matchPercentage,
+    int? matchedCount,
+    int? totalCount,
     bool clearPreference = false,
   }) {
     return BusinessState(
@@ -391,7 +397,8 @@ class BusinessState {
       selectedDietaryPreferenceId: clearPreference ? null : (selectedDietaryPreferenceId ?? this.selectedDietaryPreferenceId),
       excludedAllergyIds: excludedAllergyIds ?? this.excludedAllergyIds,
       filterDescriptions: filterDescriptions ?? this.filterDescriptions,
-      matchPercentage: matchPercentage ?? this.matchPercentage,
+      matchedCount: matchedCount ?? this.matchedCount,
+      totalCount: totalCount ?? this.totalCount,
     );
   }
 }
