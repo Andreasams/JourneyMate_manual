@@ -53,11 +53,10 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
   double? _lastTextScaleFactor;
 
   // --- Style Constants ---
-  static const double _buttonHeight = 32.0;
   static const double _buttonSpacing = 6.0;
   static const double _clearButtonSpacing = 8.0;
-  static const double _iconSize = 12.0;
-  static const double _fontSize = 12.0;
+  static const double _iconSize = 10.0;
+  static const double _fontSize = 12.5;
 
   // --- Category Title IDs ---
   static const int _locationTitleId = 1;
@@ -472,11 +471,25 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       return const SizedBox.shrink();
     }
 
-    return Stack(
-      children: [
-        _buildScrollableFilterButtons(),
-        _buildStickyGradientClearButton(context),
-      ],
+    return Container(
+      padding: EdgeInsets.only(
+        top: AppSpacing.mlg,      // 14px
+        bottom: AppSpacing.sm,     // 8px
+      ),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.divider,
+            width: 1.0,
+          ),
+        ),
+      ),
+      child: Stack(
+        children: [
+          _buildScrollableFilterButtons(),
+          _buildStickyGradientClearButton(context),
+        ],
+      ),
     );
   }
 
@@ -516,43 +529,40 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     final filterId = filter['id'] as int;
     final displayName = _getDisplayName(filter);
 
-    return SizedBox(
-      height: _buttonHeight,
-      child: ElevatedButton(
-        onPressed: () => _handleFilterRemoval(filterId),
-        style: _buildFilterButtonStyle(),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              displayName,
-              style: TextStyle(
-                fontSize: _fontSize,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textPrimary,
-              ),
+    return ElevatedButton(
+      onPressed: () => _handleFilterRemoval(filterId),
+      style: _buildFilterButtonStyle(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            displayName,
+            style: const TextStyle(
+              fontSize: _fontSize,
+              fontWeight: FontWeight.w600,
+              color: AppColors.green,
             ),
-            const SizedBox(width: 2),
-            Icon(
-              Icons.close,
-              size: _iconSize,
-              color: AppColors.textPrimary,
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 2),
+          const Icon(
+            Icons.close,
+            size: _iconSize,
+            color: AppColors.textPlaceholder,
+          ),
+        ],
       ),
     );
   }
 
   ButtonStyle _buildFilterButtonStyle() {
     return ElevatedButton.styleFrom(
-      backgroundColor: AppColors.bgInput,
-      foregroundColor: AppColors.textPrimary,
+      backgroundColor: AppColors.greenBg,
+      foregroundColor: AppColors.green,
       elevation: 0,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(12, 7, 10, 7),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.chip),
-        side: BorderSide(color: AppColors.border, width: 1),
+        side: const BorderSide(color: AppColors.greenBorder, width: 1.5),
       ),
     );
   }
@@ -583,28 +593,25 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
   }
 
   Widget _buildClearAllButton() {
-    return SizedBox(
+    return ElevatedButton(
       key: _clearButtonKey,
-      height: _buttonHeight,
-      child: ElevatedButton(
-        onPressed: _handleClearAll,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFEEBED),
-          foregroundColor: const Color(0xFFFF5963),
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.chip),
-            side: const BorderSide(color: Colors.red, width: 1),
-          ),
+      onPressed: _handleClearAll,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.bgPage,
+        foregroundColor: AppColors.accent,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.chip),
+          side: const BorderSide(color: AppColors.border, width: 1.5),
         ),
-        child: Text(
-          _getUIText('search_clear_all'),
-          style: const TextStyle(
-            fontSize: _fontSize,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFFFF5963),
-          ),
+      ),
+      child: Text(
+        _getUIText('search_clear_all'),
+        style: const TextStyle(
+          fontSize: _fontSize,
+          fontWeight: FontWeight.w600,
+          color: AppColors.accent,
         ),
       ),
     );

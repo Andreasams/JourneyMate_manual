@@ -444,10 +444,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 error: (_, _) => const SizedBox.shrink(),
               ),
 
-            // Spacing after selected filters (if shown)
-            if (searchState.filtersUsedForSearch.isNotEmpty)
-              SizedBox(height: AppSpacing.md),
-
             // Location permission banner (show if location not usable AND not dismissed)
             if (!locationState.isLocationUsable && !locationState.isBannerDismissed)
               Padding(
