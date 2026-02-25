@@ -472,9 +472,11 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     }
 
     return Container(
-      padding: EdgeInsets.only(
-        top: AppSpacing.md,      // 12px - matches spacing between other elements
-        bottom: AppSpacing.md,   // 12px - matches spacing between other elements
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.xl,   // 20px - matches search page horizontal padding
+        AppSpacing.md,   // 12px - matches spacing between other elements
+        AppSpacing.xl,   // 20px - matches search page horizontal padding
+        AppSpacing.md,   // 12px - matches spacing between other elements
       ),
       decoration: BoxDecoration(
         border: Border(
@@ -559,7 +561,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       backgroundColor: AppColors.greenBg,
       foregroundColor: AppColors.green,
       elevation: 0,
-      padding: const EdgeInsets.fromLTRB(12, 9, 10, 9),
+      padding: const EdgeInsets.fromLTRB(12, 8, 10, 8),
       minimumSize: Size.zero,
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       shape: RoundedRectangleBorder(
@@ -571,7 +573,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
 
   Widget _buildStickyGradientClearButton(BuildContext context) {
     return Positioned(
-      left: 0,
+      left: AppSpacing.xl,  // 20px - aligns with container's left padding
       top: 0,
       child: Container(
         decoration: BoxDecoration(
@@ -601,7 +603,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
         backgroundColor: AppColors.bgPage,
         foregroundColor: AppColors.accent,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(
