@@ -10,14 +10,16 @@ import '../../services/translation_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
 
-/// Match Card Widget - Shows filter match percentage with conditional styling
+/// Match Card Widget - Shows filter match with collapsible UI
 ///
 /// Features:
+/// - Collapsible: tap to expand/collapse filter list
+/// - Default state: collapsed (header + chevron only)
 /// - Green background/border for 100% match
 /// - Orange background/border for partial match
-/// - Shows matched filters with green check icon
-/// - Shows missed filters with red X icon
-/// - Tap opens FilterDescriptionSheet modal with detailed descriptions
+/// - Shows matched filters with green check icon (when expanded)
+/// - Shows missed filters with red X icon (when expanded)
+/// - Chevron rotates 180° with smooth animation
 /// - Self-contained (reads from businessProvider internally)
 ///
 /// Design:
@@ -25,11 +27,20 @@ import '../../services/api_service.dart';
 /// - padding: 16px (AppSpacing.lg)
 /// - Full match: greenBg background, greenBorder border, green text
 /// - Partial match: orangeBg background, orangeBorder border, accent text
-class MatchCardWidget extends ConsumerWidget {
+/// - Animation: 0.25s duration for chevron rotation
+class MatchCardWidget extends ConsumerStatefulWidget {
   const MatchCardWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MatchCardWidget> createState() => _MatchCardWidgetState();
+}
+
+class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
+  // Collapse state: false = collapsed (default), true = expanded
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final businessState = ref.watch(businessProvider);
     final filterDescriptions = businessState.filterDescriptions;
 
@@ -68,7 +79,7 @@ class MatchCardWidget extends ConsumerWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       child: GestureDetector(
-        onTap: () => _handleTap(context, ref),
+        onTap: _toggleExpanded,
         child: Container(
           width: double.infinity,
           padding: EdgeInsets.all(AppSpacing.lg),
@@ -80,88 +91,113 @@ class MatchCardWidget extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Match count
-              Text(
-                td(ref, 'match_card_matches')
-                    .replaceAll('{count}', matchedCount.toString())
-                    .replaceAll('{total}', totalCount.toString()),
-                style: AppTypography.sectionHeading.copyWith(
-                  color: primaryColor,
-                ),
+              // Header: Match count with chevron
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      td(ref, 'match_card_matches')
+                          .replaceAll('{count}', matchedCount.toString())
+                          .replaceAll('{total}', totalCount.toString()),
+                      style: AppTypography.sectionHeading.copyWith(
+                        color: primaryColor,
+                      ),
+                    ),
+                  ),
+                  // Animated chevron icon
+                  AnimatedRotation(
+                    turns: _isExpanded ? 0.5 : 0.0, // 0.5 turns = 180 degrees
+                    duration: const Duration(milliseconds: 250),
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: primaryColor,
+                      size: 24,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: AppSpacing.sm),
 
-              // Matched filters (green check)
-              if (matchedFilters.isNotEmpty) ...[
-                ...matchedFilters.map(
-                  (filter) => Padding(
-                    padding: EdgeInsets.only(bottom: AppSpacing.xs),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.check_circle,
-                          color: AppColors.green,
-                          size: 16,
-                        ),
-                        SizedBox(width: AppSpacing.xs),
-                        Expanded(
-                          child: Text(
-                            filter['filter_name'] ?? '',
-                            style: AppTypography.bodyRegular.copyWith(
-                              color: AppColors.textPrimary,
+              // Expanded content: filter lists
+              if (_isExpanded) ...[
+                SizedBox(height: AppSpacing.sm),
+
+                // Matched filters (green check)
+                if (matchedFilters.isNotEmpty) ...[
+                  ...matchedFilters.map(
+                    (filter) => Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.xs),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: AppColors.green,
+                            size: 16,
+                          ),
+                          SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              filter['filter_name'] ?? '',
+                              style: AppTypography.bodyRegular.copyWith(
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
 
-              // Missed filters (red X)
-              if (missedFilters.isNotEmpty) ...[
-                if (matchedFilters.isNotEmpty) SizedBox(height: AppSpacing.xs),
-                ...missedFilters.map(
-                  (filter) => Padding(
-                    padding: EdgeInsets.only(bottom: AppSpacing.xs),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.cancel,
-                          color: AppColors.red,
-                          size: 16,
-                        ),
-                        SizedBox(width: AppSpacing.xs),
-                        Expanded(
-                          child: Text(
-                            filter['filter_name'] ?? '',
-                            style: AppTypography.bodyRegular.copyWith(
-                              color: AppColors.textSecondary,
+                // Missed filters (red X)
+                if (missedFilters.isNotEmpty) ...[
+                  if (matchedFilters.isNotEmpty)
+                    SizedBox(height: AppSpacing.xs),
+                  ...missedFilters.map(
+                    (filter) => Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.xs),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.cancel,
+                            color: AppColors.red,
+                            size: 16,
+                          ),
+                          SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              filter['filter_name'] ?? '',
+                              style: AppTypography.bodyRegular.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
-
-                    ],
+            ],
           ),
         ),
       ),
     );
   }
 
-  /// Handle tap - track analytics (modal functionality to be added later)
-  Future<void> _handleTap(BuildContext context, WidgetRef ref) async {
+  /// Toggle expanded/collapsed state and track analytics
+  void _toggleExpanded() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+    });
+
     // Track analytics
     final analytics = AnalyticsService.instance;
     ApiService.instance
         .postAnalytics(
-      eventType: 'match_card_tapped',
+      eventType: _isExpanded ? 'match_card_expanded' : 'match_card_collapsed',
       deviceId: analytics.deviceId ?? '',
       sessionId: analytics.currentSessionId ?? '',
       userId: analytics.userId ?? '',
@@ -174,8 +210,5 @@ class MatchCardWidget extends ConsumerWidget {
       debugPrint('Analytics error: $e');
       return ApiCallResponse.failure('Analytics failed');
     });
-
-    // TODO: Open detailed filter descriptions modal
-    // For now, the card shows all filters inline, so tap does nothing
   }
 }
