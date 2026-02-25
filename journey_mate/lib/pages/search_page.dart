@@ -878,7 +878,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             onPressed: () {
               ref.read(locationProvider.notifier).dismissBanner();
             },
-            tooltip: td(ref, 'dismiss'),
           ),
         ),
       ],

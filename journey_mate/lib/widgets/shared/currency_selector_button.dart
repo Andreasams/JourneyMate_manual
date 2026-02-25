@@ -186,9 +186,14 @@ class _CurrencySelectorButtonState
     _overlayEntry?.remove();
     _overlayEntry = null;
     if (mounted) {
-      setState(() {
-        _isOverlayVisible = false;
-      });
+      try {
+        setState(() {
+          _isOverlayVisible = false;
+        });
+      } catch (e) {
+        // Widget already disposed - silently ignore
+        debugPrint('⚠️ setState called on disposed CurrencySelectorButton: $e');
+      }
     }
   }
 
