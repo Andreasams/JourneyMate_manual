@@ -27,6 +27,8 @@ import '../widgets/shared/menu_dishes_list_view.dart';
 import '../widgets/shared/item_bottom_sheet.dart';
 import '../widgets/shared/package_bottom_sheet.dart';
 import '../widgets/shared/category_description_sheet.dart';
+import '../widgets/shared/opening_hours_and_weekdays.dart';
+import '../widgets/shared/business_feature_buttons.dart';
 import '../providers/filter_providers.dart';
 import '../providers/search_providers.dart';
 import 'package:share_plus/share_plus.dart';
@@ -931,5 +933,168 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
     return state.selectedDietaryRestrictionIds.isNotEmpty ||
         state.selectedDietaryPreferenceId != null ||
         state.excludedAllergyIds.isNotEmpty;
+  }
+
+  // ============================================================================
+  // SECTION BUILDERS (for future CustomScrollView integration)
+  // ============================================================================
+
+  /// Build opening hours section
+  Widget _buildOpeningHoursSection() {
+    final openingHours = ref.read(businessProvider).openingHours;
+
+    if (openingHours == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            td(ref, 'opening_hours_heading'),
+            style: AppTypography.sectionHeading,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          OpeningHoursAndWeekdays(
+            openingHours: openingHours,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build facilities section (business features)
+  Widget _buildFacilitiesSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            td(ref, 'facilities_heading'),
+            style: AppTypography.sectionHeading,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          BusinessFeatureButtons(
+            containerWidth:
+                MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
+            onInitialCount: (int count) async {
+              debugPrint('Facilities count: $count');
+            },
+            onHeightCalculated: (double height) async {
+              debugPrint('Facilities widget height: $height');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build payments section
+  Widget _buildPaymentsSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            td(ref, 'about_payment_options_label'),
+            style: AppTypography.sectionHeading,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          PaymentOptionsWidget(
+            containerWidth:
+                MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
+            filters: ref.watch(filterProvider).value?.filtersForLanguage ?? [],
+            filtersUsedForSearch:
+                ref.watch(searchStateProvider).filtersUsedForSearch,
+            filtersOfThisBusiness: ref.watch(businessProvider).businessFilterIds,
+            onInitialCount: (int count) async {
+              debugPrint('Payment options count: $count');
+            },
+            onHeightCalculated: (double height) async {
+              debugPrint('Payment widget height: $height');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build about section (expandable description)
+  Widget _buildAboutSection() {
+    final business = ref.read(businessProvider).currentBusiness;
+    final description = business?['description'] as String?;
+
+    if (description == null || description.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            td(ref, 'about_description_label'),
+            style: AppTypography.sectionHeading,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          ExpandableTextWidget(
+            text: description,
+            businessId: int.tryParse(widget.businessId),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build report link button
+  Widget _buildReportLink() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Center(
+        child: TextButton.icon(
+          onPressed: () async {
+            // Track analytics
+            final analytics = AnalyticsService.instance;
+            ApiService.instance
+                .postAnalytics(
+              eventType: 'report_link_tapped',
+              deviceId: analytics.deviceId ?? '',
+              sessionId: analytics.currentSessionId ?? '',
+              userId: analytics.userId ?? '',
+              timestamp: DateTime.now().toIso8601String(),
+              eventData: {
+                'pageName': 'businessProfile',
+              },
+            )
+                .catchError((e) {
+              debugPrint('Analytics error: $e');
+              return ApiCallResponse.failure('Analytics failed');
+            });
+
+            // Open report form
+            if (mounted) {
+              await showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const ErroneousInfoFormWidget(),
+              );
+            }
+          },
+          icon: Icon(Icons.report_outlined, color: AppColors.textSecondary),
+          label: Text(
+            td(ref, 'about_report_incorrect_info'),
+            style: AppTypography.label.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
