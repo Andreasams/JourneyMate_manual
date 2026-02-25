@@ -46,6 +46,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
 
     // Menu
     'menu_heading': 'Menu',
+    'menu_category_all': 'All',
     'menu_filters_active': '{count} filters active',
     'menu_filters_none': 'No filters active',
     'menu_filters_edit': 'Edit',
@@ -89,6 +90,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
 
     // Menu
     'menu_heading': 'Menu',
+    'menu_category_all': 'Alle',
     'menu_filters_active': '{count} filtre aktive',
     'menu_filters_none': 'Ingen filtre aktive',
     'menu_filters_edit': 'Rediger',
@@ -132,6 +134,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
 
     // Menu
     'menu_heading': 'Speisekarte',
+    'menu_category_all': 'Alle',
     'menu_filters_active': '{count} Filter aktiv',
     'menu_filters_none': 'Keine Filter aktiv',
     'menu_filters_edit': 'Bearbeiten',
@@ -175,6 +178,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
 
     // Menu
     'menu_heading': 'Menú',
+    'menu_category_all': 'Todos',
     'menu_filters_active': '{count} filtros activos',
     'menu_filters_none': 'No hay filtros activos',
     'menu_filters_edit': 'Editar',
@@ -218,6 +222,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
 
     // Menu
     'menu_heading': 'Menu',
+    'menu_category_all': 'Tous',
     'menu_filters_active': '{count} filtres actifs',
     'menu_filters_none': 'Aucun filtre actif',
     'menu_filters_edit': 'Modifier',
@@ -261,6 +266,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
 
     // Menu
     'menu_heading': 'Menu',
+    'menu_category_all': 'Tutti',
     'menu_filters_active': '{count} filtri attivi',
     'menu_filters_none': 'Nessun filtro attivo',
     'menu_filters_edit': 'Modifica',
@@ -304,6 +310,7 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
 
     // Menu
     'menu_heading': 'Meny',
+    'menu_category_all': 'Alla',
     'menu_filters_active': '{count} filter aktiva',
     'menu_filters_none': 'Inga filter aktiva',
     'menu_filters_edit': 'Redigera',

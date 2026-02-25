@@ -46,6 +46,7 @@ class InlineMenuWidget extends ConsumerStatefulWidget {
 
 class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
   bool _isExpanded = false;
+  String? _selectedCategoryId; // null = "All" categories
 
   @override
   Widget build(BuildContext context) {
@@ -58,15 +59,37 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
       return const SizedBox.shrink();
     }
 
-    // Build flat list of all menu items (across all menus/categories)
+    // Extract categories from menuCategories (from API)
+    final menuCategoriesRaw = business?['menuCategories'] as List?;
+    final categories = <Map<String, dynamic>>[];
+    if (menuCategoriesRaw != null) {
+      for (final cat in menuCategoriesRaw) {
+        if (cat is Map<String, dynamic>) {
+          categories.add({
+            'category_id': cat['menu_category_id']?.toString() ?? '',
+            'category_name': cat['category_name'] ?? '',
+            'display_order': cat['category_display_order'] ?? 999,
+          });
+        }
+      }
+      // Sort by display_order
+      categories.sort((a, b) =>
+          (a['display_order'] as int).compareTo(b['display_order'] as int));
+    }
+
+    // Build flat list of all menu items with category_id
     final allItems = <Map<String, dynamic>>[];
     for (final menu in menuItems) {
-      final categories = menu['categories'] as List? ?? [];
-      for (final category in categories) {
+      final categoriesData = menu['categories'] as List? ?? [];
+      for (final category in categoriesData) {
+        final categoryId = category['menu_category_id']?.toString();
         final items = category['items'] as List? ?? [];
         for (final item in items) {
           if (item is Map<String, dynamic>) {
-            allItems.add(item);
+            // Add category_id to item for filtering
+            final itemWithCategory = Map<String, dynamic>.from(item);
+            itemWithCategory['_category_id'] = categoryId;
+            allItems.add(itemWithCategory);
           }
         }
       }
@@ -76,9 +99,17 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
       return const SizedBox.shrink();
     }
 
+    // Filter items by selected category
+    final filteredItems = _selectedCategoryId == null
+        ? allItems // "All" - show everything
+        : allItems
+            .where((item) => item['_category_id'] == _selectedCategoryId)
+            .toList();
+
     // Show first 5 items, or all if expanded
-    final displayedItems = _isExpanded ? allItems : allItems.take(5).toList();
-    final hasMore = allItems.length > 5;
+    final displayedItems =
+        _isExpanded ? filteredItems : filteredItems.take(5).toList();
+    final hasMore = filteredItems.length > 5;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
@@ -92,7 +123,13 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
           ),
           SizedBox(height: AppSpacing.sm),
 
-          // Filter panel
+          // Category chips (if multiple categories exist)
+          if (categories.length > 1) ...[
+            _buildCategoryChips(categories),
+            SizedBox(height: AppSpacing.md),
+          ],
+
+          // Filter panel (dietary filters)
           _buildFilterPanel(),
           SizedBox(height: AppSpacing.md),
 
@@ -136,6 +173,90 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  /// Build horizontal category chips
+  Widget _buildCategoryChips(List<Map<String, dynamic>> categories) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          // "All" chip
+          Padding(
+            padding: EdgeInsets.only(right: AppSpacing.sm),
+            child: GestureDetector(
+              onTap: () => _onCategoryTapped(null), // null = "All"
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: _selectedCategoryId == null
+                      ? AppColors.accent
+                      : Colors.white,
+                  border: Border.all(
+                    color: _selectedCategoryId == null
+                        ? AppColors.accent
+                        : AppColors.border,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(AppRadius.button),
+                ),
+                child: Text(
+                  td(ref, 'menu_category_all'),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: _selectedCategoryId == null
+                        ? Colors.white
+                        : AppColors.textSecondary,
+                    fontWeight: _selectedCategoryId == null
+                        ? FontWeight.w600
+                        : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Individual category chips
+          ...categories.map((category) {
+            final categoryId = category['category_id'] as String;
+            final categoryName = category['category_name'] as String;
+            final isSelected = _selectedCategoryId == categoryId;
+
+            return Padding(
+              padding: EdgeInsets.only(right: AppSpacing.sm),
+              child: GestureDetector(
+                onTap: () => _onCategoryTapped(categoryId),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.accent : Colors.white,
+                    border: Border.all(
+                      color:
+                          isSelected ? AppColors.accent : AppColors.border,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(AppRadius.button),
+                  ),
+                  child: Text(
+                    categoryName,
+                    style: AppTypography.bodySmall.copyWith(
+                      color:
+                          isSelected ? Colors.white : AppColors.textSecondary,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -381,6 +502,33 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
         ),
       );
     }
+  }
+
+  /// Handle category chip tap
+  void _onCategoryTapped(String? categoryId) {
+    setState(() {
+      _selectedCategoryId = categoryId;
+      _isExpanded = false; // Reset expansion when category changes
+    });
+
+    // Track analytics
+    final analytics = AnalyticsService.instance;
+    ApiService.instance
+        .postAnalytics(
+      eventType: 'menu_category_selected',
+      deviceId: analytics.deviceId ?? '',
+      sessionId: analytics.currentSessionId ?? '',
+      userId: analytics.userId ?? '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {
+        'pageName': 'businessProfile',
+        'categoryId': categoryId ?? 'all',
+      },
+    )
+        .catchError((e) {
+      debugPrint('Analytics error: $e');
+      return ApiCallResponse.failure('Analytics failed');
+    });
   }
 
   /// Handle expand/collapse toggle
