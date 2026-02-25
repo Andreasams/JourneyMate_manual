@@ -14,11 +14,13 @@ import '../../theme/app_typography.dart';
 /// - activeTabIndex: Currently selected tab (0, 1, or 2)
 /// - onTabChanged: Callback when user taps a title
 /// - width: Row width
+/// - tabCounts: Optional map of titleId → selection count for badge display
 ///
 /// Design:
 /// - 3 columns with flex distribution (36% / 33% / 31% per design system)
 /// - Active tab: orange text + 2px bottom border
 /// - Inactive tabs: gray text, no border
+/// - Count badges: 18px circle, orange when active, grey when inactive
 /// - Uses td(ref, key) for translation
 class FilterTitlesRow extends ConsumerWidget {
   const FilterTitlesRow({
@@ -26,11 +28,13 @@ class FilterTitlesRow extends ConsumerWidget {
     required this.activeTabIndex,
     required this.onTabChanged,
     this.width,
+    this.tabCounts,
   });
 
   final int activeTabIndex;
   final Function(int) onTabChanged;
   final double? width;
+  final Map<int, int>? tabCounts;
 
   // Tab indices
   static const int _locationTabIndex = 0;
@@ -73,6 +77,11 @@ class FilterTitlesRow extends ConsumerWidget {
     final isSelected = _isSelected(tabIndex);
     final title = td(ref, _getTranslationKey(tabIndex));
 
+    // Get count for this tab (titleId = tabIndex + 1)
+    final titleId = tabIndex + 1;
+    final count = tabCounts?[titleId] ?? 0;
+    final showBadge = count > 0;
+
     return Expanded(
       flex: flex,
       child: GestureDetector(
@@ -89,15 +98,42 @@ class FilterTitlesRow extends ConsumerWidget {
             ),
           ),
           alignment: Alignment.center,
-          child: Text(
-            title,
-            style: AppTypography.filterTab.copyWith(
-              color: _getTitleColor(tabIndex),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                title,
+                style: AppTypography.filterTab.copyWith(
+                  color: _getTitleColor(tabIndex),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+              if (showBadge) ...[
+                SizedBox(width: 5),
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.accent : Color(0xFFBBBBBB),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '$count',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
@@ -110,9 +146,10 @@ class FilterTitlesRow extends ConsumerWidget {
       width: width ?? MediaQuery.of(context).size.width,
       child: Row(
         children: [
-          _buildTabButton(ref, _locationTabIndex, 36), // 36% flex
-          _buildTabButton(ref, _typeTabIndex, 33),     // 33% flex
-          _buildTabButton(ref, _needsTabIndex, 31),    // 31% flex
+          // Experimenting with equal 33% widths instead of 36%/33%/31%
+          _buildTabButton(ref, _locationTabIndex, 1), // 33% flex
+          _buildTabButton(ref, _typeTabIndex, 1),     // 33% flex
+          _buildTabButton(ref, _needsTabIndex, 1),    // 33% flex
         ],
       ),
     );

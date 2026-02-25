@@ -25,6 +25,7 @@ enum FilterSelectionType { none, neighborhood, shoppingArea, trainStation }
 ///
 /// KEY FEATURES:
 /// - Three-column hierarchical interface (categories → items → sub-items)
+/// - Equal 33% column widths (experimental) to align with tab headers
 /// - Real-time result count updates during filter selection
 /// - Selected filters displayed as removable chips
 /// - Auto-coordination of location filters (neighborhood/shopping/train)
@@ -33,6 +34,7 @@ enum FilterSelectionType { none, neighborhood, shoppingArea, trainStation }
 /// - Grey left column with white selection background
 /// - Orange accent bar on selected category
 /// - Selected items use bold font (+100 weight)
+/// - Count badges on tab headers (orange when active, grey when inactive)
 ///
 /// PRESENTATION CHANGE (FlutterFlow → New design):
 /// - FlutterFlow: Inline modal overlay (embedded in page with `mayLoad` parameter)
@@ -977,14 +979,14 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
             height: 1,
             color: _columnDividerColor,
           ),
-          // The three columns
+          // The three columns (experimenting with equal 33% widths)
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Left column (categories) - grey background
                 Expanded(
-                  flex: 1,
+                  flex: 1, // 33% (changed from original 36%)
                   child: _buildFilterColumn(
                     _getCategories(widget.selectedTitleID),
                     'category',
@@ -997,7 +999,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
                 ),
                 // Middle column (items) - white background
                 Expanded(
-                  flex: 1,
+                  flex: 1, // 33% (unchanged)
                   child: _buildFilterColumn(
                     selectedCategoryId != null
                         ? _getItems(selectedCategoryId!)
@@ -1012,7 +1014,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
                 ),
                 // Right column (sub-items) - white background
                 Expanded(
-                  flex: 1,
+                  flex: 1, // 33% (changed from original 31%)
                   child: _buildFilterColumn(
                     selectedItemId != null ? _getSubItems(selectedItemId!) : [],
                     'sub_item',

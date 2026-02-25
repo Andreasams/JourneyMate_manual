@@ -234,6 +234,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final filterState = ref.read(filterProvider);
     final searchState = ref.read(searchStateProvider);
 
+    // Calculate filter counts for tab badges
+    final filterCounts = _calculateFilterCounts(
+      searchState.filtersUsedForSearch,
+      filterState,
+    );
+
     if (!mounted) return;
 
     setState(() => _isFilterSheetOpen = true);
@@ -273,6 +279,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                         setState(() => _activeFilterTab = index);
                         setBottomSheetState(() => _activeFilterTab = index);
                       },
+                      tabCounts: filterCounts,
                     ),
 
                     // Filter content
