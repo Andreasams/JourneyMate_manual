@@ -20,6 +20,7 @@ import '../../widgets/business_profile/hero_section_widget.dart';
 import '../../widgets/business_profile/quick_actions_pills_widget.dart';
 import '../../widgets/business_profile/match_card_widget.dart';
 import '../../widgets/business_profile/tags_row_widget.dart';
+import '../../widgets/business_profile/opening_hours_contact_widget.dart';
 
 /// Business Profile Page V2 - Complete rewrite from JSX blueprint
 ///
@@ -302,8 +303,11 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
               const TagsRowWidget(),
               SizedBox(height: AppSpacing.lg),
 
-              // TODO: Remaining sections (Phase 3-7)
-              // - Opening hours & contact
+              // 5. Opening Hours & Contact (Phase 3)
+              const OpeningHoursContactWidget(),
+              SizedBox(height: AppSpacing.lg),
+
+              // TODO: Remaining sections (Phase 4-7)
               // - Gallery
               // - Menu with inline filter panel
               // - Facilities & payments

@@ -1,0 +1,188 @@
+===============================================================================
+PHASE 3: OPENING HOURS & CONTACT WIDGET - TRANSLATION KEYS
+===============================================================================
+
+These translation keys are currently hardcoded in:
+  journey_mate/lib/widgets/business_profile/opening_hours_contact_widget.dart
+
+They need to be added to the `ui_translations` table in Supabase for all 7 languages.
+
+-------------------------------------------------------------------------------
+INSTRUCTIONS FOR DATABASE INSERTION
+-------------------------------------------------------------------------------
+
+1. Add these 10 keys to the `ui_translations` table
+2. For each key, create entries for all 7 languages: da, en, es, fr, de, it, nl
+3. Danish (da) and English (en) translations are provided below
+4. Other languages need translation from Danish or English
+5. After adding to database, remove the _t() method from the widget and replace with td(ref, 'key')
+
+-------------------------------------------------------------------------------
+TRANSLATION KEY DETAILS
+-------------------------------------------------------------------------------
+
+Key: opening_hours_and_contact
+Description: Section title for the collapsible opening hours and contact section
+Danish (da): Åbningstider og kontakt
+English (en): Opening Hours & Contact
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+---
+
+Key: opening_hours_label
+Description: Label for the opening hours subsection (uppercase)
+Danish (da): ÅBNINGSTIDER
+English (en): OPENING HOURS
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+---
+
+Key: contact_label
+Description: Label for the contact subsection (uppercase)
+Danish (da): KONTAKT
+English (en): CONTACT
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+---
+
+Key: today_prefix
+Description: Prefix for today's hours preview when section is collapsed (includes trailing space)
+Danish (da): I dag:
+English (en): Today:
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+---
+
+Key: closed
+Description: Text shown when a business is closed on a specific day
+Danish (da): Lukket
+English (en): Closed
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+---
+
+Key: phone
+Description: Label for phone number in contact section
+Danish (da): Telefon
+English (en): Phone
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+---
+
+Key: website
+Description: Label for website link in contact section
+Danish (da): Hjemmeside
+English (en): Website
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+---
+
+Key: booking
+Description: Label for booking/reservation link in contact section
+Danish (da): Booking
+English (en): Booking
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+---
+
+Key: instagram
+Description: Label for Instagram link in contact section
+Danish (da): Instagram
+English (en): Instagram
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+---
+
+Key: copied_to_clipboard
+Description: Confirmation message shown when phone number is copied to clipboard
+Danish (da): Kopieret til udklipsholder
+English (en): Copied to clipboard
+Spanish (es): [NEEDS TRANSLATION]
+French (fr): [NEEDS TRANSLATION]
+German (de): [NEEDS TRANSLATION]
+Italian (it): [NEEDS TRANSLATION]
+Dutch (nl): [NEEDS TRANSLATION]
+
+-------------------------------------------------------------------------------
+SQL INSERT TEMPLATE (Example for one key in two languages)
+-------------------------------------------------------------------------------
+
+-- Example: opening_hours_and_contact key
+INSERT INTO ui_translations (key, language_code, translation_text)
+VALUES
+  ('opening_hours_and_contact', 'da', 'Åbningstider og kontakt'),
+  ('opening_hours_and_contact', 'en', 'Opening Hours & Contact');
+
+-- Repeat for all 10 keys across all 7 languages (70 total inserts)
+
+-------------------------------------------------------------------------------
+EXISTING KEYS (Already in database - DO NOT ADD)
+-------------------------------------------------------------------------------
+
+These keys are reused from existing widgets and should already be in the database:
+
+Weekday names:
+  - day_monday_cap, day_tuesday_cap, day_wednesday_cap, day_thursday_cap
+  - day_friday_cap, day_saturday_cap, day_sunday_cap
+
+Cutoff type labels:
+  - hours_kitchen, hours_last_arrival, hours_last_order, hours_last_booking
+  - hours_first_seating, hours_second_seating, hours_third_seating
+  - hours_call_for_hours
+
+Error messages:
+  - error_cannot_make_call, error_cannot_open_website
+
+-------------------------------------------------------------------------------
+CLEANUP AFTER DATABASE INSERTION
+-------------------------------------------------------------------------------
+
+Once all keys are added to the database:
+
+1. Remove the _t() method from opening_hours_contact_widget.dart
+2. Replace all _t('key') calls with td(ref, 'key')
+3. Remove the hardcoded translations map
+4. Remove the locale_provider import if no longer needed
+5. Test in all 7 languages to verify translations work
+6. Remove this file (translation_keys_phase3.txt)
+
+===============================================================================
+Generated: 2026-02-25
+Phase: Business Profile V2 - Phase 3 (Opening Hours & Contact)
+===============================================================================
