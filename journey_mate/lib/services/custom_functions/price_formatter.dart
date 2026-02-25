@@ -124,6 +124,7 @@ String? convertAndFormatPrice(
 ///   originalCurrencyCode: ISO 4217 currency code of the original price
 ///   exchangeRate: Exchange rate from original to target currency
 ///   targetCurrencyCode: ISO 4217 currency code for output
+///   forceNoDecimals: If true, strips all decimals regardless of currency rules (for search results)
 ///
 /// Returns:
 ///   Formatted price range string (e.g., "100-200 kr.")
@@ -132,8 +133,9 @@ String? convertAndFormatPriceRange(
   double maxPrice,
   String originalCurrencyCode,
   double exchangeRate,
-  String targetCurrencyCode,
-) {
+  String targetCurrencyCode, {
+  bool forceNoDecimals = false,
+}) {
   // Get currency formatting rules to extract symbol directly (preserves periods in "kr.")
   final rulesJson = getCurrencyFormattingRules(targetCurrencyCode);
   if (rulesJson == null) return null;
@@ -165,8 +167,14 @@ String? convertAndFormatPriceRange(
   if (formattedMin == null || formattedMax == null) return null;
 
   // Extract numeric parts only (preserve decimal points, remove symbols and spaces)
-  final minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,.]'), '').trim();
-  final maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,.]'), '').trim();
+  var minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,.]'), '').trim();
+  var maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,.]'), '').trim();
+
+  // Strip decimals if requested (for search results page)
+  if (forceNoDecimals) {
+    minNumeric = minNumeric.split('.')[0];
+    maxNumeric = maxNumeric.split('.')[0];
+  }
 
   // Build range string using symbol from rules (not extracted from formatted string)
   if (isPrefix) {

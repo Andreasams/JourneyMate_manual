@@ -98,8 +98,6 @@ class _SearchResultsListViewState
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('📊 [6] SearchResultsListView.build() START');
-
     // Watch both searchResults AND active filters for match grouping
     final searchState = ref.watch(searchStateProvider);
     final searchResults = searchState.searchResults;
@@ -107,7 +105,6 @@ class _SearchResultsListViewState
 
     // Show shimmer while loading
     if (searchResults == null) {
-      debugPrint('📊 [6a] searchResults null → returning shimmer');
       return const RestaurantListShimmerWidget();
     }
 
@@ -116,43 +113,26 @@ class _SearchResultsListViewState
 
     // Empty state
     if (documents.isEmpty) {
-      debugPrint('📊 [6b] documents empty → returning empty state');
       return _buildEmptyState();
     }
-
-    debugPrint('📊 [6c] documents.length=${documents.length}, activeFilters=${activeFilters.length}');
 
     // Check if we should show match sections
     final showMatchSections = activeFilters.isNotEmpty;
 
-    // List of businesses
-    // LayoutBuilder kept for debug constraint logging.
-    // Parent Stack uses StackFit.expand to provide tight height constraints.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        debugPrint('📐 [7] LISTVIEW LayoutBuilder: ${constraints.maxHeight}h × ${constraints.maxWidth}w');
-
-        if (constraints.maxHeight == 0) {
-          debugPrint('⚠️  [7] WARNING: maxHeight is ZERO - ListView will not render!');
-        }
-
-        if (showMatchSections) {
-          return _buildMatchSections(documents, activeFilters.length, constraints);
-        } else {
-          return _buildFlatList(documents, constraints);
-        }
-      },
-    );
+    if (showMatchSections) {
+      return _buildMatchSections(documents, activeFilters.length);
+    } else {
+      return _buildFlatList(documents);
+    }
   }
 
   /// Builds a flat list when no filters are active
-  Widget _buildFlatList(List<dynamic> documents, BoxConstraints constraints) {
+  Widget _buildFlatList(List<dynamic> documents) {
     return ListView.separated(
       padding: const EdgeInsets.only(bottom: 32.0),
       itemCount: documents.length,
       separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
       itemBuilder: (context, index) {
-        debugPrint('📋 [8] ListView itemBuilder called for index=$index');
         final businessData = documents[index];
         final businessId = _getBusinessId(businessData);
 
@@ -186,7 +166,6 @@ class _SearchResultsListViewState
   Widget _buildMatchSections(
     List<dynamic> documents,
     int totalActiveFilters,
-    BoxConstraints constraints,
   ) {
     // Group documents by match quality
     final fullMatch = <dynamic>[];
@@ -203,8 +182,6 @@ class _SearchResultsListViewState
         noMatch.add(doc);
       }
     }
-
-    debugPrint('🎯 Match sections: full=${fullMatch.length}, partial=${partialMatch.length}, none=${noMatch.length}');
 
     // Build sections list
     final sections = <Widget>[];
@@ -556,61 +533,53 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🏪 [9] _BusinessListItem.build() for: $_businessName');
-
-    return LayoutBuilder(
-      builder: (context, itemConstraints) {
-        debugPrint('📐 [10] ITEM LayoutBuilder: ${itemConstraints.maxHeight}h × ${itemConstraints.maxWidth}w');
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(minHeight: _imageSize),
-              decoration: BoxDecoration(
-                color: AppColors.bgCard,
-                border: Border.all(color: _borderColor, width: 1.5),
-                borderRadius: BorderRadius.circular(AppRadius.card), // 16px per JSX
-              ),
-              padding: const EdgeInsets.all(AppSpacing.mlg), // 14px per JSX
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Base card content - tappable to expand/collapse
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _isExpanded = !_isExpanded;
-                      });
-                    },
-                    child: Column(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(minHeight: _imageSize),
+          decoration: BoxDecoration(
+            color: AppColors.bgCard,
+            border: Border.all(color: _borderColor, width: 1.5),
+            borderRadius: BorderRadius.circular(AppRadius.card), // 16px per JSX
+          ),
+          padding: const EdgeInsets.all(AppSpacing.mlg), // 14px per JSX
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Base card content - tappable to expand/collapse
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildImage(),
-                            const SizedBox(width: 12),
-                            Expanded(child: _buildInfoColumn()),
-                          ],
-                        ),
-                        // Collapse chevron (shown when NOT expanded)
-                        if (!_isExpanded) _buildCollapseChevron(),
+                        _buildImage(),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildInfoColumn()),
                       ],
                     ),
-                  ),
-                  // Expanded preview section - NOT tappable (images have their own tap handlers)
-                  if (_isExpanded) _buildExpandedPreview(),
-                ],
+                    // Collapse chevron (shown when NOT expanded)
+                    if (!_isExpanded) _buildCollapseChevron(),
+                  ],
+                ),
               ),
-            ),
-            // Partial match info box
-            if (widget.matchVariant == 'partial' && widget.activeFilterCount > 0)
-              _buildPartialMatchInfoBox(),
-          ],
-        );
-      },
+              // Expanded preview section - NOT tappable (images have their own tap handlers)
+              if (_isExpanded) _buildExpandedPreview(),
+            ],
+          ),
+        ),
+        // Partial match info box
+        if (widget.matchVariant == 'partial' && widget.activeFilterCount > 0)
+          _buildPartialMatchInfoBox(),
+      ],
     );
   }
 
@@ -635,7 +604,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   Widget _buildInfoColumn() {
-    debugPrint('🔍   _buildInfoColumn()');
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,7 +619,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   Widget _buildNameRow() {
-    debugPrint('🔍   _buildNameRow(): ${_businessName ?? "Business"}');
     final distanceText = _getDistanceText();
 
     return Row(
@@ -681,7 +648,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final statusText = _statusText ?? 'Open';
     final statusColor = _statusColor ?? AppColors.success;
     final timingText = _getTimingText();
-    debugPrint('🔍   _buildStatusRow(): status=$statusText, timing=$timingText');
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -720,7 +686,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   /// Returns timing text like "til 22:00" or "opens at 10:00"
   String? _getTimingText() {
     if (_openingHours == null) {
-      debugPrint('🔍   _getTimingText(): no opening hours');
       return null;
     }
 
@@ -733,17 +698,14 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       languageCode,
       translationsCache,
     );
-    debugPrint('🔍   _getTimingText(): $result');
     return result;
   }
 
   Widget _buildDetailsRow() {
-    debugPrint('🔍   _buildDetailsRow()');
     final items = <Widget>[];
 
     // Business type
     if (_businessType != null && _businessType!.isNotEmpty) {
-      debugPrint('🔍     Business type: $_businessType');
       items.add(Flexible(
         child: Text(
           _businessType!,
@@ -779,19 +741,19 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   String? _getPriceRangeText() {
     if (_priceRangeMin == null || _priceRangeMax == null) {
-      debugPrint('🔍     _getPriceRangeText(): no price data');
       return null;
     }
 
     // Use existing price_formatter from Session #5
+    // Force no decimals for search results page
     final result = convertAndFormatPriceRange(
       _priceRangeMin!.toDouble(),
       _priceRangeMax!.toDouble(),
       'DKK',
       _exchangeRate,
       _userCurrencyCode,
+      forceNoDecimals: true,
     );
-    debugPrint('🔍     Price range: $result');
     return result;
   }
 
@@ -800,7 +762,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         widget.userLocation == null ||
         _latitude == null ||
         _longitude == null) {
-      debugPrint('🔍     _getDistanceText(): skipped (location_enabled=$_locationEnabled, has_user_location=${widget.userLocation != null}, has_coords=${_latitude != null && _longitude != null})');
       return null;
     }
 
@@ -822,7 +783,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     final unit = languageCode == 'en' ? ' mi.' : ' km.';
     final result = '$distance$unit';
-    debugPrint('🔍     Distance: $result');
     return result;
   }
 
