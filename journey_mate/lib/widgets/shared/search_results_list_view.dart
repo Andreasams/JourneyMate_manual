@@ -18,6 +18,7 @@ import '../../services/custom_functions/distance_calculator.dart';
 import '../../services/translation_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
+import '../../services/business_cache.dart';
 import 'restaurant_list_shimmer_widget.dart';
 import 'image_gallery_widget.dart';
 
@@ -1017,6 +1018,13 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
           // Validate businessId before navigating
           if (businessId > 0) {
+            // Cache preview data for instant display
+            if (widget.businessData is Map<String, dynamic>) {
+              BusinessCache.instance.cacheBusinessPreview(
+                widget.businessData as Map<String, dynamic>,
+              );
+            }
+
             widget.onBusinessTap?.call(businessId);
           } else {
             debugPrint('❌ Invalid businessId: $businessId');

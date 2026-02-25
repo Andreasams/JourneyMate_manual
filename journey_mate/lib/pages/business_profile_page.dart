@@ -8,6 +8,7 @@ import '../providers/settings_providers.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
 import '../services/translation_service.dart';
+import '../services/business_cache.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -85,9 +86,35 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
 
+    // Try to show cached preview data immediately (optimistic UI)
+    _loadCachedPreview();
+
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _loadBusinessData();
     });
+  }
+
+  /// Load cached preview data from search results for instant display
+  void _loadCachedPreview() {
+    final businessIdInt = int.tryParse(widget.businessId);
+    if (businessIdInt == null) return;
+
+    final preview = BusinessCache.instance.getBusinessPreview(businessIdInt);
+    if (preview != null) {
+      debugPrint('⚡ Showing cached preview: ${preview['business_name']}');
+
+      // Show preview data immediately
+      ref.read(businessProvider.notifier).setCurrentBusiness(
+            business: preview,
+            filterIds: [], // Filters will come from API
+            hours: preview['business_hours'] ?? {},
+          );
+
+      // Not loading anymore (preview is shown)
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -104,15 +131,19 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
   // ============================================================================
 
   Future<void> _loadBusinessData() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
     final languageCode = Localizations.localeOf(context).languageCode;
     final businessIdInt = int.parse(widget.businessId);
 
-    debugPrint('🏢 Loading business profile: id=$businessIdInt');
+    debugPrint('🏢 Loading full business data: id=$businessIdInt');
+
+    // Only show loading state if we don't have cached preview
+    final hasPreview = ref.read(businessProvider).currentBusiness != null;
+    if (!hasPreview) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       // Make 3 API calls in parallel
@@ -142,6 +173,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
       if (profileResponse.succeeded) {
         // API returns 'businessInfo' key (not 'business_profile' as documented)
         final businessData = profileResponse.jsonBody['businessInfo'];
+        final businessHours = profileResponse.jsonBody['businessHours'] ?? {};
 
         if (businessData == null) {
           debugPrint('❌ Business not found: id=$businessIdInt');
@@ -152,17 +184,16 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
           return;
         }
 
-        // Note: filters are directly in businessData, not in a separate array
-        // Gallery is at the top level, not nested
-        final filters = <int>[]; // TODO: Extract filters from businessData if available
-        final hours = businessData['business_hours'] ?? {};
+        // Extract filters from tags or filters array if available
+        // For now, use empty list - filters will be handled separately
+        final filters = <int>[];
 
-        debugPrint('✅ Loaded: ${businessData['business_name']}');
+        debugPrint('✅ API data loaded: ${businessData['business_name']}');
 
         ref.read(businessProvider.notifier).setCurrentBusiness(
               business: businessData,
               filterIds: filters,
-              hours: hours,
+              hours: businessHours,
             );
       } else {
         debugPrint('❌ API error: ${profileResponse.error}');
@@ -175,8 +206,6 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
 
       // Store menu items in provider
       if (menuResponse.succeeded) {
-        debugPrint('📋 Menu response keys: ${menuResponse.jsonBody.keys.toList()}');
-
         ref.read(businessProvider.notifier).setMenuItems(
               menuResponse.jsonBody['menu_items'],
             );
@@ -208,9 +237,12 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
       // Start menu session (fire-and-forget analytics)
       _startMenuSession(businessIdInt);
 
-      setState(() {
-        _isLoading = false;
-      });
+      // Clear loading state (if it was set)
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
