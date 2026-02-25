@@ -424,7 +424,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   Color? _statusColor;
   bool _isExpanded = false;
   final PageController _galleryPageController = PageController();
-  int _currentGalleryPage = 0;
 
   // ---------------------------------------------------------------------------
   // Constants
@@ -466,7 +465,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   dynamic get _openingHours => _getField<dynamic>('business_hours');
   int? get _matchCount => _getField<int>('matchCount');
   List<dynamic>? get _missedFilters => _getField<List<dynamic>>('missedFilters');
-  List<dynamic>? get _photos => _getField<List<dynamic>>('photos');
   List<dynamic>? get _galleryImages => _getField<List<dynamic>>('gallery_images');
 
   String? get _businessType {
@@ -988,13 +986,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       height: 100,
       child: PageView.builder(
         controller: _galleryPageController,
-        onPageChanged: (index) {
-          if (mounted) {
-            setState(() {
-              _currentGalleryPage = index;
-            });
-          }
-        },
         itemCount: displayImages.length,
         itemBuilder: (context, index) {
           final imageUrl = displayImages[index] is String

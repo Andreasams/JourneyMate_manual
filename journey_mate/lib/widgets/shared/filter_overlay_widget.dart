@@ -1091,13 +1091,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     );
   }
 
-  Widget _buildHeader() {
-    return SizedBox(
-      height: _headerHeight,
-      child: _buildSelectedFiltersRow(),
-    );
-  }
-
   Widget _buildFilterColumns() {
     return Expanded(
       child: Column(
