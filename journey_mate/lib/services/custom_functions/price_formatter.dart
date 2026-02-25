@@ -166,14 +166,18 @@ String? convertAndFormatPriceRange(
 
   if (formattedMin == null || formattedMax == null) return null;
 
-  // Extract numeric parts only (preserve decimal points, remove symbols and spaces)
-  var minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,.]'), '').trim();
-  var maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,.]'), '').trim();
+  // Extract numeric parts
+  String minNumeric;
+  String maxNumeric;
 
-  // Strip decimals if requested (for search results page)
   if (forceNoDecimals) {
-    minNumeric = minNumeric.split('.')[0];
-    maxNumeric = maxNumeric.split('.')[0];
+    // For search results: extract only digits and commas (no decimals at all)
+    minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,]'), '').trim();
+    maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,]'), '').trim();
+  } else {
+    // For other contexts: preserve decimal points, remove symbols and spaces
+    minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,.]'), '').trim();
+    maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,.]'), '').trim();
   }
 
   // Build range string using symbol from rules (not extracted from formatted string)
