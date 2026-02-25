@@ -512,7 +512,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: organizedFilters
               .map((filter) => Padding(
@@ -560,6 +560,8 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       foregroundColor: AppColors.green,
       elevation: 0,
       padding: const EdgeInsets.fromLTRB(12, 7, 10, 7),
+      minimumSize: Size.zero,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.chip),
         side: const BorderSide(color: AppColors.greenBorder, width: 1.5),
@@ -571,7 +573,6 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     return Positioned(
       left: 0,
       top: 0,
-      bottom: 0,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -601,6 +602,8 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
         foregroundColor: AppColors.accent,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.chip),
           side: const BorderSide(color: AppColors.border, width: 1.5),
