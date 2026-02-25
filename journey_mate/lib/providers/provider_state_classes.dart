@@ -171,7 +171,8 @@ class SearchState {
   final int searchResultsCount;
   final bool hasActiveSearch;
   final String currentSearchText;
-  final List<int> filtersUsedForSearch; // Active filter IDs
+  final List<int> filtersUsedForSearch; // User's checked filters
+  final List<int> activeFilterIds; // API's compatible filters (from activeids response)
   final String currentFilterSessionId;
   final List<int> previousActiveFilters; // Snapshot before last change
   final String previousSearchText; // Snapshot before last change
@@ -186,6 +187,7 @@ class SearchState {
     required this.hasActiveSearch,
     required this.currentSearchText,
     required this.filtersUsedForSearch,
+    required this.activeFilterIds,
     required this.currentFilterSessionId,
     required this.previousActiveFilters,
     required this.previousSearchText,
@@ -202,6 +204,7 @@ class SearchState {
       hasActiveSearch: false,
       currentSearchText: '',
       filtersUsedForSearch: [],
+      activeFilterIds: [], // Empty until first search
       currentFilterSessionId: '',
       previousActiveFilters: [],
       previousSearchText: '',
@@ -218,6 +221,7 @@ class SearchState {
     bool? hasActiveSearch,
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
+    List<int>? activeFilterIds,
     String? currentFilterSessionId,
     List<int>? previousActiveFilters,
     String? previousSearchText,
@@ -232,6 +236,7 @@ class SearchState {
       hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
+      activeFilterIds: activeFilterIds ?? this.activeFilterIds,
       currentFilterSessionId: currentFilterSessionId ?? this.currentFilterSessionId,
       previousActiveFilters: previousActiveFilters ?? this.previousActiveFilters,
       previousSearchText: previousSearchText ?? this.previousSearchText,
@@ -249,6 +254,7 @@ class SearchState {
     bool? hasActiveSearch,
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
+    List<int>? activeFilterIds,
     String? currentFilterSessionId,
     List<int>? previousActiveFilters,
     String? previousSearchText,
@@ -257,6 +263,7 @@ class SearchState {
     DateTime? lastRefinementTime,
     DateTime? lastFetchTime,
     bool clearResults = false,
+    bool clearActiveFilterIds = false,
     bool clearRefinementTime = false,
     bool clearFetchTime = false,
   }) {
@@ -266,6 +273,7 @@ class SearchState {
       hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
+      activeFilterIds: clearActiveFilterIds ? [] : (activeFilterIds ?? this.activeFilterIds),
       currentFilterSessionId: currentFilterSessionId ?? this.currentFilterSessionId,
       previousActiveFilters: previousActiveFilters ?? this.previousActiveFilters,
       previousSearchText: previousSearchText ?? this.previousSearchText,

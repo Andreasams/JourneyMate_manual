@@ -181,11 +181,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
       if (response.succeeded && mounted) {
         final documents = response.jsonBody['documents'] as List? ?? [];
-        debugPrint('🔍 Search succeeded: ${documents.length} results');
+        final activeIds = (response.jsonBody['activeids'] as List?)
+            ?.whereType<int>()
+            .toList() ?? [];
+
+        debugPrint('🔍 Search: ${documents.length} results, ${activeIds.length} active filters');
+
         ref.read(searchStateProvider.notifier).updateSearchResults(
           documents,
           documents.length,
         );
+
+        // Store API's active filter IDs
+        ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
 
         // Track analytics
         final analytics = AnalyticsService.instance;
@@ -273,11 +281,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                         data: (state) => FilterOverlayWidget(
                           filterData: state.filtersForLanguage,
                           selectedTitleID: _mapTabIndexToTitleId(_activeFilterTab),
-                          activeFilterIds: searchState.filtersUsedForSearch,
+                          activeFilterIds: searchState.activeFilterIds,
                           selectedFilterIds: searchState.filtersUsedForSearch,
                           onSearchCompleted: (activeIds, count) async {
-                            // FilterOverlayWidget calls API internally
-                            // Just update our local state tracking
+                            // Store active IDs from overlay's internal search
+                            ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
+
                             if (mounted) {
                               setState(() {
                                 // Trigger rebuild after filter change

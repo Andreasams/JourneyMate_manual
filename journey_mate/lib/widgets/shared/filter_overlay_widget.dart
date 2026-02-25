@@ -332,6 +332,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   void _handleActiveFilterChanges(FilterOverlayWidget oldWidget) {
     if (!listEquals(oldWidget.activeFilterIds, widget.activeFilterIds)) {
       _receivedActiveIdsAfterSearch = true;
+      debugPrint('🔍 FilterOverlay: Received ${widget.activeFilterIds.length} active filters');
       setState(() {});
     }
   }

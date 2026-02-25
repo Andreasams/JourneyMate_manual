@@ -38,6 +38,11 @@ class SearchStateNotifier extends Notifier<SearchState> {
     );
   }
 
+  /// Update active filter IDs from API response
+  void updateActiveFilterIds(List<int> activeIds) {
+    state = state.copyWith(activeFilterIds: List<int>.from(activeIds));
+  }
+
   /// Set current search text
   void setSearchText(String text) {
     state = state.copyWith(currentSearchText: text);
