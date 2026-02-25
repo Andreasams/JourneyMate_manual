@@ -4,7 +4,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/app_providers.dart';
 import '../providers/business_providers.dart';
-import '../providers/settings_providers.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
 import '../services/translation_service.dart';
@@ -17,32 +16,28 @@ import '../widgets/shared/profile_top_business_block_widget.dart';
 import '../widgets/shared/restaurant_shimmer_widget.dart';
 import '../widgets/shared/expandable_text_widget.dart';
 import '../widgets/shared/payment_options_widget.dart';
-import '../widgets/shared/contact_details_widget.dart';
 import '../widgets/shared/erroneous_info_form_widget.dart';
-import '../widgets/shared/gallery_tab_widget.dart';
-import '../widgets/shared/image_gallery_widget.dart';
-import '../widgets/shared/unified_filters_widget.dart';
-import '../widgets/shared/menu_categories_rows.dart';
-import '../widgets/shared/menu_dishes_list_view.dart';
-import '../widgets/shared/item_bottom_sheet.dart';
-import '../widgets/shared/package_bottom_sheet.dart';
-import '../widgets/shared/category_description_sheet.dart';
 import '../widgets/shared/opening_hours_and_weekdays.dart';
 import '../widgets/shared/business_feature_buttons.dart';
+import '../widgets/business_profile/match_card_widget.dart';
+import '../widgets/business_profile/quick_actions_widget.dart';
+import '../widgets/business_profile/inline_gallery_widget.dart';
+import '../widgets/business_profile/inline_menu_widget.dart';
 import '../providers/filter_providers.dart';
 import '../providers/search_providers.dart';
 import 'package:share_plus/share_plus.dart';
 
-/// Business Profile Page - Detailed restaurant view with 3 tabs
-/// Phase 7.3 implementation
+/// Business Profile Page - Detailed restaurant view with single scroll
+/// JSX alignment - Phase 8 implementation
 ///
 /// Features:
 /// - 3 parallel API calls on load (business profile, menu items, filter descriptions)
-/// - 3-tab interface (Menu, Gallery, About)
+/// - Single scrollable page with 10 sections (replaces 3-tab interface)
+/// - Match card showing filter match percentage
+/// - Quick actions (Call, Website, Booking, Map)
+/// - Inline gallery and menu sections
 /// - Menu session analytics tracking
 /// - Comprehensive page view analytics
-///
-/// TODO: Integrate remaining shared widgets once their exact interfaces are confirmed
 class BusinessProfilePage extends ConsumerStatefulWidget {
   final String businessId;
 
@@ -56,8 +51,7 @@ class BusinessProfilePage extends ConsumerStatefulWidget {
       _BusinessProfilePageState();
 }
 
-class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
-    with SingleTickerProviderStateMixin {
+class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
   // ============================================================================
   // LOCAL STATE
   // ============================================================================
@@ -65,16 +59,6 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
   DateTime? _pageStartTime;
   bool _isLoading = false;
   String? _errorMessage;
-  late TabController _tabController;
-
-  // Filter descriptions for "Why this match?" sheet
-  List<dynamic>? _filterDescriptions;
-
-  // Menu tab scroll sync state
-  String? _selectedMenuId;
-  String? _selectedCategoryId;
-  // ignore: unused_field
-  int _visibleItemCount = 0;
 
   // ============================================================================
   // LIFECYCLE METHODS
@@ -84,8 +68,6 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
   void initState() {
     super.initState();
     _pageStartTime = DateTime.now();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(_onTabChanged);
 
     // Try to show cached preview data immediately (optimistic UI)
     _loadCachedPreview();
@@ -122,8 +104,6 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
   void dispose() {
     _trackPageView();
     _endMenuSession();
-    _tabController.removeListener(_onTabChanged);
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -238,11 +218,6 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
               descriptions,
               matchPercentage,
             );
-
-        // Also store locally for legacy info dialog
-        setState(() {
-          _filterDescriptions = descriptions;
-        });
       }
 
       // Start menu session (fire-and-forget analytics)
@@ -305,32 +280,6 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
     });
   }
 
-  void _onTabChanged() {
-    if (!_tabController.indexIsChanging) return;
-
-    final tabNames = ['menu', 'gallery', 'about'];
-    final tabName = tabNames[_tabController.index];
-
-    final analytics = AnalyticsService.instance;
-    ApiService.instance
-        .postAnalytics(
-      eventType: 'tab_switched',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
-      timestamp: DateTime.now().toIso8601String(),
-      eventData: {
-        'pageName': 'businessProfile',
-        'tabName': tabName,
-        'businessId': widget.businessId,
-      },
-    )
-        .catchError((e) {
-      debugPrint('Analytics error: $e');
-      return ApiCallResponse.failure('Analytics failed');
-    });
-  }
-
   void _trackShare() {
     final analytics = AnalyticsService.instance;
     final business = ref.read(businessProvider).currentBusiness;
@@ -360,7 +309,6 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
   @override
   Widget build(BuildContext context) {
     final business = ref.watch(businessProvider).currentBusiness;
-    final locationState = ref.watch(locationProvider);
 
     // Loading state
     if (_isLoading) {
@@ -460,7 +408,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
       );
     }
 
-    // Success state - Main content
+    // Success state - Main content (single scrollable page)
     return Scaffold(
       backgroundColor: AppColors.bgPage,
       appBar: AppBar(
@@ -477,386 +425,116 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
             color: AppColors.textPrimary,
             onPressed: _handleShare,
           ),
-          if (_filterDescriptions != null && _filterDescriptions!.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.info_outline),
-              color: AppColors.textPrimary,
-              onPressed: () {
-                // Show info dialog explaining how to view filter descriptions
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(
-                      td(ref, 'filterinfotitle'),
-                      style: AppTypography.sectionHeading,
-                    ),
-                    content: Text(
-                      td(ref, 'filterinfomessage'),
-                      style: AppTypography.bodyRegular,
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
-                          td(ref, 'ok'),
-                          style: AppTypography.bodyRegular.copyWith(
-                            color: AppColors.accent,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
         ],
       ),
-      body: Column(
-        children: [
-          // Hero section - always visible above tabs
-          _buildHeroSection(business, locationState),
+      body: CustomScrollView(
+        slivers: [
+          // Section 1: Hero (ProfileTopBusinessBlockWidget)
+          const SliverToBoxAdapter(
+            child: ProfileTopBusinessBlockWidget(),
+          ),
 
-          // Tab bar
-          _buildTabBar(),
+          // Spacing between sections
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.lg),
+          ),
 
-          // Tab content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildMenuTab(),
-                _buildGalleryTab(),
-                _buildAboutTab(),
-              ],
+          // Section 2: Quick Actions (QuickActionsWidget)
+          const SliverToBoxAdapter(
+            child: QuickActionsWidget(),
+          ),
+
+          // Spacing between sections
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.lg),
+          ),
+
+          // Section 3: Match Card (MatchCardWidget)
+          const SliverToBoxAdapter(
+            child: MatchCardWidget(),
+          ),
+
+          // Spacing between sections
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.lg),
+          ),
+
+          // Section 4: Opening Hours
+          SliverToBoxAdapter(
+            child: _buildOpeningHoursSection(),
+          ),
+
+          // Spacing between sections
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.lg),
+          ),
+
+          // Section 5: Gallery (InlineGalleryWidget)
+          const SliverToBoxAdapter(
+            child: InlineGalleryWidget(),
+          ),
+
+          // Spacing between sections
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.lg),
+          ),
+
+          // Section 6: Menu (InlineMenuWidget)
+          SliverToBoxAdapter(
+            child: InlineMenuWidget(
+              businessId: int.parse(widget.businessId),
             ),
           ),
-        ],
-      ),
-    );
-  }
 
-  // ============================================================================
-  // HERO SECTION
-  // ============================================================================
-
-  Widget _buildHeroSection(Map<String, dynamic> business, dynamic locationState) {
-    // Hero widget is now self-contained and reads from providers
-    return const ProfileTopBusinessBlockWidget();
-  }
-
-  // ============================================================================
-  // TAB BAR
-  // ============================================================================
-
-  Widget _buildTabBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.border,
-            width: 1,
+          // Spacing between sections
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.lg),
           ),
-        ),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicatorColor: AppColors.accent,
-        labelColor: AppColors.accent,
-        unselectedLabelColor: AppColors.textSecondary,
-        labelStyle: AppTypography.bodyMedium,
-        tabs: [
-          Tab(text: td(ref, 'tab_menu')),
-          Tab(text: td(ref, 'tab_gallery')),
-          Tab(text: td(ref, 'tab_about')),
-        ],
-      ),
-    );
-  }
 
-  // ============================================================================
-  // TAB 0: MENU
-  // ============================================================================
-
-  Widget _buildMenuTab() {
-    final menuItems = ref.watch(businessProvider).menuItems;
-    final business = ref.watch(businessProvider).currentBusiness;
-
-    if (menuItems == null) {
-      return Center(
-        child: Text(
-          td(ref, 'menu_loading'),
-          style: AppTypography.bodyRegular.copyWith(
-            color: AppColors.textSecondary,
+          // Section 7: Facilities
+          SliverToBoxAdapter(
+            child: _buildFacilitiesSection(),
           ),
-        ),
-      );
-    }
 
-    return Column(
-      children: [
-        // 1. Unified Filters Widget (Dietary filters)
-        UnifiedFiltersWidget(
-          businessId: int.parse(widget.businessId),
-          height: 350.0, // Standard height
-          onFiltersChanged: () async {
-            // Filters updated - menu will auto-rebuild via provider watch
-            debugPrint('Dietary filters changed');
-          },
-          onVisibleItemCountChanged: (int count) async {
-            setState(() => _visibleItemCount = count);
-
-            // Update menu session analytics
-            ref
-                .read(analyticsProvider.notifier)
-                .updateMenuSessionFilterMetrics(count, _hasActiveFilters());
-          },
-        ),
-
-        SizedBox(height: AppSpacing.md),
-
-        // 2. Menu Categories Row (Horizontal category chips)
-        SizedBox(
-          height: 40.0,
-          child: MenuCategoriesRows(
-            businessID: int.parse(widget.businessId),
-            apiResult: menuItems,
-            onCategoryChanged: (int categoryId, int menuId) async {
-              // User tapped category chip → update state → MenuDishesListView scrolls
-              setState(() {
-                _selectedCategoryId = categoryId.toString();
-                _selectedMenuId = menuId.toString();
-              });
-            },
-            onNumberOfRows: (int numberOfRows) async {
-              debugPrint('Menu categories rows: $numberOfRows');
-            },
-            visibleSelection: _selectedCategoryId != null &&
-                    _selectedMenuId != null
-                ? {
-                    'categoryId': int.tryParse(_selectedCategoryId!) ?? 0,
-                    'menuId': int.tryParse(_selectedMenuId!) ?? 0,
-                  }
-                : null,
+          // Spacing between sections
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.lg),
           ),
-        ),
 
-        SizedBox(height: AppSpacing.md),
-
-        // 3. Menu Dishes List View (Scrollable menu items)
-        Expanded(
-          child: MenuDishesListView(
-            originalCurrencyCode: business?['price_range_currency_code'] ?? 'DKK',
-            isDynamicHeight: false,
-            onItemTap: (itemData, isBeverage, dietaryIds, allergyIds,
-                formattedPrice, hasVariations, variationPrice) async {
-              if (!mounted) return;
-
-              final localization = ref.read(localizationProvider);
-              final translationsCache = ref.read(translationsCacheProvider);
-              final currentLanguage = Localizations.localeOf(context).languageCode;
-
-              await showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => ItemBottomSheet(
-                  itemData: itemData,
-                  chosenCurrency: localization.currencyCode,
-                  originalCurrencyCode:
-                      business?['price_range_currency_code'] ?? 'DKK',
-                  exchangeRate: localization.exchangeRate,
-                  currentLanguage: currentLanguage,
-                  businessName: business?['business_name'] ?? '',
-                  translationsCache: translationsCache,
-                  hasVariations: hasVariations,
-                ),
-              );
-
-              // Track item click
-              ref.read(analyticsProvider.notifier).incrementItemClick();
-            },
-            onPackageTap: (packageData) async {
-              if (!mounted) return;
-
-              final localization = ref.read(localizationProvider);
-
-              await showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => PackageBottomSheet(
-                  normalizedMenuData: menuItems,
-                  packageId: packageData['package_id'] ?? 0,
-                  chosenCurrency: localization.currencyCode,
-                  originalCurrencyCode:
-                      business?['price_range_currency_code'] ?? 'DKK',
-                  exchangeRate: localization.exchangeRate,
-                  businessName: business?['business_name'] ?? '',
-                ),
-              );
-
-              // Track package click
-              ref.read(analyticsProvider.notifier).incrementPackageClick();
-            },
-            onVisibleCategoryChanged: (selectionData) async {
-              // User scrolled → category became visible
-              final categoryId = selectionData['categoryId']?.toString();
-              final menuId = selectionData['menuId']?.toString();
-
-              // ✅ CRITICAL: Only update if different (prevents infinite loop)
-              if (categoryId != _selectedCategoryId ||
-                  menuId != _selectedMenuId) {
-                setState(() {
-                  _selectedCategoryId = categoryId;
-                  _selectedMenuId = menuId;
-                });
-              }
-
-              // Track scroll depth
-              if (categoryId != null) {
-                ref
-                    .read(analyticsProvider.notifier)
-                    .recordCategoryViewed(int.tryParse(categoryId) ?? 0);
-              }
-            },
-            onCategoryDescriptionTap: (categoryData) async {
-              if (!mounted) return;
-
-              await showModalBottomSheet(
-                context: context,
-                builder: (context) => CategoryDescriptionSheet(
-                  categoryName: categoryData['name'] ?? '',
-                  categoryDescription: categoryData['description'] ?? '',
-                  scrollController: ScrollController(),
-                ),
-              );
-            },
+          // Section 8: Payments
+          SliverToBoxAdapter(
+            child: _buildPaymentsSection(),
           ),
-        ),
-      ],
-    );
-  }
 
-  // ============================================================================
-  // TAB 1: GALLERY
-  // ============================================================================
-
-  Widget _buildGalleryTab() {
-    final business = ref.watch(businessProvider).currentBusiness;
-
-    return GalleryTabWidget(
-      galleryData: _buildGalleryData(business?['gallery']),
-      onImageTap: (imageUrls, index, categoryKey) async {
-        if (!mounted) return;
-        await showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => ImageGalleryWidget(
-            currentIndex: index,
-            imageUrls: imageUrls,
-            categoryName: td(ref, categoryKey), // Translation for category
+          // Spacing between sections
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.lg),
           ),
-        );
-      },
-      limitToEightImages: false, // Show all images
-    );
-  }
 
-  // ============================================================================
-  // TAB 2: ABOUT
-  // ============================================================================
-
-  Widget _buildAboutTab() {
-    final business = ref.watch(businessProvider).currentBusiness;
-
-    if (business == null) {
-      return Center(
-        child: Text(
-          td(ref, 'business_not_found'),
-          style: AppTypography.bodyRegular.copyWith(
-            color: AppColors.textSecondary,
+          // Section 9: About
+          SliverToBoxAdapter(
+            child: _buildAboutSection(),
           ),
-        ),
-      );
-    }
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. Business Description (ExpandableTextWidget)
-          if (business['description'] != null &&
-              business['description'].toString().isNotEmpty)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  td(ref, 'about_description_label'), // "About"
-                  style: AppTypography.sectionHeading,
-                ),
-                SizedBox(height: AppSpacing.sm),
-                ExpandableTextWidget(
-                  text: business['description'],
-                  businessId: int.tryParse(widget.businessId),
-                ),
-                SizedBox(height: AppSpacing.xl),
-              ],
-            ),
-
-          // 2. Payment Options (PaymentOptionsWidget)
-          Text(
-            td(ref, 'about_payment_options_label'), // "Payment Options"
-            style: AppTypography.sectionHeading,
+          // Spacing between sections
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.lg),
           ),
-          SizedBox(height: AppSpacing.sm),
-          PaymentOptionsWidget(
-            containerWidth:
-                MediaQuery.of(context).size.width - (AppSpacing.lg * 2),
-            filters: ref.watch(filterProvider).value?.filtersForLanguage ?? [],
-            filtersUsedForSearch:
-                ref.watch(searchStateProvider).filtersUsedForSearch,
-            filtersOfThisBusiness: ref.watch(businessProvider).businessFilterIds,
-            onInitialCount: (int count) async {
-              debugPrint('Payment options count: $count');
-            },
-            onHeightCalculated: (double height) async {
-              debugPrint('Payment widget height: $height');
-            },
+
+          // Section 10: Report Link
+          SliverToBoxAdapter(
+            child: _buildReportLink(),
           ),
-          SizedBox(height: AppSpacing.xl),
 
-          // 3. Contact Details (ContactDetailsWidget)
-          ContactDetailsWidget(),
-          SizedBox(height: AppSpacing.xl),
-
-          // 4. Report Incorrect Info Button
-          Center(
-            child: TextButton.icon(
-              onPressed: () async {
-                await showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => const ErroneousInfoFormWidget(),
-                );
-              },
-              icon: Icon(Icons.report_outlined, color: AppColors.textSecondary),
-              label: Text(
-                td(ref,
-                    'about_report_incorrect_info'), // "Report incorrect information"
-                style: AppTypography.label.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
+          // Bottom padding
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.xxl),
           ),
         ],
       ),
     );
   }
+
 
   // ============================================================================
   // ACTIONS
@@ -885,58 +563,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
   }
 
   // ============================================================================
-  // HELPER METHODS
-  // ============================================================================
-
-  /// Build gallery data by grouping images by category
-  Map<String, dynamic> _buildGalleryData(dynamic gallery) {
-    if (gallery == null) {
-      return {'food': [], 'menu': [], 'interior': [], 'outdoor': []};
-    }
-
-    // Group images by category
-    final Map<String, List<String>> grouped = {
-      'food': [],
-      'menu': [],
-      'interior': [],
-      'outdoor': [],
-    };
-
-    for (final image in gallery as List) {
-      final categoryId = image['category_id'] as int?;
-      final imageUrl = image['image_url'] as String?;
-
-      if (imageUrl != null) {
-        switch (categoryId) {
-          case 3:
-            grouped['food']!.add(imageUrl);
-            break;
-          case 4:
-            grouped['menu']!.add(imageUrl);
-            break;
-          case 1:
-            grouped['interior']!.add(imageUrl);
-            break;
-          case 2:
-            grouped['outdoor']!.add(imageUrl);
-            break;
-        }
-      }
-    }
-
-    return grouped;
-  }
-
-  /// Check if any dietary filters are active
-  bool _hasActiveFilters() {
-    final state = ref.read(businessProvider);
-    return state.selectedDietaryRestrictionIds.isNotEmpty ||
-        state.selectedDietaryPreferenceId != null ||
-        state.excludedAllergyIds.isNotEmpty;
-  }
-
-  // ============================================================================
-  // SECTION BUILDERS (for future CustomScrollView integration)
+  // SECTION BUILDERS
   // ============================================================================
 
   /// Build opening hours section
