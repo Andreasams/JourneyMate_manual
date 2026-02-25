@@ -537,26 +537,28 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(minHeight: _imageSize),
-          decoration: BoxDecoration(
-            color: AppColors.bgCard,
-            border: Border.all(color: _borderColor, width: 1.5),
-            borderRadius: BorderRadius.circular(AppRadius.card), // 16px per JSX
-          ),
-          padding: const EdgeInsets.all(AppSpacing.mlg), // 14px per JSX
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Base card content - tappable to expand/collapse
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isExpanded = !_isExpanded;
-                  });
-                },
-                child: Column(
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isExpanded = !_isExpanded;
+            });
+          },
+          // Make entire card area tappable, not just areas with visible widgets
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: _imageSize),
+            decoration: BoxDecoration(
+              color: AppColors.bgCard,
+              border: Border.all(color: _borderColor, width: 1.5),
+              borderRadius: BorderRadius.circular(AppRadius.card), // 16px per JSX
+            ),
+            padding: const EdgeInsets.all(AppSpacing.mlg), // 14px per JSX
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Base card content
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -571,10 +573,10 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
                     if (!_isExpanded) _buildCollapseChevron(),
                   ],
                 ),
-              ),
-              // Expanded preview section - NOT tappable (images have their own tap handlers)
-              if (_isExpanded) _buildExpandedPreview(),
-            ],
+                // Expanded preview section
+                if (_isExpanded) _buildExpandedPreview(),
+              ],
+            ),
           ),
         ),
         // Partial match info box
@@ -965,6 +967,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           return Padding(
             padding: EdgeInsets.only(right: index < displayImages.length - 1 ? 8 : 0),
             child: GestureDetector(
+              // Prevent taps from bubbling up to parent card GestureDetector
+              behavior: HitTestBehavior.opaque,
               onTap: () {
                 // Open full-screen image gallery
                 showModalBottomSheet(
