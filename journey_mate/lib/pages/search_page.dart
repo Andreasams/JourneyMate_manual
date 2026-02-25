@@ -355,6 +355,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       builder: (context) => SortBottomSheet(
         currentSort: _currentSort,
         onlyOpen: _onlyOpen,

@@ -984,8 +984,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     return SizedBox(
       height: 100,
-      child: PageView.builder(
-        controller: _galleryPageController,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
         itemCount: displayImages.length,
         itemBuilder: (context, index) {
           final imageUrl = displayImages[index] is String
@@ -993,22 +993,29 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
               : displayImages[index]['url'] as String?;
 
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: EdgeInsets.only(right: index < displayImages.length - 1 ? 8 : 0),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                imageUrl ?? _placeholderImageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: AppColors.border,
-                    child: Icon(
-                      Icons.image_not_supported,
-                      color: AppColors.textTertiary,
-                      size: 32,
-                    ),
-                  );
-                },
+              child: Container(
+                width: 100,
+                height: 100,
+                color: AppColors.bgInput, // Background color while loading
+                child: Image.network(
+                  imageUrl ?? _placeholderImageUrl,
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: AppColors.border,
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.textTertiary,
+                        size: 32,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           );

@@ -47,7 +47,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   /// Gets train station list from filter provider
   /// Train stations have 'type' == 'train_station' or specific parent_id
   List<Map<String, dynamic>> _getTrainStations() {
-    final filterState = ref.watch(filterProvider);
+    final filterState = ref.read(filterProvider);
 
     return filterState.when(
       data: (state) {
