@@ -57,6 +57,9 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Section Headings
     'opening_hours_heading': 'Opening Hours',
     'facilities_heading': 'Facilities',
+
+    // Facilities Info
+    'no_description_available': 'No description available',
   },
 
   // ============================================================================
@@ -102,6 +105,9 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Section Headings
     'opening_hours_heading': 'Åbningstider',
     'facilities_heading': 'Faciliteter',
+
+    // Facilities Info
+    'no_description_available': 'Ingen beskrivelse tilgængelig',
   },
 
   // ============================================================================
@@ -147,6 +153,9 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Section Headings
     'opening_hours_heading': 'Öffnungszeiten',
     'facilities_heading': 'Ausstattung',
+
+    // Facilities Info
+    'no_description_available': 'Keine Beschreibung verfügbar',
   },
 
   // ============================================================================
@@ -192,6 +201,9 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Section Headings
     'opening_hours_heading': 'Horario',
     'facilities_heading': 'Instalaciones',
+
+    // Facilities Info
+    'no_description_available': 'No hay descripción disponible',
   },
 
   // ============================================================================
@@ -237,6 +249,9 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Section Headings
     'opening_hours_heading': 'Horaires',
     'facilities_heading': 'Équipements',
+
+    // Facilities Info
+    'no_description_available': 'Aucune description disponible',
   },
 
   // ============================================================================
@@ -282,6 +297,9 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Section Headings
     'opening_hours_heading': 'Orari',
     'facilities_heading': 'Servizi',
+
+    // Facilities Info
+    'no_description_available': 'Nessuna descrizione disponibile',
   },
 
   // ============================================================================
@@ -327,5 +345,8 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     // Section Headings
     'opening_hours_heading': 'Öppettider',
     'facilities_heading': 'Faciliteter',
+
+    // Facilities Info
+    'no_description_available': 'Ingen beskrivning tillgänglig',
   },
 };

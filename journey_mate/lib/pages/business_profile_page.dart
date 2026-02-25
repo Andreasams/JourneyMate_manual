@@ -23,6 +23,7 @@ import '../widgets/business_profile/match_card_widget.dart';
 import '../widgets/business_profile/quick_actions_widget.dart';
 import '../widgets/business_profile/inline_gallery_widget.dart';
 import '../widgets/business_profile/inline_menu_widget.dart';
+import '../widgets/business_profile/facilities_info_sheet.dart';
 import '../providers/filter_providers.dart';
 import '../providers/search_providers.dart';
 import 'package:share_plus/share_plus.dart';
@@ -612,6 +613,21 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
             },
             onHeightCalculated: (double height) async {
               debugPrint('Facilities widget height: $height');
+            },
+            onFilterTap: (int filterId, String filterName,
+                String? filterDescription) async {
+              // Open facilities info sheet
+              if (context.mounted) {
+                await showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => FacilitiesInfoSheet(
+                    filterName: filterName,
+                    filterDescription: filterDescription,
+                  ),
+                );
+              }
             },
           ),
         ],
