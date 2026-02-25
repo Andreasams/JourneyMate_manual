@@ -4,10 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../theme/app_colors.dart';
-import '../../models/lat_lng.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/business_providers.dart';
 import '../../providers/settings_providers.dart';
-import '../../services/custom_functions/distance_calculator.dart';
 import '../../services/custom_functions/address_formatter.dart';
 import '../../services/custom_functions/hours_formatter.dart';
 import '../../services/custom_functions/price_formatter.dart';
@@ -28,60 +27,9 @@ import '../../services/custom_actions/determine_status_and_color.dart';
 /// - Currency-aware price formatting via convertAndFormatPriceRange
 /// - Distance calculation from user location via returnDistance
 /// - Hours messaging via openClosesAt
-///
-/// All data passed via props (no Riverpod dependencies).
+/// - Self-contained (reads all data from providers internally)
 class ProfileTopBusinessBlockWidget extends ConsumerStatefulWidget {
-  const ProfileTopBusinessBlockWidget({
-    super.key,
-    required this.openingHours,
-    required this.userLocation,
-    required this.priceRangeMin,
-    required this.priceRangeMax,
-    this.profilePicture,
-    this.businessName,
-    this.latitude,
-    this.longitude,
-    this.street,
-    this.neighbourhoodName,
-    this.businessID,
-    this.businessType,
-  });
-
-  /// Business hours map (JSONB with 7 days × 5 time slots)
-  final dynamic openingHours;
-
-  /// User's current coordinates for distance calculation
-  final LatLng? userLocation;
-
-  /// Minimum price in DKK
-  final int priceRangeMin;
-
-  /// Maximum price in DKK
-  final int priceRangeMax;
-
-  /// Business logo/image URL
-  final String? profilePicture;
-
-  /// Business display name
-  final String? businessName;
-
-  /// Business location latitude
-  final double? latitude;
-
-  /// Business location longitude
-  final double? longitude;
-
-  /// Street address
-  final String? street;
-
-  /// Borough/neighbourhood name
-  final String? neighbourhoodName;
-
-  /// Unique business identifier
-  final int? businessID;
-
-  /// Category (e.g., "Vegetarian Restaurant")
-  final String? businessType;
+  const ProfileTopBusinessBlockWidget({super.key});
 
   @override
   ConsumerState<ProfileTopBusinessBlockWidget> createState() =>
@@ -121,6 +69,10 @@ class _ProfileTopBusinessBlockWidgetState
   Future<void> _loadStatusAndColor() async {
     if (!mounted) return;
 
+    // Read opening hours from provider
+    final openingHours = ref.read(businessProvider).openingHours;
+    if (openingHours == null) return;
+
     try {
       // Call action with positional parameters
       final statusText = await determineStatusAndColor(
@@ -131,7 +83,7 @@ class _ProfileTopBusinessBlockWidgetState
           }
         },
         // 2. businessHoursInput
-        widget.openingHours,
+        openingHours,
         // 3. currentDateTime
         DateTime.now(),
         // 4. languageCode
@@ -184,7 +136,9 @@ class _ProfileTopBusinessBlockWidgetState
   // ============================================================================
 
   Widget _buildBusinessImage() {
-    final imageUrl = widget.profilePicture;
+    // Read from provider
+    final business = ref.watch(businessProvider).currentBusiness;
+    final imageUrl = business?['profile_picture']?['url'] as String?;
 
     if (imageUrl == null || imageUrl.isEmpty) {
       // Show placeholder if no image
@@ -264,12 +218,16 @@ class _ProfileTopBusinessBlockWidgetState
   // ============================================================================
 
   Widget _buildRow1BusinessName() {
+    // Read from provider
+    final business = ref.watch(businessProvider).currentBusiness;
+    final businessName = business?['business_name'] as String? ?? 'BusinessName';
+
     return Row(
       mainAxisSize: MainAxisSize.max,
       children: [
         Expanded(
           child: Text(
-            widget.businessName ?? 'BusinessName', // FlutterFlow fallback
+            businessName,
             style: TextStyle(
               fontFamily: 'Roboto', // Using Roboto as default
               fontSize: 20.0, // FlutterFlow custom size
@@ -290,9 +248,12 @@ class _ProfileTopBusinessBlockWidgetState
   // ============================================================================
 
   Widget _buildRow2StatusAndHours() {
+    // Read from provider
+    final openingHours = ref.watch(businessProvider).openingHours;
+
     // Get hours text from openClosesAt function
     final hoursText = openClosesAt(
-      widget.openingHours,
+      openingHours,
       DateTime.now(),
       Localizations.localeOf(context).languageCode,
       ref.read(translationsCacheProvider),
@@ -364,48 +325,31 @@ class _ProfileTopBusinessBlockWidgetState
   // ============================================================================
 
   Widget _buildRow3TypePriceDistance() {
-    // Get localization settings for currency conversion
+    // Read from providers
+    final business = ref.watch(businessProvider).currentBusiness;
     final localization = ref.watch(localizationProvider);
+
+    // Extract business data
+    final priceRangeMin = (business?['price_range_min'] as int?) ?? 0;
+    final priceRangeMax = (business?['price_range_max'] as int?) ?? 0;
+    final businessType = business?['business_type'] as String?;
 
     // Get price range text with actual currency conversion
     final priceText = convertAndFormatPriceRange(
-      widget.priceRangeMin.toDouble(),
-      widget.priceRangeMax.toDouble(),
+      priceRangeMin.toDouble(),
+      priceRangeMax.toDouble(),
       'DKK', // Source currency (business data is in DKK)
       localization.exchangeRate,
       localization.currencyCode,
     );
 
-    // Calculate distance if user location and business location are available
-    String? distanceText;
-    if (widget.userLocation != null &&
-        widget.latitude != null &&
-        widget.longitude != null) {
-      try {
-        final distance = returnDistance(
-          widget.userLocation!,
-          widget.latitude!,
-          widget.longitude!,
-          Localizations.localeOf(context).languageCode,
-        );
-
-        // Format distance with unit (function returns number only)
-        final languageCode = Localizations.localeOf(context).languageCode;
-        final unit = languageCode == 'en' ? ' mi.' : '  km.';
-        distanceText = '$distance$unit';
-      } catch (e) {
-        // Silent failure - hide distance on error
-        distanceText = null;
-      }
-    }
-
     return Row(
       mainAxisSize: MainAxisSize.max,
       children: [
         // Business type
-        if (widget.businessType != null)
+        if (businessType != null)
           Text(
-            widget.businessType!,
+            businessType,
             style: TextStyle(
               fontFamily: 'Roboto',
               fontSize: 15.0,
@@ -416,7 +360,7 @@ class _ProfileTopBusinessBlockWidgetState
           ),
 
         // Bullet + Price
-        if (widget.businessType != null && priceText != null) ...[
+        if (businessType != null && priceText != null) ...[
           const SizedBox(width: 4.0),
           Text(
             '•',
@@ -444,31 +388,7 @@ class _ProfileTopBusinessBlockWidgetState
             ),
           ),
 
-        // Bullet + Distance (only if location available)
-        if (distanceText != null) ...[
-          const SizedBox(width: 4.0),
-          Text(
-            '•',
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontSize: 15.0,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
-              letterSpacing: 0.0,
-            ),
-          ),
-          const SizedBox(width: 4.0),
-          Text(
-            distanceText,
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontSize: 15.0,
-              fontWeight: FontWeight.w300,
-              color: AppColors.textSecondary,
-              letterSpacing: 0.0,
-            ),
-          ),
-        ],
+        // TODO: Add distance calculation (requires async location fetch)
       ],
     );
   }
@@ -478,17 +398,22 @@ class _ProfileTopBusinessBlockWidgetState
   // ============================================================================
 
   Widget _buildRow4Address() {
+    // Read from provider
+    final business = ref.watch(businessProvider).currentBusiness;
+    final street = business?['address']?['street'] as String?;
+    final neighbourhoodName = business?['address']?['neighbourhood_name'] as String?;
+
     // Get formatted address
     String addressText;
-    if (widget.street != null && widget.neighbourhoodName != null) {
+    if (street != null && neighbourhoodName != null) {
       addressText = streetAndNeighbourhoodLength(
-        widget.neighbourhoodName!,
-        widget.street!,
+        neighbourhoodName,
+        street,
       );
-    } else if (widget.street != null) {
-      addressText = widget.street!;
-    } else if (widget.neighbourhoodName != null) {
-      addressText = widget.neighbourhoodName!;
+    } else if (street != null) {
+      addressText = street;
+    } else if (neighbourhoodName != null) {
+      addressText = neighbourhoodName;
     } else {
       addressText = 'København'; // FlutterFlow fallback
     }

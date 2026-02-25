@@ -13,7 +13,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_radius.dart';
-import '../models/lat_lng.dart';
 import '../widgets/shared/profile_top_business_block_widget.dart';
 import '../widgets/shared/restaurant_shimmer_widget.dart';
 import '../widgets/shared/expandable_text_widget.dart';
@@ -226,11 +225,21 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
             );
       }
 
-      // Store filter descriptions locally (for "Why this match?" sheet)
+      // Store filter descriptions in provider (for MatchCardWidget)
       if (filterDescResponse.succeeded) {
+        final descriptions =
+            filterDescResponse.jsonBody['filterDescriptions'] as List? ?? [];
+        final matchPercentage =
+            (filterDescResponse.jsonBody['matchPercentage'] as num?)?.toDouble() ?? 0.0;
+
+        ref.read(businessProvider.notifier).setFilterDescriptions(
+              descriptions,
+              matchPercentage,
+            );
+
+        // Also store locally for legacy info dialog
         setState(() {
-          _filterDescriptions =
-              filterDescResponse.jsonBody['filterDescriptions'];
+          _filterDescriptions = descriptions;
         });
       }
 
@@ -529,27 +538,8 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage>
   // ============================================================================
 
   Widget _buildHeroSection(Map<String, dynamic> business, dynamic locationState) {
-    // Get user location if permission granted
-    LatLng? userLocation;
-    if (locationState.hasPermission == true) {
-      // Will be fetched inside ProfileTopBusinessBlockWidget if needed
-      userLocation = null; // TODO: Get from geolocator when needed
-    }
-
-    return ProfileTopBusinessBlockWidget(
-      openingHours: ref.read(businessProvider).openingHours ?? {},
-      userLocation: userLocation,
-      priceRangeMin: business['price_range_min'] ?? 0,
-      priceRangeMax: business['price_range_max'] ?? 0,
-      profilePicture: business['profile_picture']?['url'],
-      businessName: business['business_name'],
-      latitude: business['address']?['latitude'],
-      longitude: business['address']?['longitude'],
-      street: business['address']?['street'],
-      neighbourhoodName: business['address']?['neighbourhood_name'],
-      businessID: int.tryParse(widget.businessId),
-      businessType: business['business_type'],
-    );
+    // Hero widget is now self-contained and reads from providers
+    return const ProfileTopBusinessBlockWidget();
   }
 
   // ============================================================================

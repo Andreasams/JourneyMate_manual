@@ -303,6 +303,10 @@ class BusinessState {
   final int? selectedDietaryPreferenceId; // Single-select preference
   final List<int> excludedAllergyIds; // Multi-exclude allergens
 
+  // Filter match data (for MatchCardWidget)
+  final List<dynamic> filterDescriptions; // Filter descriptions from API
+  final double matchPercentage; // Match percentage (0.0-100.0)
+
   const BusinessState({
     required this.currentBusiness,
     required this.menuItems,
@@ -313,6 +317,8 @@ class BusinessState {
     required this.selectedDietaryRestrictionIds,
     this.selectedDietaryPreferenceId,
     required this.excludedAllergyIds,
+    required this.filterDescriptions,
+    required this.matchPercentage,
   });
 
   factory BusinessState.initial() {
@@ -326,6 +332,8 @@ class BusinessState {
       selectedDietaryRestrictionIds: [],
       selectedDietaryPreferenceId: null,
       excludedAllergyIds: [],
+      filterDescriptions: [],
+      matchPercentage: 0.0,
     );
   }
 
@@ -339,6 +347,8 @@ class BusinessState {
     List<int>? selectedDietaryRestrictionIds,
     int? selectedDietaryPreferenceId,
     List<int>? excludedAllergyIds,
+    List<dynamic>? filterDescriptions,
+    double? matchPercentage,
   }) {
     return BusinessState(
       currentBusiness: currentBusiness ?? this.currentBusiness,
@@ -350,6 +360,8 @@ class BusinessState {
       selectedDietaryRestrictionIds: selectedDietaryRestrictionIds ?? this.selectedDietaryRestrictionIds,
       selectedDietaryPreferenceId: selectedDietaryPreferenceId ?? this.selectedDietaryPreferenceId,
       excludedAllergyIds: excludedAllergyIds ?? this.excludedAllergyIds,
+      filterDescriptions: filterDescriptions ?? this.filterDescriptions,
+      matchPercentage: matchPercentage ?? this.matchPercentage,
     );
   }
 
@@ -364,6 +376,8 @@ class BusinessState {
     List<int>? selectedDietaryRestrictionIds,
     int? selectedDietaryPreferenceId,
     List<int>? excludedAllergyIds,
+    List<dynamic>? filterDescriptions,
+    double? matchPercentage,
     bool clearPreference = false,
   }) {
     return BusinessState(
@@ -376,6 +390,8 @@ class BusinessState {
       selectedDietaryRestrictionIds: selectedDietaryRestrictionIds ?? this.selectedDietaryRestrictionIds,
       selectedDietaryPreferenceId: clearPreference ? null : (selectedDietaryPreferenceId ?? this.selectedDietaryPreferenceId),
       excludedAllergyIds: excludedAllergyIds ?? this.excludedAllergyIds,
+      filterDescriptions: filterDescriptions ?? this.filterDescriptions,
+      matchPercentage: matchPercentage ?? this.matchPercentage,
     );
   }
 }

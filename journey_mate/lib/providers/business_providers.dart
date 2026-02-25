@@ -79,6 +79,14 @@ class BusinessNotifier extends Notifier<BusinessState> {
     return null;
   }
 
+  /// Set filter descriptions and match percentage
+  void setFilterDescriptions(List<dynamic> descriptions, double matchPercentage) {
+    state = state.copyWith(
+      filterDescriptions: descriptions,
+      matchPercentage: matchPercentage,
+    );
+  }
+
   // ============================================================
   // DIETARY FILTER MANAGEMENT (for UnifiedFiltersWidget)
   // ============================================================
