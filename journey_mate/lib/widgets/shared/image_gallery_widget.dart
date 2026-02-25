@@ -6,7 +6,7 @@ library;
 /// - Multi-image mode: PageView with infinite scroll (virtual page indexing)
 /// - Single-image mode: GestureDetector with horizontal bounce (±100px max drag)
 /// - Analytics tracking: gallery_opened, gallery_image_viewed, gallery_closed
-/// - Close button (top-left) + category label overlay (bottom-right)
+/// - Close button (top-left, positioned 60px from top to avoid iPhone gesture area)
 /// - CachedNetworkImage with loading/error states
 ///
 /// Used by:
@@ -206,9 +206,6 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
 
           // Close button (top-left)
           _buildCloseButton(),
-
-          // Category label (bottom-right)
-          _buildCategoryLabel(),
         ],
       ),
     );
@@ -317,7 +314,7 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
   /// Builds the close button in the top-left corner
   Widget _buildCloseButton() {
     return Positioned(
-      top: AppSpacing.xl, // 20px from top
+      top: 60, // 60px from top to avoid iPhone gesture area
       left: AppSpacing.xl, // 20px from left
       child: SafeArea(
         child: Material(
@@ -350,30 +347,4 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
     );
   }
 
-  /// Builds the category label in the bottom-right corner
-  Widget _buildCategoryLabel() {
-    return Positioned(
-      bottom: AppSpacing.xxl, // 24px from bottom
-      right: AppSpacing.xl, // 20px from right
-      child: SafeArea(
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, // 12px horizontal
-            vertical: AppSpacing.sm, // 8px vertical
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.bgInput.withValues(alpha: 0.9), // Semi-transparent gray
-            borderRadius: BorderRadius.circular(AppRadius.button), // 14px
-          ),
-          child: Text(
-            widget.categoryName,
-            style: AppTypography.bodyRegular.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
