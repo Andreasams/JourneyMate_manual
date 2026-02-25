@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'provider_state_classes.dart';
 import '../services/api_service.dart';
+import '../constants/welcome_fallback_translations.dart';
 
 // ============================================================
 // ACCESSIBILITY PROVIDER
@@ -253,14 +254,35 @@ final translationsCacheProvider =
 });
 
 class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
-  static const int _cacheDurationDays = 7; // Cache translations for 7 days
+  /// Cache duration: 7 days
+  static const int _cacheDurationDays = 7;
+
+  /// Cache version — INCREMENT THIS when adding new translation keys or features
+  /// This forces cache refresh for all users on next launch.
+  ///
+  /// Version history:
+  /// - v1: Initial caching implementation (Feb 2025)
+  ///
+  /// **When to increment:**
+  /// - Adding new features with new translation keys
+  /// - Fixing translation errors that affect UX
+  /// - Major app updates that change translation structure
+  static const int _cacheVersion = 1;
 
   @override
   Map<String, String> build() => {};
 
   /// Synchronously initialize from cached translations (called at startup)
-  void initializeFromPrefs(Map<String, String> cachedTranslations) {
-    state = cachedTranslations;
+  /// Falls back to welcome page translations on first launch
+  void initializeFromPrefs(Map<String, String> cachedTranslations, String languageCode) {
+    if (cachedTranslations.isEmpty) {
+      // First launch — use welcome page fallbacks for instant display
+      final fallbacks = kWelcomeFallbackTranslations[languageCode] ?? {};
+      state = fallbacks;
+      debugPrint('🎯 Using welcome fallbacks for first launch ($languageCode)');
+    } else {
+      state = cachedTranslations;
+    }
   }
 
   /// Loads translations from BuildShip for a specific language
@@ -274,19 +296,21 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
         final translations = Map<String, String>.from(response.jsonBody);
         state = translations;
 
-        // Save to cache for next launch
+        // Save to cache for next launch (with version metadata)
         _saveToCache(languageCode, translations);
+
+        debugPrint('✅ Loaded ${translations.length} translations for $languageCode');
       } else {
         debugPrint('⚠️ Failed to load translations for $languageCode');
-        state = {};
+        // Keep current state (fallbacks or cached translations)
       }
     } catch (e) {
       debugPrint('⚠️ Error loading translations: $e');
-      state = {};
+      // Keep current state (fallbacks or cached translations)
     }
   }
 
-  /// Save translations to SharedPreferences cache
+  /// Save translations to SharedPreferences cache with version metadata
   Future<void> _saveToCache(String languageCode, Map<String, String> translations) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -296,22 +320,36 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
 
       await prefs.setString('translations_$languageCode', jsonString);
       await prefs.setInt('translations_${languageCode}_timestamp', DateTime.now().millisecondsSinceEpoch);
+      await prefs.setInt('translations_${languageCode}_version', _cacheVersion);
 
-      debugPrint('✅ Cached ${translations.length} translations for $languageCode');
+      debugPrint('✅ Cached ${translations.length} translations for $languageCode (v$_cacheVersion)');
     } catch (e) {
       debugPrint('⚠️ Failed to cache translations: $e');
       // Non-critical error - continue without caching
     }
   }
 
-  /// Check if cached translations exist and are fresh (< 7 days old)
+  /// Check if cached translations exist and are valid
+  /// Returns false if:
+  /// - No cache exists
+  /// - Cache is older than 7 days
+  /// - Cache version is outdated (forces refresh when app adds new features)
   static Future<bool> isCacheFresh(String languageCode) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final timestamp = prefs.getInt('translations_${languageCode}_timestamp');
+      final version = prefs.getInt('translations_${languageCode}_version');
 
+      // No cache exists
       if (timestamp == null) return false;
 
+      // Cache version mismatch — new features added, force refresh
+      if (version != _cacheVersion) {
+        debugPrint('🔄 Cache version mismatch (cached: $version, current: $_cacheVersion) — forcing refresh');
+        return false;
+      }
+
+      // Check age
       final cacheAge = DateTime.now().millisecondsSinceEpoch - timestamp;
       final cacheDuration = Duration(days: _cacheDurationDays).inMilliseconds;
 
@@ -321,13 +359,21 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
     }
   }
 
-  /// Load cached translations from SharedPreferences (if available)
+  /// Load cached translations from SharedPreferences (if available and valid)
+  /// Returns empty map if cache is missing or version is outdated
   static Future<Map<String, String>> loadFromCache(String languageCode) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final cachedJson = prefs.getString('translations_$languageCode');
+      final version = prefs.getInt('translations_${languageCode}_version');
 
       if (cachedJson == null || cachedJson.isEmpty) {
+        return {};
+      }
+
+      // Cache version mismatch — don't use stale cache
+      if (version != _cacheVersion) {
+        debugPrint('🗑️ Ignoring stale cache (v$version, current: v$_cacheVersion)');
         return {};
       }
 
@@ -335,7 +381,7 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
       final decoded = jsonDecode(cachedJson);
       final translations = Map<String, String>.from(decoded as Map);
 
-      debugPrint('✅ Loaded ${translations.length} cached translations for $languageCode');
+      debugPrint('✅ Loaded ${translations.length} cached translations for $languageCode (v$version)');
       return translations;
     } catch (e) {
       debugPrint('⚠️ Failed to load cached translations: $e');
@@ -343,7 +389,38 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
     }
   }
 
-  /// Clears all cached translations
+  /// Clear cached translations for a specific language (debug/admin use)
+  static Future<void> clearCacheForLanguage(String languageCode) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('translations_$languageCode');
+      await prefs.remove('translations_${languageCode}_timestamp');
+      await prefs.remove('translations_${languageCode}_version');
+      debugPrint('🗑️ Cleared translation cache for $languageCode');
+    } catch (e) {
+      debugPrint('⚠️ Failed to clear cache for $languageCode: $e');
+    }
+  }
+
+  /// Clear all cached translations across all languages (debug/admin use)
+  static Future<void> clearAllCaches() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final languages = ['en', 'da', 'de', 'fr', 'it', 'no', 'sv'];
+
+      for (final lang in languages) {
+        await prefs.remove('translations_$lang');
+        await prefs.remove('translations_${lang}_timestamp');
+        await prefs.remove('translations_${lang}_version');
+      }
+
+      debugPrint('🗑️ Cleared all translation caches');
+    } catch (e) {
+      debugPrint('⚠️ Failed to clear all caches: $e');
+    }
+  }
+
+  /// Clear in-memory state (current translations)
   void clear() {
     state = {};
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/app_providers.dart';
+import '../providers/locale_provider.dart';
+import '../constants/welcome_fallback_translations.dart';
 
 // ============================================================
 // TRANSLATION SERVICE (Phase 8 — 100% Dynamic Translations)
@@ -20,6 +22,7 @@ import '../providers/app_providers.dart';
 /// Dynamic translation lookup (td = "translation dynamic")
 ///
 /// Fetches translations from BuildShip API cache (stored in translationsCacheProvider).
+/// Falls back to welcome page translations on first launch.
 /// All keys are loaded at app startup and refreshed when language changes.
 ///
 /// Usage:
@@ -30,10 +33,19 @@ String td(WidgetRef ref, String key) {
   final cache = ref.watch(translationsCacheProvider);
   final text = cache[key];
 
-  if (text == null) {
-    debugPrint('⚠️ td: Missing dynamic key "$key"');
-    return key;
+  if (text != null && text.isNotEmpty) {
+    return text;
   }
 
-  return text;
+  // Fallback to welcome page translations (used on first launch before API loads)
+  final locale = ref.watch(localeProvider);
+  final fallback = kWelcomeFallbackTranslations[locale.languageCode]?[key];
+
+  if (fallback != null) {
+    return fallback;
+  }
+
+  // Last resort: return the key itself
+  debugPrint('⚠️ td: Missing translation key "$key"');
+  return key;
 }

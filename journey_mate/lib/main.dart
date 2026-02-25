@@ -13,13 +13,18 @@ import 'widgets/activity_scope.dart';
 
 /// Main entry point — optimized for fast startup with translation caching.
 ///
-/// Strategy: Show welcome page in <200ms with cached translations loaded instantly.
+/// Strategy: Show welcome page in <200ms with translations loaded instantly on ALL launches.
 /// 1. Single SharedPreferences.getInstance() call
-/// 2. Batch-read all stored keys + cached translations (7-day cache)
+/// 2. Batch-read all stored keys + cached translations (7-day cache with versioning)
 /// 3. AnalyticsService.initializeWithPrefs() (only async: UUID write on first launch)
-/// 4. Synchronous provider initialization (cached translations shown immediately)
-/// 5. runApp() — user sees welcome page with full translations
-/// 6. Background: refresh translations if stale (>7 days), load filters, check location
+/// 4. Synchronous provider initialization:
+///    - FIRST LAUNCH: Welcome page fallbacks (5 keys, instant display)
+///    - SUBSEQUENT LAUNCHES: Full cached translations (<100ms)
+/// 5. runApp() — user sees welcome page with full translations immediately
+/// 6. Background: refresh translations if stale (>7 days or version mismatch), load filters, check location
+///
+/// CACHE VERSIONING: Increment TranslationsCacheNotifier._cacheVersion when adding new features
+/// to force cache refresh for all users (prevents 7-day wait for new translation keys)
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -29,6 +34,7 @@ void main() async {
   // ── 2. Batch-read all stored keys + cached translations ──
   final storedLanguage = prefs.getString('user_language_code') ?? 'en';
   final storedCurrency = prefs.getString('user_currency_code') ?? 'DKK';
+  final storedExchangeRate = prefs.getDouble('user_exchange_rate'); // null if not set
   final isBoldText = prefs.getBool('is_bold_text_enabled') ?? false;
   final fontScale = prefs.getDouble('font_scale') ?? 1.0;
   final isBannerDismissed = prefs.getBool('location_banner_dismissed') ?? false;
@@ -59,6 +65,7 @@ void main() async {
 
   container.read(localizationProvider.notifier).initializeFromPrefs(
     currencyCode: storedCurrency,
+    exchangeRate: storedExchangeRate,
   );
 
   container.read(locationProvider.notifier).initializeFromPrefs(
@@ -67,6 +74,7 @@ void main() async {
 
   container.read(translationsCacheProvider.notifier).initializeFromPrefs(
     cachedTranslations,
+    storedLanguage,
   );
 
   // ── 5. Register lifecycle observer ──
@@ -89,8 +97,12 @@ void main() async {
   // ── 8. Background: check location permission + service status ──
   unawaited(container.read(locationProvider.notifier).checkPermission());
 
-  // ── 9. Background: fetch exchange rate for stored currency ──
-  unawaited(container.read(localizationProvider.notifier).loadExchangeRateForCurrentCurrency());
+  // ── 9. Background: refresh exchange rate if not cached ──
+  // If cached rate exists (from previous session), skip fetch
+  // If no cache, fetch latest rate (fire-and-forget)
+  if (storedExchangeRate == null && storedCurrency != 'DKK') {
+    unawaited(container.read(localizationProvider.notifier).loadExchangeRateForCurrentCurrency());
+  }
 }
 
 /// Loads translations and filters in the background with retry logic.

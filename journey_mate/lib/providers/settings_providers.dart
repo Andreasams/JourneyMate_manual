@@ -26,9 +26,13 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
   }
 
   /// Synchronous initialization from pre-read SharedPreferences values
-  void initializeFromPrefs({required String currencyCode}) {
-    state = state.copyWith(currencyCode: currencyCode);
-    debugPrint('✅ Loaded currency: $currencyCode');
+  /// Loads both currency code and cached exchange rate (if available)
+  void initializeFromPrefs({required String currencyCode, double? exchangeRate}) {
+    state = state.copyWith(
+      currencyCode: currencyCode,
+      exchangeRate: exchangeRate ?? 1.0,
+    );
+    debugPrint('✅ Loaded currency: $currencyCode (rate: ${exchangeRate ?? 1.0})');
   }
 
   /// Load currency code from SharedPreferences
@@ -68,11 +72,12 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
     }
   }
 
-  /// Set currency code and exchange rate (persists code only)
+  /// Set currency code and exchange rate (persists both to SharedPreferences)
   Future<void> setCurrency(String code, double rate) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_currency_code', code);
+      await prefs.setDouble('user_exchange_rate', rate);
 
       state = state.copyWith(
         currencyCode: code,
@@ -85,9 +90,17 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
     }
   }
 
-  /// Update only the exchange rate (not persisted)
-  void setExchangeRate(double rate) {
-    state = state.copyWith(exchangeRate: rate);
+  /// Update exchange rate and persist to SharedPreferences
+  Future<void> setExchangeRate(double rate) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('user_exchange_rate', rate);
+      state = state.copyWith(exchangeRate: rate);
+    } catch (e) {
+      debugPrint('⚠️ Failed to save exchange rate: $e');
+      // Still update in-memory state
+      state = state.copyWith(exchangeRate: rate);
+    }
   }
 
   /// Reset to default currency
