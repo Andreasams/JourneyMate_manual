@@ -156,7 +156,7 @@ class ApiService {
     required int businessId,
     required String languageCode,
   }) {
-    return _makeGetRequest('/businessprofile', {
+    return _makeGetRequest('/getBusinessProfile', {
       'businessId': businessId,
       'language_code': languageCode,
     });
@@ -170,7 +170,7 @@ class ApiService {
     required int businessId,
     required String languageCode,
   }) {
-    return _makeGetRequest('/menu', {
+    return _makeGetRequest('/DishesAndDrinks', {
       'businessId': businessId,
       'languageCode': languageCode,
     });
@@ -210,7 +210,7 @@ class ApiService {
     required int businessId,
     required String languageCode,
   }) {
-    return _makeGetRequest('/filterdescriptions', {
+    return _makeGetRequest('/filterDescriptions', {
       'businessId': businessId,
       'languageCode': languageCode,
     });
@@ -224,7 +224,7 @@ class ApiService {
     required int menuItemId,
     required String languageCode,
   }) {
-    return _makeGetRequest('/menuitem', {
+    return _makeGetRequest('/menuItem', {
       'menuItemId': menuItemId,
       'languageCode': languageCode,
     });

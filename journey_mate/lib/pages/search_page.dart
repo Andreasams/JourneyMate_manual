@@ -1014,6 +1014,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         userLocation: userLocation,
         onBusinessTap: (businessId) {
           // Navigate to business profile
+          debugPrint('🔍 onBusinessTap called with businessId=$businessId');
+          debugPrint('🔍 Navigating to /business/$businessId');
           context.push('/business/$businessId');
         },
       ),
