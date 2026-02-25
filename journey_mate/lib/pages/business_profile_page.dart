@@ -14,7 +14,6 @@ import '../theme/app_typography.dart';
 import '../theme/app_radius.dart';
 import '../widgets/shared/profile_top_business_block_widget.dart';
 import '../widgets/shared/restaurant_shimmer_widget.dart';
-import '../widgets/shared/expandable_text_widget.dart';
 import '../widgets/shared/payment_options_widget.dart';
 import '../widgets/shared/erroneous_info_form_widget.dart';
 import '../widgets/shared/opening_hours_and_weekdays.dart';
@@ -60,6 +59,7 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
   DateTime? _pageStartTime;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _aboutExpanded = true; // Default: expanded (matches JSX)
 
   // ============================================================================
   // LIFECYCLE METHODS
@@ -677,21 +677,73 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            td(ref, 'about_description_label'),
-            style: AppTypography.sectionHeading,
-          ),
-          SizedBox(height: AppSpacing.sm),
-          ExpandableTextWidget(
-            text: description,
-            businessId: int.tryParse(widget.businessId),
-          ),
-        ],
+      child: GestureDetector(
+        onTap: _toggleAboutExpanded,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header: "About" with chevron
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    td(ref, 'about_description_label'),
+                    style: AppTypography.sectionHeading,
+                  ),
+                ),
+                // Animated chevron icon
+                AnimatedRotation(
+                  turns: _aboutExpanded ? 0.5 : 0.0, // 0.5 turns = 180 degrees
+                  duration: const Duration(milliseconds: 250),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppColors.textPrimary,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+
+            // Expanded content: description text
+            if (_aboutExpanded) ...[
+              SizedBox(height: AppSpacing.sm),
+              Text(
+                description,
+                style: AppTypography.bodyRegular.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
+  }
+
+  /// Toggle About section expanded/collapsed state and track analytics
+  void _toggleAboutExpanded() {
+    setState(() {
+      _aboutExpanded = !_aboutExpanded;
+    });
+
+    // Track analytics
+    final analytics = AnalyticsService.instance;
+    ApiService.instance
+        .postAnalytics(
+      eventType: _aboutExpanded ? 'about_expanded' : 'about_collapsed',
+      deviceId: analytics.deviceId ?? '',
+      sessionId: analytics.currentSessionId ?? '',
+      userId: analytics.userId ?? '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {
+        'pageName': 'businessProfile',
+      },
+    )
+        .catchError((e) {
+      debugPrint('Analytics error: $e');
+      return ApiCallResponse.failure('Analytics failed');
+    });
   }
 
   /// Build report link button
