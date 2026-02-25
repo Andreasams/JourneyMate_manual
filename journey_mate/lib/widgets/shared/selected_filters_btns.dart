@@ -472,11 +472,9 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     }
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.xl,   // 20px - matches search page horizontal padding
-        AppSpacing.md,   // 12px - matches spacing between other elements
-        AppSpacing.xl,   // 20px - matches search page horizontal padding
-        AppSpacing.md,   // 12px - matches spacing between other elements
+      padding: EdgeInsets.only(
+        top: AppSpacing.md,      // 12px - matches spacing between other elements
+        bottom: AppSpacing.md,   // 12px - matches spacing between other elements
       ),
       decoration: BoxDecoration(
         border: Border(
@@ -573,7 +571,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
 
   Widget _buildStickyGradientClearButton(BuildContext context) {
     return Positioned(
-      left: AppSpacing.xl,  // 20px - aligns with container's left padding
+      left: 0,
       top: 0,
       child: Container(
         decoration: BoxDecoration(

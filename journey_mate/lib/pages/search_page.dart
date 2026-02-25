@@ -450,14 +450,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
             // Selected filters chips
             if (searchState.filtersUsedForSearch.isNotEmpty)
-              filterState.when(
-                data: (state) => SelectedFiltersBtns(
-                  filters: state.filtersForLanguage,
-                  languageCode: Localizations.localeOf(context).languageCode,
-                  translationsCache: translationsCache,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl), // 20px per JSX
+                child: filterState.when(
+                  data: (state) => SelectedFiltersBtns(
+                    filters: state.filtersForLanguage,
+                    languageCode: Localizations.localeOf(context).languageCode,
+                    translationsCache: translationsCache,
+                  ),
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
-                loading: () => const SizedBox.shrink(),
-                error: (_, _) => const SizedBox.shrink(),
               ),
 
             // Location permission banner (show if location not usable AND not dismissed)
