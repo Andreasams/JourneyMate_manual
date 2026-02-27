@@ -157,7 +157,12 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: AppSpacing.lg,
+        bottom: 0, // No bottom padding - toggle container controls gap
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, // Left-align title
         children: [
