@@ -62,7 +62,9 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
   bool _hasLoggedOpen = false;
 
   /// Multiplier for creating infinite scroll effect in multi-image view
-  static const int _virtualMultiplier = 500;
+  /// 600 * 1000 = 600000, which is divisible by all common gallery sizes (1-12 images)
+  /// This ensures (600000 + N) % imageCount = N for correct initial page positioning
+  static const int _virtualMultiplier = 600;
 
   /// =========================================================================
   /// LIFECYCLE METHODS
