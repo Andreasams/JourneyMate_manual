@@ -28,7 +28,7 @@ Retrieves filter data with intelligent caching and background updates. This acti
 ## Function Signature
 
 ```dart
-Future<bool> getFiltersWithUpdate(String languageCode)
+Future<bool> getFiltersWithUpdate(String languageCode, {String? cityId})
 ```
 
 ### Parameters
@@ -36,6 +36,7 @@ Future<bool> getFiltersWithUpdate(String languageCode)
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `languageCode` | `String` | **Yes** | ISO 639-1 code ('en', 'da', 'de', etc.) |
+| `cityId` | `String` | No | City ID (defaults to `"17"` / Copenhagen). Will be set by city selector in future. |
 
 ### Returns
 
@@ -72,7 +73,8 @@ GET https://wvb8ww.buildship.run/filters
 ### Query Parameters
 ```dart
 {
-  'languageCode': 'da'
+  'language_code': 'da',
+  'city_id': '17'
 }
 ```
 

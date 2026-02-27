@@ -188,9 +188,11 @@ class ApiService {
 
   Future<ApiCallResponse> getFiltersForSearch({
     required String languageCode,
+    required String cityId,
   }) {
     return _makeGetRequest('/filters', {
-      'languageCode': languageCode,
+      'language_code': languageCode,
+      'city_id': cityId,
     });
   }
 

@@ -242,12 +242,13 @@ Ordered by `menu.display_order`, then `menu_category.display_order`. `category_t
 
 ## 4. GET FILTERS (`GET_FILTERS_FOR_SEARCH`)
 
-**Purpose:** Fetch hierarchical filter tree + food/drink dietary types for a language.
+**Purpose:** Fetch hierarchical filter tree + food/drink dietary types for a language and city.
 
 **Inputs:**
-| Field | Type |
-|-------|------|
-| `languageCode` | `string` |
+| Field | Type | Notes |
+|-------|------|-------|
+| `language_code` | `string` | BCP-47, e.g. `"en"`, `"da"` |
+| `city_id` | `string` | Always `"17"` (Copenhagen) for now. Will be set by city selector in future. |
 
 **Output:**
 ```dart
@@ -514,7 +515,7 @@ Non-200 → error state shown with retry.
 | 1 | SEARCH | filters, filtersUsedForSearch, city_id, search_input, userLocation, language_code, sortBy, sortOrder, selectedStation, onlyOpen, category, page, pageSize | documents (with matchCount/matchedFilters/missedFilters), activeids, resultCount, pagination |
 | 2 | GET_BUSINESS_PROFILE | businessId, language_code | business_profile (incl. filters), gallery, menu_structure, exchange_rate, business_hours, open_windows |
 | 3 | GET_RESTAURANT_MENU | businessId, languageCode | menu_items, categories, availableRestrictions/Preferences |
-| 4 | GET_FILTERS | languageCode | filters (tree), foodDrinkTypes |
+| 4 | GET_FILTERS | language_code, city_id | filters (tree), foodDrinkTypes |
 | 5 | GET_EXCHANGE_RATE | to_currency | rate (double) |
 | 6 | GET_FILTER_DESCRIPTIONS | businessId, languageCode | filterDescriptions [{filter_id, description}] |
 | 7 | GET_SINGLE_MENU_ITEM | menuItemId, languageCode | full menu item object |

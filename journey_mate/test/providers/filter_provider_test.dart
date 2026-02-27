@@ -176,7 +176,7 @@ void main() {
       when(() => mockResponse.succeeded).thenReturn(false);
       when(() => mockResponse.jsonBody).thenReturn(null);
 
-      when(() => mockApiService.getFiltersForSearch(languageCode: 'en'))
+      when(() => mockApiService.getFiltersForSearch(languageCode: 'en', cityId: any(named: 'cityId')))
           .thenAnswer((_) async => mockResponse);
 
       // Since we can't override ApiService.instance easily, test error handling logic

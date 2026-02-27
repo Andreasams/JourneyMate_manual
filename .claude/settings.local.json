@@ -59,7 +59,9 @@
       "Bash(while read commit)",
       "Bash(do git show --name-only --pretty=format: \"$commit\")",
       "Bash(git checkout:*)",
-      "Bash(flutter run:*)"
+      "Bash(flutter run:*)",
+      "Skill(commit-commands:commit)",
+      "Skill(commit-commands:commit:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

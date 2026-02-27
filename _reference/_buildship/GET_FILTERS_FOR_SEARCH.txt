@@ -6,7 +6,8 @@ import { createClient } from '@supabase/supabase-js';
 interface NodeInputs {
   supabaseUrl: string;
   supabaseKey: string;
-  languageCode: string;
+  language_code: string;
+  city_id: string;
 }
 
 interface NodeScriptOptions {
@@ -51,39 +52,41 @@ interface NodeOutput {
 }
 
 export default async function getOptimizedFilters(
-  { supabaseUrl, supabaseKey, languageCode }: NodeInputs,
+  { supabaseUrl, supabaseKey, language_code, city_id }: NodeInputs,
   { logging, env, getBuildShipFile }: NodeScriptOptions,
 ): Promise<NodeOutput> {
 
   logging.log("Starting getOptimizedFilters with new combined function:", {
     supabaseUrl: supabaseUrl ? "[PROVIDED]" : "[MISSING]",
     supabaseKey: supabaseKey ? "[PROVIDED]" : "[MISSING]",
-    languageCode: languageCode || "[MISSING]"
+    language_code: language_code || "[MISSING]",
+    city_id: city_id || "[MISSING]"
   });
 
   if (!supabaseUrl) {
     logging.log('ERROR: Missing required input "supabaseUrl".');
     return { filters: [], foodDrinkTypes: [], success: false, error: 'supabaseUrl is required', filterCount: 0, foodDrinkCount: 0 };
   }
-  
+
   if (!supabaseKey) {
     logging.log('ERROR: Missing required input "supabaseKey".');
     return { filters: [], foodDrinkTypes: [], success: false, error: 'supabaseKey is required', filterCount: 0, foodDrinkCount: 0 };
   }
-  
-  if (!languageCode) {
-    logging.log('ERROR: Missing required input "languageCode".');
-    return { filters: [], foodDrinkTypes: [], success: false, error: 'languageCode is required', filterCount: 0, foodDrinkCount: 0 };
+
+  if (!language_code) {
+    logging.log('ERROR: Missing required input "language_code".');
+    return { filters: [], foodDrinkTypes: [], success: false, error: 'language_code is required', filterCount: 0, foodDrinkCount: 0 };
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    logging.log(`Calling NEW Supabase RPC 'get_filters_and_food_types_with_translations' for language: ${languageCode}`);
-    
+    logging.log(`Calling NEW Supabase RPC 'get_filters_and_food_types_with_translations' for language: ${language_code}, city: ${city_id}`);
+
     const { data, error } = await supabase
       .rpc('get_filters_and_food_types_with_translations', {
-        p_language_code: languageCode
+        p_language_code: language_code,
+        p_city_id: city_id
       });
 
     if (error) {

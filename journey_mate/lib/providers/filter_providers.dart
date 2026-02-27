@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'provider_state_classes.dart';
 import '../services/api_service.dart';
+import '../theme/app_constants.dart';
 
 // ============================================================
 // FILTER PROVIDER (AsyncNotifier pattern for API loading)
@@ -20,8 +21,13 @@ class FilterNotifier extends AsyncNotifier<FilterState> {
     return FilterState.initial();
   }
 
-  /// Load filters for a specific language from API
-  Future<void> loadFiltersForLanguage(String languageCode) async {
+  /// Load filters for a specific language and city from API.
+  /// [cityId] defaults to [AppConstants.kDefaultCityId] (Copenhagen).
+  /// When a city selector is added, pass the selected city ID here.
+  Future<void> loadFiltersForLanguage(
+    String languageCode, {
+    String? cityId,
+  }) async {
     // Set loading state
     state = const AsyncLoading();
 
@@ -29,6 +35,7 @@ class FilterNotifier extends AsyncNotifier<FilterState> {
       // Call API
       final response = await ApiService.instance.getFiltersForSearch(
         languageCode: languageCode,
+        cityId: cityId ?? AppConstants.kDefaultCityId.toString(),
       );
 
       if (response.succeeded && response.jsonBody != null) {
