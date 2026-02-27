@@ -56,7 +56,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
   static const double _buttonSpacing = 6.0;
   static const double _clearButtonSpacing = 8.0;
   static const double _iconSize = 10.0;
-  static const double _fontSize = 12.5;
+  static const double _fontSize = 13.5;
 
   // --- Category Title IDs ---
   static const int _locationTitleId = 1;
@@ -505,21 +505,24 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: EdgeInsets.only(
-          left:
-              SelectedFiltersBtns.cachedButtonWidths[widget.languageCode] ?? 75,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: organizedFilters
-              .map((filter) => Padding(
-                    padding: const EdgeInsets.only(right: _buttonSpacing),
-                    child: _buildFilterButton(filter),
-                  ))
-              .toList(),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: EdgeInsets.only(
+            left:
+                SelectedFiltersBtns.cachedButtonWidths[widget.languageCode] ?? 75,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: organizedFilters
+                .map((filter) => Padding(
+                      padding: const EdgeInsets.only(right: _buttonSpacing),
+                      child: _buildFilterButton(filter),
+                    ))
+                .toList(),
+          ),
         ),
       ),
     );
@@ -541,6 +544,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
               fontSize: _fontSize,
               fontWeight: FontWeight.w600,
               color: AppColors.green,
+              height: 1.2,
             ),
           ),
           const SizedBox(width: 2),
@@ -615,6 +619,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
           fontSize: _fontSize,
           fontWeight: FontWeight.w600,
           color: AppColors.accent,
+          height: 1.2,
         ),
       ),
     );
