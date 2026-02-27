@@ -413,6 +413,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       ),
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Fixed header section
             Padding(
@@ -443,7 +444,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
                   // Liste/Kort view toggle
                   _buildViewToggle(),
-                  SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),
