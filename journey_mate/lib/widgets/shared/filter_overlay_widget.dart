@@ -810,7 +810,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       final result = await ApiService.instance.search(
         searchInput: searchTerm,
         filters: List<int>.from(_selectedFilterIds),
-        filtersUsedForSearch: List<int>.from(_selectedFilterIds),
         cityId: AppConstants.kDefaultCityId.toString(),
         languageCode: languageCode,
         selectedStation: trainStationId,

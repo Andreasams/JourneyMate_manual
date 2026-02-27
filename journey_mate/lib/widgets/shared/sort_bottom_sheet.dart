@@ -99,7 +99,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   }
 
   Widget _buildOptionsView() {
-    // Check if location is available
+    // Only show "Nearest you" when location is available
     final locationState = ref.watch(locationProvider);
     final hasLocation = locationState.isLocationUsable;
 
@@ -112,13 +112,12 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              _buildSortOption('match', 'sort_match'),
-              // Only show "Nearest" if location is available
               if (hasLocation)
                 _buildSortOption('nearest', 'sort_nearest'),
               _buildSortOptionWithSubmenu('station', 'sort_station', widget.selectedStation),
               _buildSortOption('price_low', 'sort_price_low'),
               _buildSortOption('price_high', 'sort_price_high'),
+              _buildSortOption('newest', 'sort_newest'),
             ],
           ),
         ),

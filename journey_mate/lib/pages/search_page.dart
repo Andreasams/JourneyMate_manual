@@ -47,7 +47,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   bool _searchHasFocus = false;
 
   // Sort state
-  String _currentSort = 'match';
+  String _currentSort = 'nearest';
   bool _onlyOpen = false;
   int? _selectedStation;
   String _viewMode = 'liste'; // 'liste' or 'kort'
@@ -162,8 +162,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     try {
       final response = await ApiService.instance.search(
-        filters: [], // Not used per BUILDSHIP_API_REFERENCE.md
-        filtersUsedForSearch: searchState.filtersUsedForSearch,
+        filters: searchState.filtersUsedForSearch,
         cityId: AppConstants.kDefaultCityId.toString(),
         searchInput: query,
         userLocation: position != null

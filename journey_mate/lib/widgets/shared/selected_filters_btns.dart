@@ -377,7 +377,6 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       // Execute search with updated filters
       final response = await ApiService.instance.search(
         filters: currentFilters,
-        filtersUsedForSearch: currentFilters,
         cityId: AppConstants.kDefaultCityId.toString(),
         searchInput: ref.read(searchStateProvider).currentSearchText,
         userLocation: userLocation,
@@ -434,7 +433,6 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       // Execute search with empty filters
       final response = await ApiService.instance.search(
         filters: [],
-        filtersUsedForSearch: [],
         cityId: AppConstants.kDefaultCityId.toString(),
         searchInput: ref.read(searchStateProvider).currentSearchText,
         userLocation: userLocation,

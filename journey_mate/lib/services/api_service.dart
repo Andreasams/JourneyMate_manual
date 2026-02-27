@@ -115,25 +115,29 @@ class ApiService {
   // ============================================================
   // ENDPOINT #1: SEARCH
   // ============================================================
+  // All filter IDs are passed as a single flat array.
+  // The node internally routes dietary/need filter IDs (gluten, vegan, allergens,
+  // etc.) into _eval() scoring and all other IDs into filter_by hard constraints.
+  // The app does not need to know the difference.
 
   Future<ApiCallResponse> search({
     required List<int> filters,
-    required List<int> filtersUsedForSearch,
     required String cityId,
     required String searchInput,
     String? userLocation,
     required String languageCode,
-    String sortBy = 'match',
+    String sortBy = 'nearest',
     String sortOrder = 'desc',
     int? selectedStation,
     bool onlyOpen = false,
     String category = 'all',
     int page = 1,
     int pageSize = 20,
+    int? neighbourhoodId,
+    int? shoppingAreaId,
   }) {
     return _makeGetRequest('/search', {
       'filters': filters.join(','),
-      'filtersUsedForSearch': filtersUsedForSearch.join(','),
       'city_id': cityId,
       'search_input': searchInput,
       'userLocation': userLocation,
@@ -145,6 +149,8 @@ class ApiService {
       'category': category,
       'page': page,
       'pageSize': pageSize,
+      if (neighbourhoodId != null) 'neighbourhoodId': neighbourhoodId,
+      if (shoppingAreaId != null) 'shoppingAreaId': shoppingAreaId,
     });
   }
 
@@ -196,7 +202,7 @@ class ApiService {
     required String toCurrency,
     String fromCurrency = 'DKK', // Base currency (always DKK for JourneyMate)
   }) {
-    return _makeGetRequest('/getExchangeRates', { // Fixed: plural endpoint
+    return _makeGetRequest('/getExchangeRates', {
       'from_currency': fromCurrency,
       'to_currency': toCurrency,
     });

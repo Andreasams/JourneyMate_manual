@@ -98,8 +98,6 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
         searchInput: '',
         languageCode: languageCode,
         filters: [],
-        filtersUsedForSearch: [],
-        sortBy: 'match',
         sortOrder: 'desc',
         onlyOpen: false,
         category: 'all',

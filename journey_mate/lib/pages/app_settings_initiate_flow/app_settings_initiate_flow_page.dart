@@ -156,8 +156,6 @@ class _AppSettingsInitiateFlowPageState
         searchInput: '',
         languageCode: languageCode,
         filters: [],
-        filtersUsedForSearch: [],
-        sortBy: 'match',
         sortOrder: 'desc',
         page: 1,
         pageSize: 20,

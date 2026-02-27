@@ -108,8 +108,6 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
         searchInput: '',
         languageCode: languageCode,
         filters: [],
-        filtersUsedForSearch: [],
-        sortBy: 'match',
         sortOrder: 'desc',
         selectedStation: null,
         onlyOpen: false,
