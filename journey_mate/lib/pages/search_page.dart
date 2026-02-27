@@ -166,33 +166,40 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         cityId: AppConstants.kDefaultCityId.toString(),
         searchInput: query,
         userLocation: position != null
-            ? '${position.latitude},${position.longitude}'
+            ? 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})'
             : null,
         languageCode: languageCode,
         sortBy: _currentSort,
         sortOrder: 'desc',
         onlyOpen: _onlyOpen,
-        category: 'all', // Default category
       );
 
       // Ignore if newer request already started
       if (_requestId != currentRequestId) return;
 
       if (response.succeeded && mounted) {
-        final documents = response.jsonBody['documents'] as List? ?? [];
-        final activeIds = (response.jsonBody['activeids'] as List?)
-            ?.whereType<int>()
+        final jsonBody = response.jsonBody;
+        final documents = jsonBody['documents'] as List? ?? [];
+        final resultCount = jsonBody['resultCount'] as int? ?? documents.length;
+        final activeIds = (jsonBody['activeids'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
+        final selectedNeedFilters = (jsonBody['selectedNeedFilters'] as List?)
+            ?.map((e) => (e as num).toInt())
             .toList() ?? [];
 
-        debugPrint('🔍 Search: ${documents.length} results, ${activeIds.length} active filters');
+        debugPrint('🔍 Search: $resultCount results, ${activeIds.length} active filters, ${selectedNeedFilters.length} need filters');
 
         ref.read(searchStateProvider.notifier).updateSearchResults(
           documents,
-          documents.length,
+          resultCount,
         );
 
         // Store API's active filter IDs
         ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
+
+        // Store selected need filters (for section grouping)
+        ref.read(searchStateProvider.notifier).updateSelectedNeedFilters(selectedNeedFilters);
 
         // Track analytics
         final analytics = AnalyticsService.instance;
@@ -204,7 +211,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           timestamp: DateTime.now().toIso8601String(),
           eventData: {
             'query': query,
-            'resultsCount': documents.length,
+            'resultsCount': resultCount,
             'filtersActive': searchState.filtersUsedForSearch.isNotEmpty,
           },
         );

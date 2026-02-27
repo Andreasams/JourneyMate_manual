@@ -43,6 +43,12 @@ class SearchStateNotifier extends Notifier<SearchState> {
     state = state.copyWith(activeFilterIds: List<int>.from(activeIds));
   }
 
+  /// Update selected need filters from API response
+  /// These are the need/dietary filter IDs the node used for match scoring
+  void updateSelectedNeedFilters(List<int> needFilters) {
+    state = state.copyWith(selectedNeedFilters: List<int>.from(needFilters));
+  }
+
   /// Set current search text
   void setSearchText(String text) {
     state = state.copyWith(currentSearchText: text);

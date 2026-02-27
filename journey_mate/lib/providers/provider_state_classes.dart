@@ -173,6 +173,7 @@ class SearchState {
   final String currentSearchText;
   final List<int> filtersUsedForSearch; // User's checked filters
   final List<int> activeFilterIds; // API's compatible filters (from activeids response)
+  final List<int> selectedNeedFilters; // Need/dietary filter IDs from API response (for section grouping)
   final String currentFilterSessionId;
   final List<int> previousActiveFilters; // Snapshot before last change
   final String previousSearchText; // Snapshot before last change
@@ -188,6 +189,7 @@ class SearchState {
     required this.currentSearchText,
     required this.filtersUsedForSearch,
     required this.activeFilterIds,
+    required this.selectedNeedFilters,
     required this.currentFilterSessionId,
     required this.previousActiveFilters,
     required this.previousSearchText,
@@ -205,6 +207,7 @@ class SearchState {
       currentSearchText: '',
       filtersUsedForSearch: [],
       activeFilterIds: [], // Empty until first search
+      selectedNeedFilters: [], // Empty until first search with need filters
       currentFilterSessionId: '',
       previousActiveFilters: [],
       previousSearchText: '',
@@ -222,6 +225,7 @@ class SearchState {
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
     List<int>? activeFilterIds,
+    List<int>? selectedNeedFilters,
     String? currentFilterSessionId,
     List<int>? previousActiveFilters,
     String? previousSearchText,
@@ -237,6 +241,7 @@ class SearchState {
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
       activeFilterIds: activeFilterIds ?? this.activeFilterIds,
+      selectedNeedFilters: selectedNeedFilters ?? this.selectedNeedFilters,
       currentFilterSessionId: currentFilterSessionId ?? this.currentFilterSessionId,
       previousActiveFilters: previousActiveFilters ?? this.previousActiveFilters,
       previousSearchText: previousSearchText ?? this.previousSearchText,
@@ -255,6 +260,7 @@ class SearchState {
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
     List<int>? activeFilterIds,
+    List<int>? selectedNeedFilters,
     String? currentFilterSessionId,
     List<int>? previousActiveFilters,
     String? previousSearchText,
@@ -264,6 +270,7 @@ class SearchState {
     DateTime? lastFetchTime,
     bool clearResults = false,
     bool clearActiveFilterIds = false,
+    bool clearSelectedNeedFilters = false,
     bool clearRefinementTime = false,
     bool clearFetchTime = false,
   }) {
@@ -274,6 +281,7 @@ class SearchState {
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
       activeFilterIds: clearActiveFilterIds ? [] : (activeFilterIds ?? this.activeFilterIds),
+      selectedNeedFilters: clearSelectedNeedFilters ? [] : (selectedNeedFilters ?? this.selectedNeedFilters),
       currentFilterSessionId: currentFilterSessionId ?? this.currentFilterSessionId,
       previousActiveFilters: previousActiveFilters ?? this.previousActiveFilters,
       previousSearchText: previousSearchText ?? this.previousSearchText,
