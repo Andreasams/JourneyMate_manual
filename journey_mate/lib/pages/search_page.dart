@@ -326,6 +326,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           searchTerm: searchState.currentSearchText,
                           mayLoad: true,
                           resultCount: searchState.searchResultsCount,
+                          activeTabIndex: _activeFilterTab,
                         ),
                         loading: () => const Center(
                           child: CircularProgressIndicator(),

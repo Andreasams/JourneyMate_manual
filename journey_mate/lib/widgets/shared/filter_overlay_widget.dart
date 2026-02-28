@@ -65,6 +65,7 @@ class FilterOverlayWidget extends ConsumerStatefulWidget {
     required this.searchTerm,
     required this.mayLoad,
     required this.resultCount,
+    required this.activeTabIndex,
   });
 
   final double? width;
@@ -79,6 +80,7 @@ class FilterOverlayWidget extends ConsumerStatefulWidget {
   final String? searchTerm;
   final bool mayLoad;
   final int? resultCount;
+  final int activeTabIndex;
 
   @override
   ConsumerState<FilterOverlayWidget> createState() =>
@@ -1030,10 +1032,38 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     return Expanded(
       child: Column(
         children: [
-          // Top border spanning all three columns
-          Container(
-            height: 1,
-            color: _columnDividerColor,
+          // Segmented top borders - only show where tab is NOT active
+          // This prevents the orange tab underline from overlapping with black border
+          Transform.translate(
+            offset: const Offset(0, -1), // Pull up 1px to align with orange line
+            child: Row(
+              children: [
+                // Left column border (shown when Location tab is NOT active)
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    height: widget.activeTabIndex == 0 ? 0 : 1,
+                    color: _columnDividerColor,
+                  ),
+                ),
+                // Middle column border (shown when Type tab is NOT active)
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    height: widget.activeTabIndex == 1 ? 0 : 1,
+                    color: _columnDividerColor,
+                  ),
+                ),
+                // Right column border (shown when Needs tab is NOT active)
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    height: widget.activeTabIndex == 2 ? 0 : 1,
+                    color: _columnDividerColor,
+                  ),
+                ),
+              ],
+            ),
           ),
           // The three columns (experimenting with equal 33% widths)
           Expanded(
