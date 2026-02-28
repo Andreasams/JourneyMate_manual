@@ -148,7 +148,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   static const Color _categorySelectionBackgroundColor = _whiteColor;
 
   // Column dividers
-  static const Color _columnDividerColor = _blackColor;
+  final Color _columnDividerColor = AppColors.border; // Light grey (#E8E8E8)
   static const double _columnDividerThickness = 1.0;
 
   // Text colors (content state)
@@ -1032,39 +1032,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     return Expanded(
       child: Column(
         children: [
-          // Segmented top borders - only show where tab is NOT active
-          // This prevents the orange tab underline from overlapping with black border
-          Transform.translate(
-            offset: const Offset(0, -1), // Pull up 1px to align with orange line
-            child: Row(
-              children: [
-                // Left column border (shown when Location tab is NOT active)
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    height: widget.activeTabIndex == 0 ? 0 : 1,
-                    color: _columnDividerColor,
-                  ),
-                ),
-                // Middle column border (shown when Type tab is NOT active)
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    height: widget.activeTabIndex == 1 ? 0 : 1,
-                    color: _columnDividerColor,
-                  ),
-                ),
-                // Right column border (shown when Needs tab is NOT active)
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    height: widget.activeTabIndex == 2 ? 0 : 1,
-                    color: _columnDividerColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
           // The three columns (experimenting with equal 33% widths)
           Expanded(
             child: Row(
@@ -1116,7 +1083,10 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   Widget _buildFooter() {
     return Container(
-      padding: const EdgeInsets.only(top: 4, bottom: 12),
+      padding: EdgeInsets.only(
+        top: 4,
+        bottom: MediaQuery.of(context).viewPadding.bottom + 12,
+      ),
       child: Row(
         children: [
           Expanded(child: _buildViewResultsButton()),
@@ -1397,6 +1367,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.filter), // 10px
           side: BorderSide(color: _accentColor, width: 1.5),
         ),
       ),
@@ -1428,6 +1399,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.filter), // 10px
           side: const BorderSide(color: _blackColor, width: 1),
         ),
       ),

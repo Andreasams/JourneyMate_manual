@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_spacing.dart';
 
 /// FilterTitlesRow - Horizontal row with 3 filter category tabs
 ///
@@ -17,9 +19,10 @@ import '../../theme/app_typography.dart';
 /// - tabCounts: Optional map of titleId → selection count for badge display
 ///
 /// Design:
-/// - 3 columns with flex distribution (36% / 33% / 31% per design system)
-/// - Active tab: orange text + 2px bottom border
-/// - Inactive tabs: gray text, no border
+/// - 3 columns with equal 33% distribution
+/// - Active tab: orange background + white text
+/// - Inactive tabs: white background + grey border + dark grey text
+/// - Button-style containers with 10px border radius
 /// - Count badges: 18px circle, orange when active, grey when inactive
 /// - Uses td(ref, key) for translation
 class FilterTitlesRow extends ConsumerWidget {
@@ -47,16 +50,11 @@ class FilterTitlesRow extends ConsumerWidget {
   static const String _needsKey = 'filter_preferences';
 
   // Layout constants
-  static const double _borderThickness = 2.0;
-  static const double _verticalPadding = 12.0;
+  static const double _verticalPadding = 9.0;
+  static const double _buttonSpacing = AppSpacing.sm; // 8px between buttons
 
   /// Returns whether the given tab is currently selected
   bool _isSelected(int tabIndex) => activeTabIndex == tabIndex;
-
-  /// Returns the text color based on selection state
-  Color _getTitleColor(int tabIndex) {
-    return _isSelected(tabIndex) ? AppColors.accent : AppColors.textSecondary;
-  }
 
   /// Returns the translation key for the given tab index
   String _getTranslationKey(int tabIndex) {
@@ -82,58 +80,64 @@ class FilterTitlesRow extends ConsumerWidget {
     final count = tabCounts?[titleId] ?? 0;
     final showBadge = count > 0;
 
-    return Expanded(
-      flex: flex,
-      child: GestureDetector(
-        onTap: () => onTabChanged(tabIndex),
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: _verticalPadding),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: isSelected ? AppColors.accent : Colors.transparent,
-                width: _borderThickness,
+    return Padding(
+      padding: EdgeInsets.only(
+        right: tabIndex < 2 ? _buttonSpacing : 0, // 8px spacing between buttons
+      ),
+      child: Expanded(
+        flex: flex,
+        child: GestureDetector(
+          onTap: () => onTabChanged(tabIndex),
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: _verticalPadding),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.accent : AppColors.bgCard,
+              border: Border.all(
+                color: isSelected ? AppColors.accent : AppColors.border,
+                width: 1.5,
               ),
+              borderRadius: BorderRadius.circular(AppRadius.filter), // 10px
             ),
-          ),
-          alignment: Alignment.center,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                style: AppTypography.filterTab.copyWith(
-                  color: _getTitleColor(tabIndex),
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-              if (showBadge) ...[
-                SizedBox(width: 5),
-                Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.accent : Color(0xFFBBBBBB),
-                    shape: BoxShape.circle,
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.bodyRegular.copyWith(
+                    fontSize: 13.5,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? AppColors.bgCard : AppColors.textSecondary,
                   ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '$count',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      height: 1.0,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+                if (showBadge) ...[
+                  SizedBox(width: 5),
+                  Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.accent : Color(0xFFBBBBBB),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '$count',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 1.0,
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
