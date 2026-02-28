@@ -232,12 +232,18 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       return [];
     }
 
-    final selectedFilterIds = ref.watch(
-      searchStateProvider.select((state) => state.filtersUsedForSearch),
-    );
+    final searchState = ref.watch(searchStateProvider);
+    final selectedFilterIds = searchState.filtersUsedForSearch;
+
+    // Include routed IDs (neighbourhood, shopping area) in chip display
+    final allDisplayIds = <int>[
+      ...selectedFilterIds,
+      if (searchState.selectedNeighbourhoodId != null) searchState.selectedNeighbourhoodId!,
+      if (searchState.selectedShoppingAreaId != null) searchState.selectedShoppingAreaId!,
+    ];
 
     final selectedFilters = _flattenedFilters!
-        .where((f) => selectedFilterIds.contains(f['id'] as int))
+        .where((f) => allDisplayIds.contains(f['id'] as int))
         .toList();
 
     final categoryOrder = <int, int>{
@@ -327,8 +333,22 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
   /// Handles individual filter removal with integrated search execution
   Future<void> _handleFilterRemoval(int filterId) async {
     try {
-      // Remove filter from state
-      ref.read(searchStateProvider.notifier).toggleFilter(filterId);
+      // Check if this is a routed ID (neighbourhood or shopping area)
+      final searchState = ref.read(searchStateProvider);
+      final notifier = ref.read(searchStateProvider.notifier);
+      final isRoutedNeighbourhood = searchState.selectedNeighbourhoodId == filterId;
+      final isRoutedShoppingArea = searchState.selectedShoppingAreaId == filterId;
+
+      if (isRoutedNeighbourhood) {
+        // Clear the routed neighbourhood ID
+        notifier.clearRoutedNeighbourhoodId();
+      } else if (isRoutedShoppingArea) {
+        // Clear the routed shopping area ID
+        notifier.clearRoutedShoppingAreaId();
+      } else {
+        // Regular filter — toggle it off
+        notifier.toggleFilter(filterId);
+      }
 
       // Get user location (only if location is usable)
       Position? position;
@@ -374,14 +394,17 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
         if (trainStationId == -1) trainStationId = null;
       }
 
-      // Execute search with updated filters
+      // Execute search with updated filters (include routed neighbourhood/shopping area)
+      final currentSearchState = ref.read(searchStateProvider);
       final response = await ApiService.instance.search(
         filters: currentFilters,
         cityId: AppConstants.kDefaultCityId.toString(),
-        searchInput: ref.read(searchStateProvider).currentSearchText,
+        searchInput: currentSearchState.currentSearchText,
         userLocation: userLocation,
         languageCode: widget.languageCode,
         selectedStation: trainStationId,
+        neighbourhoodId: currentSearchState.selectedNeighbourhoodId,
+        shoppingAreaId: currentSearchState.selectedShoppingAreaId,
       );
 
       if (response.succeeded && context.mounted) {
@@ -492,10 +515,10 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
   }
 
   bool _hasFilters() {
-    final selectedFilterIds = ref.watch(
-      searchStateProvider.select((state) => state.filtersUsedForSearch),
-    );
-    return selectedFilterIds.isNotEmpty;
+    final searchState = ref.watch(searchStateProvider);
+    return searchState.filtersUsedForSearch.isNotEmpty ||
+        searchState.selectedNeighbourhoodId != null ||
+        searchState.selectedShoppingAreaId != null;
   }
 
   Widget _buildScrollableFilterButtons() {

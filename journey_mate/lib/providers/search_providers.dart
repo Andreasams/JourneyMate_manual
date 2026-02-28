@@ -43,10 +43,10 @@ class SearchStateNotifier extends Notifier<SearchState> {
     state = state.copyWith(activeFilterIds: List<int>.from(activeIds));
   }
 
-  /// Update selected need filters from API response
-  /// These are the need/dietary filter IDs the node used for match scoring
-  void updateSelectedNeedFilters(List<int> needFilters) {
-    state = state.copyWith(selectedNeedFilters: List<int>.from(needFilters));
+  /// Update scoring filter IDs from API response
+  /// These are all filter IDs the node used for match scoring (dietary, cuisine, etc.)
+  void updateScoringFilterIds(List<int> scoringIds) {
+    state = state.copyWith(scoringFilterIds: List<int>.from(scoringIds));
   }
 
   /// Set current search text
@@ -88,9 +88,13 @@ class SearchStateNotifier extends Notifier<SearchState> {
     state = state.copyWith(filtersUsedForSearch: currentFilters);
   }
 
-  /// Clear all active filters
+  /// Clear all active filters (including routed neighbourhood/shopping area)
   void clearFilters() {
-    state = state.copyWith(filtersUsedForSearch: []);
+    state = state.copyWithNullable(
+      filtersUsedForSearch: [],
+      clearNeighbourhoodId: true,
+      clearShoppingAreaId: true,
+    );
   }
 
   /// Set the current filter session ID
@@ -138,6 +142,51 @@ class SearchStateNotifier extends Notifier<SearchState> {
   /// Set filters directly (replace entire list)
   void setFilters(List<int> filterIds) {
     state = state.copyWith(filtersUsedForSearch: List<int>.from(filterIds));
+  }
+
+  /// Route filter IDs based on type, splitting them into the correct state fields:
+  /// - is_neighborhood == true → selectedNeighbourhoodId (API param, not in filters array)
+  /// - id >= 20000 → selectedShoppingAreaId (API param, not in filters array)
+  /// - id >= 10000 && < 20000 → dropped (train stations handled via selectedStation param)
+  /// - everything else → filtersUsedForSearch
+  void setFiltersWithRouting(List<int> allIds, Map<int, dynamic> filterLookup) {
+    int? neighbourhoodId;
+    int? shoppingAreaId;
+    final regularFilters = <int>[];
+
+    for (final id in allIds) {
+      if (id >= 20000) {
+        shoppingAreaId = id;
+      } else if (id >= 10000) {
+        // Train station — skip (handled via selectedStation param)
+        continue;
+      } else {
+        final meta = filterLookup[id];
+        if (meta != null && meta['is_neighborhood'] == true) {
+          neighbourhoodId = id;
+        } else {
+          regularFilters.add(id);
+        }
+      }
+    }
+
+    state = state.copyWithNullable(
+      filtersUsedForSearch: regularFilters,
+      selectedNeighbourhoodId: neighbourhoodId,
+      selectedShoppingAreaId: shoppingAreaId,
+      clearNeighbourhoodId: neighbourhoodId == null,
+      clearShoppingAreaId: shoppingAreaId == null,
+    );
+  }
+
+  /// Clear the routed neighbourhood ID only
+  void clearRoutedNeighbourhoodId() {
+    state = state.copyWithNullable(clearNeighbourhoodId: true);
+  }
+
+  /// Clear the routed shopping area ID only
+  void clearRoutedShoppingAreaId() {
+    state = state.copyWithNullable(clearShoppingAreaId: true);
   }
 
   /// Check if a specific filter is active

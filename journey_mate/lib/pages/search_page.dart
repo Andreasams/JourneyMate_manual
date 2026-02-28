@@ -161,6 +161,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final languageCode = Localizations.localeOf(context).languageCode;
 
     try {
+      // DEBUG: verify which filter IDs and routing params are being sent to the API
+      debugPrint('🔍 filters being sent: ${searchState.filtersUsedForSearch}');
+      debugPrint('🔍 neighbourhoodId: ${searchState.selectedNeighbourhoodId}, shoppingAreaId: ${searchState.selectedShoppingAreaId}');
+
       final response = await ApiService.instance.search(
         filters: searchState.filtersUsedForSearch,
         cityId: AppConstants.kDefaultCityId.toString(),
@@ -172,6 +176,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         sortBy: _currentSort,
         sortOrder: 'desc',
         onlyOpen: _onlyOpen,
+        neighbourhoodId: searchState.selectedNeighbourhoodId,
+        shoppingAreaId: searchState.selectedShoppingAreaId,
       );
 
       // Ignore if newer request already started
@@ -184,11 +190,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         final activeIds = (jsonBody['activeids'] as List?)
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
-        final selectedNeedFilters = (jsonBody['selectedNeedFilters'] as List?)
+        final scoringFilterIds = (jsonBody['scoringFilterIds'] as List?)
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
 
-        debugPrint('🔍 Search: $resultCount results, ${activeIds.length} active filters, ${selectedNeedFilters.length} need filters');
+        debugPrint('🔍 Search: $resultCount results, ${activeIds.length} active filters, ${scoringFilterIds.length} scoring filters');
 
         ref.read(searchStateProvider.notifier).updateSearchResults(
           documents,
@@ -198,8 +204,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         // Store API's active filter IDs
         ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
 
-        // Store selected need filters (for section grouping)
-        ref.read(searchStateProvider.notifier).updateSelectedNeedFilters(selectedNeedFilters);
+        // Store scoring filter IDs (for section grouping)
+        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
 
         // Track analytics
         final analytics = AnalyticsService.instance;
@@ -241,9 +247,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final searchState = ref.read(searchStateProvider);
 
     // Calculate filter counts for tab badges
+    // Include routed neighbourhood/shopping area in Location tab badge count
+    final extraLocationCount = (searchState.selectedNeighbourhoodId != null ? 1 : 0)
+                             + (searchState.selectedShoppingAreaId != null ? 1 : 0);
     final filterCounts = _calculateFilterCounts(
       searchState.filtersUsedForSearch,
       filterState,
+      extraLocationCount: extraLocationCount,
     );
 
     if (!mounted) return;
@@ -332,9 +342,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       ),
     );
 
-    // Reset state when sheet closes
+    // Reset state when sheet closes and re-trigger search with updated filters
     if (mounted) {
       setState(() => _isFilterSheetOpen = false);
+      // Re-execute search with updated filter state (same pattern as _openSortBottomSheet)
+      final searchText = ref.read(searchStateProvider).currentSearchText;
+      _executeSearch(searchText);
     }
   }
 
@@ -405,9 +418,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final filterState = ref.watch(filterProvider);
 
     // Calculate filter counts per category for badges
+    // Include routed neighbourhood/shopping area in Location tab badge count
+    final extraLocationCount = (searchState.selectedNeighbourhoodId != null ? 1 : 0)
+                             + (searchState.selectedShoppingAreaId != null ? 1 : 0);
     final filterCounts = _calculateFilterCounts(
       searchState.filtersUsedForSearch,
       filterState,
+      extraLocationCount: extraLocationCount,
     );
 
     return Scaffold(
@@ -454,8 +471,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               ),
             ),
 
-            // Selected filters chips
-            if (searchState.filtersUsedForSearch.isNotEmpty)
+            // Selected filters chips (include routed neighbourhood/shopping area IDs)
+            if (searchState.filtersUsedForSearch.isNotEmpty ||
+                searchState.selectedNeighbourhoodId != null ||
+                searchState.selectedShoppingAreaId != null)
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl), // 20px per JSX
                 child: filterState.when(
@@ -803,8 +822,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   Map<int, int> _calculateFilterCounts(
     List<int> activeFilters,
-    AsyncValue<FilterState> filterState,
-  ) {
+    AsyncValue<FilterState> filterState, {
+    int extraLocationCount = 0,
+  }) {
     return filterState.when(
       data: (state) {
         final counts = <int, int>{1: 0, 2: 0, 3: 0};
@@ -816,6 +836,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             counts[titleId] = (counts[titleId] ?? 0) + 1;
           }
         }
+
+        // Add routed neighbourhood/shopping area selections to Location tab badge
+        // These IDs are not in filtersUsedForSearch (routed to separate API params)
+        // but the user still needs visual feedback that Location selections are active
+        counts[1] = (counts[1] ?? 0) + extraLocationCount;
 
         return counts;
       },

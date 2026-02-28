@@ -233,10 +233,11 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   @override
   void dispose() {
-    // Sync selected filters to provider (always sync to ensure consistency)
+    // Sync selected filters to provider with routing (always sync to ensure consistency)
     // Use saved notifier (safe even if widget unmounted)
-    _savedSearchNotifier.setFilters(
+    _savedSearchNotifier.setFiltersWithRouting(
       List<int>.from(_selectedFilterIds),
+      _filterMap,
     );
 
     WidgetsBinding.instance.removeObserver(this);
@@ -292,12 +293,27 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     final hasSearchTerm = widget.searchTerm?.isNotEmpty ?? false;
     final hasSelectedFilters = widget.selectedFilterIds != null &&
         widget.selectedFilterIds!.isNotEmpty;
-    _isInitialState = !hasSearchTerm && !hasSelectedFilters;
-    _searchPerformed = !_isInitialState;
+
     if (widget.selectedFilterIds != null) {
       _selectedFilterIds.clear();
       _selectedFilterIds.addAll(widget.selectedFilterIds!);
     }
+
+    // Re-add routed IDs (neighbourhood, shopping area) so overlay shows them as selected.
+    // These IDs live in separate provider fields after routing, but the overlay
+    // needs them in _selectedFilterIds for visual selection state.
+    final searchState = ref.read(searchStateProvider);
+    if (searchState.selectedNeighbourhoodId != null) {
+      _selectedFilterIds.add(searchState.selectedNeighbourhoodId!);
+    }
+    if (searchState.selectedShoppingAreaId != null) {
+      _selectedFilterIds.add(searchState.selectedShoppingAreaId!);
+    }
+
+    final hasRoutedIds = searchState.selectedNeighbourhoodId != null ||
+        searchState.selectedShoppingAreaId != null;
+    _isInitialState = !hasSearchTerm && !hasSelectedFilters && !hasRoutedIds;
+    _searchPerformed = !_isInitialState;
   }
 
   /// =========================================================================
@@ -375,7 +391,10 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   List<dynamic> _getCategories(int titleId) {
     final title = _findTitle(titleId);
     if (title == null) return [];
-    return _sortItems(title['children'] ?? []);
+    final children = (title['children'] as List? ?? [])
+        .where((cat) => cat['id'] != _trainStationCategoryId)
+        .toList();
+    return _sortItems(children);
   }
 
   List<dynamic> _getItems(int categoryId) {
@@ -597,8 +616,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       _processFilterSelection(filterId, filterType, hasSubitems);
     });
 
-    ref.read(searchStateProvider.notifier).setFilters(
+    ref.read(searchStateProvider.notifier).setFiltersWithRouting(
           List<int>.from(_selectedFilterIds),
+          _filterMap,
         );
 
     _triggerCallbackIfNeeded(filterType, hasSubitems, filterId);
@@ -803,16 +823,19 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       final trainStationInfo = _detectTrainStationFilter();
       final trainStationId = trainStationInfo.$2;
 
-      // Execute search via API
-      final searchTerm = ref.read(searchStateProvider).currentSearchText;
+      // Execute search via API — re-read routed filter state from provider
+      final currentSearchState = ref.read(searchStateProvider);
+      final searchTerm = currentSearchState.currentSearchText;
       final languageCode = Localizations.localeOf(context).languageCode;
 
       final result = await ApiService.instance.search(
         searchInput: searchTerm,
-        filters: List<int>.from(_selectedFilterIds),
+        filters: currentSearchState.filtersUsedForSearch,
         cityId: AppConstants.kDefaultCityId.toString(),
         languageCode: languageCode,
         selectedStation: trainStationId,
+        neighbourhoodId: currentSearchState.selectedNeighbourhoodId,
+        shoppingAreaId: currentSearchState.selectedShoppingAreaId,
       );
 
       if (result.succeeded) {
@@ -869,7 +892,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       }
     });
 
-    ref.read(searchStateProvider.notifier).setFilters(<int>[]);
+    // Use setFiltersWithRouting with empty list to clear all filter state
+    // including routed neighbourhood/shopping area IDs, with immediate provider update
+    ref.read(searchStateProvider.notifier).setFiltersWithRouting([], _filterMap);
 
     await _executeSearchAndTrackAnalytics();
   }

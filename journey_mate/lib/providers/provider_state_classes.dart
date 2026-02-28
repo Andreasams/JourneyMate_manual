@@ -173,12 +173,14 @@ class SearchState {
   final String currentSearchText;
   final List<int> filtersUsedForSearch; // User's checked filters
   final List<int> activeFilterIds; // API's compatible filters (from activeids response)
-  final List<int> selectedNeedFilters; // Need/dietary filter IDs from API response (for section grouping)
+  final List<int> scoringFilterIds; // All filter IDs the node used for match scoring (from API response, for section grouping)
   final String currentFilterSessionId;
   final List<int> previousActiveFilters; // Snapshot before last change
   final String previousSearchText; // Snapshot before last change
   final String previousFilterSessionId; // Snapshot before last change
   final int currentRefinementSequence; // Count of refinements in this search
+  final int? selectedNeighbourhoodId; // Neighbourhood filter ID routed from overlay (API param, not in filters array)
+  final int? selectedShoppingAreaId; // Shopping area filter ID routed from overlay (API param, not in filters array)
   final DateTime? lastRefinementTime;
   final DateTime? lastFetchTime; // Timestamp of most recent search API call
 
@@ -189,12 +191,14 @@ class SearchState {
     required this.currentSearchText,
     required this.filtersUsedForSearch,
     required this.activeFilterIds,
-    required this.selectedNeedFilters,
+    required this.scoringFilterIds,
     required this.currentFilterSessionId,
     required this.previousActiveFilters,
     required this.previousSearchText,
     required this.previousFilterSessionId,
     required this.currentRefinementSequence,
+    this.selectedNeighbourhoodId,
+    this.selectedShoppingAreaId,
     this.lastRefinementTime,
     this.lastFetchTime,
   });
@@ -207,7 +211,7 @@ class SearchState {
       currentSearchText: '',
       filtersUsedForSearch: [],
       activeFilterIds: [], // Empty until first search
-      selectedNeedFilters: [], // Empty until first search with need filters
+      scoringFilterIds: [], // Empty until first search with need filters
       currentFilterSessionId: '',
       previousActiveFilters: [],
       previousSearchText: '',
@@ -225,12 +229,14 @@ class SearchState {
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
     List<int>? activeFilterIds,
-    List<int>? selectedNeedFilters,
+    List<int>? scoringFilterIds,
     String? currentFilterSessionId,
     List<int>? previousActiveFilters,
     String? previousSearchText,
     String? previousFilterSessionId,
     int? currentRefinementSequence,
+    int? selectedNeighbourhoodId,
+    int? selectedShoppingAreaId,
     DateTime? lastRefinementTime,
     DateTime? lastFetchTime,
   }) {
@@ -241,12 +247,14 @@ class SearchState {
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
       activeFilterIds: activeFilterIds ?? this.activeFilterIds,
-      selectedNeedFilters: selectedNeedFilters ?? this.selectedNeedFilters,
+      scoringFilterIds: scoringFilterIds ?? this.scoringFilterIds,
       currentFilterSessionId: currentFilterSessionId ?? this.currentFilterSessionId,
       previousActiveFilters: previousActiveFilters ?? this.previousActiveFilters,
       previousSearchText: previousSearchText ?? this.previousSearchText,
       previousFilterSessionId: previousFilterSessionId ?? this.previousFilterSessionId,
       currentRefinementSequence: currentRefinementSequence ?? this.currentRefinementSequence,
+      selectedNeighbourhoodId: selectedNeighbourhoodId ?? this.selectedNeighbourhoodId,
+      selectedShoppingAreaId: selectedShoppingAreaId ?? this.selectedShoppingAreaId,
       lastRefinementTime: lastRefinementTime ?? this.lastRefinementTime,
       lastFetchTime: lastFetchTime ?? this.lastFetchTime,
     );
@@ -260,17 +268,21 @@ class SearchState {
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
     List<int>? activeFilterIds,
-    List<int>? selectedNeedFilters,
+    List<int>? scoringFilterIds,
     String? currentFilterSessionId,
     List<int>? previousActiveFilters,
     String? previousSearchText,
     String? previousFilterSessionId,
     int? currentRefinementSequence,
+    int? selectedNeighbourhoodId,
+    int? selectedShoppingAreaId,
     DateTime? lastRefinementTime,
     DateTime? lastFetchTime,
     bool clearResults = false,
     bool clearActiveFilterIds = false,
-    bool clearSelectedNeedFilters = false,
+    bool clearScoringFilterIds = false,
+    bool clearNeighbourhoodId = false,
+    bool clearShoppingAreaId = false,
     bool clearRefinementTime = false,
     bool clearFetchTime = false,
   }) {
@@ -281,12 +293,14 @@ class SearchState {
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
       activeFilterIds: clearActiveFilterIds ? [] : (activeFilterIds ?? this.activeFilterIds),
-      selectedNeedFilters: clearSelectedNeedFilters ? [] : (selectedNeedFilters ?? this.selectedNeedFilters),
+      scoringFilterIds: clearScoringFilterIds ? [] : (scoringFilterIds ?? this.scoringFilterIds),
       currentFilterSessionId: currentFilterSessionId ?? this.currentFilterSessionId,
       previousActiveFilters: previousActiveFilters ?? this.previousActiveFilters,
       previousSearchText: previousSearchText ?? this.previousSearchText,
       previousFilterSessionId: previousFilterSessionId ?? this.previousFilterSessionId,
       currentRefinementSequence: currentRefinementSequence ?? this.currentRefinementSequence,
+      selectedNeighbourhoodId: clearNeighbourhoodId ? null : (selectedNeighbourhoodId ?? this.selectedNeighbourhoodId),
+      selectedShoppingAreaId: clearShoppingAreaId ? null : (selectedShoppingAreaId ?? this.selectedShoppingAreaId),
       lastRefinementTime: clearRefinementTime ? null : (lastRefinementTime ?? this.lastRefinementTime),
       lastFetchTime: clearFetchTime ? null : (lastFetchTime ?? this.lastFetchTime),
     );

@@ -99,10 +99,10 @@ class _SearchResultsListViewState
 
   @override
   Widget build(BuildContext context) {
-    // Watch both searchResults AND need filters for match grouping
+    // Watch both searchResults AND scoring filters for match grouping
     final searchState = ref.watch(searchStateProvider);
     final searchResults = searchState.searchResults;
-    final selectedNeedFilters = searchState.selectedNeedFilters;
+    final scoringFilterIds = searchState.scoringFilterIds;
 
     // Show shimmer while loading
     if (searchResults == null) {
@@ -117,12 +117,12 @@ class _SearchResultsListViewState
       return _buildEmptyState();
     }
 
-    // Show match sections only when need/dietary filters are active
-    // The node computes matchCount against selectedNeedFilters only
-    final showMatchSections = selectedNeedFilters.isNotEmpty;
+    // Show match sections only when scoring filters are active
+    // The node computes matchCount against scoringFilterIds
+    final showMatchSections = scoringFilterIds.isNotEmpty;
 
     if (showMatchSections) {
-      return _buildMatchSections(documents, selectedNeedFilters.length);
+      return _buildMatchSections(documents, scoringFilterIds.length);
     } else {
       return _buildFlatList(documents);
     }

@@ -52,6 +52,7 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 {
   "documents": [...],
   "activeids": [1, 2, 3],
+  "scoringFilterIds": [466, 83],
   "resultCount": 42,
   "pagination": {
     "currentPage": 1,
@@ -512,7 +513,7 @@ Non-200 → error state shown with retry.
 
 | # | Endpoint | Flutter inputs | Key output fields |
 |---|----------|---------------|-------------------|
-| 1 | SEARCH | filters, filtersUsedForSearch, city_id, search_input, userLocation, language_code, sortBy, sortOrder, selectedStation, onlyOpen, category, page, pageSize | documents (with matchCount/matchedFilters/missedFilters), activeids, resultCount, pagination |
+| 1 | SEARCH | filters, filtersUsedForSearch, city_id, search_input, userLocation, language_code, sortBy, sortOrder, selectedStation, onlyOpen, category, page, pageSize | documents (with matchCount/matchedFilters/missedFilters), activeids, scoringFilterIds, resultCount, pagination |
 | 2 | GET_BUSINESS_PROFILE | businessId, language_code | business_profile (incl. filters), gallery, menu_structure, exchange_rate, business_hours, open_windows |
 | 3 | GET_RESTAURANT_MENU | businessId, languageCode | menu_items, categories, availableRestrictions/Preferences |
 | 4 | GET_FILTERS | language_code, city_id | filters (tree), foodDrinkTypes |
