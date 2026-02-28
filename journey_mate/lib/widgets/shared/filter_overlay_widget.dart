@@ -1400,7 +1400,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.filter), // 10px
-          side: const BorderSide(color: _blackColor, width: 1),
+          side: BorderSide(color: AppColors.border, width: 1.5),
         ),
       ),
       elevation: WidgetStateProperty.all(0),

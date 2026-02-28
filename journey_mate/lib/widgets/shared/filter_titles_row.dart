@@ -50,7 +50,7 @@ class FilterTitlesRow extends ConsumerWidget {
   static const String _needsKey = 'filter_preferences';
 
   // Layout constants
-  static const double _verticalPadding = 9.0;
+  static const double _verticalPadding = 12.0;
   static const double _buttonSpacing = AppSpacing.sm; // 8px between buttons
 
   /// Returns whether the given tab is currently selected
@@ -80,12 +80,12 @@ class FilterTitlesRow extends ConsumerWidget {
     final count = tabCounts?[titleId] ?? 0;
     final showBadge = count > 0;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        right: tabIndex < 2 ? _buttonSpacing : 0, // 8px spacing between buttons
-      ),
-      child: Expanded(
-        flex: flex,
+    return Expanded(
+      flex: flex,
+      child: Padding(
+        padding: EdgeInsets.only(
+          right: tabIndex < 2 ? _buttonSpacing : 0, // 8px spacing between buttons
+        ),
         child: GestureDetector(
           onTap: () => onTabChanged(tabIndex),
           behavior: HitTestBehavior.opaque,
