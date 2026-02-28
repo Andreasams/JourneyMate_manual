@@ -290,14 +290,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     _buildSheetHandle(),
 
                     // 3-tab header
-                    FilterTitlesRow(
-                      activeTabIndex: _activeFilterTab,
-                      onTabChanged: (index) {
-                        // Update both SearchPage state and bottom sheet state
-                        setState(() => _activeFilterTab = index);
-                        setBottomSheetState(() => _activeFilterTab = index);
-                      },
-                      tabCounts: filterCounts,
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: FilterTitlesRow(
+                        activeTabIndex: _activeFilterTab,
+                        onTabChanged: (index) {
+                          // Update both SearchPage state and bottom sheet state
+                          setState(() => _activeFilterTab = index);
+                          setBottomSheetState(() => _activeFilterTab = index);
+                        },
+                        tabCounts: filterCounts,
+                      ),
                     ),
 
                     // Filter content

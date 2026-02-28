@@ -50,7 +50,7 @@ class FilterTitlesRow extends ConsumerWidget {
   static const String _needsKey = 'filter_preferences';
 
   // Layout constants
-  static const double _verticalPadding = 12.0;
+  static const double _verticalPadding = 9.0; // Internal padding (text to button edge)
   static const double _buttonSpacing = AppSpacing.sm; // 8px between buttons
 
   /// Returns whether the given tab is currently selected
