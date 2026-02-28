@@ -149,8 +149,8 @@ class ApiService {
       'category': category,
       'page': page,
       'pageSize': pageSize,
-      if (neighbourhoodId != null) 'neighbourhoodId': neighbourhoodId,
-      if (shoppingAreaId != null) 'shoppingAreaId': shoppingAreaId,
+      'neighbourhoodId': ?neighbourhoodId,
+      'shoppingAreaId': ?shoppingAreaId,
     });
   }
 
