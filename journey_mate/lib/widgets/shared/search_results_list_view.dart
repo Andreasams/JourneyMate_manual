@@ -535,55 +535,50 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _isExpanded = !_isExpanded;
-            });
-          },
-          // Make entire card area tappable, not just areas with visible widgets
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: double.infinity,
-            constraints: const BoxConstraints(minHeight: _imageSize),
-            decoration: BoxDecoration(
-              color: AppColors.bgCard,
-              border: Border.all(color: _borderColor, width: 1.5),
-              borderRadius: BorderRadius.circular(AppRadius.card), // 16px per JSX
-            ),
-            padding: const EdgeInsets.all(AppSpacing.mlg), // 14px per JSX
-            child: Column(
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      // Make entire card area tappable, not just areas with visible widgets
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: _imageSize),
+        decoration: BoxDecoration(
+          color: AppColors.bgCard,
+          border: Border.all(color: _borderColor, width: 1.5),
+          borderRadius: BorderRadius.circular(AppRadius.card), // 16px per JSX
+        ),
+        padding: const EdgeInsets.all(AppSpacing.mlg), // 14px per JSX
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Base card content
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Base card content
-                Column(
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildImage(),
-                        const SizedBox(width: 12),
-                        Expanded(child: _buildInfoColumn()),
-                      ],
-                    ),
-                    // Collapse chevron (shown when NOT expanded)
-                    if (!_isExpanded) _buildCollapseChevron(),
+                    _buildImage(),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildInfoColumn()),
                   ],
                 ),
-                // Expanded preview section
-                if (_isExpanded) _buildExpandedPreview(),
+                // Partial match info box (inside card, above chevron)
+                if (widget.matchVariant == 'partial' && widget.activeFilterCount > 0)
+                  _buildPartialMatchInfoBox(),
+                // Collapse chevron (shown when NOT expanded)
+                if (!_isExpanded) _buildCollapseChevron(),
               ],
             ),
-          ),
+            // Expanded preview section
+            if (_isExpanded) _buildExpandedPreview(),
+          ],
         ),
-        // Partial match info box
-        if (widget.matchVariant == 'partial' && widget.activeFilterCount > 0)
-          _buildPartialMatchInfoBox(),
-      ],
+      ),
     );
   }
 
@@ -1122,7 +1117,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         : '';
 
     return Container(
-      margin: EdgeInsets.only(top: AppSpacing.msm), // 10px top, 0 left/right
+      margin: EdgeInsets.only(top: AppSpacing.sm), // 8px top spacing inside card
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
       decoration: BoxDecoration(
         color: const Color(0xFFfef8f2), // Light orange background
