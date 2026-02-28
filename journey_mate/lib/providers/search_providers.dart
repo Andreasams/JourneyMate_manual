@@ -23,7 +23,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
   /// Accepts either:
   /// - A List of documents directly
   /// - A Map containing a 'documents' key (full API response)
-  void updateSearchResults(dynamic results, int count) {
+  void updateSearchResults(dynamic results, int count, int fullMatchCount) {
     // Normalize input: extract documents array if full response object passed
     dynamic normalizedResults = results;
     if (results is Map && results.containsKey('documents')) {
@@ -33,6 +33,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
     state = state.copyWith(
       searchResults: normalizedResults,
       searchResultsCount: count,
+      fullMatchCount: fullMatchCount,
       hasActiveSearch: true,
       lastFetchTime: DateTime.now(), // Record fetch timestamp
     );

@@ -148,11 +148,21 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
+        final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final activeIds = (response.jsonBody['activeids'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
+        final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
         // Use saved notifier (safe even if widget unmounted)
         searchNotifier.updateSearchResults(
           response.jsonBody,
           resultCount,
+          fullMatchCount,
         );
+        searchNotifier.updateActiveFilterIds(activeIds);
+        searchNotifier.updateScoringFilterIds(scoringFilterIds);
         debugPrint('👋 Welcome: Pre-fetch succeeded ($resultCount results)');
       } else {
         debugPrint('👋 Welcome: Pre-fetch failed: ${response.error}');
@@ -244,11 +254,21 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
+        final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final activeIds = (response.jsonBody['activeids'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
+        final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
         // Use saved notifier (safe even if widget unmounted)
         searchNotifier.updateSearchResults(
           response.jsonBody,
           resultCount,
+          fullMatchCount,
         );
+        searchNotifier.updateActiveFilterIds(activeIds);
+        searchNotifier.updateScoringFilterIds(scoringFilterIds);
         debugPrint('👋 Welcome: Danish search succeeded ($resultCount results)');
       } else {
         debugPrint('👋 Welcome: Danish search failed: ${response.error}');
@@ -320,11 +340,21 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
+        final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final activeIds = (response.jsonBody['activeids'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
+        final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
         // Use saved notifier (safe even if widget unmounted)
         searchNotifier.updateSearchResults(
           response.jsonBody,
           resultCount,
+          fullMatchCount,
         );
+        searchNotifier.updateActiveFilterIds(activeIds);
+        searchNotifier.updateScoringFilterIds(scoringFilterIds);
         debugPrint('👋 Welcome: Background fetch succeeded ($resultCount results)');
       } else {
         debugPrint('👋 Welcome: Background fetch failed: ${response.error}');

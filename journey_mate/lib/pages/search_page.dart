@@ -187,6 +187,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         final jsonBody = response.jsonBody;
         final documents = jsonBody['documents'] as List? ?? [];
         final resultCount = jsonBody['resultCount'] as int? ?? documents.length;
+        final fullMatchCount = (jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
         final activeIds = (jsonBody['activeids'] as List?)
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
@@ -194,11 +195,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
 
-        debugPrint('🔍 Search: $resultCount results, ${activeIds.length} active filters, ${scoringFilterIds.length} scoring filters');
+        debugPrint('🔍 Search: $resultCount results, $fullMatchCount full matches, ${activeIds.length} active filters, ${scoringFilterIds.length} scoring filters');
 
         ref.read(searchStateProvider.notifier).updateSearchResults(
           documents,
           resultCount,
+          fullMatchCount,
         );
 
         // Store API's active filter IDs
@@ -589,17 +591,21 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Widget _buildPageTitle(SearchState searchState) {
     final hasActiveFiltersOrSearch =
         searchState.filtersUsedForSearch.isNotEmpty ||
+        searchState.selectedNeighbourhoodId != null ||
+        searchState.selectedShoppingAreaId != null ||
         searchState.currentSearchText.isNotEmpty;
 
+    final count = (hasActiveFiltersOrSearch && searchState.scoringFilterIds.isNotEmpty)
+        ? searchState.fullMatchCount
+        : searchState.searchResultsCount;
+
     final title = hasActiveFiltersOrSearch
-        ? '${td(ref, 'feedback_page_search_results')} (${searchState.searchResultsCount})'
-        : td(ref, 'search_places_near_you'); // TODO: Add this key to Supabase
+        ? '${td(ref, 'feedback_page_search_results')} ($count)'
+        : td(ref, 'search_places_near_you');
 
     return Text(
       title,
-      style: AppTypography.pageTitle.copyWith(
-        fontWeight: FontWeight.w700,
-      ),
+      style: AppTypography.pageTitle.copyWith(fontWeight: FontWeight.w700),
     );
   }
 

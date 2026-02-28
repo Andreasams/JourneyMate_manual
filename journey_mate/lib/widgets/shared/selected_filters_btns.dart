@@ -408,16 +408,28 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       );
 
       if (response.succeeded && context.mounted) {
-        // Extract result count
+        // Extract API response fields
         final resultCount = response.jsonBody['resultCount'] as int? ??
             (response.jsonBody['documents'] as List?)?.length ??
             0;
+        final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final activeIds = (response.jsonBody['activeids'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
+        final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
 
         // Update search state
         ref.read(searchStateProvider.notifier).updateSearchResults(
               response.jsonBody,
               resultCount,
+              fullMatchCount,
             );
+
+        // Update active and scoring filter IDs
+        ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
+        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
 
         // Update filter list in state
         ref.read(searchStateProvider.notifier).setFilters(currentFilters);
@@ -463,16 +475,28 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       );
 
       if (response.succeeded && context.mounted) {
-        // Extract result count
+        // Extract API response fields
         final resultCount = response.jsonBody['resultCount'] as int? ??
             (response.jsonBody['documents'] as List?)?.length ??
             0;
+        final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final activeIds = (response.jsonBody['activeids'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
+        final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
 
         // Update search state
         ref.read(searchStateProvider.notifier).updateSearchResults(
               response.jsonBody,
               resultCount,
+              fullMatchCount,
             );
+
+        // Update active and scoring filter IDs
+        ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
+        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
       }
     } catch (e) {
       // Silent failure - errors handled by API service

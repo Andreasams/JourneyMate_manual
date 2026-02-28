@@ -109,6 +109,12 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// Optimistic result count for immediate feedback
   int? _optimisticResultCount;
 
+  /// Full match count (documents where matchCount === scoringFilterIds.length)
+  int? _optimisticFullMatchCount;
+
+  /// Scoring filter IDs from most recent search
+  List<int> _currentScoringFilterIds = [];
+
   /// Debounce timer for search execution
   Timer? _debounceTimer;
 
@@ -854,10 +860,26 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
             ? result.jsonBody['resultCount'] as int
             : 0;
 
+        // Extract full match count from API response
+        final fullMatchCount = (result.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+
+        // Extract scoring filter IDs
+        final scoringFilterIds = <int>[];
+        final rawScoringFilters = result.jsonBody['scoringFilterIds'];
+        if (rawScoringFilters is List) {
+          for (final item in rawScoringFilters) {
+            if (item is int) {
+              scoringFilterIds.add(item);
+            }
+          }
+        }
+
         if (mounted) {
           setState(() {
             _optimisticResultCount = resultCount;
-                });
+            _optimisticFullMatchCount = fullMatchCount;
+            _currentScoringFilterIds = scoringFilterIds;
+          });
         }
 
         await widget.onSearchCompleted(activeFilterIds, resultCount);
@@ -935,7 +957,17 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     return td(ref, key);
   }
 
-  int? _currentCount() => _optimisticResultCount ?? widget.resultCount;
+  int? _currentCount() {
+    final hasActiveFilters = _selectedFilterIds.isNotEmpty;
+    final hasScoringFilters = _currentScoringFilterIds.isNotEmpty;
+
+    // Use full match count when there are active filters AND scoring filters
+    if (hasActiveFilters && hasScoringFilters && _optimisticFullMatchCount != null) {
+      return _optimisticFullMatchCount;
+    }
+
+    return _optimisticResultCount ?? widget.resultCount;
+  }
 
   String _getResultsButtonText() {
     if (widget.searchTerm?.isNotEmpty == true) {

@@ -32,7 +32,7 @@ void main() {
 
     test('updateSearchResults() sets results and marks search active', () {
       final mockResults = {'items': []};
-      container.read(searchStateProvider.notifier).updateSearchResults(mockResults, 5);
+      container.read(searchStateProvider.notifier).updateSearchResults(mockResults, 5, 3);
 
       final state = container.read(searchStateProvider);
       expect(state.searchResults, mockResults);
@@ -158,7 +158,7 @@ void main() {
     });
 
     test('clearSearch() resets all state', () {
-      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 5);
+      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 5, 3);
       container.read(searchStateProvider.notifier).setSearchText('pizza');
       container.read(searchStateProvider.notifier).addFilters([10, 20]);
       container.read(searchStateProvider.notifier).incrementRefinementSequence();
@@ -199,7 +199,7 @@ void main() {
     });
 
     test('markSearchInactive() clears results and count', () {
-      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 5);
+      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 5, 3);
 
       var state = container.read(searchStateProvider);
       expect(state.hasActiveSearch, true);
@@ -216,19 +216,19 @@ void main() {
       // Initial search
       container.read(searchStateProvider.notifier).setSearchText('pizza');
       container.read(searchStateProvider.notifier).generateNewFilterSessionId();
-      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 10);
+      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 10, 5);
 
       // First refinement
       container.read(searchStateProvider.notifier).updatePreviousState();
       container.read(searchStateProvider.notifier).incrementRefinementSequence();
       container.read(searchStateProvider.notifier).addFilters([10]);
-      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 5);
+      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 5, 3);
 
       // Second refinement
       container.read(searchStateProvider.notifier).updatePreviousState();
       container.read(searchStateProvider.notifier).incrementRefinementSequence();
       container.read(searchStateProvider.notifier).addFilters([20]);
-      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 2);
+      container.read(searchStateProvider.notifier).updateSearchResults({'items': []}, 2, 1);
 
       final state = container.read(searchStateProvider);
       expect(state.currentSearchText, 'pizza');

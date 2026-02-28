@@ -170,12 +170,22 @@ class _AppSettingsInitiateFlowPageState
 
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
+        final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final activeIds = (response.jsonBody['activeids'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
+        final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
         // Use saved notifier (safe even if widget unmounted)
         searchNotifier.updateSearchResults(
           response.jsonBody,
           resultCount,
+          fullMatchCount,
         );
-        debugPrint('🔧 Setup: Fetch succeeded for $languageCode ($resultCount results)');
+        searchNotifier.updateActiveFilterIds(activeIds);
+        searchNotifier.updateScoringFilterIds(scoringFilterIds);
+        debugPrint('🔧 Setup: Fetch succeeded for $languageCode ($resultCount results, $fullMatchCount full matches)');
       } else {
         debugPrint('🔧 Setup: Fetch failed for $languageCode: ${response.error}');
         // Fail silently - user will see shimmer on Search page if needed

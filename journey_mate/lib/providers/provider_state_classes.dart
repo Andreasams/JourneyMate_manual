@@ -169,6 +169,7 @@ class AnalyticsState {
 class SearchState {
   final dynamic searchResults; // JSON from API
   final int searchResultsCount;
+  final int fullMatchCount; // Count of documents where matchCount === scoringFilterIds.length (all needs met)
   final bool hasActiveSearch;
   final String currentSearchText;
   final List<int> filtersUsedForSearch; // User's checked filters
@@ -187,6 +188,7 @@ class SearchState {
   const SearchState({
     required this.searchResults,
     required this.searchResultsCount,
+    required this.fullMatchCount,
     required this.hasActiveSearch,
     required this.currentSearchText,
     required this.filtersUsedForSearch,
@@ -207,6 +209,7 @@ class SearchState {
     return const SearchState(
       searchResults: null,
       searchResultsCount: 0,
+      fullMatchCount: 0,
       hasActiveSearch: false,
       currentSearchText: '',
       filtersUsedForSearch: [],
@@ -225,6 +228,7 @@ class SearchState {
   SearchState copyWith({
     dynamic searchResults,
     int? searchResultsCount,
+    int? fullMatchCount,
     bool? hasActiveSearch,
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
@@ -243,6 +247,7 @@ class SearchState {
     return SearchState(
       searchResults: searchResults ?? this.searchResults,
       searchResultsCount: searchResultsCount ?? this.searchResultsCount,
+      fullMatchCount: fullMatchCount ?? this.fullMatchCount,
       hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
@@ -264,6 +269,7 @@ class SearchState {
   SearchState copyWithNullable({
     dynamic searchResults,
     int? searchResultsCount,
+    int? fullMatchCount,
     bool? hasActiveSearch,
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
@@ -289,6 +295,7 @@ class SearchState {
     return SearchState(
       searchResults: clearResults ? null : (searchResults ?? this.searchResults),
       searchResultsCount: searchResultsCount ?? this.searchResultsCount,
+      fullMatchCount: fullMatchCount ?? this.fullMatchCount,
       hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,

@@ -119,17 +119,29 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
       if (response.statusCode == 200) {
         final jsonBody = response.jsonBody;
         final resultCount = jsonBody['resultCount'] as int? ?? 0;
+        final fullMatchCount = (jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final activeIds = (jsonBody['activeids'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
+        final scoringFilterIds = (jsonBody['scoringFilterIds'] as List?)
+            ?.map((e) => (e as num).toInt())
+            .toList() ?? [];
 
         // Update searchStateProvider (will auto-update SearchPage via watch())
         ref.read(searchStateProvider.notifier).updateSearchResults(
           jsonBody,
           resultCount,
+          fullMatchCount,
         );
+
+        // Update active and scoring filter IDs
+        ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
+        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
 
         // Generate new filter session ID
         ref.read(searchStateProvider.notifier).generateNewFilterSessionId();
 
-        debugPrint('🚀 NavBar: Background fetch completed ($resultCount results)');
+        debugPrint('🚀 NavBar: Background fetch completed ($resultCount results, $fullMatchCount full matches)');
       }
     } catch (e) {
       debugPrint('🚀 NavBar: Background fetch failed: $e');
