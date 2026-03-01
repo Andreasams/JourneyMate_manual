@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'services/analytics_service.dart';
-import 'services/remote_logger.dart';
 import 'providers/app_providers.dart';
 import 'providers/settings_providers.dart';
 import 'providers/filter_providers.dart';
@@ -46,10 +45,6 @@ void main() async {
 
   // ── 3. Initialize AnalyticsService (only async op: UUID write on first launch) ──
   await AnalyticsService.instance.initializeWithPrefs(prefs);
-
-  // Initialize remote logger for debugging
-  await RemoteLogger.initialize();
-  RemoteLogger.info('app_startup', 'JourneyMate starting');
 
   // ── 4. Create container + synchronous provider init ──
   final container = ProviderContainer();

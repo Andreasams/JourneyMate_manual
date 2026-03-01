@@ -1,0 +1,53 @@
+Business Profile Page - Translation Keys (English)
+==================================================
+
+Category: match_card
+--------------------
+match_card_matches: Matches {count} of {total} filters
+match_card_tap_details: Tap for details
+
+
+Category: quick_actions
+-----------------------
+action_call: Call
+action_website: Website
+action_booking: Book
+action_map: Map
+
+
+Category: quick_actions_errors
+-------------------------------
+error_cannot_make_call: Unable to open phone app
+error_cannot_open_website: Unable to open website
+error_cannot_open_booking: Unable to open booking page
+error_no_map_app: No map app found on your device
+error_cannot_open_map: Unable to open map
+
+
+Category: gallery
+-----------------
+gallery_heading: Gallery
+gallery_view_all: View all {count} photos
+
+
+Category: menu
+--------------
+menu_heading: Menu
+menu_filters_active: {count} filters active
+menu_filters_none: No filters active
+menu_filters_edit: Edit
+menu_show_all: Show all {count} items
+menu_show_less: Show less
+
+
+Category: section_headings
+---------------------------
+opening_hours_heading: Opening Hours
+facilities_heading: Facilities
+
+
+==================================================
+Total: 21 translation keys
+Placeholders: {count}, {total}
+Language: English (en)
+==================================================

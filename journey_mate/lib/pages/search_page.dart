@@ -12,7 +12,6 @@ import '../providers/provider_state_classes.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
 import '../services/translation_service.dart';
-import '../services/remote_logger.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -98,21 +97,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Future<void> _initialize() async {
-    debugPrint('🔍 SearchPage: Initializing...');
-
     // Refresh location state (checks both service + permission)
     await ref.read(locationProvider.notifier).checkPermission();
 
     // Load initial results if no cached results
     final searchState = ref.read(searchStateProvider);
-    debugPrint('🔍 Current searchResults: ${searchState.searchResults}');
-    debugPrint('🔍 searchResults is null: ${searchState.searchResults == null}');
 
     if (searchState.searchResults == null) {
-      debugPrint('🔍 Executing initial search...');
       await _executeSearch('');
-    } else {
-      debugPrint('🔍 Using cached search results');
     }
   }
 
@@ -132,7 +124,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Future<void> _executeSearch(String query) async {
-    debugPrint('🔍 _executeSearch called with query: "$query"');
     final currentRequestId = ++_requestId;
 
     setState(() {
@@ -162,10 +153,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final languageCode = Localizations.localeOf(context).languageCode;
 
     try {
-      // DEBUG: verify which filter IDs and routing params are being sent to the API
-      debugPrint('🔍 filters being sent: ${searchState.filtersUsedForSearch}');
-      debugPrint('🔍 neighbourhoodId: ${searchState.selectedNeighbourhoodId}, shoppingAreaId: ${searchState.selectedShoppingAreaId}');
-
       final response = await ApiService.instance.search(
         filters: searchState.filtersUsedForSearch,
         cityId: AppConstants.kDefaultCityId.toString(),
@@ -196,8 +183,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
 
-        debugPrint('🔍 Search: $resultCount results, $fullMatchCount full matches, ${activeIds.length} active filters, ${scoringFilterIds.length} scoring filters');
-
         ref.read(searchStateProvider.notifier).updateSearchResults(
           documents,
           resultCount,
@@ -225,13 +210,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           },
         );
       } else if (mounted) {
-        debugPrint('🔍 Search failed: ${response.error}');
         setState(() {
           _errorMessage = response.error ?? 'Search failed';
         });
       }
     } catch (e) {
-      debugPrint('🔍 Search exception: $e');
       if (mounted) {
         setState(() {
           _errorMessage = e.toString();
@@ -908,11 +891,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               SizedBox(width: AppSpacing.md), // Space for close button
               TextButton(
                 onPressed: () async {
-                  await RemoteLogger.info('search_banner', 'User tapped Activate button');
                   final granted = await ref
                       .read(locationProvider.notifier)
                       .requestPermission();
-                  await RemoteLogger.info('search_banner', 'requestPermission returned: $granted');
                   if (granted && mounted) {
                     final searchText = ref.read(searchStateProvider).currentSearchText;
                     _executeSearch(searchText);
@@ -950,17 +931,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Widget _buildContent() {
     final searchState = ref.watch(searchStateProvider);
 
-    debugPrint('📊 [5] _buildContent called: loading=$_isLoading, hasResults=${searchState.searchResults != null}, error=$_errorMessage');
-
     // Loading state
     if (_isLoading && searchState.searchResults == null) {
-      debugPrint('📊 [5a] Returning shimmer widget');
       return const RestaurantListShimmerWidget();
     }
 
     // Error state
     if (_errorMessage != null) {
-      debugPrint('📊 [5b] Returning error widget');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1000,7 +977,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
          (searchResults['documents'] as List).isEmpty);
 
     if (isEmpty) {
-      debugPrint('📊 [5c] Returning empty state widget');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1051,7 +1027,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
 
     // Results list
-    debugPrint('📊 [5d] Returning SearchResultsListView');
     final locationState = ref.watch(locationProvider);
     Position? userLocation;
     if (locationState.isLocationUsable) {

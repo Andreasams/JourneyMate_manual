@@ -61,7 +61,9 @@
       "Bash(git checkout:*)",
       "Bash(flutter run:*)",
       "Skill(commit-commands:commit)",
-      "Skill(commit-commands:commit:*)"
+      "Skill(commit-commands:commit:*)",
+      "Bash(flutter clean:*)",
+      "Bash(pod install:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

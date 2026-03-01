@@ -9,7 +9,6 @@ import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
-import '../../services/remote_logger.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
@@ -76,9 +75,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       final isReturningUser = languageCode != null && languageCode.isNotEmpty;
 
       // Request location permission if never asked (shows iOS dialog on first launch)
-      await RemoteLogger.info('welcome_page', 'Calling requestPermissionIfNeeded() from welcome page...');
       ref.read(locationProvider.notifier).requestPermissionIfNeeded();
-      await RemoteLogger.info('welcome_page', 'requestPermissionIfNeeded() call returned (non-blocking)');
 
       // Update UI state
       if (mounted) {
