@@ -478,6 +478,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ),
               ),
 
+            // Add consistent spacing when filters are not visible
+            if (searchState.filtersUsedForSearch.isEmpty &&
+                searchState.selectedNeighbourhoodId == null &&
+                searchState.selectedShoppingAreaId == null)
+              SizedBox(height: AppSpacing.md), // 12px - matches filter bottom padding
+
             // Location permission banner (show if location not usable AND not dismissed)
             if (!locationState.isLocationUsable && !locationState.isBannerDismissed)
               Padding(
