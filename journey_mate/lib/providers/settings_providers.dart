@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'provider_state_classes.dart';
 import '../services/api_service.dart';
+import '../services/remote_logger.dart';
 
 // ============================================================
 // LOCALIZATION PROVIDER (with persistence)
@@ -278,12 +279,20 @@ class LocationNotifier extends Notifier<LocationState> {
 
   /// Request location permission
   Future<bool> requestPermission() async {
+    const tag = 'requestPermission';
+    await RemoteLogger.info(tag, '=== STARTING (from banner button) ===');
+
     try {
-      final status = await ph.Permission.location.request();
+      await RemoteLogger.debug(tag, 'Calling Permission.locationWhenInUse.request()...');
+      final status = await ph.Permission.locationWhenInUse.request(); // FIXED: was Permission.location
+
+      await RemoteLogger.info(tag, 'Request result: $status', {
+        'isGranted': status.isGranted,
+        'isDenied': status.isDenied,
+      });
 
       final granted = status.isGranted;
 
-      // Reset dismissal flag if permission granted
       if (granted) {
         final serviceEnabled = await Geolocator.isLocationServiceEnabled();
         final prefs = await SharedPreferences.getInstance();
@@ -293,15 +302,18 @@ class LocationNotifier extends Notifier<LocationState> {
           isServiceEnabled: serviceEnabled,
           isBannerDismissed: false,
         );
-        debugPrint('✅ Location granted, banner dismissal reset');
+        await RemoteLogger.info(tag, 'Permission GRANTED from banner!');
       } else {
         state = state.copyWith(hasPermission: false);
+        await RemoteLogger.warning(tag, 'Permission DENIED from banner');
       }
 
-      debugPrint('✅ Location permission requested: $status');
       return granted;
-    } catch (e) {
-      debugPrint('⚠️ Error requesting location permission: $e');
+    } catch (e, stackTrace) {
+      await RemoteLogger.error(tag, 'EXCEPTION in requestPermission!', {
+        'error': e.toString(),
+        'stackTrace': stackTrace.toString().substring(0, 500),
+      });
       state = state.copyWith(hasPermission: false);
       return false;
     }
@@ -376,15 +388,34 @@ class LocationNotifier extends Notifier<LocationState> {
   /// On iOS: status == denied means "never asked". After first denial,
   /// status becomes permanentlyDenied, so this becomes a no-op.
   Future<void> requestPermissionIfNeeded() async {
+    const tag = 'requestPermissionIfNeeded';
+    await RemoteLogger.info(tag, '=== STARTING ===');
+
     try {
+      await RemoteLogger.debug(tag, 'About to check permission status...');
       final status = await ph.Permission.locationWhenInUse.status;
 
+      await RemoteLogger.info(tag, 'Permission status: $status', {
+        'isDenied': status.isDenied,
+        'isGranted': status.isGranted,
+        'isPermanentlyDenied': status.isPermanentlyDenied,
+        'isRestricted': status.isRestricted,
+        'isLimited': status.isLimited,
+      });
+
       if (status.isDenied) {
-        // Never asked before — show native iOS permission dialog
+        await RemoteLogger.info(tag, 'Status is DENIED - will request permission...');
+
+        await RemoteLogger.debug(tag, 'Calling Permission.locationWhenInUse.request()...');
         final result = await ph.Permission.locationWhenInUse.request();
 
+        await RemoteLogger.info(tag, 'Request result: $result', {
+          'isGranted': result.isGranted,
+          'isDenied': result.isDenied,
+          'isPermanentlyDenied': result.isPermanentlyDenied,
+        });
+
         if (result.isGranted) {
-          // Reset banner dismissal on grant (matches requestPermission/enableLocation pattern)
           final serviceEnabled = await Geolocator.isLocationServiceEnabled();
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool(_kBannerDismissedKey, false);
@@ -393,20 +424,38 @@ class LocationNotifier extends Notifier<LocationState> {
             isServiceEnabled: serviceEnabled,
             isBannerDismissed: false,
           );
+          await RemoteLogger.info(tag, 'Permission GRANTED! Service enabled: $serviceEnabled');
         } else {
           state = state.copyWith(hasPermission: false);
+          await RemoteLogger.warning(tag, 'Permission DENIED by user', {'result': result.toString()});
         }
-        debugPrint('✅ Location permission first request: $result');
       } else if (status.isGranted) {
+        await RemoteLogger.info(tag, 'Permission already GRANTED');
         final serviceEnabled = await Geolocator.isLocationServiceEnabled();
         state = state.copyWith(
           hasPermission: true,
           isServiceEnabled: serviceEnabled,
         );
+      } else {
+        await RemoteLogger.warning(tag, 'Status is NOT denied and NOT granted', {
+          'status': status.toString(),
+          'isPermanentlyDenied': status.isPermanentlyDenied,
+          'isRestricted': status.isRestricted,
+        });
+
+        if (status.isPermanentlyDenied) {
+          await RemoteLogger.error(tag, 'PERMANENTLY DENIED - iOS cached previous denial even after reset!');
+        } else if (status.isRestricted) {
+          await RemoteLogger.error(tag, 'RESTRICTED - MDM or parental controls blocking location');
+        }
       }
-      // If permanentlyDenied, restricted, or limited — do nothing (silent)
-    } catch (e) {
-      debugPrint('⚠️ Error requesting location permission: $e');
+    } catch (e, stackTrace) {
+      await RemoteLogger.error(tag, 'EXCEPTION thrown!', {
+        'error': e.toString(),
+        'stackTrace': stackTrace.toString().substring(0, 500), // Limit stack trace length
+      });
     }
+
+    await RemoteLogger.info(tag, '=== COMPLETE ===');
   }
 }

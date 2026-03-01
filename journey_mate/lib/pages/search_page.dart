@@ -12,6 +12,7 @@ import '../providers/provider_state_classes.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
 import '../services/translation_service.dart';
+import '../services/remote_logger.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -907,9 +908,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               SizedBox(width: AppSpacing.md), // Space for close button
               TextButton(
                 onPressed: () async {
+                  await RemoteLogger.info('search_banner', 'User tapped Activate button');
                   final granted = await ref
                       .read(locationProvider.notifier)
                       .requestPermission();
+                  await RemoteLogger.info('search_banner', 'requestPermission returned: $granted');
                   if (granted && mounted) {
                     final searchText = ref.read(searchStateProvider).currentSearchText;
                     _executeSearch(searchText);
