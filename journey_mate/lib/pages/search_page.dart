@@ -12,6 +12,7 @@ import '../providers/provider_state_classes.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
 import '../services/translation_service.dart';
+import '../utils/filter_count_helper.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -237,20 +238,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Future<void> _openFilterOverlay() async {
-    // Get current state
-    final filterState = ref.read(filterProvider);
-    final searchState = ref.read(searchStateProvider);
-
-    // Calculate filter counts for tab badges
-    // Include routed neighbourhood/shopping area in Location tab badge count
-    final extraLocationCount = (searchState.selectedNeighbourhoodId != null ? 1 : 0)
-                             + (searchState.selectedShoppingAreaId != null ? 1 : 0);
-    final filterCounts = _calculateFilterCounts(
-      searchState.filtersUsedForSearch,
-      filterState,
-      extraLocationCount: extraLocationCount,
-    );
-
     if (!mounted) return;
 
     setState(() => _isFilterSheetOpen = true);
@@ -292,7 +279,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           setState(() => _activeFilterTab = index);
                           setBottomSheetState(() => _activeFilterTab = index);
                         },
-                        tabCounts: filterCounts,
                       ),
                     ),
 
@@ -834,46 +820,22 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return td(ref, 'sort_$_currentSort');
   }
 
+  /// Calculate filter counts using the shared utility.
+  /// This is used for the main filter button row on the search page.
   Map<int, int> _calculateFilterCounts(
     List<int> activeFilters,
     AsyncValue<FilterState> filterState, {
     int extraLocationCount = 0,
   }) {
     return filterState.when(
-      data: (state) {
-        final counts = <int, int>{1: 0, 2: 0, 3: 0};
-        final lookupMap = state.filterLookupMap;
-
-        for (final filterId in activeFilters) {
-          final titleId = _findTitleIdForFilter(filterId, lookupMap);
-          if (titleId != null) {
-            counts[titleId] = (counts[titleId] ?? 0) + 1;
-          }
-        }
-
-        // Add routed neighbourhood/shopping area selections to Location tab badge
-        // These IDs are not in filtersUsedForSearch (routed to separate API params)
-        // but the user still needs visual feedback that Location selections are active
-        counts[1] = (counts[1] ?? 0) + extraLocationCount;
-
-        return counts;
-      },
+      data: (state) => calculateFilterCounts(
+        activeFilters,
+        state.filterLookupMap,
+        extraLocationCount: extraLocationCount,
+      ),
       loading: () => {1: 0, 2: 0, 3: 0},
       error: (e, stack) => {1: 0, 2: 0, 3: 0},
     );
-  }
-
-  /// Traces a filter's parent chain up to find its title ID (1, 2, or 3).
-  int? _findTitleIdForFilter(int filterId, Map<int, dynamic> lookupMap) {
-    var current = lookupMap[filterId];
-    for (var i = 0; i < 10 && current != null; i++) {
-      final id = current['id'];
-      if (id == 1 || id == 2 || id == 3) return id as int;
-      final parentId = current['parent_id'];
-      if (parentId == null || !lookupMap.containsKey(parentId)) return null;
-      current = lookupMap[parentId];
-    }
-    return null;
   }
 
   void _openFilterOverlayAtTab(int tabIndex) {
