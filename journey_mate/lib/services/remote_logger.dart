@@ -34,7 +34,7 @@ class RemoteLogger {
         'level': level,
         'tag': tag,
         'message': message,
-        if (data != null) 'data': data,
+        ...?data != null ? {'data': data} : null,
       };
 
       // Fire-and-forget (don't await, don't block app)
