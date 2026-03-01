@@ -238,6 +238,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Future<void> _openFilterOverlay() async {
+    // Get current state (needed for FilterOverlayWidget props)
+    final filterState = ref.read(filterProvider);
+    final searchState = ref.read(searchStateProvider);
+
     if (!mounted) return;
 
     setState(() => _isFilterSheetOpen = true);

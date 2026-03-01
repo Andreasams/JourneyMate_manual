@@ -1,14 +1,15 @@
-/// Shared utility for calculating filter badge counts across the app
+/// Shared utility for calculating filter badge counts across the app.
 ///
 /// Used by FilterTitlesRow, SearchPage, and any other component that needs
 /// to display active filter counts for the three main filter categories:
 /// - Location (titleId: 1)
 /// - Type (titleId: 2)
 /// - Preferences/Needs (titleId: 3)
+library;
 
 /// Calculate badge counts for the three filter category tabs (Location, Type, Needs).
 ///
-/// Returns Map<int, int> where keys are titleIds (1, 2, 3) and values are selection counts.
+/// Returns `Map<int, int>` where keys are titleIds (1, 2, 3) and values are selection counts.
 ///
 /// [activeFilters] - List of currently selected filter IDs
 /// [filterLookupMap] - Flat map of filterId → filter metadata (from FilterState)
