@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/app_providers.dart';
@@ -60,6 +62,12 @@ class _SearchResultsListViewState
   /// Cache for status colors per business (keyed by business_id)
   final Map<int, Color?> _statusColorCache = {};
 
+  // Pre-loading state
+  Timer? _scrollStopTimer;
+  final Set<int> _visibleBusinessIds = {};
+  final Set<int> _preloadedBusinessIds = {};
+  dynamic _lastPreloadedResults;
+
   // ---------------------------------------------------------------------------
   // Analytics
   // ---------------------------------------------------------------------------
@@ -82,6 +90,89 @@ class _SearchResultsListViewState
       },
       timestamp: DateTime.now().toIso8601String(),
     ));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
+
+  @override
+  void didUpdateWidget(SearchResultsListView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final searchState = ref.read(searchStateProvider);
+    if (searchState.searchResults != _lastPreloadedResults) {
+      _visibleBusinessIds.clear();
+      _preloadedBusinessIds.clear();
+      _lastPreloadedResults = searchState.searchResults;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _preloadTop5Restaurants();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollStopTimer?.cancel();
+    super.dispose();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pre-loading Methods
+  // ---------------------------------------------------------------------------
+
+  void _preloadTop5Restaurants() {
+    final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+    for (int i = 0; i < documents.length && i < 5; i++) {
+      final businessData = documents[i];
+      final businessId = _getBusinessId(businessData);
+      _preloadBusinessImages(businessId, businessData);
+    }
+  }
+
+  void _preloadBusinessImages(int businessId, dynamic businessData) {
+    if (_preloadedBusinessIds.contains(businessId)) return;
+
+    final galleryImages = businessData['gallery_images'] as List<dynamic>?;
+    if (galleryImages == null || galleryImages.isEmpty) return;
+
+    _preloadedBusinessIds.add(businessId);
+
+    // Pre-load all 12 images (no throttling per requirements)
+    for (final img in galleryImages.take(12)) {
+      final imageUrl = img is String ? img : (img['url'] as String?);
+      if (imageUrl != null && mounted) {
+        precacheImage(CachedNetworkImageProvider(imageUrl), context);
+      }
+    }
+  }
+
+  void _onScroll(ScrollNotification notification) {
+    _scrollStopTimer?.cancel();
+    _scrollStopTimer = Timer(const Duration(milliseconds: 300), () {
+      _preloadVisibleCards();
+    });
+  }
+
+  void _preloadVisibleCards() {
+    final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+
+    for (final businessId in _visibleBusinessIds) {
+      if (!_preloadedBusinessIds.contains(businessId)) {
+        final businessData = documents.firstWhere(
+          (doc) => _getBusinessId(doc) == businessId,
+          orElse: () => null,
+        );
+        if (businessData != null) {
+          _preloadBusinessImages(businessId, businessData);
+        }
+      }
+    }
+  }
+
+  void _markCardAsVisible(int businessId) {
+    _visibleBusinessIds.add(businessId);
   }
 
   // ---------------------------------------------------------------------------
@@ -130,37 +221,51 @@ class _SearchResultsListViewState
 
   /// Builds a flat list when no filters are active
   Widget _buildFlatList(List<dynamic> documents) {
-    return ListView.separated(
-      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0), // 16px top per JSX
-      itemCount: documents.length,
-      separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
-      itemBuilder: (context, index) {
-        final businessData = documents[index];
-        final businessId = _getBusinessId(businessData);
-
-        return _BusinessListItem(
-          key: ValueKey('business_$businessId'),
-          businessData: businessData,
-          userLocation: widget.userLocation,
-          matchVariant: 'none', // No match categorization
-          activeFilterCount: 0,
-          itemIndex: index,
-          statusText: _statusTextCache[businessId],
-          statusColor: _statusColorCache[businessId],
-          onStatusLoaded: (text, color) {
-            if (mounted) {
-              setState(() {
-                _statusTextCache[businessId] = text;
-                _statusColorCache[businessId] = color;
-              });
-            }
-          },
-          onBusinessTap: (id) {
-            _trackBusinessClick(id, index);
-            widget.onBusinessTap?.call(id);
-          },
-        );
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        _onScroll(notification);
+        return false;
       },
+      child: ListView.separated(
+        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0), // 16px top per JSX
+        itemCount: documents.length,
+        separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
+        itemBuilder: (context, index) {
+          final businessData = documents[index];
+          final businessId = _getBusinessId(businessData);
+
+          return VisibilityDetector(
+            key: Key('business_${businessId}_visibility'),
+            onVisibilityChanged: (info) {
+              if (info.visibleFraction > 0.8) {
+                _markCardAsVisible(businessId);
+              }
+            },
+            child: _BusinessListItem(
+              key: ValueKey('business_$businessId'),
+              businessData: businessData,
+              userLocation: widget.userLocation,
+              matchVariant: 'none', // No match categorization
+              activeFilterCount: 0,
+              itemIndex: index,
+              statusText: _statusTextCache[businessId],
+              statusColor: _statusColorCache[businessId],
+              onStatusLoaded: (text, color) {
+                if (mounted) {
+                  setState(() {
+                    _statusTextCache[businessId] = text;
+                    _statusColorCache[businessId] = color;
+                  });
+                }
+              },
+              onBusinessTap: (id) {
+                _trackBusinessClick(id, index);
+                widget.onBusinessTap?.call(id);
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -219,9 +324,15 @@ class _SearchResultsListViewState
       }
     }
 
-    return ListView(
-      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0), // 16px top per JSX
-      children: sections,
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        _onScroll(notification);
+        return false;
+      },
+      child: ListView(
+        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0), // 16px top per JSX
+        children: sections,
+      ),
     );
   }
 
@@ -232,27 +343,35 @@ class _SearchResultsListViewState
     int itemIndex,
   ) {
     final businessId = _getBusinessId(businessData);
-    return _BusinessListItem(
-      key: ValueKey('business_$businessId'),
-      businessData: businessData,
-      userLocation: widget.userLocation,
-      matchVariant: matchVariant,
-      activeFilterCount: totalActiveFilters,
-      itemIndex: itemIndex,
-      statusText: _statusTextCache[businessId],
-      statusColor: _statusColorCache[businessId],
-      onStatusLoaded: (text, color) {
-        if (mounted) {
-          setState(() {
-            _statusTextCache[businessId] = text;
-            _statusColorCache[businessId] = color;
-          });
+    return VisibilityDetector(
+      key: Key('business_${businessId}_visibility'),
+      onVisibilityChanged: (info) {
+        if (info.visibleFraction > 0.8) {
+          _markCardAsVisible(businessId);
         }
       },
-      onBusinessTap: (id) {
-        _trackBusinessClick(id, itemIndex);
-        widget.onBusinessTap?.call(id);
-      },
+      child: _BusinessListItem(
+        key: ValueKey('business_$businessId'),
+        businessData: businessData,
+        userLocation: widget.userLocation,
+        matchVariant: matchVariant,
+        activeFilterCount: totalActiveFilters,
+        itemIndex: itemIndex,
+        statusText: _statusTextCache[businessId],
+        statusColor: _statusColorCache[businessId],
+        onStatusLoaded: (text, color) {
+          if (mounted) {
+            setState(() {
+              _statusTextCache[businessId] = text;
+              _statusColorCache[businessId] = color;
+            });
+          }
+        },
+        onBusinessTap: (id) {
+          _trackBusinessClick(id, itemIndex);
+          widget.onBusinessTap?.call(id);
+        },
+      ),
     );
   }
 
@@ -585,19 +704,32 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   Widget _buildImage() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.logoSmall), // 13px per JSX
-      child: Image.network(
-        _profilePicture ?? _placeholderImageUrl,
+      child: CachedNetworkImage(
+        imageUrl: _profilePicture ?? _placeholderImageUrl,
         width: _imageSize,
         height: _imageSize,
         fit: BoxFit.scaleDown,
-        errorBuilder: (context, error, stackTrace) {
-          return Image.network(
-            _placeholderImageUrl,
+        placeholder: (context, url) => Container(
+          width: _imageSize,
+          height: _imageSize,
+          color: AppColors.bgInput,
+        ),
+        errorWidget: (context, url, error) => CachedNetworkImage(
+          imageUrl: _placeholderImageUrl,
+          width: _imageSize,
+          height: _imageSize,
+          fit: BoxFit.scaleDown,
+          placeholder: (context, url) => Container(
             width: _imageSize,
             height: _imageSize,
-            fit: BoxFit.scaleDown,
-          );
-        },
+            color: AppColors.bgInput,
+          ),
+          errorWidget: (context, url, error) => Container(
+            width: _imageSize,
+            height: _imageSize,
+            color: AppColors.bgInput,
+          ),
+        ),
       ),
     );
   }
@@ -980,25 +1112,35 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Container(
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
                   width: 100,
                   height: 100,
-                  color: AppColors.bgInput, // Background color while loading
-                  child: Image.network(
-                    imageUrl,
+                  fit: BoxFit.cover, // Changed from contain to cover to fill space
+                  placeholder: (context, url) => Container(
                     width: 100,
                     height: 100,
-                    fit: BoxFit.cover, // Changed from contain to cover to fill space
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: AppColors.border,
-                        child: Icon(
-                          Icons.image_not_supported,
-                          color: AppColors.textTertiary,
-                          size: 32,
+                    color: AppColors.bgInput,
+                    child: Center(
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
                         ),
-                      );
-                    },
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    width: 100,
+                    height: 100,
+                    color: AppColors.border,
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: AppColors.textTertiary,
+                      size: 32,
+                    ),
                   ),
                 ),
               ),
