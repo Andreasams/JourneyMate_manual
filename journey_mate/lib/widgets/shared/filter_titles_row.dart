@@ -5,6 +5,9 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
+import '../../utils/filter_count_helper.dart';
+import '../../providers/search_providers.dart';
+import '../../providers/filter_providers.dart';
 
 /// FilterTitlesRow - Horizontal row with 3 filter category tabs
 ///
@@ -16,7 +19,10 @@ import '../../theme/app_spacing.dart';
 /// - activeTabIndex: Currently selected tab (0, 1, or 2)
 /// - onTabChanged: Callback when user taps a title
 /// - width: Row width
-/// - tabCounts: Optional map of titleId → selection count for badge display
+///
+/// Badge counts are calculated reactively by watching searchStateProvider
+/// and filterProvider. This enables real-time badge updates when filters
+/// are toggled, without needing to close and reopen the filter sheet.
 ///
 /// Design:
 /// - 3 columns with equal 33% distribution
@@ -31,13 +37,11 @@ class FilterTitlesRow extends ConsumerWidget {
     required this.activeTabIndex,
     required this.onTabChanged,
     this.width,
-    this.tabCounts,
   });
 
   final int activeTabIndex;
   final Function(int) onTabChanged;
   final double? width;
-  final Map<int, int>? tabCounts;
 
   // Tab indices
   static const int _locationTabIndex = 0;
@@ -70,14 +74,47 @@ class FilterTitlesRow extends ConsumerWidget {
     }
   }
 
+  /// Calculate the badge count for a specific tab by watching providers.
+  ///
+  /// This method makes the widget reactive to filter state changes,
+  /// enabling real-time badge updates when filters are toggled.
+  int _getCountForTab(WidgetRef ref, int titleId) {
+    // Watch search state for active filters and routed locations
+    final searchState = ref.watch(searchStateProvider);
+
+    // Watch filter state for lookup map
+    final filterState = ref.watch(filterProvider);
+
+    return filterState.when(
+      data: (state) {
+        // Calculate extra location count for routed filters
+        final extraLocationCount = titleId == 1
+            ? (searchState.selectedNeighbourhoodId != null ? 1 : 0) +
+              (searchState.selectedShoppingAreaId != null ? 1 : 0)
+            : 0;
+
+        // Use shared utility to calculate counts
+        final allCounts = calculateFilterCounts(
+          searchState.filtersUsedForSearch,
+          state.filterLookupMap,
+          extraLocationCount: extraLocationCount,
+        );
+
+        return allCounts[titleId] ?? 0;
+      },
+      loading: () => 0,
+      error: (_, __) => 0,
+    );
+  }
+
   /// Builds a single tab button with appropriate styling and borders
   Widget _buildTabButton(WidgetRef ref, int tabIndex, int flex) {
     final isSelected = _isSelected(tabIndex);
     final title = td(ref, _getTranslationKey(tabIndex));
 
-    // Get count for this tab (titleId = tabIndex + 1)
+    // Get count for this tab reactively from providers (titleId = tabIndex + 1)
     final titleId = tabIndex + 1;
-    final count = tabCounts?[titleId] ?? 0;
+    final count = _getCountForTab(ref, titleId);
     final showBadge = count > 0;
 
     return Expanded(
