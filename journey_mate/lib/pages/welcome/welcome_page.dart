@@ -85,9 +85,14 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         });
       }
 
-      // Pre-fetch search results for returning users (fire-and-forget)
+      // Pre-fetch search results (fire-and-forget)
       if (isReturningUser) {
+        // Returning users: fetch with their saved language
         _preFetchSearchResults(languageCode);
+      } else {
+        // New users: fetch with Danish by default (optimized for primary audience)
+        // Will be overwritten if user chooses English path or other language
+        _preFetchSearchResults('da');
       }
     } catch (e) {
       debugPrint('⚠️ Welcome page initialization error: $e');
@@ -187,7 +192,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   }
 
   /// Handle "Fortsæt på dansk" button → Danish quick path
-  /// Saves preferences, pre-fetches search, navigates immediately
+  /// Saves preferences and navigates immediately
+  /// Search results already pre-fetched on page load (optimized for Danish users)
   Future<void> _handleDanishDirect() async {
     try {
       // Capture router before async operations
@@ -203,11 +209,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       // 3. Set currency to DKK
       await ref.read(localizationProvider.notifier).setCurrency('DKK', 1.0);
 
-      // Navigate immediately (analytics tracked in dispose, don't block navigation)
+      // Navigate immediately - search results already cached from page load
+      // (Pre-fetched with 'da' in _initialize for all new users)
       router.go('/search');
-
-      // Fetch search results in background (SearchPage will show shimmer)
-      _fetchDanishSearchBackground();
 
     } catch (e) {
       debugPrint('❌ Danish direct flow error: $e');
@@ -217,67 +221,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     }
   }
 
-  /// Background search fetch for Danish direct flow
-  Future<void> _fetchDanishSearchBackground() async {
-    try {
-      debugPrint('👋 Welcome: Fetching Danish search results in background...');
-
-      // Save notifier before async operations (safe even if widget unmounted)
-      final searchNotifier = ref.read(searchStateProvider.notifier);
-
-      // Get user location (if available)
-      String? userLocation;
-      try {
-        final position = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.medium,
-            timeLimit: Duration(seconds: 5),
-          ),
-        );
-        userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
-      } catch (e) {
-        debugPrint('👋 Welcome: Location fetch failed: $e');
-        // Continue without location
-      }
-
-      // Call SearchAPI with Danish language
-      final response = await ApiService.instance.search(
-        cityId: AppConstants.kDefaultCityId.toString(),
-        userLocation: userLocation,
-        searchInput: '',
-        languageCode: 'da',
-        filters: [],
-        sortOrder: 'desc',
-        page: 1,
-        pageSize: 20,
-      );
-
-      if (response.succeeded) {
-        final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
-        final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
-        final activeIds = (response.jsonBody['activeids'] as List?)
-            ?.map((e) => (e as num).toInt())
-            .toList() ?? [];
-        final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
-            ?.map((e) => (e as num).toInt())
-            .toList() ?? [];
-        // Use saved notifier (safe even if widget unmounted)
-        searchNotifier.updateSearchResults(
-          response.jsonBody,
-          resultCount,
-          fullMatchCount,
-        );
-        searchNotifier.updateActiveFilterIds(activeIds);
-        searchNotifier.updateScoringFilterIds(scoringFilterIds);
-        debugPrint('👋 Welcome: Danish search succeeded ($resultCount results)');
-      } else {
-        debugPrint('👋 Welcome: Danish search failed: ${response.error}');
-      }
-    } catch (e) {
-      debugPrint('👋 Welcome: Danish search exception: $e');
-      // Fail silently - SearchPage will handle error state
-    }
-  }
 
   /// Handle "Continue" button for returning users → Navigate immediately
   /// NEW: Uses pre-fetched results if available, or shows shimmer while loading

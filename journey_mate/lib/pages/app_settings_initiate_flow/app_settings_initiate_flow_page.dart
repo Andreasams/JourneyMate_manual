@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
+import '../../providers/locale_provider.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
@@ -87,6 +88,11 @@ class _AppSettingsInitiateFlowPageState
           _currentLanguageCode = languageCode;
         });
       }
+
+      // Pre-fetch search results with English by default (fire-and-forget)
+      // For English users: results ready when they tap "Complete setup" (instant navigation)
+      // For non-English users: results overwritten when they select language (one "wasted" call)
+      _fetchSearchResultsForLanguage('en');
     } catch (e) {
       debugPrint('⚠️ App Settings page initialization error: $e');
       // Continue with defaults even if initialization fails
@@ -201,23 +207,29 @@ class _AppSettingsInitiateFlowPageState
   // ============================================================
 
   Future<void> _handleCompleteSetup() async {
-    if (!context.mounted) return;
+    // Persist language selection to SharedPreferences
+    // This guarantees persistence even if user didn't interact with selector
+    try {
+      final prefs = await SharedPreferences.getInstance();
 
-    // Check if cached results are fresh
-    final searchNotifier = ref.read(searchStateProvider.notifier);
-    final hasFreshCache = searchNotifier.isCacheFresh();
+      // Persist language code
+      await prefs.setString('user_language_code', _currentLanguageCode);
 
-    debugPrint('🔧 Setup: Complete tapped (cache fresh: $hasFreshCache)');
+      // Update localeProvider for immediate app-wide locale change
+      ref.read(localeProvider.notifier).setLocale(_currentLanguageCode);
 
-    // Navigate immediately (analytics tracked in dispose, don't block navigation)
-    context.go('/search');
-
-    // If cache is stale or missing, fetch in background
-    // (This is rare since language selection already triggers fetch)
-    if (!hasFreshCache) {
-      debugPrint('🔧 Setup: Cache stale, fetching in background...');
-      _fetchSearchResultsForLanguage(_currentLanguageCode);
+      debugPrint('✅ Setup complete: language=$_currentLanguageCode persisted');
+    } catch (e) {
+      debugPrint('⚠️ Failed to persist language during setup: $e');
+      // Continue navigation - don't block user flow on persistence error
     }
+
+    // Navigate immediately - search results are already cached
+    // (Either from page load 'en' pre-fetch, or from language selection)
+    // No need to check cache staleness - it's always fresh for new users
+    // Check mounted after async operations, immediately before using context
+    if (!mounted) return;
+    context.go('/search');
   }
 
   // ============================================================
