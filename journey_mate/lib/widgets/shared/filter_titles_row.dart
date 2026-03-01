@@ -121,7 +121,7 @@ class FilterTitlesRow extends ConsumerWidget {
                     width: 18,
                     height: 18,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.accent : Color(0xFFBBBBBB),
+                      color: isSelected ? AppColors.bgCard : AppColors.textDisabled,
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -130,7 +130,7 @@ class FilterTitlesRow extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: isSelected ? AppColors.accent : Colors.white,
                         height: 1.0,
                       ),
                     ),
