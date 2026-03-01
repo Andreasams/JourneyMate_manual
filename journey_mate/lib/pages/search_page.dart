@@ -56,6 +56,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   int _activeFilterTab = 0;
   bool _isFilterSheetOpen = false;
 
+  // User position for distance display in restaurant cards
+  Position? _userPositionForDisplay;
+
   @override
   void initState() {
     super.initState();
@@ -144,6 +147,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             timeLimit: Duration(seconds: 5),
           ),
         );
+        // Store position for UI display
+        if (mounted) {
+          setState(() {
+            _userPositionForDisplay = position;
+          });
+        }
       } catch (e) {
         debugPrint('Location error: $e');
       }
@@ -1038,16 +1047,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
 
     // Results list
-    final locationState = ref.watch(locationProvider);
-    Position? userLocation;
-    if (locationState.isLocationUsable) {
-      // Will be fetched by SearchResultsListView
-    }
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl), // 20px per JSX
       child: SearchResultsListView(
-        userLocation: userLocation,
+        userLocation: _userPositionForDisplay,
         onBusinessTap: (businessId) {
           // Navigate to business profile
           context.push('/business/$businessId');
