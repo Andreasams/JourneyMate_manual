@@ -21,7 +21,7 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 | `search_input` | `string` | Free text. Empty/null → `'*'` (match all). |
 | `userLocation` | `string` | Flutter LatLng string: `"LatLng(lat: 55.6761, lng: 12.5683)"`. `null` if no permission. |
 | `language_code` | `string` | BCP-47, e.g. `"en"`, `"da"`. |
-| `sortBy` | `string` | One of: `'match'`, `'nearest'`, `'station'`, `'price_low'`, `'price_high'`, `'newest'`. Default: `'match'`. |
+| `sortBy` | `string` | One of: `'match'`, `'nearest'`, `'station'`, `'price_low'`, `'price_high'`. Default: `'match'`. |
 | `sortOrder` | `string` | `'asc'` or `'desc'`. Default: `'desc'`. |
 | `selectedStation` | `number` | Station filter ID (numeric). Required when `sortBy='station'`. IDs ≥ 10000 have 10000 offset applied internally. Looked up in `FilterTrainStation` by `train_station_id`. |
 | `onlyOpen` | `boolean` | When `true`, filter out closed businesses using pre-computed `open_windows`. Applied before categorisation. Default: `false`. |
@@ -39,7 +39,6 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 | `'station'` | Distance from `selectedStation` coords ASC (looks up lat/lng from `FilterTrainStation` by `train_station_id`) |
 | `'price_low'` | `price_range_min` ASC |
 | `'price_high'` | `price_range_max` DESC |
-| `'newest'` | `created_at` DESC (uses `BusinessInfo.created_at`) |
 
 **Match categorisation:**
 - `'full'`: `matchCount === filtersUsedForSearch.length` (all needs met)
