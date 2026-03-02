@@ -5,7 +5,7 @@ import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
 import '../../services/analytics_service.dart';
-import '../../widgets/shared/missing_location_form_widget.dart';
+import 'widgets/missing_location_form_widget.dart';
 
 /// Missing Place Page (Phase 7.12)
 ///

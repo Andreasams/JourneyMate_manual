@@ -5,7 +5,7 @@ import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
 import '../../services/analytics_service.dart';
-import '../../widgets/shared/feedback_form_widget.dart';
+import 'widgets/feedback_form_widget.dart';
 
 /// Share Feedback Page (Phase 7.11)
 ///

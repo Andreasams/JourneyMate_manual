@@ -10,7 +10,7 @@ import '../../services/analytics_service.dart';
 import '../../providers/settings_providers.dart';
 import '../../widgets/shared/language_selector_button.dart';
 import '../../widgets/shared/currency_selector_button.dart';
-import '../../widgets/shared/location_status_card.dart';
+import 'widgets/location_status_card.dart';
 
 /// Localization Page (Phase 7.8)
 ///
