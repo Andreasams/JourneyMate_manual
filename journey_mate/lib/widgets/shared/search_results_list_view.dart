@@ -284,6 +284,9 @@ class _SearchResultsListViewState
       if (matchCount == totalActiveFilters) {
         fullMatch.add(doc);
       } else if (matchCount > 0) {
+        // Backend (search node v9) sends maxMissedFilters=1, so all
+        // partial matches in this response are guaranteed to have exactly
+        // 1 missed filter. No client-side missedFilters.length check needed.
         partialMatch.add(doc);
       } else {
         noMatch.add(doc);
