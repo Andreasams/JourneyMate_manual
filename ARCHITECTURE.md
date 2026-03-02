@@ -20,7 +20,7 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - [Analytics Architecture](#analytics-architecture) (lines 729-803) — Fire-and-forget, ActivityScope, 36 event types
 - [API Service Pattern](#api-service-pattern) (lines 461-517) — Singleton, cache, BuildShip integration
 - [Code Quality Standards](#code-quality-standards) (lines 806-845) — Flutter analyze, design tokens, algorithms
-- [Common Pitfalls](#common-pitfalls) (lines 848-1115) — 12 anti-patterns with fixes (⚠️ read before first commit)
+- [Common Pitfalls](#common-pitfalls) (lines 848-1198) — 13 anti-patterns with fixes (⚠️ read before first commit)
 - [Design Token System](#design-token-system) (lines 662-727) — Quick lookup tables for colors, spacing, typography
 - [Documentation Philosophy](#documentation-philosophy) (lines 1083-1102) — Three types of docs, when to update
 - [Key Architectural Decisions](#key-architectural-decisions) (lines 1133-1166) — CityID, favorites, filters, translations, engagement
@@ -1137,6 +1137,62 @@ return Scaffold(
 **References:**
 - Commit `c97e48d` — "fix: remove Material 3 orange tint from AppBar when scrolling"
 - Commit `4fad9e5` — "fix: align navbar spacing on search and settings pages"
+
+---
+
+### Pitfall #13: Map Type Variance in Collection Callbacks
+
+**What:** Using `Map<String, dynamic>` in `orElse:` callbacks when method signature expects `Map<String, Object>` causes type errors due to Dart's contravariance rules.
+
+**When it happens:**
+- `List.firstWhere()`, `lastWhere()`, `singleWhere()` with `orElse:` returning maps
+- Generic methods where type parameter has specific constraints
+- Flutter 3.41.x enforces stricter type variance than earlier versions
+
+**Error message:**
+```
+TypeError: Instance of '() => Map<String, dynamic>':
+type '() => Map<String, dynamic>' is not a subtype of
+type '(() => Map<String, Object>)?'
+```
+
+**Root cause:** `Map<String, dynamic>` is NOT a subtype of `Map<String, Object>` in Dart due to contravariance. Even though `Object` is a supertype of `dynamic` for values, the map types are invariant in their value type parameter.
+
+❌ **Bad:**
+```dart
+final selectedStation = trainStations.firstWhere(
+  (s) => s['id'] == selectedStationId,
+  orElse: () => <String, dynamic>{},  // ← Type error!
+);
+```
+
+**Why it fails:** Method signature expects `Map<String, Object> Function()?` but receives `Map<String, dynamic> Function()`. These are incompatible types.
+
+✅ **Good:**
+```dart
+final selectedStation = trainStations.firstWhere(
+  (s) => s['id'] == selectedStationId,
+  orElse: () => <String, Object>{},  // ← Matches expected type
+);
+```
+
+**Alternative (explicit cast):**
+```dart
+final selectedStation = trainStations.firstWhere(
+  (s) => s['id'] == selectedStationId,
+  orElse: () => <String, dynamic>{} as Map<String, Object>,
+);
+```
+**Note:** Cast works but triggers `unnecessary_cast` analyzer warning. Using `Map<String, Object>` directly is cleaner.
+
+**Where this applies:**
+- All `firstWhere()` / `lastWhere()` / `singleWhere()` with map-returning `orElse:`
+- Any generic method where callback return type has specific constraints
+- BuildShip response parsing where you filter/search for specific objects
+
+**Common in:** Filter widgets, search features, any code using collection lookups with fallback empty maps.
+
+**Git reference:** Commit `f5ab2a9` — "fix: resolve type error when reopening SortBottomSheet after train station selection"
 
 ---
 

@@ -24,7 +24,7 @@ Each scenario below provides:
 3. **ARCHITECTURE.md** → State Management → When to Use What (lines 123-131)
 4. **ARCHITECTURE.md** → State Management → Page-Local State (lines 216-259)
 5. **DESIGN_SYSTEM_flutter.md** → Quick Start (lines 16-36)
-6. **ARCHITECTURE.md** → Common Pitfalls #8, #11 (lines 937-949, 982-1012)
+6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13 (lines 937-949, 982-1012, 1144-1195)
 
 **Critical warnings:**
 - ⚠️ Page-local UI state (loading flags, TextControllers, ScrollControllers) → local State variables, NOT providers
@@ -48,7 +48,7 @@ Each scenario below provides:
 3. **DESIGN_SYSTEM_flutter.md** → Colors (lines 39-90)
 4. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 92-120)
 5. **DESIGN_SYSTEM_flutter.md** → Typography (lines 122-180)
-6. **ARCHITECTURE.md** → Common Pitfall #8 (lines 937-949)
+6. **ARCHITECTURE.md** → Common Pitfall #8, #13 (lines 937-949, 1144-1195)
 
 **Critical warnings:**
 - ⚠️ Widgets read providers/context internally — NO infrastructure props (language, translations, dimensions)
@@ -220,7 +220,7 @@ Each scenario below provides:
 4. **_reference/PROVIDERS_REFERENCE.md** → filterProvider (search for "filterProvider")
 5. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 412-458)
 6. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 520-597)
-7. **ARCHITECTURE.md** → Common Pitfall #11 (lines 998-1080)
+7. **ARCHITECTURE.md** → Common Pitfall #11, #13 (lines 998-1080, 1144-1195)
 
 **Critical warnings:**
 - ⚠️ CityID is always 17 (Copenhagen) — use `AppConstants.kDefaultCityId`
@@ -229,6 +229,7 @@ Each scenario below provides:
 - ⚠️ Filter panel is bottom sheet (NOT inline overlay) — tab selection is local state
 - ⚠️ Match categorization (full/partial/other) handled by BuildShip, not Flutter
 - ⚠️ Filter overlays that sync state on close: save notifier in `initState()`, use in `dispose()` (Pitfall #11 Variation B)
+- ⚠️ Collection callbacks: Use `Map<String, Object>{}` not `Map<String, dynamic>{}` in `orElse:` (Common Pitfall #13)
 
 **Reference files:**
 - `journey_mate/lib/pages/search_page.dart` — Complete search implementation

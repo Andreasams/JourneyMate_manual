@@ -268,6 +268,7 @@ Before committing documentation updates:
 - [ ] **Cross-references validated:** All line references and links are correct
 - [ ] **Navigation guide updated:** If section line numbers shifted, update affected scenarios
 - [ ] **No duplication:** Concept documented once (primary location) with cross-refs elsewhere
+- [ ] **Code examples validated:** Type-safe code in examples (Map<String, Object> not dynamic in callbacks)
 - [ ] **Commit message format:** `docs: [what changed] from commit <hash>`
 
 ---
