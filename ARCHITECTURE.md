@@ -1556,9 +1556,10 @@ return Scaffold(
 
 **Workflow:**
 1. ✅ **First**: Check `lib/theme/app_theme.dart` for centralized theme (ThemeData)
-2. ✅ **Second**: Check `lib/widgets/shared/` for shared components
-3. ✅ **Third**: If fix needed, modify theme/shared component (affects all pages)
-4. ✅ **Last**: Only modify individual pages if truly page-specific behavior needed
+2. ✅ **Second**: Check `lib/widgets/shared/` for shared components (used on 2+ pages)
+3. ✅ **Third**: Check `lib/pages/<section>/widgets/` for page-specific components (used on 1 page)
+4. ✅ **Fourth**: If fix needed, modify theme/shared component (affects all pages)
+5. ✅ **Last**: Only modify individual pages if truly page-specific behavior needed
 
 **Theme-controlled UI elements:**
 - AppBar: `ThemeData.appBarTheme` (backgroundColor, elevation, surfaceTintColor, scrolledUnderElevation, titleTextStyle)

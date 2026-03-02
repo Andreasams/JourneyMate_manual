@@ -63,7 +63,7 @@ Each scenario below provides:
 - ⚠️ For swipe gestures: use adaptive thresholds (percentage, not fixed pixels) — see Pitfall #16
 
 **Reference files:**
-- `journey_mate/lib/widgets/shared/contact_us_form_widget.dart` — Self-contained form widget
+- `journey_mate/lib/pages/settings/widgets/contact_us_form_widget.dart` — Self-contained form widget
 - `journey_mate/lib/widgets/shared/filter_overlay_widget.dart` — Complex widget with local state
 
 ---
@@ -160,8 +160,8 @@ Each scenario below provides:
 - ⚠️ Form page pattern: Section titles use w600 override, subtitles 14px/w300, placeholders 14px (see DESIGN_SYSTEM_flutter.md)
 
 **Reference files:**
-- `journey_mate/lib/widgets/shared/contact_us_form_widget.dart` — Complete form pattern
-- `journey_mate/lib/widgets/shared/feedback_form_widget.dart` — Form with dropdown
+- `journey_mate/lib/pages/settings/widgets/contact_us_form_widget.dart` — Complete form pattern
+- `journey_mate/lib/pages/settings/widgets/feedback_form_widget.dart` — Form with dropdown
 
 ---
 
