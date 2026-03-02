@@ -316,6 +316,7 @@ Each scenario below provides:
 - ⚠️ Language change triggers full app rebuild via `localeProvider` + MaterialApp
 - ⚠️ Currency preference stored separately in `localizationProvider`
 - ⚠️ Exchange rates fetched from external API, cached in provider state
+- ⚠️ **Distance unit preference is English-only** — Non-English users ALWAYS see metric (km/meters), ignoring stored preference. `DistanceUnitSelectorButton` visible only when `currentLanguage == 'en'`. See CLAUDE.md Decision #14.
 
 **Reference files:**
 - `journey_mate/lib/services/translation_service.dart` — `td()` function (40 lines)
@@ -326,6 +327,7 @@ Each scenario below provides:
 
 ## Navigation Guide Changelog
 
+**2026-03-02:** Updated Scenario 12 with distance unit preference warning (English-only) from commit c767773
 **2026-03-02:** Updated Scenarios 1, 2, 9 with Swipe Gesture Patterns section (lines 486-831) and new Pitfalls #14-16 from commit 58a7549
 **2026-02-24:** Initial 12-scenario guide created with targeted reading lists
 **2026-02-24:** Updated Scenarios 6 & 9 to reference expanded Common Pitfall #11 (dispose pattern)

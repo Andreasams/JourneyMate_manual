@@ -445,6 +445,8 @@ These decisions have been confirmed and must not be re-debated:
 
 13. **Flutter localization delegates required** — MaterialApp must include `supportedLocales` and `localizationsDelegates` for `Localizations.localeOf(context)` to work. Without these, currency filtering breaks (always shows English currencies). Fixed 2026-02-24.
 
+14. **Distance units: Imperial ONLY for English** — Distance unit preference (Imperial/Metric) is **only available when language is English**. Non-English users **always** see metric (km/meters), ignoring any stored preference. English users default to Imperial (miles/feet) for backward compatibility. Rationale: European languages expect metric exclusively; preference would confuse non-English users. Implementation: `DistanceUnitSelectorButton` visible only when `currentLanguage == 'en'`.
+
 ---
 
 ## What NOT to Do

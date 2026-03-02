@@ -442,15 +442,16 @@ Called in `main.dart` (optional, can lazy-load on first access):
 class LocalizationState {
   final String currencyCode;   // Persisted (default: 'DKK')
   final double exchangeRate;   // NOT persisted (default: 1.0)
+  final String distanceUnit;   // Persisted (default: 'imperial' for English, 'metric' for others)
 }
 ```
 
 ### Persistence
 
-- **Persisted fields:** `currencyCode` only
+- **Persisted fields:** `currencyCode`, `distanceUnit`
 - **Storage:** SharedPreferences
-- **Key:** `'user_currency_code'`
-- **Initialization:** `await container.read(localizationProvider.notifier).loadFromPreferences()`
+- **Keys:** `'user_currency_code'`, `'user_distance_unit'`
+- **Initialization:** `container.read(localizationProvider.notifier).initializeFromPrefs()`
 
 ### Methods
 
@@ -466,6 +467,9 @@ ref.read(localizationProvider.notifier).setExchangeRate(8.0);
 
 // Reset to default
 await ref.read(localizationProvider.notifier).resetToDefault();
+
+// Set distance unit (persists to SharedPreferences)
+await ref.read(localizationProvider.notifier).setDistanceUnit('metric');
 ```
 
 ### Usage Example
@@ -480,6 +484,30 @@ class PriceDisplay extends ConsumerWidget {
     final convertedPrice = priceInDKK * localization.exchangeRate;
 
     return Text('${convertedPrice.toStringAsFixed(2)} ${localization.currencyCode}');
+  }
+}
+
+class DistanceDisplay extends ConsumerWidget {
+  final double distanceInKm;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final localization = ref.watch(localizationProvider);
+    final languageCode = Localizations.localeOf(context).languageCode;
+
+    // Non-English: ALWAYS metric (ignore stored preference)
+    // English: Use stored preference (imperial or metric)
+    final effectiveUnit = languageCode == 'en'
+        ? localization.distanceUnit
+        : 'metric';
+
+    final displayDistance = effectiveUnit == 'imperial'
+        ? distanceInKm * 0.621371 // Convert to miles
+        : distanceInKm;
+
+    final unitLabel = effectiveUnit == 'imperial' ? 'mi' : 'km';
+
+    return Text('${displayDistance.toStringAsFixed(1)} $unitLabel');
   }
 }
 ```

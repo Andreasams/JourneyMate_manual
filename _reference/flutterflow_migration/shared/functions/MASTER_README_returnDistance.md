@@ -4,16 +4,17 @@
 **File:** `custom_functions.dart` (lines 16-66)
 **Category:** Geolocation & Distance Calculation
 **Status:** ✅ Production Ready
+**⚠️ BREAKING CHANGE (commit c767773, 2026-03-02):** Function signature changed from `languageCode` to `distanceUnit` parameter. See Migration Note below.
 
 ---
 
 ## Purpose
 
-Calculates the great-circle distance between two geographical points using the Haversine formula. Automatically converts output to miles for English language users and kilometers for all other languages.
+Calculates the great-circle distance between two geographical points using the Haversine formula. Converts output to miles when `distanceUnit` is `'imperial'`, otherwise returns kilometers.
 
 **Key Features:**
 - Precise distance calculation using Haversine formula
-- Automatic unit conversion based on language
+- Explicit unit conversion based on `distanceUnit` parameter ('imperial' or 'metric')
 - Input validation for latitude/longitude bounds
 - Optimized for performance with minimal memory allocation
 
@@ -26,7 +27,7 @@ double returnDistance(
   LatLng currentDeviceLocation,
   double businessLatitude,
   double businessLongitude,
-  String languageCode,
+  String distanceUnit,  // ⚠️ BREAKING CHANGE: Was 'languageCode' before commit c767773
 )
 ```
 
@@ -37,13 +38,59 @@ double returnDistance(
 | `currentDeviceLocation` | `LatLng` | **Yes** | The current location of the device as a LatLng object |
 | `businessLatitude` | `double` | **Yes** | The latitude of the business location (-90 to 90) |
 | `businessLongitude` | `double` | **Yes** | The longitude of the business location (-180 to 180) |
-| `languageCode` | `String` | **Yes** | ISO language code (e.g., 'en' for English, 'da' for Danish) |
+| `distanceUnit` | `String` | **Yes** | Distance unit: `'imperial'` (miles) or `'metric'` (kilometers). **Breaking change (commit c767773):** Previously accepted `languageCode` — now requires explicit unit. |
 
 ### Returns
 
 | Type | Description |
 |------|-------------|
 | `double` | Distance rounded to one decimal place in kilometers or miles |
+
+---
+
+## ⚠️ Migration Note (Commit c767773)
+
+**Breaking change:** The 4th parameter changed from `languageCode` to `distanceUnit`.
+
+**Before (deprecated):**
+```dart
+final distance = returnDistance(
+  userLocation,
+  businessLat,
+  businessLng,
+  'en',  // ❌ Language code
+);
+```
+
+**After (current):**
+```dart
+// Option 1: Read from provider (recommended)
+final localization = ref.read(localizationProvider);
+final languageCode = Localizations.localeOf(context).languageCode;
+
+// Non-English: ALWAYS metric (ignore stored preference)
+// English: Use stored preference (imperial or metric)
+final effectiveUnit = languageCode == 'en'
+    ? localization.distanceUnit
+    : 'metric';
+
+final distance = returnDistance(
+  userLocation,
+  businessLat,
+  businessLng,
+  effectiveUnit,  // ✅ Distance unit
+);
+
+// Option 2: Hardcode metric (for non-English contexts)
+final distance = returnDistance(
+  userLocation,
+  businessLat,
+  businessLng,
+  'metric',  // ✅ Always show kilometers
+);
+```
+
+**Rationale:** Decoupled distance unit from language to support English users in metric countries (Europe, Australia, etc.).
 
 ---
 
