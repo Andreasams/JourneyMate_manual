@@ -242,21 +242,23 @@ All backend calls go through `ApiService.instance` singleton.
 
 **Full API contracts:** See `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines, 12 endpoints)
 
-**Example:**
+**Example (v9 API):**
 ```dart
 final response = await ApiService.instance.search(
-  filters: [1, 2, 3],
-  filtersUsedForSearch: [1, 2, 3],
+  filters: [1, 2, 3],              // Scoring filters only (v9: no filtersUsedForSearch)
   cityId: '17',
   searchQuery: 'pizza',
-  sortOption: 'rating',
+  sortOption: 'nearest',           // v9: 'nearest', 'station', 'price_low', 'price_high'
   userLocation: '55.6761,12.5683',
   languageCode: 'da',
+  neighbourhoodId: 47,             // v9: NEW geographic filter
+  onlyOpen: true,                  // v9: Filter to currently open restaurants
 );
 
 if (response.statusCode == 200 && response.jsonBody != null) {
   final searchResults = response.jsonBody['documents'];
-  // Update state...
+  final fullMatchCount = response.jsonBody['fullMatchCount'];  // v9: NEW field
+  // Each document has 'section' field: 'fullMatch', 'partialMatch', 'others'
 } else {
   // Handle error...
 }

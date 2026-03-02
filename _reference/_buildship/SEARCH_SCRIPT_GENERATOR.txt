@@ -3,550 +3,79 @@ URL: https://wvb8ww.buildship.run/search
 
 /**
  * =============================================================================
- * OPTIMIZED TYPESENSE SEARCH NODE — v2
+ * JOURNEYMATE — TYPESENSE SEARCH NODE (v9)
  * =============================================================================
  *
- * CHANGES FROM v1:
- *   - Removed: hasTrainStationFilter / trainStationFilterId (replaced by sortBy/selectedStation)
- *   - Added inputs: filtersUsedForSearch, category, page, pageSize,
- *                   sortBy, sortOrder, selectedStation, onlyOpen
- *   - per_page increased from 10 → 250 (fetch all, paginate in JS)
- *   - Sort handled via sortBy enum instead of implicit GPS/station logic
- *   - _eval() used for match-quality sort scoring in Typesense
- *   - include_fields strips unused language fields at Typesense level (less JS work)
- *   - Match categorization (full / partial / other) done in JS post-processing
- *   - onlyOpen filtering done in JS post-processing using open_windows
- *   - Pagination within requested category done in JS
+ * WHAT IT DOES
+ * Searches the `businesses` Typesense collection for restaurants matching a
+ * user's dietary filters, location, text query, and preferences. Returns a
+ * scored, paginated list where full dietary matches rank above partial matches.
  *
- * -----------------------------------------------------------------------------
- * INPUTS:
- * -----------------------------------------------------------------------------
- *   filters                number[]    - Active filter IDs (regular + composite).
- *   filtersUsedForSearch   number[]    - User's selected need IDs for match scoring.
- *                                        When empty, all results are "full match".
- *   city_id                string      - Typesense city_id scope.
- *   search_input           string      - Free-text query. Defaults to '*'.
- *   userLocation           string      - "LatLng(lat: 55.67, lng: 12.56)"
- *   language_code          string      - BCP-47 code, e.g. 'da', 'en', 'de'.
- *   host                   string      - Typesense host URL.
- *   apiKey                 string      - Typesense API key.
- *   supabaseUrl            string      - Supabase project URL.
- *   supabaseKey            string      - Supabase anon/service key.
+ * INPUTS (SearchParams)
+ *   filters            number[]|string  — Dietary/feature filter IDs to score.
+ *   city_id            string|null      — Restrict to a city.
+ *   search_input       string|null      — Free-text query; "*" = match all.
+ *   userLocation       string|null      — Flutter LatLng string for geo-sort.
+ *   language_code      string           — ISO lang code (default "da"). 15 supported.
+ *   host / apiKey                       — Typesense connection.
+ *   supabaseUrl / supabaseKey           — Supabase connection (station lookups).
+ *   sortBy             string           — nearest|station|price_low|price_high.
+ *   selectedStation    number|null      — Train station ID for station-sort.
+ *   onlyOpen           boolean|string   — Only return currently-open restaurants (CPH tz).
+ *   page / pageSize    number           — Pagination (1-indexed).
+ *   neighbourhood_id   number|number[]  — Filter by neighbourhood(s).
+ *   shopping_area_id   number|null      — Filter by shopping area.
  *
- *   sortBy                 string      - One of:
- *                                          'match'      — matchCount DESC, distance ASC
- *                                          'nearest'    — distance from userLocation ASC
- *                                          'station'    — distance from selectedStation ASC
- *                                          'price_low'  — price_range_min ASC
- *                                          'price_high' — price_range_max DESC
- *                                          'newest'     — created_at DESC
- *   sortOrder              string      - 'asc' | 'desc' (used where applicable)
- *   selectedStation        number      - Station filter ID, required when sortBy='station'.
- *                                        IDs >= 10000 are offset by 10000 internally
- *                                        (actual ID = value - 10000).
- *                                        Looked up in FilterTrainStation by train_station_id.
+ * OUTPUTS (NodeOutput)
+ *   documents[]        — Restaurant docs, each annotated with:
+ *                        matchCount, matchedFilters, missedFilters, section
+ *   scoringFilterIds   — Cleaned filter IDs used for scoring (echo for client).
+ *   activeids          — All filter IDs in result set (from facets, for filter chips).
+ *   resultCount        — Total Typesense matches (pre open-now filtering).
+ *   fullMatchCount     — Global count of restaurants matching ALL scoring filters.
+ *   pagination         — { currentPage, totalPages, totalResults, hasMore }
  *
- *   onlyOpen               boolean     - When true, filter out currently closed businesses.
- *                                        Evaluated server-side in Copenhagen timezone
- *                                        using pre-computed open_windows field.
+ * SCORING SYSTEM
+ *   Uses Typesense _eval() to rank results:
+ *   - 10,000 pts bonus if ALL scoring filters match (full match).
+ *   - Per-filter points by priority group (P1=5000 … P6=1000).
+ *   - Non-dietary filters = 200 pts each.
+ *   Result: full matches always on top, partials ranked by which filters hit.
  *
- *   category               string      - Which match tier to return:
- *                                          'full'    — all filtersUsedForSearch present
- *                                          'partial' — exactly 1 missing
- *                                          'other'   — 2+ missing
- *   page                   number      - 1-indexed page within the category.
- *   pageSize               number      - Results per page (recommended: 20).
+ *   Priority groups (higher = more safety-critical):
+ *     P1 (5000): parentId 94  — ids [466, 173, 174]
+ *     P2 (4000): parentId 93  — ids [177]
+ *     P3 (3000): parentId 91  — ids [553–577] (15 items)
+ *     P4 (2000): parentId 95  — ids [175, 176]
+ *     P5 (1500): parentId 96  — ids [178]
+ *     P6 (1000): parentIds 90, 92, 97 — ids [179, 180, 181, 182, 183]
  *
- * -----------------------------------------------------------------------------
- * OUTPUTS:
- * -----------------------------------------------------------------------------
- *   documents     any[]    - Paginated result documents for the requested category.
- *                            Each document includes:
- *                              • All original fields minus stripped language variants
- *                              • business_type  — normalized from business_type_{lang}
- *                              • tags           — normalized from tags_{lang}
- *                              • tags_en, tags_da — always retained
- *                              • matchCount     — how many filtersUsedForSearch this doc has
- *                              • matchedFilters — which filter IDs matched
- *                              • missedFilters  — which filter IDs are absent
+ * ID RANGES
+ *   1–9999         Standard filters (dietary, features)
+ *   10000–19999    Train stations (offset by 10000)
+ *   20000+         Shopping areas
+ *   592000–602999  Composite dietary menu filters → dietary_menu_filters field
  *
- *   activeids     number[] - Union of all filter IDs present across the full result set.
- *   resultCount   number   - Total results in the requested category (before pagination).
- *   pagination    object   - { currentPage, totalPages, totalResults, hasMore, nextCategory }
- *                            nextCategory is non-null only when current category exhausted:
- *                              'full' → 'partial', 'partial' → 'other', 'other' → null
+ * OPEN-NOW FILTERING
+ *   Typesense can't natively filter on open_windows time arrays, so the node
+ *   over-fetches (3× pageSize, up to 5 rounds) and filters locally using
+ *   Copenhagen timezone. totalPages = -1; Flutter uses hasMore.
  *
- * -----------------------------------------------------------------------------
- * MATCH CATEGORIZATION:
- * -----------------------------------------------------------------------------
- *   full    → matchCount === filtersUsedForSearch.length  (all needs met)
- *   partial → missingCount === 1                          (exactly 1 need missing)
- *   other   → missingCount >= 2                          (2+ needs missing)
+ * SECTION TAGGING
+ *   Each document gets a `section` field: "fullMatch", "partialMatch", or "others".
+ *   - fullMatch:    matches ALL scoring filters
+ *   - partialMatch: missing exactly 1 scoring filter AND matches at least 1
+ *   - others:       missing 2+ filters, or matched none
+ *   Documents arrive pre-sorted by _eval score (full → partial → others).
+ *   The Flutter app renders cards top-to-bottom and inserts a section header
+ *   whenever the section value changes. No client-side sorting or grouping needed.
  *
- *   When filtersUsedForSearch is empty (keyword search, no active needs):
- *   skip categorization — all results treated as full match, returned as flat list.
- *
- * -----------------------------------------------------------------------------
- * SORTING:
- * -----------------------------------------------------------------------------
- *   'match'     → _eval() scores full=3, partial=1, other=0 in Typesense,
- *                 then distance tiebreaker if userLocation available
- *   'nearest'   → location(lat, lng):asc
- *   'station'   → location(station_lat, station_lng):asc (lookup by name)
- *   'price_low' → price_range_min:asc
- *   'price_high'→ price_range_max:desc
- *   'newest'    → created_at:desc
- *
- * -----------------------------------------------------------------------------
- * onlyOpen LOGIC:
- * -----------------------------------------------------------------------------
- *   Uses open_windows field (pre-computed array of {day, open, close} in minutes).
- *   Current time evaluated in Europe/Copenhagen timezone.
- *   Day index: 0=Monday … 6=Sunday (matches BusinessHours.day_of_week).
- *   Applied BEFORE categorization so category counts reflect open-only results.
+ * FULL MATCH COUNT
+ *   Runs a separate per_page=0 Typesense query converting all scoring filters
+ *   to hard filter_by constraints to get exact global count.
  *
  * =============================================================================
  */
 
-import Typesense from 'typesense';
-import { createClient } from '@supabase/supabase-js';
-
-interface SearchParams {
-  filters?: number[];
-  filtersUsedForSearch?: number[];
-  city_id?: string | null;
-  search_input?: string | null;
-  userLocation?: string | null;
-  language_code: string;
-  host: string;
-  apiKey: string;
-  supabaseUrl: string;
-  supabaseKey: string;
-  sortBy?: 'match' | 'nearest' | 'station' | 'price_low' | 'price_high' | 'newest';
-  sortOrder?: 'asc' | 'desc';
-  selectedStation?: number | null;
-  onlyOpen?: boolean;
-  category?: 'full' | 'partial' | 'other' | 'all';
-  page?: number;
-  pageSize?: number;
-}
-
-interface PaginationResult {
-  currentPage: number;
-  totalPages: number;
-  totalResults: number;
-  hasMore: boolean;
-  nextCategory: 'partial' | 'other' | null;
-}
-
-interface NodeOutput {
-  documents: any[];
-  activeids: number[];
-  resultCount: number;
-  pagination: PaginationResult;
-}
-
-export default async function optimizedTypesenseSearch({
-  filters,
-  filtersUsedForSearch,
-  city_id,
-  search_input,
-  userLocation,
-  language_code,
-  host,
-  apiKey,
-  supabaseUrl,
-  supabaseKey,
-  sortBy = 'match',
-  sortOrder = 'desc',
-  selectedStation = null,
-  onlyOpen = false,
-  category = 'all',
-  page = 1,
-  pageSize = 20,
-}: SearchParams): Promise<NodeOutput> {
-
-  const emptyPagination: PaginationResult = {
-    currentPage: 1, totalPages: 0, totalResults: 0, hasMore: false, nextCategory: null
-  };
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  // ===========================================================================
-  // LANGUAGE
-  // ===========================================================================
-  const sanitizedLanguage = (language_code && typeof language_code === 'string')
-    ? language_code : 'da';
-
-  // ===========================================================================
-  // FILTER SANITIZATION
-  // ===========================================================================
-  let sanitizedFilters: number[] = [];
-  if (Array.isArray(filters)) {
-    sanitizedFilters = filters.filter((f): f is number => typeof f === 'number' && !isNaN(f));
-  } else if (typeof filters === 'string' && (filters as string).trim() !== '') {
-    try {
-      const parsed = JSON.parse(filters as string);
-      if (Array.isArray(parsed)) {
-        sanitizedFilters = parsed.filter((f): f is number => typeof f === 'number' && !isNaN(f));
-      }
-    } catch { /* silent */ }
-  }
-
-  const selectedFilters: number[] = Array.isArray(filtersUsedForSearch)
-    ? filtersUsedForSearch.filter((f): f is number => typeof f === 'number' && !isNaN(f))
-    : [];
-
-  const sanitizedUserLocation = (
-    userLocation &&
-    typeof userLocation === 'string' &&
-    userLocation !== '' &&
-    userLocation !== 'null' &&
-    userLocation !== 'undefined' &&
-    userLocation !== 'LatLng(lat: 0, lng: 0)'
-  ) ? userLocation : null;
-
-  const sanitizedSearchInput = (
-    search_input &&
-    typeof search_input === 'string' &&
-    search_input !== '' &&
-    search_input !== 'null' &&
-    search_input !== 'undefined'
-  ) ? search_input : '*';
-
-  const sanitizedCityId = (
-    city_id &&
-    typeof city_id === 'string' &&
-    city_id !== 'null' &&
-    city_id !== 'undefined'
-  ) ? city_id : null;
-
-  // ===========================================================================
-  // SEPARATE COMPOSITE FILTERS
-  // ===========================================================================
-  const compositeFilters = sanitizedFilters.filter(f => {
-    const str = f.toString();
-    return str.length === 6 && (
-      str.startsWith('592') || str.startsWith('593') || str.startsWith('594') ||
-      str.startsWith('595') || str.startsWith('596') || str.startsWith('597') ||
-      str.startsWith('599') || str.startsWith('600') || str.startsWith('601') ||
-      str.startsWith('602')
-    );
-  });
-  const regularFilters = sanitizedFilters.filter(f => !compositeFilters.includes(f));
-
-  // ===========================================================================
-  // PARSE USER LOCATION
-  // ===========================================================================
-  let userLat: number | null = null;
-  let userLng: number | null = null;
-  if (sanitizedUserLocation) {
-    const match = sanitizedUserLocation.match(/LatLng\(lat: ([-\d.]+), lng: ([-\d.]+)\)/);
-    if (match) {
-      userLat = parseFloat(match[1]);
-      userLng = parseFloat(match[2]);
-    }
-  }
-
-  // ===========================================================================
-  // STATION COORDINATES LOOKUP (sortBy='station')
-  // ===========================================================================
-  let stationLat: number | null = null;
-  let stationLng: number | null = null;
-
-  if (sortBy === 'station' && selectedStation !== null) {
-    const parsedStationId = typeof selectedStation === 'string'
-      ? parseInt(selectedStation, 10)
-      : selectedStation;
-
-    const isValidStationId =
-      typeof parsedStationId === 'number' &&
-      !isNaN(parsedStationId) &&
-      parsedStationId > 0 &&
-      Number.isInteger(parsedStationId);
-
-    if (!isValidStationId) {
-      console.error('⚠️ Invalid selectedStation ID:', selectedStation);
-    } else {
-      try {
-        const actualStationId = parsedStationId >= 10000
-          ? parsedStationId - 10000
-          : parsedStationId;
-
-        const { data, error } = await supabase
-          .from('FilterTrainStation')
-          .select('latitude, longitude')
-          .eq('train_station_id', actualStationId)
-          .single();
-
-        if (!error && data) {
-          stationLat = data.latitude;
-          stationLng = data.longitude;
-        } else {
-          console.error('⚠️ Station lookup failed:', error?.message, '| ID:', actualStationId);
-        }
-      } catch (e) {
-        console.error('❌ Station lookup exception:', e);
-      }
-    }
-  }
-
-  // ===========================================================================
-  // BUILD SORT_BY STRING
-  // ===========================================================================
-  let sortByString = 'business_name:asc'; // fallback
-
-  switch (sortBy) {
-    case 'match': {
-      // _eval() scores full matches highest, partial next, others lowest.
-      // Requires filtersUsedForSearch to be non-empty to be meaningful.
-      if (selectedFilters.length > 0) {
-        const allPresent = selectedFilters.map(f => `filters:${f}`).join(' && ');
-        const anyPresent = selectedFilters.map(f => `filters:${f}`).join(' || ');
-        const evalExpr = `_eval([ (${allPresent}):3, (${anyPresent}):1 ]):desc`;
-        // Tiebreaker: distance from user if available, else name
-        if (userLat !== null && userLng !== null) {
-          sortByString = `${evalExpr},location(${userLat},${userLng}):asc`;
-        } else {
-          sortByString = `${evalExpr},business_name:asc`;
-        }
-      } else if (userLat !== null && userLng !== null) {
-        // No filters — fall back to nearest
-        sortByString = `location(${userLat},${userLng}):asc`;
-      }
-      break;
-    }
-    case 'nearest': {
-      if (userLat !== null && userLng !== null) {
-        sortByString = `location(${userLat},${userLng}):asc`;
-      }
-      break;
-    }
-    case 'station': {
-      if (stationLat !== null && stationLng !== null) {
-        sortByString = `location(${stationLat},${stationLng}):asc`;
-      } else if (userLat !== null && userLng !== null) {
-        // Station lookup failed — fall back to user location
-        sortByString = `location(${userLat},${userLng}):asc`;
-      }
-      break;
-    }
-    case 'price_low': {
-      sortByString = 'price_range_min:asc';
-      break;
-    }
-    case 'price_high': {
-      sortByString = 'price_range_max:desc';
-      break;
-    }
-    case 'newest': {
-      sortByString = 'created_at:desc';
-      break;
-    }
-  }
-
-  // ===========================================================================
-  // BUILD INCLUDE_FIELDS (strip unused language variants at Typesense level)
-  // ===========================================================================
-  const allLanguages = ['da', 'de', 'en', 'es', 'fi', 'fr', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'sv', 'uk', 'zh'];
-  const langFieldsToInclude: string[] = [];
-
-  // Always keep tags_en and tags_da; keep user language tags and business_type
-  allLanguages.forEach(lang => {
-    if (lang === 'en' || lang === 'da' || lang === sanitizedLanguage) {
-      langFieldsToInclude.push(`tags_${lang}`);
-    }
-    if (lang === sanitizedLanguage) {
-      langFieldsToInclude.push(`business_type_${lang}`);
-    }
-  });
-
-  const includeFields = [
-    'business_id', 'business_name', 'is_active', 'city_id', 'city_name',
-    'neighbourhood_name', 'street', 'postal_code', 'postal_city',
-    'latitude', 'longitude', 'location',
-    'profile_picture_url',
-    'filters', 'dietary_menu_filters',
-    'price_range_min', 'price_range_max', 'price_range',
-    'business_hours', 'open_windows',
-    'created_at', 'last_reviewed_at',
-    'brand_id', 'company_id', 'typesense_id', 'business_type_id',
-    ...langFieldsToInclude,
-  ].join(',');
-
-  // ===========================================================================
-  // TYPESENSE SEARCH
-  // ===========================================================================
-  try {
-    const client = new Typesense.Client({
-      nodes: [{ host, port: 443, protocol: 'https' }],
-      apiKey,
-    });
-
-    // Base filter
-    let filterByString = sanitizedCityId
-      ? `city_id:=${sanitizedCityId} && is_active:=true`
-      : 'is_active:=true';
-
-    if (regularFilters.length > 0) {
-      filterByString += ' && ' + regularFilters.map(f => `filters:${f}`).join(' && ');
-    }
-    if (compositeFilters.length > 0) {
-      filterByString += ' && (' + compositeFilters.map(f => `dietary_menu_filters:${f}`).join(' && ') + ')';
-    }
-
-    const tagsField = `tags_${sanitizedLanguage}`;
-    const businessTypeField = `business_type_${sanitizedLanguage}`;
-
-    const searchParameters: any = {
-      q:              sanitizedSearchInput,
-      query_by:       `business_name,neighbourhood_name,street,${tagsField},${businessTypeField}`,
-      filter_by:      filterByString,
-      sort_by:        sortByString,
-      page:           1,
-      per_page:       250, // Fetch all; JS handles category pagination
-      num_typos:      2,
-      include_fields: includeFields,
-    };
-
-    const searchResults = await client.collections('businesses').documents().search(searchParameters);
-
-    if (!searchResults.hits || !Array.isArray(searchResults.hits)) {
-      return { documents: [], activeids: [], resultCount: 0, pagination: emptyPagination };
-    }
-
-    // ===========================================================================
-    // COLLECT ACTIVE FILTER IDs
-    // ===========================================================================
-    const uniqueFiltersSet = new Set<number>();
-    const rawDocuments = searchResults.hits.map(hit => {
-      if (hit.document?.filters && Array.isArray(hit.document.filters)) {
-        hit.document.filters.forEach((f: number) => uniqueFiltersSet.add(f));
-      }
-      if (hit.document?.dietary_menu_filters && Array.isArray(hit.document.dietary_menu_filters)) {
-        hit.document.dietary_menu_filters.forEach((s: string) => {
-          const id = parseInt(s, 10);
-          if (!isNaN(id)) uniqueFiltersSet.add(id);
-        });
-      }
-      return hit.document;
-    });
-
-    // ===========================================================================
-    // POST-PROCESSING: NORMALIZE LANGUAGE FIELDS
-    // ===========================================================================
-    const languagesToKeep = new Set(['en', 'da', sanitizedLanguage]);
-
-    let documents = rawDocuments.map((doc: any) => {
-      if (!doc) return doc;
-
-      doc.business_type = doc[businessTypeField] || '';
-      doc.tags = doc[tagsField] || [];
-
-      allLanguages.forEach(lang => {
-        delete doc[`business_type_${lang}`];
-        if (!languagesToKeep.has(lang)) delete doc[`tags_${lang}`];
-      });
-      // User's language now in doc.tags — remove the keyed version
-      if (sanitizedLanguage !== 'en' && sanitizedLanguage !== 'da') {
-        delete doc[`tags_${sanitizedLanguage}`];
-      }
-
-      return doc;
-    });
-
-    // ===========================================================================
-    // onlyOpen FILTER (JS post-processing using open_windows)
-    // Evaluated in Europe/Copenhagen timezone.
-    // Day index: 0=Monday … 6=Sunday
-    // ===========================================================================
-    if (onlyOpen) {
-      const nowCph = new Date(
-        new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' })
-      );
-      // JS getDay(): 0=Sunday…6=Saturday → remap to 0=Monday…6=Sunday
-      const jsDay = nowCph.getDay();
-      const currentDay = jsDay === 0 ? 6 : jsDay - 1;
-      const currentMinutes = nowCph.getHours() * 60 + nowCph.getMinutes();
-
-      documents = documents.filter(doc => {
-        if (!doc?.open_windows || !Array.isArray(doc.open_windows)) return false;
-        return doc.open_windows.some((w: { day: number; open: number; close: number }) =>
-          w.day === currentDay &&
-          currentMinutes >= w.open &&
-          currentMinutes < w.close
-        );
-      });
-    }
-
-    // ===========================================================================
-    // MATCH CATEGORIZATION + PAGINATION
-    // When selectedFilters is empty: skip bucketing, return flat list as 'full'
-    // ===========================================================================
-    const addMatchFields = (doc: any) => {
-      const matchedFilters = selectedFilters.filter(f =>
-        Array.isArray(doc.filters) && doc.filters.includes(f)
-      );
-      const missedFilters = selectedFilters.filter(f =>
-        !Array.isArray(doc.filters) || !doc.filters.includes(f)
-      );
-      return {
-        ...doc,
-        matchCount:     matchedFilters.length,
-        matchedFilters,
-        missedFilters,
-      };
-    };
-
-    let pool: any[];
-
-    if (selectedFilters.length === 0 || category === 'all') {
-      // No active needs — all results are full match by definition
-      pool = documents.map(addMatchFields);
-    } else {
-      const full    = documents.filter(doc => {
-        const missing = selectedFilters.filter(f => !doc.filters?.includes(f)).length;
-        return missing === 0;
-      });
-      const partial = documents.filter(doc => {
-        const missing = selectedFilters.filter(f => !doc.filters?.includes(f)).length;
-        return missing === 1;
-      });
-      const other   = documents.filter(doc => {
-        const missing = selectedFilters.filter(f => !doc.filters?.includes(f)).length;
-        return missing >= 2;
-      });
-
-      const categoryMap: Record<string, any[]> = { full, partial, other };
-      pool = (categoryMap[category] || full).map(addMatchFields);
-    }
-
-    // Paginate within pool
-    const totalResults = pool.length;
-    const totalPages   = Math.ceil(totalResults / pageSize);
-    const start        = (page - 1) * pageSize;
-    const paginated    = pool.slice(start, start + pageSize);
-    const hasMore      = (start + pageSize) < totalResults;
-
-    const nextCategory: 'partial' | 'other' | null = !hasMore
-      ? (category === 'full' ? 'partial' : category === 'partial' ? 'other' : null)
-      : null;
-
-    return {
-      documents:   paginated,
-      activeids:   Array.from(uniqueFiltersSet),
-      resultCount: totalResults,
-      pagination: {
-        currentPage:  page,
-        totalPages,
-        totalResults,
-        hasMore,
-        nextCategory,
-      },
-    };
-
-  } catch (error) {
-    console.error('❌ Typesense search error:', error);
-    return { documents: [], activeids: [], resultCount: 0, pagination: emptyPagination };
-  }
-}
+// Full implementation code follows...
+// (See Main worktree BuildShip node for complete TypeScript implementation)

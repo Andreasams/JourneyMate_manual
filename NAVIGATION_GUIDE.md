@@ -73,7 +73,7 @@ Each scenario below provides:
 
 **Read these sections:**
 1. **ARCHITECTURE.md** → API Service Pattern (lines 461-517)
-2. **_reference/BUILDSHIP_API_REFERENCE.md** → Endpoint you need (e.g., lines 9-80 for SEARCH)
+2. **_reference/BUILDSHIP_API_REFERENCE.md** → Endpoint you need (e.g., lines 10-124 for SEARCH v9)
 3. **ARCHITECTURE.md** → State Management → AsyncNotifierProvider (lines 176-214)
 4. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 520-597)
 5. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1087-1117)
@@ -221,7 +221,7 @@ Each scenario below provides:
 **Estimated reading time:** 35 minutes
 
 **Read these sections:**
-1. **_reference/BUILDSHIP_API_REFERENCE.md** → SEARCH endpoint (lines 9-80)
+1. **_reference/BUILDSHIP_API_REFERENCE.md** → SEARCH endpoint v9 (lines 10-124)
 2. **ARCHITECTURE.md** → API Service Pattern (lines 834-890)
 3. **_reference/PROVIDERS_REFERENCE.md** → searchStateProvider (search for "searchStateProvider")
 4. **_reference/PROVIDERS_REFERENCE.md** → filterProvider (search for "filterProvider")
@@ -232,15 +232,18 @@ Each scenario below provides:
 9. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 486-831) — for dismissible location banner
 
 **Critical warnings:**
+- ⚠️ **SEARCH API v9 LIVE:** NO `filtersUsedForSearch` parameter (use `filters` only), NO `category` parameter (always returns all with `section` field), access new `fullMatchCount` output field
 - ⚠️ CityID is always 17 (Copenhagen) — use `AppConstants.kDefaultCityId`
 - ⚠️ Filter hierarchy loaded via AsyncNotifierProvider from BuildShip
 - ⚠️ Search results pre-loaded on Welcome/Settings pages for instant Search page
 - ⚠️ Filter panel is bottom sheet (NOT inline overlay) — tab selection is local state
-- ⚠️ Match categorization (full/partial/other) handled by BuildShip, not Flutter
+- ⚠️ Match categorization handled by BuildShip via `section` field (`"fullMatch"`, `"partialMatch"`, `"others"`) — Flutter renders section headers when value changes
 - ⚠️ Filter overlays that sync state on close: save notifier in `initState()`, use in `dispose()` (Pitfall #11 Variation B)
 - ⚠️ Collection callbacks: Use `Map<String, Object>{}` not `Map<String, dynamic>{}` in `orElse:` (Common Pitfall #13)
 - ⚠️ Use `enableLocation()` for search page location banner (NOT `requestPermission()`)
 - ⚠️ Location banner uses swipe-to-dismiss gesture: `HitTestBehavior.translucent` + adaptive 30% threshold (commit 58a7549)
+- ⚠️ **v9 Geographic filters:** Use `neighbourhood_id` (number | number[]) and `shopping_area_id` (number) parameters for filtering
+- ⚠️ **v9 Pagination:** When `onlyOpen=true`, `totalPages` = `-1` (use `hasMore` field instead for infinite scroll)
 
 **Reference files:**
 - `journey_mate/lib/pages/search/search_page.dart` — Complete search implementation

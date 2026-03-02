@@ -849,21 +849,29 @@ All backend calls go through `ApiService.instance` singleton.
 ### Usage Pattern
 
 ```dart
-// In pages or providers
+// In pages or providers (v9 API)
 final response = await ApiService.instance.search(
-  filters: [1, 2, 3],
-  filtersUsedForSearch: [1, 2, 3],
+  filters: [1, 2, 3],              // Scoring filters only (v9: no filtersUsedForSearch)
   cityId: '17',
   searchQuery: 'pizza',
-  sortOption: 'rating',
+  sortOption: 'nearest',           // v9: 'nearest', 'station', 'price_low', 'price_high'
   userLocation: '55.6761,12.5683',
   languageCode: 'da',
+  neighbourhoodId: 47,             // v9: NEW geographic filter
+  shoppingAreaId: 2001,            // v9: NEW geographic filter
+  onlyOpen: true,                  // v9: Over-fetches + local filtering
 );
 
 if (response.statusCode == 200 && response.jsonBody != null) {
   final searchResults = response.jsonBody['documents'];
-  final count = response.jsonBody['count'];
-  // Update state...
+  final fullMatchCount = response.jsonBody['fullMatchCount'];  // v9: NEW field
+  final pagination = response.jsonBody['pagination'];
+
+  // v9: Each document has 'section' field for rendering
+  for (final doc in searchResults) {
+    final section = doc['section'];  // 'fullMatch', 'partialMatch', 'others'
+    // Render section header when section value changes
+  }
 } else {
   // Handle error...
 }
