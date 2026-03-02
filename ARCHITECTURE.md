@@ -1140,6 +1140,51 @@ return Scaffold(
 
 ---
 
+### Pitfall #13: Using 'filter_name' Instead of 'name' for Filter Objects
+
+**Problem:** Filter objects from `filterProvider.filterLookupMap` use the field `'name'`, NOT `'filter_name'`. Using the wrong field name causes filter names to appear as empty strings in UI.
+
+**Why it happens:**
+- Direct Supabase queries may use column name `filter_name`
+- BuildShip API returns filters with `name` field (see BUILDSHIP_API_REFERENCE.md → GET_FILTERS_FOR_SEARCH)
+- Easy to confuse database column names with API response field names
+
+**Impact:**
+- Filter names don't display in UI (silent failure — no errors, just empty strings)
+- Affects partial match info box, match card chips, or any widget using filter lookup
+- Hard to debug without checking API response structure
+
+❌ **Incorrect:**
+```dart
+final filter = ref.read(filterProvider).value?.filterLookupMap[filterId];
+final filterName = filter['filter_name'];  // ❌ Always null!
+```
+
+✅ **Correct:**
+```dart
+final filter = ref.read(filterProvider).value?.filterLookupMap[filterId];
+final filterName = filter['name'] as String;  // ✅ Returns actual name
+```
+
+**Widgets using filterLookupMap correctly:**
+- `selected_filters_btns.dart` — Selected filter buttons
+- `filter_overlay_widget.dart` — Filter panel
+- `business_feature_buttons.dart` — Feature buttons
+- `payment_options_widget.dart` — Payment options
+- `search_results_list_view.dart` — Partial match info box (fixed)
+- `match_card_widget.dart` — Match filter chips (fixed)
+
+**Rule:** Always use `filter['name']` when accessing filter objects from `filterProvider.filterLookupMap`.
+
+**Why the field is 'name' not 'filter_name':**
+- GET_FILTERS_FOR_SEARCH endpoint returns: `{ id, name, cat_id, icon, description }`
+- `filterLookupMap` stores these API response objects directly
+- Database column `filter_name` is NOT exposed in API response
+
+**Common in:** Any widget displaying filter names using filterProvider state.
+
+---
+
 ## Documentation Philosophy
 
 JourneyMate maintains **three types of documentation**:

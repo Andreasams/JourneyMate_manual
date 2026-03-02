@@ -1243,8 +1243,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         for (final filterId in missedFilters) {
           if (filterId is int) {
             final filter = state.filterLookupMap[filterId];
-            if (filter != null && filter['filter_name'] != null) {
-              missedNames.add(filter['filter_name'] as String);
+            if (filter != null && filter['name'] != null) {
+              missedNames.add(filter['name'] as String);
             }
           }
         }
