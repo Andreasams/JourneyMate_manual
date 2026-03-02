@@ -21,7 +21,7 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 | `search_input` | `string` | Free text. Empty/null → `'*'` (match all). |
 | `userLocation` | `string` | Flutter LatLng string: `"LatLng(lat: 55.6761, lng: 12.5683)"`. `null` if no permission. |
 | `language_code` | `string` | BCP-47, e.g. `"en"`, `"da"`. |
-| `sortBy` | `string` | One of: `'match'`, `'nearest'`, `'station'`, `'price_low'`, `'price_high'`. Default: `'match'`. |
+| `sortBy` | `string` | One of: `'nearest'`, `'station'`, `'price_low'`, `'price_high'`. Flutter default: `'nearest'`. When location unavailable, backend degrades to alphabetical (`business_name:asc`). |
 | `sortOrder` | `string` | `'asc'` or `'desc'`. Default: `'desc'`. |
 | `selectedStation` | `number` | Station filter ID (numeric). Required when `sortBy='station'`. IDs ≥ 10000 have 10000 offset applied internally. Looked up in `FilterTrainStation` by `train_station_id`. |
 | `onlyOpen` | `boolean` | When `true`, filter out closed businesses using pre-computed `open_windows`. Applied before categorisation. Default: `false`. |
@@ -34,11 +34,12 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 **Sort options:**
 | `sortBy` | Logic |
 |----------|-------|
-| `'match'` | `_eval()` scores full=3, partial=1, other=0 in Typesense; distance ASC tiebreaker if `userLocation` present |
-| `'nearest'` | Distance from `userLocation` ASC |
+| `'nearest'` | Distance from `userLocation` ASC. **Flutter default.** When `userLocation` is `null` (location unavailable), backend falls back to alphabetical (`business_name:asc`). |
 | `'station'` | Distance from `selectedStation` coords ASC (looks up lat/lng from `FilterTrainStation` by `train_station_id`) |
 | `'price_low'` | `price_range_min` ASC |
 | `'price_high'` | `price_range_max` DESC |
+
+**Note:** Unrecognized `sortBy` values fall through to alphabetical (`business_name:asc`).
 
 **Match categorisation:**
 - `'full'`: `matchCount === filtersUsedForSearch.length` (all needs met)

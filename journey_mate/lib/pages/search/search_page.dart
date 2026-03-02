@@ -861,6 +861,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         error: (_, _) => td(ref, 'sort_station'),
       );
     }
+
+    // When location is off and sort is 'nearest' (default), show generic "Sort" text
+    // since "Nearest you" option is hidden from the menu when location is unavailable
+    final locationState = ref.read(locationProvider);
+    if (_currentSort == 'nearest' && !locationState.isLocationUsable) {
+      return td(ref, 'sort_sheet_title'); // Generic "Sort" label
+    }
+
     return td(ref, 'sort_$_currentSort');
   }
 

@@ -304,8 +304,11 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           vertical: AppSpacing.sm,
         ),
         onTap: () {
-          setState(() => _selectedSort = sortKey);
-          widget.onSortChanged(sortKey, _onlyOpen, widget.selectedStation);
+          // Toggle behavior: if already selected, deselect (return to 'nearest' default)
+          // Backend handles degradation to alphabetical when location is off
+          final newSort = isSelected ? 'nearest' : sortKey;
+          setState(() => _selectedSort = newSort);
+          widget.onSortChanged(newSort, _onlyOpen, widget.selectedStation);
           Navigator.pop(context);
         },
       ),
@@ -430,8 +433,15 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           vertical: AppSpacing.sm,
         ),
         onTap: () {
-          setState(() => _selectedSort = 'station');
-          widget.onSortChanged('station', _onlyOpen, stationId);
+          // Toggle behavior: if already selected, deselect (return to 'nearest' default)
+          // Backend handles degradation to alphabetical when location is off
+          if (isSelected) {
+            setState(() => _selectedSort = 'nearest');
+            widget.onSortChanged('nearest', _onlyOpen, null);
+          } else {
+            setState(() => _selectedSort = 'station');
+            widget.onSortChanged('station', _onlyOpen, stationId);
+          }
           Navigator.pop(context);
         },
       ),
