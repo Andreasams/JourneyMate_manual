@@ -98,6 +98,8 @@ Before every commit:
 - [ ] State: No FFAppState, page-local state in widgets not providers, all text via `td(ref, key)`
 - [ ] Shared sources: Check theme (app_theme.dart) and shared widgets (lib/widgets/shared/) before modifying individual pages
 - [ ] Quality: `flutter analyze` clean, no unaddressed TODOs
+- [ ] **Commit message:** Includes Problem/Solution/Tested, plus Discovered/Decision/See also when applicable (see [COMMIT_MESSAGE_TEMPLATE.md](COMMIT_MESSAGE_TEMPLATE.md))
+- [ ] **Reference docs updated:** If API/provider/design token changes, updated corresponding reference doc
 
 ---
 
@@ -105,6 +107,145 @@ Before every commit:
 
 **Format:** `feat/fix/chore/docs: short description`
 **Commit after:** Completing tasks, before risky changes, end of session
+
+---
+
+## Commit Messages: Documentation Context Protocol
+
+Your commits are reviewed by the docs worktree to maintain project documentation. Include these sections to provide documentation context.
+
+### Required Format
+
+See **[COMMIT_MESSAGE_TEMPLATE.md](COMMIT_MESSAGE_TEMPLATE.md)** for complete examples and guidance.
+
+**Required sections:**
+```
+<type>: <short description>
+
+Problem: [What issue/bug/need triggered this change]
+Solution: [How you solved it - high-level approach]
+Tested: [What testing confirmed it works]
+```
+
+**Optional sections (include when applicable):**
+```
+Discovered: [Patterns, pitfalls, or insights - THIS FEEDS DOCUMENTATION]
+Decision: [Architectural choices made and why]
+Errors: [Error messages encountered before fixing]
+See also: [Related files or docs that might need updates]
+```
+
+### Key Sections for Documentation
+
+#### Discovered: Patterns & Pitfalls
+**Include when:**
+- You hit a common pitfall or gotcha
+- You learned something non-obvious about Flutter/Riverpod/BuildShip
+- You found a best practice through trial and error
+- You discovered a pattern that applies beyond this specific change
+
+**Example:**
+```
+Discovered: Riverpod pitfall - ref.read() in callbacks gives stale data
+if state updates after callback creation. Rule: ALWAYS use ref.watch()
+in build methods for reactive state. This applies to all bottom sheets,
+dialogs, and overlays with provider-derived state.
+
+Recommended for ARCHITECTURE.md Common Pitfalls section.
+```
+
+#### Decision: Architectural Choices
+**Include when:**
+- You chose between multiple valid approaches
+- You made a trade-off (simplicity vs flexibility, performance vs maintainability)
+- You deviated from a standard pattern for good reason
+- Future developers might ask "why not do it this other way?"
+
+**Example:**
+```
+Decision: Used local state in FilterOverlay instead of creating a provider.
+Rationale: Tab selection is ephemeral UI state that doesn't need to persist
+or be accessed elsewhere. Local state is simpler and follows the "page-local
+UI state" pattern from ARCHITECTURE.md.
+
+Alternative considered: NotifierProvider, rejected because it adds complexity
+with no benefit. Revisit if tab selection needs to persist across closes.
+```
+
+#### See Also: Documentation Updates
+**Include when:**
+- You updated reference docs (API contracts, provider lists, design tokens)
+- You suspect high-level docs need updates based on your changes
+- Your change affects multiple areas requiring doc updates
+
+**Example:**
+```
+See also:
+- Updated: _reference/BUILDSHIP_API_REFERENCE.md (searchRestaurants response)
+- Review needed: ARCHITECTURE.md "State Management" section (add note about
+  ref.read() staleness pitfall?)
+- Related: lib/widgets/filter_overlay.dart:142-167
+```
+
+### Workflow Integration
+
+**Your commit message is the documentation handoff:**
+```
+Main Worktree (You) → GitHub Commit → Docs Worktree
+     (codes)           (explains)      (documents)
+```
+
+The docs worktree reads your commit messages to:
+- Extract patterns for ARCHITECTURE.md
+- Identify pitfalls for Common Pitfalls section
+- Update strategic documentation (CLAUDE.md, NAVIGATION_GUIDE.md)
+- Validate your reference doc updates
+
+**Good commit messages = Good documentation.** Invest time here.
+
+---
+
+## Documentation Update Rules
+
+### ✅ You CAN Update (Reference Docs)
+
+Update these directly when code changes:
+
+- **`_reference/BUILDSHIP_API_REFERENCE.md`** — When API contracts change
+  - Example: New fields in response, changed parameter types, new endpoints
+
+- **`_reference/PROVIDERS_REFERENCE.md`** — When adding/removing/renaming providers
+  - Example: Created new NotifierProvider, removed deprecated provider
+
+- **`DESIGN_SYSTEM_flutter.md`** — When adding new design tokens
+  - Example: Added new color to AppColors, new spacing constant to AppSpacing
+
+- **Inline code comments** — Always for complex logic
+  - Example: Explaining why a specific Riverpod pattern is used
+
+**When updating reference docs:**
+- Keep it factual (what the API/provider does)
+- Don't add architectural guidance (that's docs worktree's job)
+- Mention the update in commit "See also:" section
+
+### ❌ You CANNOT Update (Strategic Docs)
+
+These are maintained exclusively by the docs worktree:
+
+- **`CLAUDE.md`** — Session rules, critical decisions, high-level guidance
+- **`ARCHITECTURE.md`** — Pattern documentation, Common Pitfalls, architectural guidance
+- **`NAVIGATION_GUIDE.md`** — Task scenarios, reading lists
+- Any section titled "Common Pitfalls" or "Patterns"
+
+**If you think these need updates:**
+- Add "See also: [doc] might need update because [reason]" to commit message
+- The docs worktree will review and update if appropriate
+
+### 🤝 Hybrid (Design System)
+
+- **`DESIGN_SYSTEM_flutter.md`**
+  - You: Add new tokens (colors, spacing, radii) when created
+  - Docs worktree: Documents patterns, usage rules, semantic meanings
 
 ---
 
