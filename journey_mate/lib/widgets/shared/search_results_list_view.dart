@@ -919,6 +919,22 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       languageCode,
     );
 
+    // For distances < 1 km (or < 1 mi for English), show in meters/feet
+    if (distance < 1.0) {
+      if (languageCode == 'en') {
+        // Convert miles to feet (1 mile = 5280 feet), round to nearest 10
+        final feet = (distance * 5280).round();
+        final roundedFeet = ((feet / 10).round() * 10);
+        return '$roundedFeet ft.';
+      } else {
+        // Convert km to meters (1 km = 1000 m), round to nearest 10
+        final meters = (distance * 1000).round();
+        final roundedMeters = ((meters / 10).round() * 10);
+        return '$roundedMeters m.';
+      }
+    }
+
+    // For distances >= 1, use km/mi with 1 decimal
     final unit = languageCode == 'en' ? ' mi.' : ' km.';
     final result = '$distance$unit';
     return result;
