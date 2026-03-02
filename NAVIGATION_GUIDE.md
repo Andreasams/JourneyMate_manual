@@ -19,13 +19,14 @@ Each scenario below provides:
 **Estimated reading time:** 20 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Widget Patterns → Self-Contained ConsumerWidget (lines 265-310)
-2. **ARCHITECTURE.md** → Widget Patterns → Page Wrapper Pattern (lines 311-376)
-3. **ARCHITECTURE.md** → State Management → When to Use What (lines 123-131)
-4. **ARCHITECTURE.md** → State Management → Page-Local State (lines 216-259)
+1. **ARCHITECTURE.md** → Widget Patterns → Self-Contained ConsumerWidget (lines 288-333)
+2. **ARCHITECTURE.md** → Widget Patterns → Page Wrapper Pattern (lines 336-399)
+3. **ARCHITECTURE.md** → State Management → When to Use What (lines 146-154)
+4. **ARCHITECTURE.md** → State Management → Page-Local State (lines 239-282)
 5. **DESIGN_SYSTEM_flutter.md** → Quick Start (lines 16-36)
-6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13 (lines 1042-1054, 1087-1117, 1249-1300)
-7. **ARCHITECTURE.md** → Location Permission Pattern (lines 624-703) — if page needs location UI
+6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13, #14 (lines 1337-1349, 1382-1462, 1594-1650, 1653-1683)
+7. **ARCHITECTURE.md** → Location Permission Pattern (lines 973-1051) — if page needs location UI
+8. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 486-831) — if page has dismissible UI elements
 
 **Critical warnings:**
 - ⚠️ Page-local UI state (loading flags, TextControllers, ScrollControllers) → local State variables, NOT providers
@@ -33,6 +34,7 @@ Each scenario below provides:
 - ⚠️ Use `context.mounted` after async operations to prevent ref access after unmount
 - ⚠️ Save notifier with `ref.read()` BEFORE any `await` in pre-loading patterns
 - ⚠️ Use `enableLocation()` for user-facing "Enable Location" buttons (NOT `requestPermission()`)
+- ⚠️ For swipe gestures with tappable children: use `HitTestBehavior.translucent` (Pitfall #15)
 
 **Reference files:**
 - `journey_mate/lib/pages/search/search_page.dart` — Full page pattern with local state + provider reads
@@ -42,21 +44,23 @@ Each scenario below provides:
 ---
 
 ## 2. Creating a New Shared Widget
-**Estimated reading time:** 15 minutes
+**Estimated reading time:** 20 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Widget Patterns → Self-Contained ConsumerWidget (lines 265-310)
-2. **ARCHITECTURE.md** → Widget Patterns → ConsumerWidget vs ConsumerStatefulWidget (lines 377-410)
+1. **ARCHITECTURE.md** → Widget Patterns → Self-Contained ConsumerWidget (lines 288-333)
+2. **ARCHITECTURE.md** → Widget Patterns → ConsumerWidget vs ConsumerStatefulWidget (lines 402-435)
 3. **DESIGN_SYSTEM_flutter.md** → Colors (lines 39-90)
 4. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 92-120)
 5. **DESIGN_SYSTEM_flutter.md** → Typography (lines 122-180)
-6. **ARCHITECTURE.md** → Common Pitfall #8, #13 (lines 1042-1054, 1249-1300)
+6. **ARCHITECTURE.md** → Common Pitfall #8, #13, #15, #16 (lines 1337-1349, 1594-1650, 1686-1726, 1729-1768)
+7. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 486-831) — if widget has dismissible/swipeable UI
 
 **Critical warnings:**
 - ⚠️ Widgets read providers/context internally — NO infrastructure props (language, translations, dimensions)
 - ⚠️ All colors from `AppColors` (no raw hex: `Color(0xFF...)`)
 - ⚠️ All spacing from `AppSpacing` (no magic numbers: `16.0`)
 - ⚠️ All typography from `AppTypography` (no inline `TextStyle(...)`)
+- ⚠️ For swipe gestures: use adaptive thresholds (percentage, not fixed pixels) — see Pitfall #16
 
 **Reference files:**
 - `journey_mate/lib/widgets/shared/contact_us_form_widget.dart` — Self-contained form widget
@@ -214,17 +218,18 @@ Each scenario below provides:
 ---
 
 ## 9. Implementing Search/Filter Features
-**Estimated reading time:** 30 minutes
+**Estimated reading time:** 35 minutes
 
 **Read these sections:**
 1. **_reference/BUILDSHIP_API_REFERENCE.md** → SEARCH endpoint (lines 9-80)
-2. **ARCHITECTURE.md** → API Service Pattern (lines 461-517)
+2. **ARCHITECTURE.md** → API Service Pattern (lines 834-890)
 3. **_reference/PROVIDERS_REFERENCE.md** → searchStateProvider (search for "searchStateProvider")
 4. **_reference/PROVIDERS_REFERENCE.md** → filterProvider (search for "filterProvider")
-5. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 412-458)
-6. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 520-597)
-7. **ARCHITECTURE.md** → Common Pitfall #11, #13 (lines 1103-1185, 1249-1300)
-8. **ARCHITECTURE.md** → Location Permission Pattern (lines 624-703) — for search banner location UI
+5. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 437-483)
+6. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 893-970)
+7. **ARCHITECTURE.md** → Common Pitfall #11, #13, #14 (lines 1382-1462, 1594-1650, 1653-1683)
+8. **ARCHITECTURE.md** → Location Permission Pattern (lines 973-1051) — for search banner location UI
+9. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 486-831) — for dismissible location banner
 
 **Critical warnings:**
 - ⚠️ CityID is always 17 (Copenhagen) — use `AppConstants.kDefaultCityId`
@@ -235,6 +240,7 @@ Each scenario below provides:
 - ⚠️ Filter overlays that sync state on close: save notifier in `initState()`, use in `dispose()` (Pitfall #11 Variation B)
 - ⚠️ Collection callbacks: Use `Map<String, Object>{}` not `Map<String, dynamic>{}` in `orElse:` (Common Pitfall #13)
 - ⚠️ Use `enableLocation()` for search page location banner (NOT `requestPermission()`)
+- ⚠️ Location banner uses swipe-to-dismiss gesture: `HitTestBehavior.translucent` + adaptive 30% threshold (commit 58a7549)
 
 **Reference files:**
 - `journey_mate/lib/pages/search/search_page.dart` — Complete search implementation
@@ -317,6 +323,7 @@ Each scenario below provides:
 
 ## Navigation Guide Changelog
 
+**2026-03-02:** Updated Scenarios 1, 2, 9 with Swipe Gesture Patterns section (lines 486-831) and new Pitfalls #14-16 from commit 58a7549
 **2026-02-24:** Initial 12-scenario guide created with targeted reading lists
 **2026-02-24:** Updated Scenarios 6 & 9 to reference expanded Common Pitfall #11 (dispose pattern)
 **2026-02-24:** Extracted to separate file for CLAUDE.md optimization
