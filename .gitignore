@@ -53,3 +53,4 @@ credentials/
 #  - _reference/archive/MIGRATION_STATUS.md (Phase 1-7 history)
 #  - _reference/archive/PHASE7_PATTERNS.md (pattern discovery log)
 #  - codemagic.yaml (CI/CD configuration)
+.claude/settings.local.json
