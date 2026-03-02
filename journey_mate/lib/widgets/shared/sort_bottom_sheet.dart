@@ -322,7 +322,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
       final trainStations = _getTrainStations();
       final selectedStation = trainStations.firstWhere(
         (s) => s['id'] == selectedStationId,
-        orElse: () => <String, dynamic>{},
+        orElse: () => <String, Object>{},
       );
       if (selectedStation.isNotEmpty) {
         final stationName = selectedStation['name'] as String;
