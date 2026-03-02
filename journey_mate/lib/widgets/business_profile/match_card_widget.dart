@@ -243,7 +243,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
           ),
           const SizedBox(width: 4),
           Text(
-            filter['filter_name'] ?? '',
+            filter['name'] ?? '',
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -277,7 +277,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
           ),
           const SizedBox(width: 4),
           Text(
-            filter['filter_name'] ?? '',
+            filter['name'] ?? '',
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,

@@ -5,7 +5,7 @@ import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
 import '../../services/analytics_service.dart';
-import '../../widgets/shared/contact_us_form_widget.dart';
+import 'widgets/contact_us_form_widget.dart';
 
 /// Contact Us Page (Phase 7.10)
 ///

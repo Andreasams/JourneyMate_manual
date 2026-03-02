@@ -4,27 +4,27 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/app_providers.dart';
-import '../providers/search_providers.dart';
-import '../providers/filter_providers.dart';
-import '../providers/settings_providers.dart';
-import '../providers/provider_state_classes.dart';
-import '../services/api_service.dart';
-import '../services/analytics_service.dart';
-import '../services/translation_service.dart';
-import '../utils/filter_count_helper.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
-import '../theme/app_radius.dart';
-import '../theme/app_constants.dart';
-import '../widgets/shared/search_results_list_view.dart';
-import '../widgets/shared/selected_filters_btns.dart';
-import '../widgets/shared/filter_overlay_widget.dart';
-import '../widgets/shared/filter_titles_row.dart';
-import '../widgets/shared/nav_bar_widget.dart';
-import '../widgets/shared/restaurant_list_shimmer_widget.dart';
-import '../widgets/shared/sort_bottom_sheet.dart';
+import '../../providers/app_providers.dart';
+import '../../providers/search_providers.dart';
+import '../../providers/filter_providers.dart';
+import '../../providers/settings_providers.dart';
+import '../../providers/provider_state_classes.dart';
+import '../../services/api_service.dart';
+import '../../services/analytics_service.dart';
+import '../../services/translation_service.dart';
+import '../../utils/filter_count_helper.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_constants.dart';
+import '../../widgets/shared/search_results_list_view.dart';
+import '../../widgets/shared/selected_filters_btns.dart';
+import '../../widgets/shared/filter_overlay_widget.dart';
+import '../../widgets/shared/filter_titles_row.dart';
+import '../../widgets/shared/nav_bar_widget.dart';
+import '../../widgets/shared/restaurant_list_shimmer_widget.dart';
+import '../../widgets/shared/sort_bottom_sheet.dart';
 
 /// Search Page - Main restaurant discovery page
 /// Phase 7.3.2 implementation
@@ -60,6 +60,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   // User position for distance display in restaurant cards
   Position? _userPositionForDisplay;
 
+  // Banner swipe state
+  double _bannerDragOffset = 0.0;      // Current horizontal offset during drag
+  bool _isBannerDismissing = false;    // Dismiss animation in progress
+  double _bannerWidth = 0.0;           // Captured banner width for threshold calculation
+
   @override
   void initState() {
     super.initState();
@@ -70,6 +75,25 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _initialize();
     });
+  }
+
+  /// Normalizes sort value to ensure valid sort option
+  /// Falls back to 'nearest' if sort is null, empty, or invalid
+  /// This ensures "nearest you" is always the default sort, even when
+  /// location permission is not granted (UI will hide the option but
+  /// backend will still use it for sorting)
+  String _normalizeSort(String? sortValue) {
+    if (sortValue == null || sortValue.isEmpty) {
+      return 'nearest';
+    }
+
+    // Validate against allowed sort options
+    const validSorts = ['nearest', 'station', 'price_low', 'price_high'];
+    if (!validSorts.contains(sortValue)) {
+      return 'nearest';
+    }
+
+    return sortValue;
   }
 
   @override
@@ -171,7 +195,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ? 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})'
             : null,
         languageCode: languageCode,
-        sortBy: _currentSort,
+        sortBy: _normalizeSort(_currentSort),
         sortOrder: 'desc',
         onlyOpen: _onlyOpen,
         neighbourhoodId: searchState.selectedNeighbourhoodId,
@@ -394,7 +418,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         openPlacesCount: openPlacesCount,
         onSortChanged: (sortBy, onlyOpen, station) {
           setState(() {
-            _currentSort = sortBy;
+            _currentSort = _normalizeSort(sortBy);
             _onlyOpen = onlyOpen;
             _selectedStation = station;
           });
@@ -478,6 +502,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     filters: state.filtersForLanguage,
                     languageCode: Localizations.localeOf(context).languageCode,
                     translationsCache: translationsCache,
+                    onClearAll: () {
+                      final searchText = ref.read(searchStateProvider).currentSearchText;
+                      _executeSearch(searchText);
+                    },
+                    onFilterRemoved: (_) {
+                      final searchText = ref.read(searchStateProvider).currentSearchText;
+                      _executeSearch(searchText);
+                    },
                   ),
                   loading: () => const SizedBox.shrink(),
                   error: (_, _) => const SizedBox.shrink(),
@@ -679,10 +711,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               ),
             ),
             // Orange dot indicator (top-right)
+            // Negative top value accounts for 9px vertical padding to position in visual corner
             if (count > 0 && !isActive)
               Positioned(
-                top: 2,
-                right: 5,
+                top: -1,
+                right: 8,
                 child: Container(
                   width: 6,
                   height: 6,
@@ -828,6 +861,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         error: (_, _) => td(ref, 'sort_station'),
       );
     }
+
+    // When location is off and sort is 'nearest' (default), show generic "Sort" text
+    // since "Nearest you" option is hidden from the menu when location is unavailable
+    final locationState = ref.read(locationProvider);
+    if (_currentSort == 'nearest' && !locationState.isLocationUsable) {
+      return td(ref, 'sort_sheet_title'); // Generic "Sort" label
+    }
+
     return td(ref, 'sort_$_currentSort');
   }
 
@@ -855,70 +896,160 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildLocationBanner() {
-    return Stack(
-      children: [
-        // Main banner content
-        Container(
-          padding: EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.orangeBg,
-            borderRadius: BorderRadius.circular(AppRadius.filter),
-            border: Border.all(color: AppColors.orangeBorder),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.location_off,
-                color: AppColors.accent,
-                size: 20,
-              ),
-              SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  td(ref, 'location_permission_denied'),
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
-              SizedBox(width: AppSpacing.md), // Space for close button
-              TextButton(
-                onPressed: () async {
-                  final granted = await ref
-                      .read(locationProvider.notifier)
-                      .requestPermission();
-                  if (granted && mounted) {
-                    final searchText = ref.read(searchStateProvider).currentSearchText;
-                    _executeSearch(searchText);
-                  }
-                },
-                child: Text(
-                  td(ref, 'location_permission_enable'),
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Capture banner width for threshold calculation
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _bannerWidth != constraints.maxWidth) {
+            setState(() {
+              _bannerWidth = constraints.maxWidth;
+            });
+          }
+        });
 
-        // Close button (top-right corner)
-        Positioned(
-          top: 4,
-          right: 4,
-          child: IconButton(
-            icon: Icon(Icons.close, size: 18, color: AppColors.textSecondary),
-            padding: EdgeInsets.all(4),
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            onPressed: () {
-              ref.read(locationProvider.notifier).dismissBanner();
-            },
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onHorizontalDragStart: _handleBannerDragStart,
+          onHorizontalDragUpdate: _handleBannerDragUpdate,
+          onHorizontalDragEnd: _handleBannerDragEnd,
+          child: AnimatedContainer(
+            duration: Duration(
+              milliseconds: _isBannerDismissing
+                ? 250
+                : (_bannerDragOffset == 0.0 ? 300 : 0),
+            ),
+            curve: Curves.easeOut,
+            transform: Matrix4.translationValues(_bannerDragOffset, 0.0, 0.0),
+            child: Container(
+              padding: EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.orangeBg,
+                borderRadius: BorderRadius.circular(AppRadius.filter),
+                border: Border.all(color: AppColors.orangeBorder),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.location_off,
+                    color: AppColors.accent,
+                    size: 20,
+                  ),
+                  SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      td(ref, 'location_permission_denied'),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.md),
+                  TextButton(
+                    onPressed: _isBannerDismissing ? null : () async {
+                      // Use enableLocation (smart enable: dialog if first time, Settings if denied)
+                      // Same pattern as LocationStatusCard - fires analytics internally
+                      await ref
+                          .read(locationProvider.notifier)
+                          .enableLocation();
+
+                      // Check if permission was granted by reading updated state
+                      if (mounted) {
+                        final locationState = ref.read(locationProvider);
+                        if (locationState.hasPermission) {
+                          final searchText = ref.read(searchStateProvider).currentSearchText;
+                          _executeSearch(searchText);
+                        }
+                      }
+                    },
+                    child: Text(
+                      td(ref, 'location_permission_enable'),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ],
+        );
+      },
     );
+  }
+
+  void _handleBannerDragStart(DragStartDetails details) {
+    // Cancel any ongoing dismiss animation
+    if (mounted) {
+      setState(() {
+        _isBannerDismissing = false;
+      });
+    }
+  }
+
+  void _handleBannerDragUpdate(DragUpdateDetails details) {
+    // Early return if dismissing or width not captured yet
+    if (_isBannerDismissing || _bannerWidth == 0.0) return;
+
+    // Accumulate delta and clamp to prevent right-swipe (only negative values allowed)
+    if (mounted) {
+      setState(() {
+        _bannerDragOffset = (_bannerDragOffset + details.delta.dx).clamp(-_bannerWidth, 0.0);
+      });
+    }
+  }
+
+  void _handleBannerDragEnd(DragEndDetails details) {
+    // Early return if dismissing or width not captured yet
+    if (_isBannerDismissing || _bannerWidth == 0.0) return;
+
+    // Calculate threshold: 30% of banner width
+    final dismissThreshold = _bannerWidth * 0.3;
+
+    // Check velocity: fast swipe left
+    final velocity = details.velocity.pixelsPerSecond.dx;
+    final fastSwipeLeft = velocity < -500;
+
+    // Dismiss if: swipe distance > 30% OR fast swipe left
+    if (_bannerDragOffset.abs() > dismissThreshold || fastSwipeLeft) {
+      _dismissBanner();
+    } else {
+      _resetBanner();
+    }
+  }
+
+  void _dismissBanner() {
+    // Set dismissing state and slide fully off-screen
+    if (mounted) {
+      setState(() {
+        _isBannerDismissing = true;
+        _bannerDragOffset = -_bannerWidth;
+      });
+    }
+
+    // Wait for animation to complete, then persist dismissal
+    Future.delayed(const Duration(milliseconds: 250), () {
+      if (mounted) {
+        // Persist dismissal to SharedPreferences
+        ref.read(locationProvider.notifier).dismissBanner();
+
+        // Reset all state
+        setState(() {
+          _bannerDragOffset = 0.0;
+          _isBannerDismissing = false;
+          _bannerWidth = 0.0;
+        });
+      }
+    });
+  }
+
+  void _resetBanner() {
+    // Animate back to original position
+    if (mounted) {
+      setState(() {
+        _bannerDragOffset = 0.0;
+      });
+    }
   }
 
   Widget _buildContent() {

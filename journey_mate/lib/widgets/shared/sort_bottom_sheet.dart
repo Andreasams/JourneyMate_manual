@@ -117,7 +117,6 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               _buildSortOptionWithSubmenu('station', 'sort_station', widget.selectedStation),
               _buildSortOption('price_low', 'sort_price_low'),
               _buildSortOption('price_high', 'sort_price_high'),
-              _buildSortOption('newest', 'sort_newest'),
             ],
           ),
         ),
@@ -305,8 +304,11 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           vertical: AppSpacing.sm,
         ),
         onTap: () {
-          setState(() => _selectedSort = sortKey);
-          widget.onSortChanged(sortKey, _onlyOpen, widget.selectedStation);
+          // Toggle behavior: if already selected, deselect (return to 'nearest' default)
+          // Backend handles degradation to alphabetical when location is off
+          final newSort = isSelected ? 'nearest' : sortKey;
+          setState(() => _selectedSort = newSort);
+          widget.onSortChanged(newSort, _onlyOpen, widget.selectedStation);
           Navigator.pop(context);
         },
       ),
@@ -322,7 +324,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
       final trainStations = _getTrainStations();
       final selectedStation = trainStations.firstWhere(
         (s) => s['id'] == selectedStationId,
-        orElse: () => <String, dynamic>{},
+        orElse: () => <String, Object>{},
       );
       if (selectedStation.isNotEmpty) {
         final stationName = selectedStation['name'] as String;
@@ -431,8 +433,15 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           vertical: AppSpacing.sm,
         ),
         onTap: () {
-          setState(() => _selectedSort = 'station');
-          widget.onSortChanged('station', _onlyOpen, stationId);
+          // Toggle behavior: if already selected, deselect (return to 'nearest' default)
+          // Backend handles degradation to alphabetical when location is off
+          if (isSelected) {
+            setState(() => _selectedSort = 'nearest');
+            widget.onSortChanged('nearest', _onlyOpen, null);
+          } else {
+            setState(() => _selectedSort = 'station');
+            widget.onSortChanged('station', _onlyOpen, stationId);
+          }
           Navigator.pop(context);
         },
       ),

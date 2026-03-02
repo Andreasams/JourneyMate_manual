@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/business_providers.dart';
-import '../services/api_service.dart';
-import '../services/analytics_service.dart';
-import '../services/translation_service.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
-import '../widgets/shared/gallery_tab_widget.dart';
-import '../widgets/shared/image_gallery_overlay_swipable_widget.dart';
+import '../../providers/business_providers.dart';
+import '../../services/api_service.dart';
+import '../../services/analytics_service.dart';
+import '../../services/translation_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
+import '../../widgets/shared/gallery_tab_widget.dart';
+import '../../widgets/shared/image_gallery_overlay_swipable_widget.dart';
 
 /// Gallery Full Page - Dedicated full-screen photo gallery browsing
 ///

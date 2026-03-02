@@ -503,18 +503,57 @@ class LocationState {
 ### Methods
 
 ```dart
-// Check permission (async)
+// Check permission status (async)
 await ref.read(locationProvider.notifier).checkPermission();
 
-// Request permission (async)
+// Smart enable - RECOMMENDED for user-facing "Enable" buttons (async)
+// - Shows permission dialog if first time
+// - Opens Settings if previously denied
+// - Opens Settings if already granted (for management)
+await ref.read(locationProvider.notifier).enableLocation();
+
+// Request permission - only use for programmatic requests (async)
+// - Shows permission dialog
+// - Returns false if previously denied (no fallback to Settings)
 bool granted = await ref.read(locationProvider.notifier).requestPermission();
 
-// Set manually
+// Request permission only if never asked before (async)
+// Safe to call on app launch - becomes no-op after first denial
+await ref.read(locationProvider.notifier).requestPermissionIfNeeded();
+
+// Banner management
+await ref.read(locationProvider.notifier).dismissBanner();
+await ref.read(locationProvider.notifier).resetBannerDismissal();
+
+// Manual state control (rarely needed)
 ref.read(locationProvider.notifier).setPermission(true);
 
-// Open settings
+// Open app settings directly (async)
 await ref.read(locationProvider.notifier).openSettings();
 ```
+
+### Method Selection Guide
+
+**When to use each method:**
+
+- **`enableLocation()`** — User-facing "Enable Location" / "Activate" buttons
+  - ✅ Handles all cases: first request, denied, already granted
+  - ✅ Always provides a path forward (dialog or Settings)
+  - Example: LocationStatusCard, search page banner
+
+- **`requestPermission()`** — Programmatic permission requests
+  - ⚠️ Only shows dialog, fails silently if previously denied
+  - Use when you need immediate yes/no without Settings fallback
+  - Rare use case - prefer `enableLocation()` for UI elements
+
+- **`requestPermissionIfNeeded()`** — App startup permission check
+  - ✅ Safe to call on every launch
+  - Only requests if never asked before (status == denied)
+  - Becomes no-op after first denial
+
+- **`checkPermission()`** — Refresh current status
+  - Use when returning from Settings to update state
+  - Called automatically in initState of pages needing location
 
 ### Usage Example
 
@@ -527,9 +566,10 @@ class LocationButton extends ConsumerWidget {
     return ElevatedButton(
       onPressed: () async {
         if (!locationState.hasPermission) {
-          await ref.read(locationProvider.notifier).requestPermission();
+          // Use enableLocation for user-facing buttons
+          await ref.read(locationProvider.notifier).enableLocation();
         }
-        // Use location
+        // Use location after permission granted
       },
       child: Text(locationState.hasPermission ? 'Use Location' : 'Enable Location'),
     );

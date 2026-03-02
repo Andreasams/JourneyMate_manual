@@ -10,7 +10,7 @@
 
 ```bash
 git clone https://github.com/Andreasams/JourneyMate_manual.git
-cd JourneyMate-Organized
+cd JourneyMate/Main
 ```
 
 ### 2. Read the Documentation (60 minutes)

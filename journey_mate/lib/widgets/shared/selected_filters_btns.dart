@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import '../../providers/search_providers.dart';
-import '../../providers/settings_providers.dart';
-import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
-import '../../theme/app_constants.dart';
 
 /// Displays selected filters as removable buttons with a "Clear All" action.
 ///
@@ -28,6 +24,8 @@ class SelectedFiltersBtns extends ConsumerStatefulWidget {
     required this.filters,
     required this.languageCode,
     required this.translationsCache,
+    this.onClearAll,
+    this.onFilterRemoved,
   });
 
   final double? width;
@@ -35,6 +33,8 @@ class SelectedFiltersBtns extends ConsumerStatefulWidget {
   final dynamic filters;
   final String languageCode;
   final Map<String, String> translationsCache;
+  final VoidCallback? onClearAll;
+  final void Function(int filterId)? onFilterRemoved;
 
   /// Static cache for "Clear All" button widths by language
   static Map<String, double> cachedButtonWidths = {};
@@ -73,9 +73,6 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     159, // In bookstore
     588, // Other
   };
-
-  // --- Train Station Category ID ---
-  static const int _trainStationCategoryId = 7;
 
   // --- Lifecycle Methods ---
 
@@ -269,21 +266,6 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     return selectedFilters;
   }
 
-  /// Finds a filter in the flattened list by its ID
-  /// Returns null if filter not found
-  Map<String, dynamic>? _getFilterById(int filterId) {
-    if (_flattenedFilters == null) return null;
-
-    try {
-      return _flattenedFilters!.firstWhere(
-        (filter) => filter['id'] == filterId,
-        orElse: () => <String, dynamic>{},
-      );
-    } catch (e) {
-      return null;
-    }
-  }
-
   String _getDisplayName(Map<String, dynamic> filter) {
     final filterId = filter['id'] as int;
     final parentId = filter['parent_id'] as int?;
@@ -330,177 +312,43 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
 
   // --- Action Handlers ---
 
-  /// Handles individual filter removal with integrated search execution
-  Future<void> _handleFilterRemoval(int filterId) async {
-    try {
-      // Check if this is a routed ID (neighbourhood or shopping area)
-      final searchState = ref.read(searchStateProvider);
-      final notifier = ref.read(searchStateProvider.notifier);
-      final isRoutedNeighbourhood = searchState.selectedNeighbourhoodId == filterId;
-      final isRoutedShoppingArea = searchState.selectedShoppingAreaId == filterId;
+  /// Handles individual filter removal - delegates search to parent.
+  ///
+  /// Updates filter state (toggles filter or clears routed ID) and invokes
+  /// the [onFilterRemoved] callback to trigger a new search with remaining filters.
+  void _handleFilterRemoval(int filterId) {
+    // Check if this is a routed ID (neighbourhood or shopping area)
+    final searchState = ref.read(searchStateProvider);
+    final notifier = ref.read(searchStateProvider.notifier);
+    final isRoutedNeighbourhood = searchState.selectedNeighbourhoodId == filterId;
+    final isRoutedShoppingArea = searchState.selectedShoppingAreaId == filterId;
 
-      if (isRoutedNeighbourhood) {
-        // Clear the routed neighbourhood ID
-        notifier.clearRoutedNeighbourhoodId();
-      } else if (isRoutedShoppingArea) {
-        // Clear the routed shopping area ID
-        notifier.clearRoutedShoppingAreaId();
-      } else {
-        // Regular filter — toggle it off
-        notifier.toggleFilter(filterId);
-      }
-
-      // Get user location (only if location is usable)
-      Position? position;
-      final locationState = ref.read(locationProvider);
-      if (locationState.isLocationUsable) {
-        try {
-          position = await Geolocator.getCurrentPosition(
-            locationSettings: const LocationSettings(
-              accuracy: LocationAccuracy.high,
-              timeLimit: Duration(seconds: 5),
-            ),
-          );
-        } catch (_) {
-          position = null;
-        }
-      }
-
-      final userLocation = position != null
-          ? '${position.latitude},${position.longitude}'
-          : '0.0,0.0';
-
-      // Read updated filters from state
-      final currentFilters = ref.read(searchStateProvider).filtersUsedForSearch;
-
-      // Check if train station filter exists
-      final hasTrainStation =
-          currentFilters.contains(_trainStationCategoryId) ||
-              currentFilters.any((id) {
-                final filter = _getFilterById(id);
-                return filter?['parent_id'] == _trainStationCategoryId;
-              });
-
-      // Get train station ID if applicable
-      int? trainStationId;
-      if (hasTrainStation) {
-        trainStationId = currentFilters.firstWhere(
-          (id) {
-            final filter = _getFilterById(id);
-            return filter?['parent_id'] == _trainStationCategoryId;
-          },
-          orElse: () => -1,
-        );
-        if (trainStationId == -1) trainStationId = null;
-      }
-
-      // Execute search with updated filters (include routed neighbourhood/shopping area)
-      final currentSearchState = ref.read(searchStateProvider);
-      final response = await ApiService.instance.search(
-        filters: currentFilters,
-        cityId: AppConstants.kDefaultCityId.toString(),
-        searchInput: currentSearchState.currentSearchText,
-        userLocation: userLocation,
-        languageCode: widget.languageCode,
-        selectedStation: trainStationId,
-        neighbourhoodId: currentSearchState.selectedNeighbourhoodId,
-        shoppingAreaId: currentSearchState.selectedShoppingAreaId,
-      );
-
-      if (response.succeeded && context.mounted) {
-        // Extract API response fields
-        final resultCount = response.jsonBody['resultCount'] as int? ??
-            (response.jsonBody['documents'] as List?)?.length ??
-            0;
-        final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
-        final activeIds = (response.jsonBody['activeids'] as List?)
-            ?.map((e) => (e as num).toInt())
-            .toList() ?? [];
-        final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
-            ?.map((e) => (e as num).toInt())
-            .toList() ?? [];
-
-        // Update search state
-        ref.read(searchStateProvider.notifier).updateSearchResults(
-              response.jsonBody,
-              resultCount,
-              fullMatchCount,
-            );
-
-        // Update active and scoring filter IDs
-        ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
-        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
-
-        // Update filter list in state
-        ref.read(searchStateProvider.notifier).setFilters(currentFilters);
-      }
-    } catch (e) {
-      // Silent failure - errors handled by API service
+    if (isRoutedNeighbourhood) {
+      // Clear the routed neighbourhood ID
+      notifier.clearRoutedNeighbourhoodId();
+    } else if (isRoutedShoppingArea) {
+      // Clear the routed shopping area ID
+      notifier.clearRoutedShoppingAreaId();
+    } else {
+      // Regular filter — toggle it off
+      notifier.toggleFilter(filterId);
     }
+
+    // Delegate search execution to the parent (stays mounted)
+    widget.onFilterRemoved?.call(filterId);
   }
 
-  /// Handles "Clear All" with integrated search execution
-  Future<void> _handleClearAll() async {
-    try {
-      // Clear all filters in state
-      ref.read(searchStateProvider.notifier).clearFilters();
-
-      // Get user location (only if location is usable)
-      Position? position;
-      final locationState = ref.read(locationProvider);
-      if (locationState.isLocationUsable) {
-        try {
-          position = await Geolocator.getCurrentPosition(
-            locationSettings: const LocationSettings(
-              accuracy: LocationAccuracy.high,
-              timeLimit: Duration(seconds: 5),
-            ),
-          );
-        } catch (_) {
-          position = null;
-        }
-      }
-
-      final userLocation = position != null
-          ? '${position.latitude},${position.longitude}'
-          : '0.0,0.0';
-
-      // Execute search with empty filters
-      final response = await ApiService.instance.search(
-        filters: [],
-        cityId: AppConstants.kDefaultCityId.toString(),
-        searchInput: ref.read(searchStateProvider).currentSearchText,
-        userLocation: userLocation,
-        languageCode: widget.languageCode,
-      );
-
-      if (response.succeeded && context.mounted) {
-        // Extract API response fields
-        final resultCount = response.jsonBody['resultCount'] as int? ??
-            (response.jsonBody['documents'] as List?)?.length ??
-            0;
-        final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
-        final activeIds = (response.jsonBody['activeids'] as List?)
-            ?.map((e) => (e as num).toInt())
-            .toList() ?? [];
-        final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
-            ?.map((e) => (e as num).toInt())
-            .toList() ?? [];
-
-        // Update search state
-        ref.read(searchStateProvider.notifier).updateSearchResults(
-              response.jsonBody,
-              resultCount,
-              fullMatchCount,
-            );
-
-        // Update active and scoring filter IDs
-        ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
-        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
-      }
-    } catch (e) {
-      // Silent failure - errors handled by API service
-    }
+  /// Handles "Clear All" — clears state and delegates search to parent.
+  ///
+  /// Clearing filters causes this widget to unmount (the parent conditionally
+  /// renders it only when filters are active). An async API call here would
+  /// race against the unmount and fail the `context.mounted` check, so we
+  /// delegate the search execution to the parent via [onClearAll].
+  void _handleClearAll() {
+    // Clear all filters in state
+    ref.read(searchStateProvider.notifier).clearFilters();
+    // Delegate search execution to the parent (stays mounted)
+    widget.onClearAll?.call();
   }
 
   /// Get translated text for UI keys
