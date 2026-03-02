@@ -101,20 +101,28 @@ journey_mate/
 │   ├── models/                        # Data classes
 │   │   ├── latlng.dart                # Location coordinates
 │   │   └── api_call_response.dart     # API response wrapper
-│   ├── pages/                         # 12 app pages
-│   │   ├── search_page.dart           # Main restaurant discovery
-│   │   ├── business_profile_page.dart # Restaurant details
-│   │   ├── menu_full_page.dart        # Dietary filtering
-│   │   ├── gallery_full_page.dart     # Image gallery
-│   │   ├── business_information_page.dart # About restaurant
-│   │   ├── welcome_page.dart          # Onboarding
-│   │   ├── app_settings_initiate_flow_page.dart # Initial language selection
-│   │   ├── settings_and_account_page.dart # Settings hub
-│   │   ├── localization_settings_page.dart # Language/currency
-│   │   ├── location_settings_page.dart # Location sharing
-│   │   ├── contact_us_page.dart       # Contact form wrapper
-│   │   ├── feedback_page.dart         # Feedback form wrapper
-│   │   └── missing_place_page.dart    # Missing place form wrapper
+│   ├── pages/                         # 12 app pages (folder-per-page pattern)
+│   │   ├── search/
+│   │   │   └── search_page.dart       # Main restaurant discovery
+│   │   ├── business_profile/
+│   │   │   ├── business_profile_page.dart # Restaurant details (v1)
+│   │   │   └── business_profile_page_v2.dart # Restaurant details (v2)
+│   │   ├── menu_full_page/
+│   │   │   └── menu_full_page.dart    # Dietary filtering
+│   │   ├── gallery_full_page/
+│   │   │   └── gallery_full_page.dart # Image gallery
+│   │   ├── business_information/
+│   │   │   └── business_information_page.dart # About restaurant
+│   │   ├── welcome/
+│   │   │   └── welcome_page.dart      # Onboarding
+│   │   ├── app_settings_initiate_flow/
+│   │   │   └── app_settings_initiate_flow_page.dart # Initial language selection
+│   │   └── settings/                  # Settings pages (5 sub-pages)
+│   │       ├── settings_main_page.dart # Settings hub
+│   │       ├── localization_page.dart # Language/currency
+│   │       ├── contact_us_page.dart   # Contact form wrapper
+│   │       ├── share_feedback_page.dart # Feedback form wrapper
+│   │       └── missing_place_page.dart # Missing place form wrapper
 │   ├── widgets/                       # 34 shared widgets
 │   │   ├── shared/                    # Reusable components
 │   │   ├── activity_scope.dart        # Automatic engagement tracking

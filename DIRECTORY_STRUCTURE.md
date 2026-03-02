@@ -34,6 +34,43 @@ The main Flutter application codebase. This is the only production code.
 **Contents:** All Flutter app code (pages, widgets, providers, services, models)
 **Reference:** See ARCHITECTURE.md for code organization
 
+#### Folder-Per-Page Pattern
+
+All pages follow the **folder-per-page pattern** for organization:
+
+**Structure:**
+```
+lib/pages/
+├── <page_name>/
+│   └── <page_name>_page.dart
+```
+
+**Example:**
+```
+lib/pages/
+├── search/
+│   └── search_page.dart
+├── business_profile/
+│   ├── business_profile_page.dart
+│   └── business_profile_page_v2.dart  ← Page variants in same folder
+└── settings/
+    ├── settings_main_page.dart
+    ├── localization_page.dart
+    └── contact_us_page.dart  ← Related pages grouped in subfolder
+```
+
+**Benefits:**
+1. **Clear organization** — One folder per page
+2. **Co-location** — Page-specific widgets can live with page
+3. **Consistency** — All pages follow same pattern
+4. **Easier navigation** — Predictable import paths
+
+**Import paths:**
+- From `lib/router/app_router.dart`: `import '../pages/search/search_page.dart';`
+- From another page: `import '../../pages/business_profile/business_profile_page.dart';`
+
+**Migration:** Standardized March 2026 (commit 1086daf). Previously, some pages were at root (`lib/pages/search_page.dart`) while others were in folders.
+
 ---
 
 ### `/_reference/` — Documentation & References

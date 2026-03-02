@@ -33,8 +33,8 @@ Each scenario below provides:
 - ⚠️ Save notifier with `ref.read()` BEFORE any `await` in pre-loading patterns
 
 **Reference files:**
-- `journey_mate/lib/pages/search_page.dart` — Full page pattern with local state + provider reads
-- `journey_mate/lib/pages/contact_us_page.dart` — Page wrapper pattern (analytics + navigation)
+- `journey_mate/lib/pages/search/search_page.dart` — Full page pattern with local state + provider reads
+- `journey_mate/lib/pages/settings/contact_us_page.dart` — Page wrapper pattern (analytics + navigation)
 - `_reference/PROVIDERS_REFERENCE.md` — Which providers to read from pages
 
 ---
@@ -232,7 +232,7 @@ Each scenario below provides:
 - ⚠️ Collection callbacks: Use `Map<String, Object>{}` not `Map<String, dynamic>{}` in `orElse:` (Common Pitfall #13)
 
 **Reference files:**
-- `journey_mate/lib/pages/search_page.dart` — Complete search implementation
+- `journey_mate/lib/pages/search/search_page.dart` — Complete search implementation
 - `journey_mate/lib/widgets/shared/filter_overlay_widget.dart` — Filter bottom sheet
 - `journey_mate/lib/providers/search_providers.dart` — Search state management
 - `journey_mate/lib/providers/filter_providers.dart` — Filter hierarchy state
@@ -257,8 +257,8 @@ Each scenario below provides:
 - ⚠️ Image URLs come from BuildShip (Supabase Storage paths)
 
 **Reference files:**
-- `journey_mate/lib/pages/business_profile_page.dart` — Business data display
-- `journey_mate/lib/pages/menu_full_page.dart` — Menu with dietary filtering
+- `journey_mate/lib/pages/business_profile/business_profile_page.dart` — Business data display
+- `journey_mate/lib/pages/menu_full_page/menu_full_page.dart` — Menu with dietary filtering
 - `journey_mate/lib/providers/business_providers.dart` — Business state management
 
 ---
@@ -282,7 +282,7 @@ Each scenario below provides:
 **Reference files:**
 - `journey_mate/lib/services/analytics_service.dart` — AnalyticsService + EngagementTracker (469 lines)
 - `journey_mate/lib/widgets/activity_scope.dart` — Automatic engagement detection
-- `journey_mate/lib/pages/search_page.dart` — Page view tracking example (lines ~240-260)
+- `journey_mate/lib/pages/search/search_page.dart` — Page view tracking example (lines ~240-260)
 
 ---
 
