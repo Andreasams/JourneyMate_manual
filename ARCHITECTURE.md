@@ -13,25 +13,27 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 
 **Quick Navigation:**
 - **Working on a specific task?** See **CLAUDE.md → Task-Based Navigation Guide** (12 scenarios with 10-30 minute targeted reading lists)
-- **New to the project?** Read [Philosophy](#philosophy) (lines 22-64) and [State Management](#state-management) (lines 121-260) for 60-minute deep dive
+- **New to the project?** Read [Philosophy](#philosophy) (lines 39-81) and [State Management](#state-management) (lines 146-285) for 60-minute deep dive
 - **Need a specific section?** Use alphabetical index below for direct access
 
 **Section Index (Alphabetical):**
-- [Analytics Architecture](#analytics-architecture) (lines 729-803) — Fire-and-forget, ActivityScope, 36 event types
-- [API Service Pattern](#api-service-pattern) (lines 461-517) — Singleton, cache, BuildShip integration
-- [Code Quality Standards](#code-quality-standards) (lines 806-845) — Flutter analyze, design tokens, algorithms
-- [Common Pitfalls](#common-pitfalls) (lines 848-1115) — 12 anti-patterns with fixes (⚠️ read before first commit)
-- [Design Token System](#design-token-system) (lines 662-727) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 1083-1102) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 1133-1166) — CityID, favorites, filters, translations, engagement
-- [Philosophy](#philosophy) (lines 22-64) — Five core principles (design tokens, state, translations, analytics, widgets)
-- [Pre-Loading Architecture](#pre-loading-architecture) (lines 520-597) — Safe async pattern for instant page loads
-- [Project Structure](#project-structure) (lines 67-118) — File organization, 12 pages, 34 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 1106-1130) — Critical startup sequence in main.dart
-- [References](#references) (lines 1169-1178) — Links to other documentation files
-- [State Management](#state-management) (lines 121-260) — When to use what, provider catalog, Riverpod 3.x patterns
-- [Translation System](#translation-system) (lines 599-659) — Dynamic td() function, 355 keys, 7 languages
-- [Widget Patterns](#widget-patterns) (lines 263-458) — Self-contained widgets, page wrappers, bottom sheets
+- [Analytics Architecture](#analytics-architecture) (lines 1129-1203) — Fire-and-forget, ActivityScope, 36 event types
+- [API Service Pattern](#api-service-pattern) (lines 834-890) — Singleton, cache, BuildShip integration
+- [Code Quality Standards](#code-quality-standards) (lines 1206-1245) — Flutter analyze, design tokens, algorithms
+- [Common Pitfalls](#common-pitfalls) (lines 1248-1768) — 16 anti-patterns with fixes (⚠️ read before first commit)
+- [Design Token System](#design-token-system) (lines 1116-1127) — Quick lookup tables for colors, spacing, typography
+- [Documentation Philosophy](#documentation-philosophy) (lines 1771-1791) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 1821-1854) — CityID, favorites, filters, translations, engagement
+- [Location Permission Pattern](#location-permission-pattern) (lines 973-1051) — Three methods, when to use what, Settings fallback
+- [Philosophy](#philosophy) (lines 39-81) — Five core principles (design tokens, state, translations, analytics, widgets)
+- [Pre-Loading Architecture](#pre-loading-architecture) (lines 893-970) — Safe async pattern for instant page loads
+- [Project Structure](#project-structure) (lines 84-143) — File organization, 12 pages, 34 widgets, 8 providers
+- [Provider Initialization Order](#provider-initialization-order) (lines 1794-1818) — Critical startup sequence in main.dart
+- [References](#references) (lines 1857-1871) — Links to other documentation files
+- [State Management](#state-management) (lines 146-285) — When to use what, provider catalog, Riverpod 3.x patterns
+- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 486-831) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
+- [Translation System](#translation-system) (lines 1054-1113) — Dynamic td() function, 355 keys, 7 languages
+- [Widget Patterns](#widget-patterns) (lines 288-483) — Self-contained widgets, page wrappers, bottom sheets
 
 ---
 
@@ -101,20 +103,28 @@ journey_mate/
 │   ├── models/                        # Data classes
 │   │   ├── latlng.dart                # Location coordinates
 │   │   └── api_call_response.dart     # API response wrapper
-│   ├── pages/                         # 12 app pages
-│   │   ├── search_page.dart           # Main restaurant discovery
-│   │   ├── business_profile_page.dart # Restaurant details
-│   │   ├── menu_full_page.dart        # Dietary filtering
-│   │   ├── gallery_full_page.dart     # Image gallery
-│   │   ├── business_information_page.dart # About restaurant
-│   │   ├── welcome_page.dart          # Onboarding
-│   │   ├── app_settings_initiate_flow_page.dart # Initial language selection
-│   │   ├── settings_and_account_page.dart # Settings hub
-│   │   ├── localization_settings_page.dart # Language/currency
-│   │   ├── location_settings_page.dart # Location sharing
-│   │   ├── contact_us_page.dart       # Contact form wrapper
-│   │   ├── feedback_page.dart         # Feedback form wrapper
-│   │   └── missing_place_page.dart    # Missing place form wrapper
+│   ├── pages/                         # 12 app pages (folder-per-page pattern)
+│   │   ├── search/
+│   │   │   └── search_page.dart       # Main restaurant discovery
+│   │   ├── business_profile/
+│   │   │   ├── business_profile_page.dart # Restaurant details (v1)
+│   │   │   └── business_profile_page_v2.dart # Restaurant details (v2)
+│   │   ├── menu_full_page/
+│   │   │   └── menu_full_page.dart    # Dietary filtering
+│   │   ├── gallery_full_page/
+│   │   │   └── gallery_full_page.dart # Image gallery
+│   │   ├── business_information/
+│   │   │   └── business_information_page.dart # About restaurant
+│   │   ├── welcome/
+│   │   │   └── welcome_page.dart      # Onboarding
+│   │   ├── app_settings_initiate_flow/
+│   │   │   └── app_settings_initiate_flow_page.dart # Initial language selection
+│   │   └── settings/                  # Settings pages (5 sub-pages)
+│   │       ├── settings_main_page.dart # Settings hub
+│   │       ├── localization_page.dart # Language/currency
+│   │       ├── contact_us_page.dart   # Contact form wrapper
+│   │       ├── share_feedback_page.dart # Feedback form wrapper
+│   │       └── missing_place_page.dart # Missing place form wrapper
 │   ├── widgets/                       # 34 shared widgets
 │   │   ├── shared/                    # Reusable components
 │   │   ├── activity_scope.dart        # Automatic engagement tracking
@@ -474,6 +484,354 @@ Widget _buildSheetHandle() {
 
 ---
 
+## Swipe Gesture Patterns
+
+**Discovered:** Phase 8, commit `58a7549` — Search page location banner swipe-to-dismiss
+**Applies to:** Dismissible banners, cards, notifications, horizontal navigation
+
+### Pattern 1: HitTestBehavior for Nested Interactivity
+
+**Problem:** GestureDetector blocks taps on child widgets by default.
+**Solution:** Use `HitTestBehavior.translucent` to capture swipe gestures while allowing child taps.
+
+```dart
+GestureDetector(
+  behavior: HitTestBehavior.translucent, // ← Critical for nested interactivity
+  onHorizontalDragStart: _handleDragStart,
+  onHorizontalDragUpdate: _handleDragUpdate,
+  onHorizontalDragEnd: _handleDragEnd,
+  child: Container(
+    child: TextButton(
+      onPressed: () { ... }, // ← Still works! GestureArena resolves tap vs swipe
+    ),
+  ),
+)
+```
+
+**How it works:**
+- `translucent`: Captures gestures AND allows child taps
+- `deferToChild` (default): Blocks child interaction entirely
+- GestureArena automatically resolves: Short tap → button wins, horizontal drag → swipe wins
+
+**Reference:** `journey_mate/lib/pages/search/search_page.dart:881`
+
+---
+
+### Pattern 2: Dynamic Animation Duration for Responsiveness
+
+**Problem:** Fixed animation duration feels laggy during drag or sluggish on dismiss.
+**Solution:** Use 0ms during drag, medium on reset, fast on dismiss.
+
+```dart
+AnimatedContainer(
+  duration: Duration(
+    milliseconds: _isBannerDismissing
+      ? 250                           // Fast dismiss
+      : (_bannerDragOffset == 0.0 ? 300 : 0), // Smooth reset or instant drag
+  ),
+  curve: Curves.easeOut,
+  transform: Matrix4.translationValues(_bannerDragOffset, 0.0, 0.0),
+  child: ...,
+)
+```
+
+**Timing pattern:**
+- **0ms during drag:** Immediate visual feedback (no lag on finger movement)
+- **300ms on reset:** Smooth bounce-back when user releases early
+- **250ms on dismiss:** Snappy feel for committed dismissal
+
+**Why:** Responsiveness is the difference between feeling native vs web-like.
+
+---
+
+### Pattern 3: LayoutBuilder + postFrameCallback for Runtime Measurements
+
+**Problem:** Can't know widget dimensions at build time (varies by screen, orientation, font scaling).
+**Solution:** Capture dimensions after layout completes.
+
+```dart
+LayoutBuilder(
+  builder: (context, constraints) {
+    // Capture banner width for threshold calculation
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _bannerWidth != constraints.maxWidth) {
+        setState(() {
+          _bannerWidth = constraints.maxWidth;
+        });
+      }
+    });
+
+    return GestureDetector(...);
+  },
+)
+```
+
+**Why postFrameCallback:**
+- LayoutBuilder gives `constraints.maxWidth` during build
+- postFrameCallback ensures measurement after layout completes
+- Always check `mounted` before `setState` in callback
+
+**Reference:** `journey_mate/lib/pages/search/search_page.dart:870-882`
+
+---
+
+### Pattern 4: Adaptive Threshold (Percentage, Not Fixed Pixels)
+
+**Problem:** Fixed 100px threshold is too easy on iPhone SE (26%) but too hard on iPad Pro (9%).
+**Solution:** Use percentage-based threshold that scales naturally.
+
+```dart
+void _handleDragEnd(DragEndDetails details) {
+  // Calculate threshold: 30% of banner width
+  final dismissThreshold = _bannerWidth * 0.3;
+
+  // Check velocity: fast swipe left
+  final velocity = details.velocity.pixelsPerSecond.dx;
+  final fastSwipeLeft = velocity < -500;
+
+  // Dismiss if: swipe distance > 30% OR fast swipe
+  if (_bannerDragOffset.abs() > dismissThreshold || fastSwipeLeft) {
+    _dismissBanner();
+  } else {
+    _resetBanner();
+  }
+}
+```
+
+**Threshold scaling:**
+- iPhone SE (375px): 30% = 112px
+- iPad Pro (1024px): 30% = 307px
+- Velocity fallback: -500px/s (iOS standard for swipe detection)
+
+**Why:** Consistent UX across all device sizes, matches user expectations.
+
+---
+
+### Pattern 5: Clamping for Natural Gesture Constraints
+
+**Problem:** Right-swipe makes no sense for dismiss action.
+**Solution:** Clamp to negative values only.
+
+```dart
+void _handleDragUpdate(DragUpdateDetails details) {
+  if (_isBannerDismissing || _bannerWidth == 0.0) return;
+
+  setState(() {
+    _bannerDragOffset = (_bannerDragOffset + details.delta.dx).clamp(-_bannerWidth, 0.0);
+    // ← Clamp prevents right-swipe (only negative = left slide)
+  });
+}
+```
+
+**Why:** Matches iOS system swipe behaviors (no overshoot, feels natural).
+
+---
+
+### Pattern 6: Animation State Guard
+
+**Problem:** User can interact during animation, causing double-dismiss or state corruption.
+**Solution:** Guard flag prevents interaction during animation.
+
+```dart
+bool _isBannerDismissing = false;
+
+void _handleDragStart(DragStartDetails details) {
+  // Early return if dismissing
+  if (_isBannerDismissing) return;
+
+  setState(() { ... });
+}
+
+void _dismissBanner() {
+  setState(() {
+    _isBannerDismissing = true; // ← Lock state
+    _bannerDragOffset = -_bannerWidth;
+  });
+
+  // Disable buttons too
+  TextButton(
+    onPressed: _isBannerDismissing ? null : () { ... },
+  )
+}
+```
+
+**Prevents:**
+- Double-dismiss (user swipes again mid-animation)
+- Mid-animation state corruption
+- Race conditions with async operations
+
+---
+
+### Pattern 7: Mounted Checks After Async Animation
+
+**Problem:** Widget could unmount if user navigates away during dismiss animation.
+**Solution:** Always check `mounted` after `Future.delayed`.
+
+```dart
+void _dismissBanner() {
+  setState(() {
+    _isBannerDismissing = true;
+    _bannerDragOffset = -_bannerWidth;
+  });
+
+  // Wait for animation to complete
+  Future.delayed(const Duration(milliseconds: 250), () {
+    if (mounted) {  // ← Critical check
+      ref.read(locationProvider.notifier).dismissBanner();
+      setState(() {
+        _bannerDragOffset = 0.0;
+        _isBannerDismissing = false;
+      });
+    }
+  });
+}
+```
+
+**Pattern:** `Future.delayed(...)`, THEN `if (mounted)` before state changes.
+
+---
+
+### Pattern 8: Matrix4.translationValues for GPU-Accelerated Animation
+
+**Problem:** Animating `margin` or `padding` triggers layout, causing jank.
+**Solution:** Use `transform` property for GPU-accelerated animation.
+
+```dart
+AnimatedContainer(
+  transform: Matrix4.translationValues(_bannerDragOffset, 0.0, 0.0),
+  // ← GPU-accelerated, no layout recalculation
+  child: ...,
+)
+
+// NOT this (causes layout):
+// margin: EdgeInsets.only(left: _bannerDragOffset),
+```
+
+**Why:** `transform` is GPU-accelerated, smoother than margin changes which trigger layout.
+
+**Parameters:**
+- `translationValues(x, y, z)` where `x` = horizontal offset
+- Negative x = slide left, positive = slide right
+
+---
+
+### Complete Example: Dismissible Banner
+
+```dart
+class _SearchPageState extends ConsumerState<SearchPage> {
+  // Swipe state
+  double _bannerDragOffset = 0.0;
+  bool _isBannerDismissing = false;
+  double _bannerWidth = 0.0;
+
+  Widget _buildLocationBanner() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Capture width
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _bannerWidth != constraints.maxWidth) {
+            setState(() { _bannerWidth = constraints.maxWidth; });
+          }
+        });
+
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onHorizontalDragStart: (details) {
+            if (_isBannerDismissing) return;
+            // Start drag...
+          },
+          onHorizontalDragUpdate: (details) {
+            if (_isBannerDismissing || _bannerWidth == 0.0) return;
+            setState(() {
+              _bannerDragOffset = (_bannerDragOffset + details.delta.dx).clamp(-_bannerWidth, 0.0);
+            });
+          },
+          onHorizontalDragEnd: (details) {
+            if (_isBannerDismissing || _bannerWidth == 0.0) return;
+
+            final dismissThreshold = _bannerWidth * 0.3;
+            final velocity = details.velocity.pixelsPerSecond.dx;
+
+            if (_bannerDragOffset.abs() > dismissThreshold || velocity < -500) {
+              _dismissBanner();
+            } else {
+              _resetBanner();
+            }
+          },
+          child: AnimatedContainer(
+            duration: Duration(
+              milliseconds: _isBannerDismissing ? 250 : (_bannerDragOffset == 0.0 ? 300 : 0),
+            ),
+            curve: Curves.easeOut,
+            transform: Matrix4.translationValues(_bannerDragOffset, 0.0, 0.0),
+            child: Container(
+              padding: EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.orangeBg,
+                borderRadius: BorderRadius.circular(AppRadius.filter),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.location_off, color: AppColors.accent),
+                  SizedBox(width: AppSpacing.md),
+                  Expanded(child: Text(td(ref, 'location_permission_denied'))),
+                  TextButton(
+                    onPressed: _isBannerDismissing ? null : () async {
+                      await ref.read(locationProvider.notifier).enableLocation();
+                      // Check permission granted...
+                    },
+                    child: Text(td(ref, 'location_permission_enable')),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _dismissBanner() {
+    setState(() {
+      _isBannerDismissing = true;
+      _bannerDragOffset = -_bannerWidth;
+    });
+
+    Future.delayed(const Duration(milliseconds: 250), () {
+      if (mounted) {
+        ref.read(locationProvider.notifier).dismissBanner();
+        setState(() {
+          _bannerDragOffset = 0.0;
+          _isBannerDismissing = false;
+          _bannerWidth = 0.0;
+        });
+      }
+    });
+  }
+
+  void _resetBanner() {
+    setState(() { _bannerDragOffset = 0.0; });
+  }
+}
+```
+
+**Reference implementation:** `journey_mate/lib/pages/search/search_page.dart:869-1012`
+
+---
+
+### When to Use Swipe Gestures
+
+| UI Element | Use Swipe? | Why |
+|------------|-----------|-----|
+| Dismissible banner/notification | ✅ Yes | Expected mobile UX, reduces need for close button |
+| Horizontal pagination (images, tabs) | ✅ Yes | Natural gesture for sequential content |
+| Delete confirmation | ✅ Yes | iOS Mail pattern, feels native |
+| Modal dialog dismiss | ❌ No | Use close button — swipe might conflict with scroll |
+| Vertical scroll list | ❌ No | Conflicts with scroll gesture |
+| Non-dismissible content | ❌ No | Don't train users that everything swipes |
+
+---
+
 ## API Service Pattern
 
 All backend calls go through `ApiService.instance` singleton.
@@ -491,21 +849,29 @@ All backend calls go through `ApiService.instance` singleton.
 ### Usage Pattern
 
 ```dart
-// In pages or providers
+// In pages or providers (v9 API)
 final response = await ApiService.instance.search(
-  filters: [1, 2, 3],
-  filtersUsedForSearch: [1, 2, 3],
+  filters: [1, 2, 3],              // Scoring filters only (v9: no filtersUsedForSearch)
   cityId: '17',
   searchQuery: 'pizza',
-  sortOption: 'rating',
+  sortOption: 'nearest',           // v9: 'nearest', 'station', 'price_low', 'price_high'
   userLocation: '55.6761,12.5683',
   languageCode: 'da',
+  neighbourhoodId: 47,             // v9: NEW geographic filter
+  shoppingAreaId: 2001,            // v9: NEW geographic filter
+  onlyOpen: true,                  // v9: Over-fetches + local filtering
 );
 
 if (response.statusCode == 200 && response.jsonBody != null) {
   final searchResults = response.jsonBody['documents'];
-  final count = response.jsonBody['count'];
-  // Update state...
+  final fullMatchCount = response.jsonBody['fullMatchCount'];  // v9: NEW field
+  final pagination = response.jsonBody['pagination'];
+
+  // v9: Each document has 'section' field for rendering
+  for (final doc in searchResults) {
+    final section = doc['section'];  // 'fullMatch', 'partialMatch', 'others'
+    // Render section header when section value changes
+  }
 } else {
   // Handle error...
 }
@@ -610,6 +976,87 @@ Future<void> _preFetchSearchResults() async {
 5. ✅ Fail silently - Search page handles loading/error states
 
 **Why it works:** `searchStateProvider` is a `NotifierProvider` (global app-level state, like FFAppState in FlutterFlow). Updating it from a saved notifier reference works even after the originating widget unmounts.
+
+---
+
+## Location Permission Pattern
+
+JourneyMate uses three distinct permission request methods from `locationProvider`. Choosing the right method prevents silent failures and ensures users always have a path to enable location.
+
+### The Three Methods
+
+**1. `enableLocation()` — Smart Enable (RECOMMENDED)**
+```dart
+await ref.read(locationProvider.notifier).enableLocation();
+```
+- Shows permission dialog if first time
+- Opens Settings if previously denied
+- Opens Settings if already granted (for permission management)
+- **Use for:** User-facing "Enable Location" / "Activate" buttons
+
+**2. `requestPermission()` — Dialog Only (RARE)**
+```dart
+bool granted = await ref.read(locationProvider.notifier).requestPermission();
+```
+- Shows permission dialog only
+- Returns `false` if previously denied (NO Settings fallback)
+- **Use for:** Programmatic requests where you need immediate yes/no
+- **Warning:** Fails silently after user denies once — prefer `enableLocation()` for UI elements
+
+**3. `requestPermissionIfNeeded()` — Safe Startup Check**
+```dart
+await ref.read(locationProvider.notifier).requestPermissionIfNeeded();
+```
+- Only requests if status == denied (never asked before)
+- Becomes no-op after first denial
+- **Use for:** App startup permission check in `main.dart`
+
+### When to Use What
+
+| Scenario | Method | Reason |
+|----------|--------|--------|
+| "Enable Location" button on page | `enableLocation()` | Always provides path forward (dialog or Settings) |
+| Search page location banner | `enableLocation()` | User expects to activate location |
+| LocationStatusCard "Activate" button | `enableLocation()` | User-facing activation UI |
+| App startup permission check | `requestPermissionIfNeeded()` | Safe to call on every launch |
+| Programmatic permission request | `requestPermission()` | Rare — only if you need immediate yes/no |
+| Returning from Settings | `checkPermission()` | Refresh current status |
+
+### Common Pitfall: Using requestPermission() for UI Buttons
+
+❌ **Bad:**
+```dart
+// Using requestPermission() for user-facing button
+ElevatedButton(
+  onPressed: () async {
+    final granted = await ref.read(locationProvider.notifier).requestPermission();
+    // If user previously denied, this returns false silently
+    // User has no path to Settings — stuck with "Enable Location" button that does nothing
+  },
+  child: Text('Enable Location'),
+)
+```
+
+✅ **Good:**
+```dart
+// Using enableLocation() for user-facing button
+ElevatedButton(
+  onPressed: () async {
+    await ref.read(locationProvider.notifier).enableLocation();
+    // First time: shows permission dialog
+    // Previously denied: opens Settings
+    // Already granted: opens Settings for management
+    // Always provides a path forward
+  },
+  child: Text('Enable Location'),
+)
+```
+
+**Why it matters:** `requestPermission()` fails silently after the first denial. Users get stuck with an "Enable Location" button that appears broken. `enableLocation()` always provides a path forward (Settings app).
+
+**Reference:** See `_reference/PROVIDERS_REFERENCE.md` → locationProvider → Method Selection Guide for full API details.
+
+**Git history:** Pattern established in commit 50fedf3 (search banner fix), documented in commit a663a34.
 
 ---
 
@@ -1117,9 +1564,10 @@ return Scaffold(
 
 **Workflow:**
 1. ✅ **First**: Check `lib/theme/app_theme.dart` for centralized theme (ThemeData)
-2. ✅ **Second**: Check `lib/widgets/shared/` for shared components
-3. ✅ **Third**: If fix needed, modify theme/shared component (affects all pages)
-4. ✅ **Last**: Only modify individual pages if truly page-specific behavior needed
+2. ✅ **Second**: Check `lib/widgets/shared/` for shared components (used on 2+ pages)
+3. ✅ **Third**: Check `lib/pages/<section>/widgets/` for page-specific components (used on 1 page)
+4. ✅ **Fourth**: If fix needed, modify theme/shared component (affects all pages)
+5. ✅ **Last**: Only modify individual pages if truly page-specific behavior needed
 
 **Theme-controlled UI elements:**
 - AppBar: `ThemeData.appBarTheme` (backgroundColor, elevation, surfaceTintColor, scrolledUnderElevation, titleTextStyle)
@@ -1140,7 +1588,197 @@ return Scaffold(
 
 ---
 
-### Pitfall #13: Using 'filter_name' Instead of 'name' for Filter Objects
+### Pitfall #13: Map Type Variance in Collection Callbacks
+
+**What:** Using `Map<String, dynamic>` in `orElse:` callbacks when method signature expects `Map<String, Object>` causes type errors due to Dart's contravariance rules.
+
+**When it happens:**
+- `List.firstWhere()`, `lastWhere()`, `singleWhere()` with `orElse:` returning maps
+- Generic methods where type parameter has specific constraints
+- Flutter 3.41.x enforces stricter type variance than earlier versions
+
+**Error message:**
+```
+TypeError: Instance of '() => Map<String, dynamic>':
+type '() => Map<String, dynamic>' is not a subtype of
+type '(() => Map<String, Object>)?'
+```
+
+**Root cause:** `Map<String, dynamic>` is NOT a subtype of `Map<String, Object>` in Dart due to contravariance. Even though `Object` is a supertype of `dynamic` for values, the map types are invariant in their value type parameter.
+
+❌ **Bad:**
+```dart
+final selectedStation = trainStations.firstWhere(
+  (s) => s['id'] == selectedStationId,
+  orElse: () => <String, dynamic>{},  // ← Type error!
+);
+```
+
+**Why it fails:** Method signature expects `Map<String, Object> Function()?` but receives `Map<String, dynamic> Function()`. These are incompatible types.
+
+✅ **Good:**
+```dart
+final selectedStation = trainStations.firstWhere(
+  (s) => s['id'] == selectedStationId,
+  orElse: () => <String, Object>{},  // ← Matches expected type
+);
+```
+
+**Alternative (explicit cast):**
+```dart
+final selectedStation = trainStations.firstWhere(
+  (s) => s['id'] == selectedStationId,
+  orElse: () => <String, dynamic>{} as Map<String, Object>,
+);
+```
+**Note:** Cast works but triggers `unnecessary_cast` analyzer warning. Using `Map<String, Object>` directly is cleaner.
+
+**Where this applies:**
+- All `firstWhere()` / `lastWhere()` / `singleWhere()` with map-returning `orElse:`
+- Any generic method where callback return type has specific constraints
+- BuildShip response parsing where you filter/search for specific objects
+
+**Common in:** Filter widgets, search features, any code using collection lookups with fallback empty maps.
+
+**Git reference:** Commit `f5ab2a9` — "fix: resolve type error when reopening SortBottomSheet after train station selection"
+
+---
+
+### Pitfall #14: Using enableLocation() Void Return Type Incorrectly
+
+**What:** Attempting to assign `enableLocation()` result to a variable causes "use_of_void_result" analyzer error.
+
+❌ **Bad:**
+```dart
+final granted = await ref.read(locationProvider.notifier).enableLocation();
+if (granted && mounted) {
+  // This crashes! enableLocation() returns void, not bool
+  _executeSearch(...);
+}
+```
+
+**Error message:**
+```
+This expression has a type of 'void' so its value can't be used
+Error code: use_of_void_result
+```
+
+✅ **Good:**
+```dart
+// Call enableLocation, then check state
+await ref.read(locationProvider.notifier).enableLocation();
+
+if (mounted) {
+  final locationState = ref.read(locationProvider);
+  if (locationState.hasPermission) {
+    _executeSearch(...);
+  }
+}
+```
+
+**Why:** `enableLocation()` updates provider state but returns `Future<void>`. Always check method signatures in PROVIDERS_REFERENCE.md before using provider methods.
+
+**Common in:** Search page location banner, LocationStatusCard buttons, any "Activate Location" UI.
+
+**Git reference:** Commit `58a7549` — "feat(search): replace banner dismiss button with swipe-left gesture" (bug fix unrelated to swipe feature)
+
+---
+
+### Pitfall #15: Using HitTestBehavior.deferToChild with Tappable Children
+
+**What:** GestureDetector with default behavior blocks taps on child buttons when gesture handlers are present.
+
+❌ **Bad:**
+```dart
+GestureDetector(
+  // Default: HitTestBehavior.deferToChild
+  onHorizontalDragUpdate: (details) { ... },
+  child: Container(
+    child: TextButton(
+      onPressed: () { ... }, // ← NEVER FIRES! Gesture detector blocks it
+    ),
+  ),
+)
+```
+
+**Result:** Button looks tappable but doesn't respond to taps. User taps multiple times, nothing happens.
+
+✅ **Good:**
+```dart
+GestureDetector(
+  behavior: HitTestBehavior.translucent, // ← Captures gestures AND allows child taps
+  onHorizontalDragUpdate: (details) { ... },
+  child: Container(
+    child: TextButton(
+      onPressed: () { ... }, // ← Works! GestureArena resolves tap vs swipe
+    ),
+  ),
+)
+```
+
+**How it works:**
+- `translucent`: Captures gestures AND allows child taps
+- `deferToChild` (default): Blocks child interaction when gesture handlers present
+- GestureArena automatically resolves: Short tap → button wins, horizontal drag → swipe wins
+
+**Common in:** Dismissible banners with action buttons, swipeable cards with tappable content, horizontal lists with selectable items.
+
+**Git reference:** Commit `58a7549` — "feat(search): replace banner dismiss button with swipe-left gesture"
+
+---
+
+### Pitfall #16: Fixed Pixel Thresholds for Mobile Gestures
+
+**What:** Using fixed pixel values for swipe thresholds doesn't scale across device sizes.
+
+❌ **Bad:**
+```dart
+void _handleDragEnd(DragEndDetails details) {
+  if (_dragOffset.abs() > 100) { // ← Fixed 100px doesn't scale
+    _dismiss();
+  }
+}
+```
+
+**Problem:**
+- iPhone SE (375px wide): 100px = 26% of screen (too easy to dismiss accidentally)
+- iPad Pro (1024px wide): 100px = 9% of screen (feels broken, too hard to dismiss)
+
+✅ **Good:**
+```dart
+void _handleDragEnd(DragEndDetails details) {
+  // Adaptive threshold: 30% of widget width
+  final dismissThreshold = _widgetWidth * 0.3;
+
+  // Velocity fallback for quick swipes
+  final velocity = details.velocity.pixelsPerSecond.dx;
+  final fastSwipe = velocity.abs() > 500;
+
+  if (_dragOffset.abs() > dismissThreshold || fastSwipe) {
+    _dismiss();
+  } else {
+    _reset();
+  }
+}
+```
+
+**Result:**
+- iPhone SE (375px): 30% = 112px (feels right)
+- iPad Pro (1024px): 30% = 307px (scales naturally)
+- Velocity fallback: Fast flick dismisses regardless of distance
+
+**Why percentage-based:**
+- Consistent UX across all device sizes
+- Matches user expectations (same effort on small and large screens)
+- iOS standard: 30% distance OR 500px/s velocity for swipe detection
+
+**Common in:** Swipe-to-dismiss banners, horizontal pagination, swipeable cards, drawer navigation.
+
+**Git reference:** Commit `58a7549` — "feat(search): replace banner dismiss button with swipe-left gesture"
+
+---
+
+### Pitfall #17: Using 'filter_name' Instead of 'name' for Filter Objects
 
 **Problem:** Filter objects from `filterProvider.filterLookupMap` use the field `'name'`, NOT `'filter_name'`. Using the wrong field name causes filter names to appear as empty strings in UI.
 

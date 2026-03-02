@@ -514,9 +514,9 @@ Column(
 **Rationale:** Consistent visual hierarchy across all settings forms. Weight (w600 vs w300) and color (textPrimary vs textSecondary) create clear distinction without size differences. Placeholders match subtitle size for visual consistency.
 
 **Example files:**
-- `journey_mate/lib/widgets/shared/feedback_form_widget.dart`
-- `journey_mate/lib/widgets/shared/contact_us_form_widget.dart`
-- `journey_mate/lib/widgets/shared/missing_location_form_widget.dart`
+- `journey_mate/lib/pages/settings/widgets/feedback_form_widget.dart`
+- `journey_mate/lib/pages/settings/widgets/contact_us_form_widget.dart`
+- `journey_mate/lib/pages/settings/widgets/missing_location_form_widget.dart`
 - `journey_mate/lib/pages/settings/localization_page.dart`
 
 **Git references:** Commits `f20ceaf`, `9db531a` (2026-02-24)

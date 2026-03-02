@@ -8,78 +8,115 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 
 ---
 
-## 1. SEARCH (`SEARCH_SCRIPT_GENERATOR`)
+## 1. SEARCH (`SEARCH_SCRIPT_GENERATOR`) — v9
 
-**Purpose:** Full-text + filter search of restaurants via Typesense. Fetches up to 250 results from Typesense, then applies open-only filtering, match categorisation, and pagination in BuildShip JS.
+**Purpose:** Full-text + filter search of restaurants via Typesense. Returns scored, paginated results where full dietary matches rank above partial matches. Backend-driven section tagging eliminates client-side sorting.
 
 **Inputs (from Flutter):**
 | Field | Type | Notes |
 |-------|------|-------|
-| `filters` | `number[]` | Active filter IDs sent to Typesense for pre-filtering. Regular + composite (6-digit 592xxx–602xxx) separated internally. |
-| `filtersUsedForSearch` | `number[]` | User's active need IDs for match scoring. Compared against each document's `filters` array. When empty, all results treated as full match. |
-| `city_id` | `string` | Always `"17"` (Copenhagen) for now. |
-| `search_input` | `string` | Free text. Empty/null → `'*'` (match all). |
-| `userLocation` | `string` | Flutter LatLng string: `"LatLng(lat: 55.6761, lng: 12.5683)"`. `null` if no permission. |
-| `language_code` | `string` | BCP-47, e.g. `"en"`, `"da"`. |
-| `sortBy` | `string` | One of: `'nearest'`, `'station'`, `'price_low'`, `'price_high'`. Flutter default: `'nearest'`. When location unavailable, backend degrades to alphabetical (`business_name:asc`). |
-| `sortOrder` | `string` | `'asc'` or `'desc'`. Default: `'desc'`. |
-| `selectedStation` | `number` | Station filter ID (numeric). Required when `sortBy='station'`. IDs ≥ 10000 have 10000 offset applied internally. Looked up in `FilterTrainStation` by `train_station_id`. |
-| `onlyOpen` | `boolean` | When `true`, filter out closed businesses using pre-computed `open_windows`. Applied before categorisation. Default: `false`. |
-| `category` | `string` | Which match tier to return: `'full'`, `'partial'`, `'other'`, `'all'`. `'all'` returns all results as a flat sorted list without bucketing (match metadata still added per document). Default: `'all'`. |
-| `page` | `number` | 1-indexed page within the requested category. Default: `1`. |
+| `filters` | `number[]` \| `string` | Dietary/feature filter IDs to score. Backend strips train station IDs (10000–19999) and shopping area IDs (20000+) from scoring. Composite dietary menu filters (592000–602999) use `dietary_menu_filters` field for matching. |
+| `city_id` | `string` \| `null` | Always `"17"` (Copenhagen) for now. |
+| `search_input` | `string` \| `null` | Free text. Empty/null → `'*'` (match all). |
+| `userLocation` | `string` \| `null` | Flutter LatLng string: `"LatLng(lat: 55.6761, lng: 12.5683)"`. `null` if no permission. |
+| `language_code` | `string` | BCP-47, e.g. `"en"`, `"da"`. Default: `"da"`. 15 languages supported. |
+| `sortBy` | `string` | One of: `'nearest'`, `'station'`, `'price_low'`, `'price_high'`. **Flutter default: `'nearest'`**. When location unavailable, backend degrades to alphabetical (`business_name:asc`). |
+| `sortOrder` | `string` | `'asc'` or `'desc'`. Default: `'desc'`. (Not used in v9; kept for API compatibility.) |
+| `selectedStation` | `number` \| `null` | Station filter ID (numeric). Required when `sortBy='station'`. IDs ≥ 10000 have 10000 offset applied internally. Looked up in `FilterTrainStation` by `train_station_id`. |
+| `onlyOpen` | `boolean` \| `string` | When `true`, filter out closed businesses using pre-computed `open_windows`. **Over-fetches** (3× pageSize, up to 5 rounds) and filters locally in Copenhagen timezone. `totalPages` becomes `-1`; Flutter uses `hasMore` instead. Default: `false`. |
+| `page` | `number` | 1-indexed page. Default: `1`. |
 | `pageSize` | `number` | Results per page. Recommended: `20`. Default: `20`. |
+| `neighbourhood_id` | `number` \| `number[]` \| `null` | Filter by neighbourhood(s). Handles: number, array, string ("47"), JSON array ("[47]"), 0 (ignored). Zero values filtered out. |
+| `shopping_area_id` | `number` \| `null` | Filter by shopping area. Zero values ignored. |
 
 > BuildShip injects `host`, `apiKey`, `supabaseUrl`, `supabaseKey` from environment — Flutter never sends these.
 
 **Sort options:**
 | `sortBy` | Logic |
 |----------|-------|
-| `'nearest'` | Distance from `userLocation` ASC. **Flutter default.** When `userLocation` is `null` (location unavailable), backend falls back to alphabetical (`business_name:asc`). |
-| `'station'` | Distance from `selectedStation` coords ASC (looks up lat/lng from `FilterTrainStation` by `train_station_id`) |
+| `'nearest'` | Distance from `userLocation` ASC. **Flutter default.** When `userLocation` is `null` (location unavailable), backend falls back to alphabetical (`business_name:asc`). Typesense `_eval()` scoring ranks full matches above partials regardless of sort. |
+| `'station'` | Distance from `selectedStation` coords ASC (looks up lat/lng from `FilterTrainStation` by `train_station_id`). Falls back to `userLocation` if station lookup fails. |
 | `'price_low'` | `price_range_min` ASC |
 | `'price_high'` | `price_range_max` DESC |
 
 **Note:** Unrecognized `sortBy` values fall through to alphabetical (`business_name:asc`).
 
-**Match categorisation:**
-- `'full'`: `matchCount === filtersUsedForSearch.length` (all needs met)
-- `'partial'`: exactly 1 need missing
-- `'other'`: 2+ needs missing
-- When `filtersUsedForSearch` is empty OR `category === 'all'`: skip bucketing — all results returned as flat list with match metadata; Flutter renders section headers client-side
+**Scoring System (Typesense `_eval()`):**
+
+v9 uses a priority-based scoring system to rank restaurants:
+- **10,000 pts bonus** if ALL scoring filters match (full match)
+- **Per-filter points** by safety-critical priority group:
+  - P1 (5000 pts): parentId 94 — ids [466, 173, 174] (most critical dietary needs)
+  - P2 (4000 pts): parentId 93 — ids [177]
+  - P3 (3000 pts): parentId 91 — ids [553–577] (15 items)
+  - P4 (2000 pts): parentId 95 — ids [175, 176]
+  - P5 (1500 pts): parentId 96 — ids [178]
+  - P6 (1000 pts): parentIds 90, 92, 97 — ids [179, 180, 181, 182, 183]
+- **Non-dietary filters:** 200 pts each
+
+**Result:** Full matches (all filters present) always rank above partial matches, regardless of which filters are missing. Within partial matches, results with higher-priority filters rank higher.
+
+**Section Tagging (backend-driven):**
+
+Each document includes a `section` field for client-side rendering:
+- **`fullMatch`**: All scoring filters present
+- **`partialMatch`**: Exactly 1 scoring filter missing AND at least 1 matched
+- **`others`**: 2+ filters missing, or 0 matched
+
+Documents arrive **pre-sorted** by Typesense `_eval()` score (full → partial → others). Flutter renders cards top-to-bottom and inserts section headers when `section` value changes. **No client-side sorting or grouping** needed.
+
+**ID Ranges:**
+- **1–9999**: Standard filters (dietary, features)
+- **10000–19999**: Train stations (offset by 10000) — stripped from scoring
+- **20000+**: Shopping areas — stripped from scoring
+- **592000–602999**: Composite dietary menu filters → use `dietary_menu_filters` field for matching
 
 **Output:**
 ```json
 {
   "documents": [...],
-  "activeids": [1, 2, 3],
   "scoringFilterIds": [466, 83],
+  "activeids": [1, 2, 3],
   "resultCount": 42,
+  "fullMatchCount": 12,
   "pagination": {
     "currentPage": 1,
     "totalPages": 3,
     "totalResults": 42,
-    "hasMore": true,
-    "nextCategory": null
+    "hasMore": true
   }
 }
 ```
-`nextCategory` is non-null only when a specific category is exhausted: `'full'→'partial'`, `'partial'→'other'`, `'other'→null`. Always `null` when `category === 'all'`.
+
+**Output fields:**
+- **`documents`**: Array of restaurant objects (see below)
+- **`scoringFilterIds`**: Echo of cleaned filter IDs used for scoring (train station/shopping area IDs stripped)
+- **`activeids`**: All filter IDs present in result set (from Typesense facets, for filter chips)
+- **`resultCount`**: Total Typesense matches (pre open-now filtering)
+- **`fullMatchCount`**: Global count of restaurants matching ALL scoring filters (separate `per_page=0` query with hard constraints)
+- **`pagination`**:
+  - `currentPage`: 1-indexed
+  - `totalPages`: Number of pages (or `-1` when `onlyOpen=true`)
+  - `totalResults`: Total results (same as `resultCount`)
+  - `hasMore`: Boolean indicating more results available
 
 **Each document includes:**
 - `business_id`, `business_name`, `street`, `neighbourhood_name`, `postal_code`, `postal_city`
 - `business_type` (normalised from `business_type_{lang}`)
 - `tags` (normalised from `tags_{lang}`), `tags_en`, `tags_da` (always retained)
-- `filters: number[]` — filter IDs on this business
-- `dietary_menu_filters: string[]` — composite dietary filter IDs
+- `filters: number[]` — regular filter IDs on this business
+- `dietary_menu_filters: number[]` — composite dietary filter IDs (592000–602999)
 - `city_id`, `is_active`, `latitude`, `longitude`, `location`
 - `profile_picture_url`
 - `price_range_min`, `price_range_max`, `price_range`
 - `created_at`, `last_reviewed_at`
-- `brand_id`, `company_id`, `typesense_id`, `business_type_id`
-- `open_windows: [{day, open, close}]` — pre-computed hours windows (travels with document, not indexed by Typesense)
-- `matchCount: number` — how many of `filtersUsedForSearch` this business has
-- `matchedFilters: number[]` — which filter IDs matched
-- `missedFilters: number[]` — which filter IDs are absent
+- `brand_id`, `company_id`, `typesense_id`, `business_type_id`, `gallery_images`
+- `neighbourhood_id`, `shopping_area_id`
+- `open_windows: [{day, open, close}]` — pre-computed hours windows (included only when `onlyOpen=true`)
+- **`matchCount: number`** — how many of `scoringFilterIds` this business has
+- **`matchedFilters: number[]`** — which filter IDs matched
+- **`missedFilters: number[]`** — which filter IDs are absent
+- **`section: string`** — `"fullMatch"`, `"partialMatch"`, or `"others"` (for client-side rendering)
 
 ---
 
@@ -513,7 +550,7 @@ Non-200 → error state shown with retry.
 
 | # | Endpoint | Flutter inputs | Key output fields |
 |---|----------|---------------|-------------------|
-| 1 | SEARCH | filters, filtersUsedForSearch, city_id, search_input, userLocation, language_code, sortBy, sortOrder, selectedStation, onlyOpen, category, page, pageSize | documents (with matchCount/matchedFilters/missedFilters), activeids, scoringFilterIds, resultCount, pagination |
+| 1 | SEARCH (v9) | filters, city_id, search_input, userLocation, language_code, sortBy, selectedStation, onlyOpen, page, pageSize, neighbourhood_id, shopping_area_id | documents (with matchCount/matchedFilters/missedFilters/section), activeids, scoringFilterIds, resultCount, fullMatchCount, pagination |
 | 2 | GET_BUSINESS_PROFILE | businessId, language_code | business_profile (incl. filters), gallery, menu_structure, exchange_rate, business_hours, open_windows |
 | 3 | GET_RESTAURANT_MENU | businessId, languageCode | menu_items, categories, availableRestrictions/Preferences |
 | 4 | GET_FILTERS | language_code, city_id | filters (tree), foodDrinkTypes |
