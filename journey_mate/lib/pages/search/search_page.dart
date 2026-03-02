@@ -406,7 +406,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   void _openSortBottomSheet() {
     final searchState = ref.read(searchStateProvider);
-    final openPlacesCount = _onlyOpen ? searchState.searchResultsCount : 0;
+
+    // Use same count logic as page title: fullMatchCount when scoring filters exist
+    final hasActiveFiltersOrSearch =
+        searchState.filtersUsedForSearch.isNotEmpty ||
+        searchState.selectedNeighbourhoodId != null ||
+        searchState.selectedShoppingAreaId != null ||
+        searchState.currentSearchText.isNotEmpty;
+
+    final count = (hasActiveFiltersOrSearch && searchState.scoringFilterIds.isNotEmpty)
+        ? searchState.fullMatchCount
+        : searchState.searchResultsCount;
+
+    final openPlacesCount = _onlyOpen ? count : 0;
 
     showModalBottomSheet(
       context: context,
