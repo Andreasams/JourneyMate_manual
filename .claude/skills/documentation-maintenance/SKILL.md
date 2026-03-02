@@ -125,7 +125,7 @@ Provide structured report:
 - **Documentation files:** CLAUDE.md, ARCHITECTURE.md, DESIGN_SYSTEM_flutter.md, CONTRIBUTING.md, _reference/PROVIDERS_REFERENCE.md, _reference/BUILDSHIP_API_REFERENCE.md
 - **Current Pitfalls:** 11 documented (check ARCHITECTURE.md Common Pitfalls section)
 - **Navigation Scenarios:** 12 (check CLAUDE.md Task-Based Navigation Guide)
-- **Working Directory:** C:\Users\Rikke\Documents\JourneyMate-Organized\
+- **Working Directory:** C:\Users\Rikke\Documents\JourneyMate\Main\
 
 ---
 

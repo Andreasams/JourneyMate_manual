@@ -11,7 +11,7 @@ This document describes the organization of the JourneyMate project directory.
 The root contains only essential documentation and configuration files:
 
 ```
-C:\Users\Rikke\Documents\JourneyMate-Organized\
+C:\Users\Rikke\Documents\JourneyMate\Main\
 ├── CLAUDE.md                      # Main instructions for Claude Code sessions
 ├── ARCHITECTURE.md                # App architecture and patterns
 ├── DESIGN_SYSTEM_flutter.md       # Design tokens (colors, spacing, typography)
