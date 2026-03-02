@@ -892,9 +892,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               SizedBox(width: AppSpacing.md), // Space for close button
               TextButton(
                 onPressed: () async {
+                  // Use enableLocation (smart enable: dialog if first time, Settings if denied)
+                  // Same pattern as LocationStatusCard - fires analytics internally
                   final granted = await ref
                       .read(locationProvider.notifier)
-                      .requestPermission();
+                      .enableLocation();
                   if (granted && mounted) {
                     final searchText = ref.read(searchStateProvider).currentSearchText;
                     _executeSearch(searchText);
