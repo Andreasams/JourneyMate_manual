@@ -77,6 +77,25 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     });
   }
 
+  /// Normalizes sort value to ensure valid sort option
+  /// Falls back to 'nearest' if sort is null, empty, or invalid
+  /// This ensures "nearest you" is always the default sort, even when
+  /// location permission is not granted (UI will hide the option but
+  /// backend will still use it for sorting)
+  String _normalizeSort(String? sortValue) {
+    if (sortValue == null || sortValue.isEmpty) {
+      return 'nearest';
+    }
+
+    // Validate against allowed sort options
+    const validSorts = ['nearest', 'station', 'price_low', 'price_high'];
+    if (!validSorts.contains(sortValue)) {
+      return 'nearest';
+    }
+
+    return sortValue;
+  }
+
   @override
   void dispose() {
     _trackPageView();
@@ -176,7 +195,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ? 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})'
             : null,
         languageCode: languageCode,
-        sortBy: _currentSort,
+        sortBy: _normalizeSort(_currentSort),
         sortOrder: 'desc',
         onlyOpen: _onlyOpen,
         neighbourhoodId: searchState.selectedNeighbourhoodId,
@@ -399,7 +418,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         openPlacesCount: openPlacesCount,
         onSortChanged: (sortBy, onlyOpen, station) {
           setState(() {
-            _currentSort = sortBy;
+            _currentSort = _normalizeSort(sortBy);
             _onlyOpen = onlyOpen;
             _selectedStation = station;
           });
