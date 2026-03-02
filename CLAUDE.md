@@ -97,15 +97,34 @@ This worktree exists to maintain documentation separately from code development.
 
 ### Division of Responsibility
 
+**CRITICAL RULE: ALL documentation is exclusive to docs worktree. Main worktree NEVER touches .md files.**
+
 | Document Type | Main Worktree | Docs Worktree |
 |---------------|---------------|---------------|
-| **Reference docs** (API contracts, provider lists) | ✅ Updates directly | ✅ Reviews for accuracy |
-| **Strategic docs** (CLAUDE.md, ARCHITECTURE.md) | ❌ Never touches | ✅ Maintains exclusively |
-| **Design tokens** (DESIGN_SYSTEM_flutter.md) | ✅ Adds new tokens | ✅ Documents patterns/usage |
-| **Commit messages** | ✅ Writes with "Discovered:" sections | ✅ Reads to extract insights |
+| **ALL .md files** (reference docs, strategic docs, design system, etc.) | ❌ **NEVER touches** | ✅ Maintains exclusively |
+| **Commit messages** | ✅ Writes with "Discovered:" + "See also:" sections | ✅ Reads to extract insights and identify docs needing updates |
+| **Code (.dart files)** | ✅ Writes code | ❌ Never touches (read-only reference) |
 
-**Main worktree's job:** Code + commit context + update reference docs
-**Docs worktree's job:** Extract patterns → Update strategic docs → Maintain consistency
+**Why this matters:** If both worktrees can modify documentation, merge conflicts are inevitable. Single source of truth = clean workflow.
+
+**Main worktree's job:**
+- Write code
+- Write detailed commit messages with "Discovered:", "Decision:", and "See also:" sections
+- NEVER modify .md files (not even reference docs!)
+
+**Docs worktree's job:**
+- Read commit messages from main branch
+- Update ALL documentation (reference docs, strategic docs, design system, etc.)
+- Maintain cross-references and consistency
+- Create separate documentation PRs
+
+**When main worktree discovers documentation needs updating:**
+Use "See also:" section in commit message to flag which docs need review. Example:
+```
+See also:
+- Needs update: _reference/BUILDSHIP_API_REFERENCE.md (new field: match_score)
+- Needs update: ARCHITECTURE.md (add pitfall about ref.read() staleness)
+```
 
 ### 1. Sync with Main Branch
 
