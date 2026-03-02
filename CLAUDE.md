@@ -86,6 +86,27 @@ See **[NAVIGATION_GUIDE.md](NAVIGATION_GUIDE.md)** for 12 scenarios with targete
 
 This worktree exists to maintain documentation separately from code development.
 
+### Communication Protocol: Main Worktree → Docs Worktree
+
+**The commit message is your documentation handoff.** Main worktree commits include:
+- **Discovered:** Patterns and pitfalls found during implementation
+- **Decision:** Architectural choices made
+- **See also:** Flags for docs that might need updates
+
+**See [COMMIT_MESSAGE_TEMPLATE.md](COMMIT_MESSAGE_TEMPLATE.md) for complete format.**
+
+### Division of Responsibility
+
+| Document Type | Main Worktree | Docs Worktree |
+|---------------|---------------|---------------|
+| **Reference docs** (API contracts, provider lists) | ✅ Updates directly | ✅ Reviews for accuracy |
+| **Strategic docs** (CLAUDE.md, ARCHITECTURE.md) | ❌ Never touches | ✅ Maintains exclusively |
+| **Design tokens** (DESIGN_SYSTEM_flutter.md) | ✅ Adds new tokens | ✅ Documents patterns/usage |
+| **Commit messages** | ✅ Writes with "Discovered:" sections | ✅ Reads to extract insights |
+
+**Main worktree's job:** Code + commit context + update reference docs
+**Docs worktree's job:** Extract patterns → Update strategic docs → Maintain consistency
+
 ### 1. Sync with Main Branch
 
 Before starting documentation work:
@@ -137,10 +158,17 @@ Invoke the skill with commit references:
 4. Identify affected navigation guide scenarios
 5. Prepare commit message
 
+**Key: Read the Commit Message**
+Main worktree commits follow [COMMIT_MESSAGE_TEMPLATE.md](COMMIT_MESSAGE_TEMPLATE.md) format:
+- **Discovered:** section → Becomes Common Pitfalls in ARCHITECTURE.md
+- **Decision:** section → Becomes architectural guidance
+- **See also:** section → Tells you what docs to review
+
 **Adapted for this worktree:**
 - You're documenting others' commits, not your own work
 - Include commit hash from main branch in all documentation
 - Reference main worktree file paths when needed
+- Look for "Discovered:" and "Decision:" sections in commit messages
 
 ### 4. Update Documentation Files
 
@@ -339,6 +367,8 @@ The `/documentation-maintenance` skill was originally designed for documenting y
 Not every commit needs documentation:
 - ✅ **DO document:** New patterns, common pitfalls, architecture changes, product decisions
 - ❌ **SKIP:** Trivial changes (typos, formatting), already-documented patterns, low-level implementation details
+
+**Signal: Look for "Discovered:" or "Decision:" sections in commit message.** If the main worktree included these sections (per [COMMIT_MESSAGE_TEMPLATE.md](COMMIT_MESSAGE_TEMPLATE.md)), the commit needs documentation. If these sections are absent and the change is straightforward, it's likely already documented or not significant enough.
 
 **Use the skill's assessment to determine if documentation is needed.**
 
