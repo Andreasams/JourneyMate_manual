@@ -294,13 +294,20 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           selectedTitleID: _mapTabIndexToTitleId(_activeFilterTab),
                           activeFilterIds: searchState.activeFilterIds,
                           selectedFilterIds: searchState.filtersUsedForSearch,
-                          onSearchCompleted: (activeIds, count) async {
-                            // Store active IDs from overlay's internal search
+                          onSearchCompleted: (activeIds, count, fullMatchCount, documents) async {
+                            // Update active filter IDs
                             ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
+
+                            // Update search results with restaurant documents
+                            ref.read(searchStateProvider.notifier).updateSearchResults(
+                              documents,
+                              count,
+                              fullMatchCount,
+                            );
 
                             if (mounted) {
                               setState(() {
-                                // Trigger rebuild after filter change
+                                // Trigger rebuild with new search results
                               });
                             }
                           },

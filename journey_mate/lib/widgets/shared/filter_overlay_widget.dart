@@ -74,8 +74,12 @@ class FilterOverlayWidget extends ConsumerStatefulWidget {
   final int selectedTitleID;
   final List<int> activeFilterIds;
   final List<int>? selectedFilterIds;
-  final Future Function(List<int> activeFilterIds, int resultCount)
-      onSearchCompleted;
+  final Future Function(
+    List<int> activeFilterIds,
+    int resultCount,
+    int fullMatchCount,
+    dynamic documents,
+  ) onSearchCompleted;
   final Future Function(List<int>? selectedFilterIds)? onCloseOverlay;
   final String? searchTerm;
   final bool mayLoad;
@@ -865,6 +869,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         // Extract full match count from API response
         final fullMatchCount = (result.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
 
+        // Extract restaurant documents from API response
+        final documents = result.jsonBody['documents'];
+
         // Extract scoring filter IDs
         final scoringFilterIds = <int>[];
         final rawScoringFilters = result.jsonBody['scoringFilterIds'];
@@ -884,7 +891,12 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           });
         }
 
-        await widget.onSearchCompleted(activeFilterIds, resultCount);
+        await widget.onSearchCompleted(
+          activeFilterIds,
+          resultCount,
+          fullMatchCount,
+          documents,
+        );
       }
     } catch (e) {
       debugPrint('❌ FilterOverlay: Error in _executeSearchAndTrackAnalytics: $e');
