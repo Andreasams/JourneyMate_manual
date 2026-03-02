@@ -692,10 +692,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               ),
             ),
             // Orange dot indicator (top-right)
+            // Negative top value accounts for 9px vertical padding to position in visual corner
             if (count > 0 && !isActive)
               Positioned(
-                top: 2,
-                right: 2,
+                top: -1,
+                right: 8,
                 child: Container(
                   width: 6,
                   height: 6,
