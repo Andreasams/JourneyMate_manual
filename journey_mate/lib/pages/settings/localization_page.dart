@@ -10,6 +10,7 @@ import '../../services/analytics_service.dart';
 import '../../providers/settings_providers.dart';
 import '../../widgets/shared/language_selector_button.dart';
 import '../../widgets/shared/currency_selector_button.dart';
+import '../../widgets/shared/distance_unit_selector_button.dart';
 import 'widgets/location_status_card.dart';
 
 /// Localization Page (Phase 7.8)
@@ -202,7 +203,30 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
               style: AppTypography.helper,
             ),
 
-            const SizedBox(height: AppSpacing.xxl), // Reduced from xxxl (32) to xxl (24)
+            const SizedBox(height: AppSpacing.xxl), // 24px gap
+
+            // Distance Unit Section (ONLY visible when language is English)
+            if (currentLanguage == 'en') ...[
+              Text(
+                td(ref, 'distance_unit_title'), // "Distance Units"
+                style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                td(ref, 'distance_unit_description'),
+                style: GoogleFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              const DistanceUnitSelectorButton(
+                width: double.infinity,
+                height: 50.0,
+              ),
+              const SizedBox(height: AppSpacing.xxl), // 24px gap before Location
+            ],
 
             // Location Section
             Text(
