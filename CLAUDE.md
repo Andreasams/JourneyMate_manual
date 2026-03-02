@@ -249,6 +249,11 @@ Use these patterns to:
 - **ActivityScope** handles engagement tracking automatically
 - **NEVER call** `markUserEngaged()` manually (pattern removed from FlutterFlow)
 
+### Location Permissions
+- **User-facing buttons:** `enableLocation()` (shows dialog or opens Settings)
+- **App startup:** `requestPermissionIfNeeded()` (safe to call on every launch)
+- **See ARCHITECTURE.md** → Location Permission Pattern (lines 624-703) for full guidance
+
 ### Widget Patterns
 - **Self-contained widgets:** Read providers/context internally (NO infrastructure props)
 - **ConsumerWidget:** Pure display (no local state)

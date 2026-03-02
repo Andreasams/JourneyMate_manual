@@ -17,20 +17,21 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - **Need a specific section?** Use alphabetical index below for direct access
 
 **Section Index (Alphabetical):**
-- [Analytics Architecture](#analytics-architecture) (lines 729-803) — Fire-and-forget, ActivityScope, 36 event types
+- [Analytics Architecture](#analytics-architecture) (lines 834-908) — Fire-and-forget, ActivityScope, 36 event types
 - [API Service Pattern](#api-service-pattern) (lines 461-517) — Singleton, cache, BuildShip integration
-- [Code Quality Standards](#code-quality-standards) (lines 806-845) — Flutter analyze, design tokens, algorithms
-- [Common Pitfalls](#common-pitfalls) (lines 848-1198) — 13 anti-patterns with fixes (⚠️ read before first commit)
-- [Design Token System](#design-token-system) (lines 662-727) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 1083-1102) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 1133-1166) — CityID, favorites, filters, translations, engagement
+- [Code Quality Standards](#code-quality-standards) (lines 911-950) — Flutter analyze, design tokens, algorithms
+- [Common Pitfalls](#common-pitfalls) (lines 953-1303) — 13 anti-patterns with fixes (⚠️ read before first commit)
+- [Design Token System](#design-token-system) (lines 767-832) — Quick lookup tables for colors, spacing, typography
+- [Documentation Philosophy](#documentation-philosophy) (lines 1188-1207) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 1238-1271) — CityID, favorites, filters, translations, engagement
+- [Location Permission Pattern](#location-permission-pattern) (lines 624-703) — Three methods, when to use what, Settings fallback
 - [Philosophy](#philosophy) (lines 22-64) — Five core principles (design tokens, state, translations, analytics, widgets)
 - [Pre-Loading Architecture](#pre-loading-architecture) (lines 520-597) — Safe async pattern for instant page loads
 - [Project Structure](#project-structure) (lines 67-118) — File organization, 12 pages, 34 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 1106-1130) — Critical startup sequence in main.dart
-- [References](#references) (lines 1169-1178) — Links to other documentation files
+- [Provider Initialization Order](#provider-initialization-order) (lines 1211-1235) — Critical startup sequence in main.dart
+- [References](#references) (lines 1274-1283) — Links to other documentation files
 - [State Management](#state-management) (lines 121-260) — When to use what, provider catalog, Riverpod 3.x patterns
-- [Translation System](#translation-system) (lines 599-659) — Dynamic td() function, 355 keys, 7 languages
+- [Translation System](#translation-system) (lines 704-764) — Dynamic td() function, 355 keys, 7 languages
 - [Widget Patterns](#widget-patterns) (lines 263-458) — Self-contained widgets, page wrappers, bottom sheets
 
 ---
@@ -618,6 +619,87 @@ Future<void> _preFetchSearchResults() async {
 5. ✅ Fail silently - Search page handles loading/error states
 
 **Why it works:** `searchStateProvider` is a `NotifierProvider` (global app-level state, like FFAppState in FlutterFlow). Updating it from a saved notifier reference works even after the originating widget unmounts.
+
+---
+
+## Location Permission Pattern
+
+JourneyMate uses three distinct permission request methods from `locationProvider`. Choosing the right method prevents silent failures and ensures users always have a path to enable location.
+
+### The Three Methods
+
+**1. `enableLocation()` — Smart Enable (RECOMMENDED)**
+```dart
+await ref.read(locationProvider.notifier).enableLocation();
+```
+- Shows permission dialog if first time
+- Opens Settings if previously denied
+- Opens Settings if already granted (for permission management)
+- **Use for:** User-facing "Enable Location" / "Activate" buttons
+
+**2. `requestPermission()` — Dialog Only (RARE)**
+```dart
+bool granted = await ref.read(locationProvider.notifier).requestPermission();
+```
+- Shows permission dialog only
+- Returns `false` if previously denied (NO Settings fallback)
+- **Use for:** Programmatic requests where you need immediate yes/no
+- **Warning:** Fails silently after user denies once — prefer `enableLocation()` for UI elements
+
+**3. `requestPermissionIfNeeded()` — Safe Startup Check**
+```dart
+await ref.read(locationProvider.notifier).requestPermissionIfNeeded();
+```
+- Only requests if status == denied (never asked before)
+- Becomes no-op after first denial
+- **Use for:** App startup permission check in `main.dart`
+
+### When to Use What
+
+| Scenario | Method | Reason |
+|----------|--------|--------|
+| "Enable Location" button on page | `enableLocation()` | Always provides path forward (dialog or Settings) |
+| Search page location banner | `enableLocation()` | User expects to activate location |
+| LocationStatusCard "Activate" button | `enableLocation()` | User-facing activation UI |
+| App startup permission check | `requestPermissionIfNeeded()` | Safe to call on every launch |
+| Programmatic permission request | `requestPermission()` | Rare — only if you need immediate yes/no |
+| Returning from Settings | `checkPermission()` | Refresh current status |
+
+### Common Pitfall: Using requestPermission() for UI Buttons
+
+❌ **Bad:**
+```dart
+// Using requestPermission() for user-facing button
+ElevatedButton(
+  onPressed: () async {
+    final granted = await ref.read(locationProvider.notifier).requestPermission();
+    // If user previously denied, this returns false silently
+    // User has no path to Settings — stuck with "Enable Location" button that does nothing
+  },
+  child: Text('Enable Location'),
+)
+```
+
+✅ **Good:**
+```dart
+// Using enableLocation() for user-facing button
+ElevatedButton(
+  onPressed: () async {
+    await ref.read(locationProvider.notifier).enableLocation();
+    // First time: shows permission dialog
+    // Previously denied: opens Settings
+    // Already granted: opens Settings for management
+    // Always provides a path forward
+  },
+  child: Text('Enable Location'),
+)
+```
+
+**Why it matters:** `requestPermission()` fails silently after the first denial. Users get stuck with an "Enable Location" button that appears broken. `enableLocation()` always provides a path forward (Settings app).
+
+**Reference:** See `_reference/PROVIDERS_REFERENCE.md` → locationProvider → Method Selection Guide for full API details.
+
+**Git history:** Pattern established in commit 50fedf3 (search banner fix), documented in commit a663a34.
 
 ---
 

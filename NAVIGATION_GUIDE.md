@@ -24,13 +24,15 @@ Each scenario below provides:
 3. **ARCHITECTURE.md** → State Management → When to Use What (lines 123-131)
 4. **ARCHITECTURE.md** → State Management → Page-Local State (lines 216-259)
 5. **DESIGN_SYSTEM_flutter.md** → Quick Start (lines 16-36)
-6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13 (lines 937-949, 982-1012, 1144-1195)
+6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13 (lines 1042-1054, 1087-1117, 1249-1300)
+7. **ARCHITECTURE.md** → Location Permission Pattern (lines 624-703) — if page needs location UI
 
 **Critical warnings:**
 - ⚠️ Page-local UI state (loading flags, TextControllers, ScrollControllers) → local State variables, NOT providers
 - ⚠️ Never pass language/translations/dimensions as props to widgets (self-contained pattern)
 - ⚠️ Use `context.mounted` after async operations to prevent ref access after unmount
 - ⚠️ Save notifier with `ref.read()` BEFORE any `await` in pre-loading patterns
+- ⚠️ Use `enableLocation()` for user-facing "Enable Location" buttons (NOT `requestPermission()`)
 
 **Reference files:**
 - `journey_mate/lib/pages/search/search_page.dart` — Full page pattern with local state + provider reads
@@ -48,7 +50,7 @@ Each scenario below provides:
 3. **DESIGN_SYSTEM_flutter.md** → Colors (lines 39-90)
 4. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 92-120)
 5. **DESIGN_SYSTEM_flutter.md** → Typography (lines 122-180)
-6. **ARCHITECTURE.md** → Common Pitfall #8, #13 (lines 937-949, 1144-1195)
+6. **ARCHITECTURE.md** → Common Pitfall #8, #13 (lines 1042-1054, 1249-1300)
 
 **Critical warnings:**
 - ⚠️ Widgets read providers/context internally — NO infrastructure props (language, translations, dimensions)
@@ -70,7 +72,7 @@ Each scenario below provides:
 2. **_reference/BUILDSHIP_API_REFERENCE.md** → Endpoint you need (e.g., lines 9-80 for SEARCH)
 3. **ARCHITECTURE.md** → State Management → AsyncNotifierProvider (lines 176-214)
 4. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 520-597)
-5. **ARCHITECTURE.md** → Common Pitfall #11 (lines 982-1012)
+5. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1087-1117)
 
 **Critical warnings:**
 - ⚠️ All backend calls through `ApiService.instance` singleton — NO direct Supabase SDK
@@ -89,7 +91,7 @@ Each scenario below provides:
 **Estimated reading time:** 10 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Translation System (lines 599-659)
+1. **ARCHITECTURE.md** → Translation System (lines 704-764)
 2. **CLAUDE.md** → Code Patterns → Translations (lines 67-70)
 3. **_reference/BUILDSHIP_API_REFERENCE.md** → GET /languageText (search for "languageText")
 4. **ARCHITECTURE.md** → Philosophy → Single Source of Truth for Translations (lines 42-48)
@@ -114,8 +116,9 @@ Each scenario below provides:
 2. **ARCHITECTURE.md** → State Management → Provider Catalog (lines 133-146)
 3. **ARCHITECTURE.md** → State Management → Riverpod 3.x Patterns (lines 148-259)
 4. **_reference/PROVIDERS_REFERENCE.md** → Full provider details (entire file, 726 lines)
-5. **ARCHITECTURE.md** → Provider Initialization Order (lines 1038-1062)
-6. **ARCHITECTURE.md** → Common Pitfall #11 (lines 982-1012)
+5. **ARCHITECTURE.md** → Provider Initialization Order (lines 1211-1235)
+6. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1087-1117)
+7. **ARCHITECTURE.md** → Location Permission Pattern (lines 624-703) — if working with locationProvider
 
 **Critical warnings:**
 - ⚠️ Global/session state → `NotifierProvider` or `AsyncNotifierProvider`
@@ -140,8 +143,8 @@ Each scenario below provides:
 3. **DESIGN_SYSTEM_flutter.md** → Input Decorations (search for "AppInputDecorations")
 4. **DESIGN_SYSTEM_flutter.md** → Button Styles (search for "AppButtonStyles")
 5. **ARCHITECTURE.md** → API Service Pattern (lines 461-517)
-6. **ARCHITECTURE.md** → Common Pitfall #8 (lines 937-949)
-7. **ARCHITECTURE.md** → Common Pitfall #11 Variation B (lines 998-1080)
+6. **ARCHITECTURE.md** → Common Pitfall #8 (lines 1042-1054)
+7. **ARCHITECTURE.md** → Common Pitfall #11 Variation B (lines 1103-1185)
 
 **Critical warnings:**
 - ⚠️ Form state (TextEditingController, validation) → local State variables, NOT providers
@@ -166,7 +169,7 @@ Each scenario below provides:
 2. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 92-120)
 3. **DESIGN_SYSTEM_flutter.md** → Typography (lines 122-180)
 4. **DESIGN_SYSTEM_flutter.md** → Border Radius (search for "AppRadius")
-5. **ARCHITECTURE.md** → Code Quality Standards → Design Token Adherence (lines 819-826)
+5. **ARCHITECTURE.md** → Code Quality Standards → Design Token Adherence (lines 924-931)
 6. **CLAUDE.md** → Code Review Checklist (lines 84-104)
 
 **Critical warnings:**
@@ -190,10 +193,10 @@ Each scenario below provides:
 **Estimated reading time:** 20 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Common Pitfall #11 (lines 982-1012)
+1. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1087-1117)
 2. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 520-597)
 3. **ARCHITECTURE.md** → State Management → When to Use What (lines 123-131)
-4. **ARCHITECTURE.md** → Common Pitfall #5 (lines 890-904)
+4. **ARCHITECTURE.md** → Common Pitfall #5 (lines 995-1009)
 5. **CLAUDE.md** → Flutter Code Conventions (lines 126-140)
 
 **Critical warnings:**
@@ -220,7 +223,8 @@ Each scenario below provides:
 4. **_reference/PROVIDERS_REFERENCE.md** → filterProvider (search for "filterProvider")
 5. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 412-458)
 6. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 520-597)
-7. **ARCHITECTURE.md** → Common Pitfall #11, #13 (lines 998-1080, 1144-1195)
+7. **ARCHITECTURE.md** → Common Pitfall #11, #13 (lines 1103-1185, 1249-1300)
+8. **ARCHITECTURE.md** → Location Permission Pattern (lines 624-703) — for search banner location UI
 
 **Critical warnings:**
 - ⚠️ CityID is always 17 (Copenhagen) — use `AppConstants.kDefaultCityId`
@@ -230,6 +234,7 @@ Each scenario below provides:
 - ⚠️ Match categorization (full/partial/other) handled by BuildShip, not Flutter
 - ⚠️ Filter overlays that sync state on close: save notifier in `initState()`, use in `dispose()` (Pitfall #11 Variation B)
 - ⚠️ Collection callbacks: Use `Map<String, Object>{}` not `Map<String, dynamic>{}` in `orElse:` (Common Pitfall #13)
+- ⚠️ Use `enableLocation()` for search page location banner (NOT `requestPermission()`)
 
 **Reference files:**
 - `journey_mate/lib/pages/search/search_page.dart` — Complete search implementation
@@ -267,9 +272,9 @@ Each scenario below provides:
 **Estimated reading time:** 15 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Analytics Architecture (lines 729-803)
+1. **ARCHITECTURE.md** → Analytics Architecture (lines 834-908)
 2. **ARCHITECTURE.md** → Philosophy → Fire-and-Forget Analytics (lines 50-56)
-3. **ARCHITECTURE.md** → Common Pitfall #9, #10 (lines 951-980)
+3. **ARCHITECTURE.md** → Common Pitfall #9, #10 (lines 1056-1085)
 4. **_reference/BUILDSHIP_API_REFERENCE.md** → POST /analytics (search for "analytics")
 
 **Critical warnings:**
@@ -290,11 +295,11 @@ Each scenario below provides:
 **Estimated reading time:** 15 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Translation System (lines 599-659)
+1. **ARCHITECTURE.md** → Translation System (lines 704-764)
 2. **_reference/PROVIDERS_REFERENCE.md** → localeProvider (search for "localeProvider")
 3. **_reference/PROVIDERS_REFERENCE.md** → localizationProvider (search for "localizationProvider")
 4. **_reference/BUILDSHIP_API_REFERENCE.md** → GET /languageText (search for "languageText")
-5. **ARCHITECTURE.md** → Key Architectural Decisions → Translation: 100% Supabase (lines 1082-1086)
+5. **ARCHITECTURE.md** → Key Architectural Decisions → Translation: 100% Supabase (lines 1187-1191)
 
 **Critical warnings:**
 - ⚠️ All text via `td(ref, 'key')` function — NO hardcoded strings

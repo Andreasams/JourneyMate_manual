@@ -183,6 +183,20 @@ await ApiService.instance.postAnalytics(...);
 
 **Why:** User experience is never blocked by analytics.
 
+### Location Permissions (Smart Enable Pattern)
+
+Use `enableLocation()` for user-facing "Enable Location" buttons. It always provides a path forward (dialog or Settings).
+
+```dart
+// ✅ Good - user-facing button
+await ref.read(locationProvider.notifier).enableLocation();
+
+// ❌ Bad - fails silently after first denial
+await ref.read(locationProvider.notifier).requestPermission();
+```
+
+**Full guidance:** See ARCHITECTURE.md → Location Permission Pattern (lines 624-703)
+
 ### Flutter 3.x APIs (Not Deprecated 2.x)
 
 Use modern Flutter APIs:
