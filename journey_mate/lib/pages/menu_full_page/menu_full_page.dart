@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/app_providers.dart';
-import '../providers/business_providers.dart';
-import '../providers/settings_providers.dart';
-import '../services/api_service.dart';
-import '../services/analytics_service.dart';
-import '../services/translation_service.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
-import '../widgets/shared/unified_filters_widget.dart';
-import '../widgets/shared/menu_categories_rows.dart';
-import '../widgets/shared/menu_dishes_list_view.dart';
-import '../widgets/shared/item_bottom_sheet.dart';
-import '../widgets/shared/package_bottom_sheet.dart';
-import '../widgets/shared/category_description_sheet.dart';
+import '../../providers/app_providers.dart';
+import '../../providers/business_providers.dart';
+import '../../providers/settings_providers.dart';
+import '../../services/api_service.dart';
+import '../../services/analytics_service.dart';
+import '../../services/translation_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
+import '../../widgets/shared/unified_filters_widget.dart';
+import '../../widgets/shared/menu_categories_rows.dart';
+import '../../widgets/shared/menu_dishes_list_view.dart';
+import '../../widgets/shared/item_bottom_sheet.dart';
+import '../../widgets/shared/package_bottom_sheet.dart';
+import '../../widgets/shared/category_description_sheet.dart';
 
 /// Menu Full Page - Dedicated full-screen menu browsing experience
 ///

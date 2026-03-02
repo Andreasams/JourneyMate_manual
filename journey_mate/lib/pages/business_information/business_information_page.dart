@@ -3,24 +3,24 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../providers/app_providers.dart';
-import '../providers/business_providers.dart';
-import '../providers/filter_providers.dart';
-import '../providers/search_providers.dart';
-import '../services/api_service.dart';
-import '../services/analytics_service.dart';
-import '../services/translation_service.dart';
-import '../services/custom_actions/determine_status_and_color.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
-import '../theme/app_radius.dart';
-import '../widgets/shared/expandable_text_widget.dart';
-import '../widgets/shared/business_feature_buttons.dart';
-import '../widgets/shared/payment_options_widget.dart';
-import '../widgets/shared/contact_details_widget.dart';
-import '../widgets/shared/erroneous_info_form_widget.dart';
-import '../widgets/shared/filter_description_sheet.dart';
+import '../../providers/app_providers.dart';
+import '../../providers/business_providers.dart';
+import '../../providers/filter_providers.dart';
+import '../../providers/search_providers.dart';
+import '../../services/api_service.dart';
+import '../../services/analytics_service.dart';
+import '../../services/translation_service.dart';
+import '../../services/custom_actions/determine_status_and_color.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
+import '../../theme/app_radius.dart';
+import '../../widgets/shared/expandable_text_widget.dart';
+import '../../widgets/shared/business_feature_buttons.dart';
+import '../../widgets/shared/payment_options_widget.dart';
+import '../../widgets/shared/contact_details_widget.dart';
+import '../../widgets/shared/erroneous_info_form_widget.dart';
+import '../../widgets/shared/filter_description_sheet.dart';
 
 /// Business Information Page - Dedicated full-screen business detail view
 ///
