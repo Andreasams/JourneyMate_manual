@@ -919,25 +919,29 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       languageCode,
     );
 
-    // For distances < 1 km (or < 1 mi for English), show in meters/feet
-    if (distance < 1.0) {
-      if (languageCode == 'en') {
+    // English: Use feet only for very short distances (< 0.1 mi)
+    // Other languages: Use meters for distances < 1 km
+    if (languageCode == 'en') {
+      if (distance < 0.1) {
         // Convert miles to feet (1 mile = 5280 feet), round to nearest 10
         final feet = (distance * 5280).round();
         final roundedFeet = ((feet / 10).round() * 10);
         return '$roundedFeet ft.';
       } else {
+        // Use miles with 1 decimal (e.g., "0.2 mi.", "0.5 mi.", "1.3 mi.")
+        return '$distance mi.';
+      }
+    } else {
+      if (distance < 1.0) {
         // Convert km to meters (1 km = 1000 m), round to nearest 10
         final meters = (distance * 1000).round();
         final roundedMeters = ((meters / 10).round() * 10);
         return '$roundedMeters m.';
+      } else {
+        // Use km with 1 decimal (e.g., "1.2 km.", "2.5 km.")
+        return '$distance km.';
       }
     }
-
-    // For distances >= 1, use km/mi with 1 decimal
-    final unit = languageCode == 'en' ? ' mi.' : ' km.';
-    final result = '$distance$unit';
-    return result;
   }
 
   // Address removed from collapsed state - now only in expanded state via _buildFullAddress()
