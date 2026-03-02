@@ -60,6 +60,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   // User position for distance display in restaurant cards
   Position? _userPositionForDisplay;
 
+  // Banner swipe state
+  double _bannerDragOffset = 0.0;      // Current horizontal offset during drag
+  bool _isBannerDismissing = false;    // Dismiss animation in progress
+  double _bannerWidth = 0.0;           // Captured banner width for threshold calculation
+
   @override
   void initState() {
     super.initState();
@@ -863,72 +868,160 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildLocationBanner() {
-    return Stack(
-      children: [
-        // Main banner content
-        Container(
-          padding: EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.orangeBg,
-            borderRadius: BorderRadius.circular(AppRadius.filter),
-            border: Border.all(color: AppColors.orangeBorder),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.location_off,
-                color: AppColors.accent,
-                size: 20,
-              ),
-              SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  td(ref, 'location_permission_denied'),
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
-              SizedBox(width: AppSpacing.md), // Space for close button
-              TextButton(
-                onPressed: () async {
-                  // Use enableLocation (smart enable: dialog if first time, Settings if denied)
-                  // Same pattern as LocationStatusCard - fires analytics internally
-                  final granted = await ref
-                      .read(locationProvider.notifier)
-                      .enableLocation();
-                  if (granted && mounted) {
-                    final searchText = ref.read(searchStateProvider).currentSearchText;
-                    _executeSearch(searchText);
-                  }
-                },
-                child: Text(
-                  td(ref, 'location_permission_enable'),
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Capture banner width for threshold calculation
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _bannerWidth != constraints.maxWidth) {
+            setState(() {
+              _bannerWidth = constraints.maxWidth;
+            });
+          }
+        });
 
-        // Close button (top-right corner)
-        Positioned(
-          top: 4,
-          right: 4,
-          child: IconButton(
-            icon: Icon(Icons.close, size: 18, color: AppColors.textSecondary),
-            padding: EdgeInsets.all(4),
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            onPressed: () {
-              ref.read(locationProvider.notifier).dismissBanner();
-            },
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onHorizontalDragStart: _handleBannerDragStart,
+          onHorizontalDragUpdate: _handleBannerDragUpdate,
+          onHorizontalDragEnd: _handleBannerDragEnd,
+          child: AnimatedContainer(
+            duration: Duration(
+              milliseconds: _isBannerDismissing
+                ? 250
+                : (_bannerDragOffset == 0.0 ? 300 : 0),
+            ),
+            curve: Curves.easeOut,
+            transform: Matrix4.translationValues(_bannerDragOffset, 0.0, 0.0),
+            child: Container(
+              padding: EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.orangeBg,
+                borderRadius: BorderRadius.circular(AppRadius.filter),
+                border: Border.all(color: AppColors.orangeBorder),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.location_off,
+                    color: AppColors.accent,
+                    size: 20,
+                  ),
+                  SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      td(ref, 'location_permission_denied'),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.md),
+                  TextButton(
+                    onPressed: _isBannerDismissing ? null : () async {
+                      // Use enableLocation (smart enable: dialog if first time, Settings if denied)
+                      // Same pattern as LocationStatusCard - fires analytics internally
+                      await ref
+                          .read(locationProvider.notifier)
+                          .enableLocation();
+
+                      // Check if permission was granted by reading updated state
+                      if (mounted) {
+                        final locationState = ref.read(locationProvider);
+                        if (locationState.hasPermission) {
+                          final searchText = ref.read(searchStateProvider).currentSearchText;
+                          _executeSearch(searchText);
+                        }
+                      }
+                    },
+                    child: Text(
+                      td(ref, 'location_permission_enable'),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ],
+        );
+      },
     );
+  }
+
+  void _handleBannerDragStart(DragStartDetails details) {
+    // Cancel any ongoing dismiss animation
+    if (mounted) {
+      setState(() {
+        _isBannerDismissing = false;
+      });
+    }
+  }
+
+  void _handleBannerDragUpdate(DragUpdateDetails details) {
+    // Early return if dismissing or width not captured yet
+    if (_isBannerDismissing || _bannerWidth == 0.0) return;
+
+    // Accumulate delta and clamp to prevent right-swipe (only negative values allowed)
+    if (mounted) {
+      setState(() {
+        _bannerDragOffset = (_bannerDragOffset + details.delta.dx).clamp(-_bannerWidth, 0.0);
+      });
+    }
+  }
+
+  void _handleBannerDragEnd(DragEndDetails details) {
+    // Early return if dismissing or width not captured yet
+    if (_isBannerDismissing || _bannerWidth == 0.0) return;
+
+    // Calculate threshold: 30% of banner width
+    final dismissThreshold = _bannerWidth * 0.3;
+
+    // Check velocity: fast swipe left
+    final velocity = details.velocity.pixelsPerSecond.dx;
+    final fastSwipeLeft = velocity < -500;
+
+    // Dismiss if: swipe distance > 30% OR fast swipe left
+    if (_bannerDragOffset.abs() > dismissThreshold || fastSwipeLeft) {
+      _dismissBanner();
+    } else {
+      _resetBanner();
+    }
+  }
+
+  void _dismissBanner() {
+    // Set dismissing state and slide fully off-screen
+    if (mounted) {
+      setState(() {
+        _isBannerDismissing = true;
+        _bannerDragOffset = -_bannerWidth;
+      });
+    }
+
+    // Wait for animation to complete, then persist dismissal
+    Future.delayed(const Duration(milliseconds: 250), () {
+      if (mounted) {
+        // Persist dismissal to SharedPreferences
+        ref.read(locationProvider.notifier).dismissBanner();
+
+        // Reset all state
+        setState(() {
+          _bannerDragOffset = 0.0;
+          _isBannerDismissing = false;
+          _bannerWidth = 0.0;
+        });
+      }
+    });
+  }
+
+  void _resetBanner() {
+    // Animate back to original position
+    if (mounted) {
+      setState(() {
+        _bannerDragOffset = 0.0;
+      });
+    }
   }
 
   Widget _buildContent() {
