@@ -21,7 +21,10 @@ Map<int, int> calculateFilterCounts(
 }) {
   final counts = <int, int>{1: 0, 2: 0, 3: 0};
 
-  for (final filterId in activeFilters) {
+  // Deduplicate parent+child combos to prevent double-counting
+  final deduplicatedFilters = _deduplicateParentChildCombos(activeFilters);
+
+  for (final filterId in deduplicatedFilters) {
     final titleId = _findTitleIdForFilter(filterId, filterLookupMap);
     if (titleId != null) {
       counts[titleId] = (counts[titleId] ?? 0) + 1;
@@ -55,4 +58,44 @@ int? _findTitleIdForFilter(int filterId, Map<int, dynamic> lookupMap) {
     current = lookupMap[parentId];
   }
   return null;
+}
+
+/// Deduplicates parent+child filter combos to prevent double-counting.
+///
+/// When both parent and child are selected, removes the parent from the list
+/// (child remains, representing the combined selection).
+///
+/// NOTE: Parent-child relationships duplicated from selected_filters_btns.dart.
+/// If adding new relationships, update both files.
+///
+/// Example: [56, 585] → [585] (Bakery + With seating → just 585)
+///          [100, 196, 197] → [196, 197] (Sharing menu + 2 courses → just children)
+List<int> _deduplicateParentChildCombos(List<int> activeFilters) {
+  const parentChildRelationships = <int, List<int>>{
+    56: [585, 586],
+    58: [158, 159],
+    55: [588],
+    100: [196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207],
+    101: [184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195],
+  };
+
+  final activeSet = activeFilters.toSet();
+  final parentsToRemove = <int>{};
+
+  // For each parent-child relationship
+  for (final entry in parentChildRelationships.entries) {
+    final parentId = entry.key;
+    final childrenIds = entry.value;
+
+    // If parent is selected AND any child is selected, remove parent
+    if (activeSet.contains(parentId)) {
+      final hasSelectedChild = childrenIds.any((childId) => activeSet.contains(childId));
+      if (hasSelectedChild) {
+        parentsToRemove.add(parentId);
+      }
+    }
+  }
+
+  // Return list without the redundant parents
+  return activeFilters.where((id) => !parentsToRemove.contains(id)).toList();
 }

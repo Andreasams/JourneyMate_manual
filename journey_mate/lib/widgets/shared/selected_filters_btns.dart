@@ -74,6 +74,30 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     588, // Other
   };
 
+  /// Parent-child filter relationships for display logic.
+  /// When a child is selected, the parent chip is hidden and a combined chip is shown.
+  ///
+  /// Format rules:
+  /// - Bakery (56): "Parent lowercase_child" (no colon)
+  /// - Others: "Parent: Child" (with colon)
+  ///
+  /// NOTE: This map is duplicated in filter_count_helper.dart for count deduplication.
+  /// If adding new relationships, update both files.
+  static const Map<int, List<int>> _parentChildRelationships = {
+    56: [585, 586],        // Bakery → [With seating, With café]
+    58: [158, 159],        // Café → [With in-house bakery, In bookstore]
+    55: [588],             // Food truck → [Other]
+    100: [196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207], // Sharing menu → 12 courses
+    101: [184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195], // Multi-course menu → 12 courses
+  };
+
+  /// Children IDs from Bakery parent (use lowercase formatting)
+  static const Set<int> _bakeryChildrenIds = {585, 586};
+
+  /// Flattened list of all children under parent-child relationships
+  static final Set<int> _allChildrenIds =
+      _parentChildRelationships.values.expand((list) => list).toSet();
+
   // --- Lifecycle Methods ---
 
   @override
@@ -239,8 +263,12 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       if (searchState.selectedShoppingAreaId != null) searchState.selectedShoppingAreaId!,
     ];
 
+    // Filter out parents when children are selected
+    final parentsToHide = _findParentsToHide(selectedFilterIds);
+    final visibleDisplayIds = allDisplayIds.where((id) => !parentsToHide.contains(id)).toList();
+
     final selectedFilters = _flattenedFilters!
-        .where((f) => allDisplayIds.contains(f['id'] as int))
+        .where((f) => visibleDisplayIds.contains(f['id'] as int))
         .toList();
 
     final categoryOrder = <int, int>{
@@ -289,6 +317,13 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       return '$parentName $lowercasedName';
     }
 
+    // Bakery children (585, 586) - use lowercase format like dietary composites
+    // Format: "Bakery lowercase_child" (matches dietary composite pattern)
+    if (_bakeryChildrenIds.contains(filterId) && parentName != null) {
+      final lowercasedName = _lowercaseFirstLetter(name);
+      return '$parentName $lowercasedName';
+    }
+
     // Show parent context for specific ambiguous sub-items
     if (_needsParentContextIds.contains(filterId) && parentName != null) {
       return '$parentName: $name';
@@ -301,6 +336,15 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       return '$parentName: $name';
     }
 
+    // Menu children (196-207, 184-195) and other parent-child relationships
+    // Format: "Parent: Child" (with colon)
+    // Check if this filter is a child in parent-child relationships
+    if (_allChildrenIds.contains(filterId) &&
+        !_bakeryChildrenIds.contains(filterId) &&
+        parentName != null) {
+      return '$parentName: $name';
+    }
+
     return name;
   }
 
@@ -308,6 +352,31 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
   String _lowercaseFirstLetter(String text) {
     if (text.isEmpty) return text;
     return text[0].toLowerCase() + text.substring(1);
+  }
+
+  /// Finds parent filter IDs that should be hidden because their children are selected.
+  ///
+  /// Logic: If any child from a parent-child relationship is in selectedFilterIds,
+  /// hide the parent (we'll show the combined "Parent: Child" chip instead).
+  ///
+  /// Example: selectedFilterIds contains 585 → hide parent 56 (Bakery)
+  ///          selectedFilterIds contains 196 → hide parent 100 (Sharing menu)
+  Set<int> _findParentsToHide(List<int> selectedFilterIds) {
+    final selectedSet = selectedFilterIds.toSet();
+    final parentsToHide = <int>{};
+
+    for (final entry in _parentChildRelationships.entries) {
+      final parentId = entry.key;
+      final childrenIds = entry.value;
+
+      // If ANY child is selected, hide the parent
+      final hasSelectedChild = childrenIds.any((childId) => selectedSet.contains(childId));
+      if (hasSelectedChild) {
+        parentsToHide.add(parentId);
+      }
+    }
+
+    return parentsToHide;
   }
 
   // --- Action Handlers ---
