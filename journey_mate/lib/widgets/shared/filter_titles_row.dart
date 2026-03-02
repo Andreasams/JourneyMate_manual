@@ -103,7 +103,7 @@ class FilterTitlesRow extends ConsumerWidget {
         return allCounts[titleId] ?? 0;
       },
       loading: () => 0,
-      error: (_, __) => 0,
+      error: (_, _) => 0,
     );
   }
 
