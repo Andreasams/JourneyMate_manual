@@ -695,7 +695,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             if (count > 0 && !isActive)
               Positioned(
                 top: 2,
-                right: 5,
+                right: 2,
                 child: Container(
                   width: 6,
                   height: 6,
