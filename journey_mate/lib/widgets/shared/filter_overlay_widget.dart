@@ -414,9 +414,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     if (_selectedNeighborhoodId == null) return items;
 
     if (categoryId == _shoppingAreaCategoryId) {
-      return items
-          .where((item) => widget.activeFilterIds.contains(item['id'] as int?))
-          .toList();
+      // Shopping areas now use standard greying (no special hiding)
+      // _hasActiveChildren() will handle availability logic
+      return items;
     } else if (categoryId == _trainStationCategoryId) {
       return items
           .where((item) =>
@@ -549,8 +549,20 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// ACTIVE STATE DETECTION
   /// =========================================================================
 
+  /// Returns true if we're in "active search" mode where greying should apply.
+  /// Default search (no query, no selected filters) shows all filters as available.
+  /// Active search (query OR selected filters) greys out unavailable filters.
+  bool get _isActiveSearch {
+    final hasSearchQuery = widget.searchTerm?.isNotEmpty ?? false;
+    final hasSelectedFilters = _selectedFilterIds.isNotEmpty;
+    return hasSearchQuery || hasSelectedFilters;
+  }
+
   bool _hasActiveChildren(int parentId, String filterType) {
-    if (_isInitialState) return true;
+    // Default search: All filters shown as available (no greying)
+    if (!_isActiveSearch) return true;
+
+    // Active search but waiting for API response: Show all (prevent flicker)
     if (!_receivedActiveIdsAfterSearch &&
         widget.searchTerm?.isNotEmpty == true) {
       return true;
