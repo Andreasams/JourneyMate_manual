@@ -478,6 +478,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     filters: state.filtersForLanguage,
                     languageCode: Localizations.localeOf(context).languageCode,
                     translationsCache: translationsCache,
+                    onClearAll: () {
+                      final searchText = ref.read(searchStateProvider).currentSearchText;
+                      _executeSearch(searchText);
+                    },
+                    onFilterRemoved: (_) {
+                      final searchText = ref.read(searchStateProvider).currentSearchText;
+                      _executeSearch(searchText);
+                    },
                   ),
                   loading: () => const SizedBox.shrink(),
                   error: (_, _) => const SizedBox.shrink(),
