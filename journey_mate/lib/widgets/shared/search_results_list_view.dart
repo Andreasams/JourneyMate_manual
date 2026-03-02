@@ -213,7 +213,7 @@ class _SearchResultsListViewState
     final showMatchSections = scoringFilterIds.isNotEmpty;
 
     if (showMatchSections) {
-      return _buildMatchSections(documents, scoringFilterIds.length);
+      return _buildSectionedList(documents, scoringFilterIds.length);
     } else {
       return _buildFlatList(documents);
     }
@@ -265,76 +265,6 @@ class _SearchResultsListViewState
             ),
           );
         },
-      ),
-    );
-  }
-
-  /// Builds match sections (Full Match, Partial Match, No Match) when filters are active
-  Widget _buildMatchSections(
-    List<dynamic> documents,
-    int totalActiveFilters,
-  ) {
-    // Group documents by match quality
-    final fullMatch = <dynamic>[];
-    final partialMatch = <dynamic>[];
-    final noMatch = <dynamic>[];
-
-    for (final doc in documents) {
-      final matchCount = _getMatchCount(doc);
-      if (matchCount == totalActiveFilters) {
-        fullMatch.add(doc);
-      } else if (matchCount > 0) {
-        // Backend (search node v9) sends maxMissedFilters=1, so all
-        // partial matches in this response are guaranteed to have exactly
-        // 1 missed filter. No client-side missedFilters.length check needed.
-        partialMatch.add(doc);
-      } else {
-        noMatch.add(doc);
-      }
-    }
-
-    // Build sections list
-    final sections = <Widget>[];
-    int itemIndex = 0;
-    bool isFirstSection = true;
-
-    // Full match section
-    if (fullMatch.isNotEmpty) {
-      sections.add(_buildSectionHeader('full', isFirst: isFirstSection));
-      isFirstSection = false;
-      for (final doc in fullMatch) {
-        sections.add(_buildBusinessCard(doc, 'full', totalActiveFilters, itemIndex++));
-        sections.add(SizedBox(height: _itemSeparatorHeight));
-      }
-    }
-
-    // Partial match section
-    if (partialMatch.isNotEmpty) {
-      sections.add(_buildSectionHeader('partial', isFirst: isFirstSection));
-      isFirstSection = false;
-      for (final doc in partialMatch) {
-        sections.add(_buildBusinessCard(doc, 'partial', totalActiveFilters, itemIndex++));
-        sections.add(SizedBox(height: _itemSeparatorHeight));
-      }
-    }
-
-    // No match section
-    if (noMatch.isNotEmpty) {
-      sections.add(_buildSectionHeader('none', isFirst: isFirstSection));
-      for (final doc in noMatch) {
-        sections.add(_buildBusinessCard(doc, 'none', totalActiveFilters, itemIndex++));
-        sections.add(SizedBox(height: _itemSeparatorHeight));
-      }
-    }
-
-    return NotificationListener<ScrollNotification>(
-      onNotification: (notification) {
-        _onScroll(notification);
-        return false;
-      },
-      child: ListView(
-        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0), // 16px top per JSX
-        children: sections,
       ),
     );
   }
@@ -437,6 +367,80 @@ class _SearchResultsListViewState
       if (value is num) return value.toInt();
     }
     return 0;
+  }
+
+  /// Extracts section field from document, with matchCount fallback
+  String _getSection(dynamic businessData, int totalActiveFilters) {
+    // First, try matchCount fallback (handles API version mismatch, caching, etc.)
+    if (businessData is Map && !businessData.containsKey('section')) {
+      final matchCount = _getMatchCount(businessData);
+      if (matchCount == totalActiveFilters) return 'fullMatch';
+      if (matchCount == totalActiveFilters - 1) return 'partialMatch';
+      return 'others';
+    }
+
+    // Then read section field from API response
+    if (businessData is Map && businessData.containsKey('section')) {
+      final section = businessData['section'];
+      if (section is String &&
+          ['fullMatch', 'partialMatch', 'others'].contains(section)) {
+        return section;
+      }
+    }
+
+    // Final fallback: invalid or missing section → "others"
+    return 'others';
+  }
+
+  /// Maps API section values to existing header variant strings
+  String _mapSectionToVariant(String section) {
+    switch (section) {
+      case 'fullMatch':
+        return 'full';
+      case 'partialMatch':
+        return 'partial';
+      case 'others':
+        return 'none';
+      default:
+        return 'none';
+    }
+  }
+
+  /// Builds sectioned list with backend-driven section headers
+  Widget _buildSectionedList(List<dynamic> documents, int totalActiveFilters) {
+    final items = <Widget>[];
+    String? previousSection;
+    int itemIndex = 0; // Global analytics counter
+
+    for (final doc in documents) {
+      final currentSection = _getSection(doc, totalActiveFilters);
+
+      // Insert header when section changes
+      if (currentSection != previousSection) {
+        final isFirst = previousSection == null;
+        items.add(_buildSectionHeader(
+          _mapSectionToVariant(currentSection),
+          isFirst: isFirst,
+        ));
+        previousSection = currentSection;
+      }
+
+      // Render card
+      final variant = _mapSectionToVariant(currentSection);
+      items.add(_buildBusinessCard(doc, variant, totalActiveFilters, itemIndex++));
+      items.add(SizedBox(height: _itemSeparatorHeight));
+    }
+
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        _onScroll(notification);
+        return false;
+      },
+      child: ListView(
+        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0),
+        children: items,
+      ),
+    );
   }
 
   List<dynamic> _extractDocuments(dynamic searchResults) {
