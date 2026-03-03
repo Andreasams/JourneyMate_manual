@@ -14,6 +14,7 @@ class AppConstants {
   static const double tabBarHeight = 80.0;
   static const double inputHeight = 50.0;
   static const double buttonHeight = 50.0;
+  static const double searchBarHeight = 45.0; // Compact search bars (vs 50px form inputs)
 
   // Card dimensions
   static const double logoCircleSize = 50.0;

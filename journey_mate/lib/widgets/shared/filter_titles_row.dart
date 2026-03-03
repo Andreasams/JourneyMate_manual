@@ -153,7 +153,7 @@ class FilterTitlesRow extends ConsumerWidget {
                   textAlign: TextAlign.center,
                 ),
                 if (showBadge) ...[
-                  SizedBox(width: 5),
+                  SizedBox(width: AppSpacing.xs),
                   Container(
                     width: 18,
                     height: 18,

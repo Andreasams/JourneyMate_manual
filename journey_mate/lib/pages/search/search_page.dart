@@ -626,7 +626,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           size: 15, // Increased from 14 to match JSX
           color: AppColors.accent,
         ),
-        SizedBox(width: 5),
+        SizedBox(width: AppSpacing.xs),
         Text(
           td(ref, '05aeogb1'), // FlutterFlow legacy key for Copenhagen
           style: AppTypography.bodyRegular.copyWith(
@@ -641,7 +641,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   Widget _buildSearchBar() {
     return Container(
-      height: 45,
+      height: AppConstants.searchBarHeight,
       decoration: BoxDecoration(
         color: AppColors.bgInput,
         borderRadius: BorderRadius.circular(AppRadius.input),
@@ -667,7 +667,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ),
           contentPadding: EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
-            vertical: 11,
+            vertical: AppSpacing.md,
           ),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
@@ -749,14 +749,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 9),
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
         decoration: BoxDecoration(
           color: isActive ? AppColors.accent : AppColors.bgCard,
           border: Border.all(
             color: isActive ? AppColors.accent : AppColors.border,
             width: 1.5,
           ),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppRadius.filter),
         ),
         child: Stack(
           clipBehavior: Clip.none,
@@ -802,8 +802,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: _viewMode == 'liste' ? Color(0xFFf5f5f5) : Colors.white,
-                border: Border.all(color: Color(0xFFe8e8e8), width: 1.5),
+                color: _viewMode == 'liste' ? AppColors.bgInput : Colors.white,
+                border: Border.all(color: AppColors.border, width: 1.5),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(8),
                   bottomLeft: Radius.circular(8),
@@ -814,7 +814,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 textAlign: TextAlign.center,
                 style: AppTypography.viewToggle.copyWith(
                   fontWeight: _viewMode == 'liste' ? FontWeight.w600 : FontWeight.w500,
-                  color: _viewMode == 'liste' ? AppColors.textPrimary : Color(0xFF999999),
+                  color: _viewMode == 'liste' ? AppColors.textPrimary : AppColors.textMuted,
                 ),
               ),
             ),
@@ -829,8 +829,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: _viewMode == 'kort' ? Color(0xFFf5f5f5) : Colors.white,
-                  border: Border.all(color: Color(0xFFe8e8e8), width: 1.5),
+                  color: _viewMode == 'kort' ? AppColors.bgInput : Colors.white,
+                  border: Border.all(color: AppColors.border, width: 1.5),
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(8),
                     bottomRight: Radius.circular(8),
@@ -841,7 +841,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   textAlign: TextAlign.center,
                   style: AppTypography.viewToggle.copyWith(
                     fontWeight: _viewMode == 'kort' ? FontWeight.w600 : FontWeight.w500,
-                    color: _viewMode == 'kort' ? AppColors.textPrimary : Color(0xFF999999),
+                    color: _viewMode == 'kort' ? AppColors.textPrimary : AppColors.textMuted,
                   ),
                 ),
               ),
@@ -871,7 +871,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           onTap: _openSortBottomSheet,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.mlg, vertical: AppSpacing.sm),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -880,7 +880,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   size: 12,
                   color: Colors.white,
                 ),
-                SizedBox(width: 5),
+                SizedBox(width: AppSpacing.xs),
                 Flexible(
                   child: Text(
                     _getSortButtonText(),
