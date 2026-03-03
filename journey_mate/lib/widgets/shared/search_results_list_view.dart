@@ -603,11 +603,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   double get _exchangeRate => ref.watch(localizationProvider).exchangeRate;
   String get _userCurrencyCode => ref.watch(localizationProvider).currencyCode;
-  bool get _locationEnabled {
-    return ref.watch(
-      localizationProvider.select((state) => state.currencyCode != 'DKK'),
-    );
-  }
 
   // ---------------------------------------------------------------------------
   // Lifecycle
@@ -897,8 +892,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   String? _getDistanceText() {
-    if (!_locationEnabled ||
-        widget.userLocation == null ||
+    if (widget.userLocation == null ||
         _latitude == null ||
         _longitude == null) {
       return null;
