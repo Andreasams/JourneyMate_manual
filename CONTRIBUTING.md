@@ -251,7 +251,7 @@ final response = await ApiService.instance.search(
   sortOption: 'nearest',           // v9: 'nearest', 'station', 'price_low', 'price_high'
   userLocation: '55.6761,12.5683',
   languageCode: 'da',
-  neighbourhoodId: 47,             // v9: NEW geographic filter
+  neighbourhoodId: [47, 52],       // v9: geographic filter (List<int>?, JSON-encoded for API)
   onlyOpen: true,                  // v9: Filter to currently open restaurants
 );
 

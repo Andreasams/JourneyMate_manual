@@ -513,7 +513,7 @@ Widget _buildSheetHandle() {
 
 ### Filter Coordination Pattern (Parent Callbacks)
 
-**Discovered:** Commit `8606b21`, March 2026
+**Discovered:** Commit `8606b21`, March 2026 | **Updated:** Commits `bd1c12f`/`61a7cea` (multi-select)
 **Applies to:** Widgets with interdependent filter state (one filter affects another's validity)
 
 When filter selections have dependencies (e.g., neighbourhood filter affects station availability), use parent callbacks to coordinate state:
@@ -533,13 +533,13 @@ FilterOverlayWidget(
   width: MediaQuery.of(context).size.width,
   height: MediaQuery.of(context).size.height,
   onNeighbourhoodSelected: () {
-    // Check if current station is still valid for new neighbourhood
+    // Check if current station is still valid for the new neighbourhood(s)
     if (_currentSort == 'station' && _selectedStation != null) {
       final searchState = ref.read(searchStateProvider);
-      final neighbourhoodId = searchState.selectedNeighbourhoodId;
+      final neighbourhoodIds = searchState.selectedNeighbourhoodId; // List<int>?
 
-      if (neighbourhoodId != null) {
-        // Check station compatibility using same logic as filter
+      if (neighbourhoodIds != null && neighbourhoodIds.isNotEmpty) {
+        // Check if station belongs to any of the selected neighbourhoods
         final filterState = ref.read(filterProvider);
         final isStationInNeighbourhood = filterState.when(
           data: (state) {
@@ -547,8 +547,8 @@ FilterOverlayWidget(
             if (stationData != null) {
               final neighbourhoodId1 = stationData['neighbourhood_id_1'] as int?;
               final neighbourhoodId2 = stationData['neighbourhood_id_2'] as int?;
-              return neighbourhoodId1 == neighbourhoodId ||
-                     neighbourhoodId2 == neighbourhoodId;
+              return neighbourhoodIds.any((nId) =>
+                  neighbourhoodId1 == nId || neighbourhoodId2 == nId);
             }
             return false;
           },
@@ -556,7 +556,7 @@ FilterOverlayWidget(
           error: (_, __) => true, // Keep station on error
         );
 
-        // Reset to default if station is no longer valid
+        // Reset to default if station is not in any selected neighbourhood
         if (!isStationInNeighbourhood) {
           setState(() {
             _currentSort = 'nearest';
@@ -581,11 +581,11 @@ FilterOverlayWidget(
 **Pattern Benefits:**
 - ✅ Prevents UI inconsistencies (sort button showing unavailable station)
 - ✅ Automatic state correction (resets to safe default when needed)
-- ✅ Uses same validation logic as filter list (neighbourhood_id_1 OR neighbourhood_id_2)
+- ✅ Uses `.any()` OR logic across all selected neighbourhoods (neighbourhood_id_1 OR neighbourhood_id_2)
 - ✅ Handles AsyncData states gracefully (keeps selection while loading)
 
 **Common Use Cases:**
-- Neighbourhood filter → affects station list (commit `8606b21`)
+- Neighbourhood filter (multi-select) → affects station list (commits `8606b21`, `bd1c12f`)
 - Shopping area filter → affects neighbourhood list
 - Cuisine type → affects dish availability
 - Date/time selection → affects "Open Now" filter validity
@@ -1091,7 +1091,7 @@ final response = await ApiService.instance.search(
   sortOption: 'nearest',           // v9: 'nearest', 'station', 'price_low', 'price_high'
   userLocation: '55.6761,12.5683',
   languageCode: 'da',
-  neighbourhoodId: 47,             // v9: NEW geographic filter
+  neighbourhoodId: [47, 52],       // v9: geographic filter (List<int>?, JSON-encoded for API)
   shoppingAreaId: 2001,            // v9: NEW geographic filter
   onlyOpen: true,                  // v9: Over-fetches + local filtering
 );
