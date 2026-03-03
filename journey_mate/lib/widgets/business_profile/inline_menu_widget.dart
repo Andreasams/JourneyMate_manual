@@ -132,7 +132,7 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
                     _showFilters
                         ? td(ref, 'menu_hide_filters')
                         : td(ref, 'menu_show_filters'),
-                    style: AppTypography.bodyLarge.copyWith(
+                    style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.accent,
                       fontWeight: FontWeight.normal,
                     ),
@@ -151,9 +151,8 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
                       businessId: widget.businessId,
                       width: double.infinity,
                       height: _filterWidgetHeight,
-                      onFiltersChanged: () => setState(() {}),
-                      onVisibleItemCountChanged: (count) =>
-                          setState(() => _visibleItemCount = count),
+                      onFiltersChanged: () async { setState(() {}); },
+                      onVisibleItemCountChanged: (count) async { setState(() => _visibleItemCount = count); },
                     ),
                   ),
                 ),
@@ -315,7 +314,7 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
                     padding: EdgeInsets.only(bottom: 4),
                     child: Text(
                       td(ref, 'menu_view_full_page'),
-                      style: AppTypography.bodyLarge.copyWith(
+                      style: AppTypography.bodyMedium.copyWith(
                         fontWeight: FontWeight.normal,
                       ),
                     ),

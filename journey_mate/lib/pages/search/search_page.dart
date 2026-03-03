@@ -310,7 +310,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           selectedTitleID: _mapTabIndexToTitleId(_activeFilterTab),
                           activeFilterIds: searchState.activeFilterIds,
                           selectedFilterIds: searchState.filtersUsedForSearch,
-                          onSearchCompleted: (activeIds, count, fullMatchCount, documents) async {
+                          onSearchCompleted: (activeIds, count, fullMatchCount, documents, scoringFilterIds) async {
                             // Update active filter IDs
                             ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
 
@@ -319,6 +319,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                               documents,
                               count,
                               fullMatchCount,
+                              scoringFilterIds,
                             );
 
                             if (mounted) {

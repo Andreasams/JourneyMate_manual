@@ -132,11 +132,11 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
           jsonBody,
           resultCount,
           fullMatchCount,
+          scoringFilterIds,
         );
 
-        // Update active and scoring filter IDs
+        // Update active filter IDs
         ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
-        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
 
         // Generate new filter session ID
         ref.read(searchStateProvider.notifier).generateNewFilterSessionId();

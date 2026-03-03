@@ -5,7 +5,6 @@ import '../../providers/filter_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_constants.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
@@ -155,14 +154,6 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     final filteredStations = _stationSearchText.isEmpty
         ? allStations
         : allStations
-            .where((s) => (s['name'] as String)
-                .toLowerCase()
-                .contains(_stationSearchText.toLowerCase()))
-            .toList();
-
-    final filteredStations = _stationSearchText.isEmpty
-        ? trainStations
-        : trainStations
             .where((s) => (s['name'] as String)
                 .toLowerCase()
                 .contains(_stationSearchText.toLowerCase()))

@@ -259,7 +259,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     // Include routed IDs (neighbourhood, shopping area) in chip display
     final allDisplayIds = <int>[
       ...selectedFilterIds,
-      if (searchState.selectedNeighbourhoodId != null) searchState.selectedNeighbourhoodId!,
+      ...?searchState.selectedNeighbourhoodId,
       if (searchState.selectedShoppingAreaId != null) searchState.selectedShoppingAreaId!,
     ];
 
@@ -389,7 +389,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     // Check if this is a routed ID (neighbourhood or shopping area)
     final searchState = ref.read(searchStateProvider);
     final notifier = ref.read(searchStateProvider.notifier);
-    final isRoutedNeighbourhood = searchState.selectedNeighbourhoodId == filterId;
+    final isRoutedNeighbourhood = searchState.selectedNeighbourhoodId?.contains(filterId) ?? false;
     final isRoutedShoppingArea = searchState.selectedShoppingAreaId == filterId;
 
     if (isRoutedNeighbourhood) {

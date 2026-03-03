@@ -119,9 +119,9 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
           response.jsonBody,
           resultCount,
           fullMatchCount,
+          scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        searchNotifier.updateScoringFilterIds(scoringFilterIds);
         debugPrint('⚙️ Settings: Pre-fetch succeeded ($resultCount results, $fullMatchCount full matches)');
       } else {
         debugPrint('⚙️ Settings: Pre-fetch failed: ${response.error}');

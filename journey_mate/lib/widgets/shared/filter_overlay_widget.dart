@@ -82,6 +82,7 @@ class FilterOverlayWidget extends ConsumerStatefulWidget {
     int resultCount,
     int fullMatchCount,
     dynamic documents,
+    List<int> scoringFilterIds,
   ) onSearchCompleted;
   final Future Function(List<int>? selectedFilterIds)? onCloseOverlay;
   final String? searchTerm;
@@ -725,7 +726,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   void _handleTrainStationSelection(int filterId) {
     if (_selectedFilterIds.contains(filterId)) {
       _selectedFilterIds.remove(filterId);
-      _currentSelectionType = _selectedNeighborhoodId != null
+      _currentSelectionType = _selectedNeighborhoodIds.isNotEmpty
           ? FilterSelectionType.neighborhood
           : FilterSelectionType.none;
     } else {
@@ -745,7 +746,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   void _handleShoppingAreaSelection(int filterId) {
     if (_selectedFilterIds.contains(filterId)) {
       _selectedFilterIds.remove(filterId);
-      _currentSelectionType = _selectedNeighborhoodId != null
+      _currentSelectionType = _selectedNeighborhoodIds.isNotEmpty
           ? FilterSelectionType.neighborhood
           : FilterSelectionType.none;
     } else {
@@ -923,6 +924,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           resultCount,
           fullMatchCount,
           documents,
+          scoringFilterIds,
         );
       }
     } catch (e) {
@@ -948,7 +950,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     setState(() {
       _selectedFilterIds.clear();
       _currentSelectionType = FilterSelectionType.none;
-      _selectedNeighborhoodId = null;
+      _selectedNeighborhoodIds.clear();
 
       if (selectedItemId != null && _isSearchableParentItem(selectedItemId!)) {
         selectedItemId = null;

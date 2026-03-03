@@ -188,9 +188,9 @@ class _AppSettingsInitiateFlowPageState
           response.jsonBody,
           resultCount,
           fullMatchCount,
+          scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        searchNotifier.updateScoringFilterIds(scoringFilterIds);
         debugPrint('🔧 Setup: Fetch succeeded for $languageCode ($resultCount results, $fullMatchCount full matches)');
       } else {
         debugPrint('🔧 Setup: Fetch failed for $languageCode: ${response.error}');

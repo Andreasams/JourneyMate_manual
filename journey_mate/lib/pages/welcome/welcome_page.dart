@@ -165,9 +165,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           response.jsonBody,
           resultCount,
           fullMatchCount,
+          scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        searchNotifier.updateScoringFilterIds(scoringFilterIds);
         debugPrint('👋 Welcome: Pre-fetch succeeded ($resultCount results)');
       } else {
         debugPrint('👋 Welcome: Pre-fetch failed: ${response.error}');
@@ -295,9 +295,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           response.jsonBody,
           resultCount,
           fullMatchCount,
+          scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        searchNotifier.updateScoringFilterIds(scoringFilterIds);
         debugPrint('👋 Welcome: Background fetch succeeded ($resultCount results)');
       } else {
         debugPrint('👋 Welcome: Background fetch failed: ${response.error}');
