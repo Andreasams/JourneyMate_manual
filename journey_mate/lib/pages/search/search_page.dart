@@ -24,6 +24,7 @@ import '../../widgets/shared/filter_overlay_widget.dart';
 import '../../widgets/shared/filter_titles_row.dart';
 import '../../widgets/shared/nav_bar_widget.dart';
 import '../../widgets/shared/restaurant_list_shimmer_widget.dart';
+import '../../widgets/shared/search_bar_widget.dart';
 import '../../widgets/shared/sort_bottom_sheet.dart';
 
 /// Search Page - Main restaurant discovery page
@@ -38,15 +39,12 @@ class SearchPage extends ConsumerStatefulWidget {
 class _SearchPageState extends ConsumerState<SearchPage> {
   // Local state
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
   Timer? _debounceTimer;
   ScrollController? _scrollController;
   DateTime? _pageStartTime;
   bool _isLoading = false;
   String? _errorMessage;
   int _requestId = 0;
-  bool _searchHasFocus = false;
-
   // Sort state
   String _currentSort = 'nearest';
   bool _onlyOpen = false;
@@ -69,9 +67,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void initState() {
     super.initState();
     _pageStartTime = DateTime.now();
-    _searchFocusNode.addListener(() {
-      setState(() => _searchHasFocus = _searchFocusNode.hasFocus);
-    });
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _initialize();
     });
@@ -102,7 +97,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     _debounceTimer?.cancel();
     _scrollController?.dispose();
     _searchController.dispose();
-    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -221,13 +215,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           documents,
           resultCount,
           fullMatchCount,
+          scoringFilterIds,
         );
 
         // Store API's active filter IDs
         ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
-
-        // Store scoring filter IDs (for section grouping)
-        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
 
         // Track analytics
         final analytics = AnalyticsService.instance;
@@ -448,26 +440,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
   }
 
-  void _handleClearSearch() {
-    _searchController.clear();
-    _onSearchTextChanged('');
-  }
-
   void _openSortBottomSheet() {
     final searchState = ref.read(searchStateProvider);
 
-    // Use same count logic as page title: fullMatchCount when scoring filters exist
-    final hasActiveFiltersOrSearch =
-        searchState.filtersUsedForSearch.isNotEmpty ||
-        searchState.selectedNeighbourhoodId != null ||
-        searchState.selectedShoppingAreaId != null ||
-        searchState.currentSearchText.isNotEmpty;
-
-    final count = (hasActiveFiltersOrSearch && searchState.scoringFilterIds.isNotEmpty)
-        ? searchState.fullMatchCount
-        : searchState.searchResultsCount;
-
-    final openPlacesCount = _onlyOpen ? count : 0;
+    // Use visibleResultCount: the exact number of items rendered by SearchResultsListView
+    final openPlacesCount = _onlyOpen ? searchState.visibleResultCount : 0;
 
     showModalBottomSheet(
       context: context,
@@ -640,49 +617,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildSearchBar() {
-    return Container(
-      height: AppConstants.searchBarHeight,
-      decoration: BoxDecoration(
-        color: AppColors.bgInput,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: _searchHasFocus ? AppColors.accent : Colors.transparent,
-          width: 1.5,
-        ),
-      ),
-      child: TextField(
-        controller: _searchController,
-        focusNode: _searchFocusNode,
-        onChanged: _onSearchTextChanged,
-        onSubmitted: _executeSearch,
-        style: AppTypography.input,
-        decoration: InputDecoration(
-          hintText: td(ref, 'search_placeholder'),
-          hintStyle: AppTypography.placeholder,
-          filled: false,
-          prefixIcon: Icon(
-            Icons.search,
-            size: 17,
-            color: AppColors.textMuted,
-          ),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.md,
-          ),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
-          disabledBorder: InputBorder.none,
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear, size: 20),
-                  onPressed: _handleClearSearch,
-                )
-              : null,
-        ),
-      ),
+    return SearchBarWidget(
+      hintTextKey: 'search_placeholder',
+      controller: _searchController,
+      onChanged: _onSearchTextChanged,
+      onSubmitted: _executeSearch,
     );
   }
 
@@ -913,8 +852,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             final stationName = (stationData['name'] as String?) ??
                                (stationData['filter_name'] as String?) ??
                                td(ref, 'sort_station');
-            // Use translation key that will be updated in Supabase
-            return '${td(ref, 'sort_station')}: $stationName';
+            return stationName;
           }
           return td(ref, 'sort_station');
         },

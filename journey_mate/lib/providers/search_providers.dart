@@ -19,23 +19,46 @@ class SearchStateNotifier extends Notifier<SearchState> {
     return SearchState.initial();
   }
 
-  /// Update search results from API response
+  /// Update search results from API response. Also accepts scoringFilterIds so
+  /// visibleResultCount (the display count used by the sort sheet Open Now badge)
+  /// can be computed atomically alongside the results — avoiding a stale-state
+  /// window if updateScoringFilterIds() were called separately afterward.
+  ///
   /// Accepts either:
   /// - A List of documents directly
   /// - A Map containing a 'documents' key (full API response)
-  void updateSearchResults(dynamic results, int count, int fullMatchCount) {
+  void updateSearchResults(
+    dynamic results,
+    int count,
+    int fullMatchCount,
+    List<int> scoringFilterIds,
+  ) {
     // Normalize input: extract documents array if full response object passed
     dynamic normalizedResults = results;
     if (results is Map && results.containsKey('documents')) {
       normalizedResults = results['documents'];
     }
 
+    // Compute the display count using the same logic as the page title and
+    // filter overlay: full-match count when scoring filters are active,
+    // total count otherwise. This equals the number of items in the top
+    // (full-match) section of the ListView when sections are shown.
+    final hasActiveFiltersOrSearch = state.filtersUsedForSearch.isNotEmpty ||
+        state.selectedNeighbourhoodId != null ||
+        state.selectedShoppingAreaId != null ||
+        state.currentSearchText.isNotEmpty;
+    final visibleResultCount = (hasActiveFiltersOrSearch && scoringFilterIds.isNotEmpty)
+        ? fullMatchCount
+        : count;
+
     state = state.copyWith(
       searchResults: normalizedResults,
       searchResultsCount: count,
+      visibleResultCount: visibleResultCount,
       fullMatchCount: fullMatchCount,
+      scoringFilterIds: List<int>.from(scoringFilterIds),
       hasActiveSearch: true,
-      lastFetchTime: DateTime.now(), // Record fetch timestamp
+      lastFetchTime: DateTime.now(),
     );
   }
 
@@ -221,6 +244,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
     state = state.copyWithNullable(
       hasActiveSearch: false,
       searchResultsCount: 0,
+      visibleResultCount: 0,
       clearResults: true,
     );
   }

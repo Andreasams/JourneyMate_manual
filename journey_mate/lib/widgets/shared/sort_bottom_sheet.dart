@@ -5,9 +5,11 @@ import '../../providers/filter_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_constants.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
+import './search_bar_widget.dart';
 
 /// Sort Bottom Sheet
 /// Allows users to change sort order and toggle "only open" filter
@@ -38,11 +40,20 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   late bool _onlyOpen;
   String _view = 'options'; // 'options' or 'stations'
 
+  final TextEditingController _stationSearchController = TextEditingController();
+  String _stationSearchText = '';
+
   @override
   void initState() {
     super.initState();
     _selectedSort = widget.currentSort;
     _onlyOpen = widget.onlyOpen;
+  }
+
+  @override
+  void dispose() {
+    _stationSearchController.dispose();
+    super.dispose();
   }
 
   /// Gets train station list from filter provider
@@ -140,17 +151,43 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   }
 
   Widget _buildStationsView() {
-    final trainStations = _getTrainStations();
+    final allStations = _getTrainStations();
+    final filteredStations = _stationSearchText.isEmpty
+        ? allStations
+        : allStations
+            .where((s) => (s['name'] as String)
+                .toLowerCase()
+                .contains(_stationSearchText.toLowerCase()))
+            .toList();
+
+    final filteredStations = _stationSearchText.isEmpty
+        ? trainStations
+        : trainStations
+            .where((s) => (s['name'] as String)
+                .toLowerCase()
+                .contains(_stationSearchText.toLowerCase()))
+            .toList();
 
     return Column(
       children: [
         _buildStationsHeader(),
         Divider(height: 1, color: AppColors.border),
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
+          child: SearchBarWidget(
+            hintTextKey: 'search_placeholder',
+            controller: _stationSearchController,
+            onChanged: (text) => setState(() => _stationSearchText = text),
+          ),
+        ),
         Expanded(
-          child: trainStations.isEmpty
+          child: filteredStations.isEmpty
               ? Center(
                   child: Text(
-                    td(ref, 'hours_no_data'), // Generic "No data" message
+                    td(ref, 'hours_no_data'),
                     style: AppTypography.bodyRegular.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -158,10 +195,9 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                 )
               : ListView.builder(
                   padding: EdgeInsets.zero,
-                  itemCount: trainStations.length,
+                  itemCount: filteredStations.length,
                   itemBuilder: (context, index) {
-                    final station = trainStations[index];
-                    return _buildStationOption(station);
+                    return _buildStationOption(filteredStations[index]);
                   },
                 ),
         ),
@@ -408,7 +444,13 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             children: [
               IconButton(
                 icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-                onPressed: () => setState(() => _view = 'options'),
+                onPressed: () {
+                  _stationSearchController.clear();
+                  setState(() {
+                    _view = 'options';
+                    _stationSearchText = '';
+                  });
+                },
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(),
               ),
