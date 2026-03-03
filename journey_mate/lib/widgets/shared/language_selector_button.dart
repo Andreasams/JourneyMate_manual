@@ -7,9 +7,7 @@ import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/locale_provider.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_spacing.dart';
-import '../../theme/app_typography.dart';
-import '../../theme/app_radius.dart';
+import 'overlay_dropdown_selector.dart';
 
 /// LanguageSelectorButton - Settings button for language selection
 ///
@@ -61,17 +59,8 @@ class LanguageSelectorButton extends ConsumerStatefulWidget {
 class _LanguageSelectorButtonState
     extends ConsumerState<LanguageSelectorButton> {
   // ─────────────────────────────────────────────────────────────────────────────
-  // State & Keys
+  // State (Business Logic Only - UI managed by OverlayDropdownSelector)
   // ─────────────────────────────────────────────────────────────────────────────
-
-  /// Global key to get button position for overlay placement
-  final GlobalKey _buttonKey = GlobalKey();
-
-  /// Tracks overlay entry for manual dismissal
-  OverlayEntry? _overlayEntry;
-
-  /// Tracks if overlay is currently visible
-  bool _isOverlayVisible = false;
 
   /// Tracks optimistically displayed language (updated immediately on selection)
   /// **Phase 1: Instant Visual Feedback**
@@ -89,14 +78,7 @@ class _LanguageSelectorButtonState
   // ─────────────────────────────────────────────────────────────────────────────
   // Lifecycle
   // ─────────────────────────────────────────────────────────────────────────────
-
-  @override
-  void dispose() {
-    // Clean up overlay entry directly without setState (widget is disposing)
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-    super.dispose();
-  }
+  // (No dispose needed - overlay managed by OverlayDropdownSelector)
 
   @override
   void didUpdateWidget(LanguageSelectorButton oldWidget) {
@@ -144,45 +126,6 @@ class _LanguageSelectorButtonState
     return _languageNames[languageCode] ?? languageCode.toUpperCase();
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Overlay Management
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  /// Shows the language selection overlay
-  void _showOverlay(BuildContext context) {
-    if (_isOverlayVisible) return;
-
-    final renderBox =
-        _buttonKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
-
-    final buttonSize = renderBox.size;
-    final buttonPosition = renderBox.localToGlobal(Offset.zero);
-
-    _overlayEntry = OverlayEntry(
-      builder: (overlayContext) => _buildOverlay(
-        context: context,
-        buttonPosition: buttonPosition,
-        buttonWidth: buttonSize.width,
-      ),
-    );
-
-    Overlay.of(context).insert(_overlayEntry!);
-    setState(() {
-      _isOverlayVisible = true;
-    });
-  }
-
-  /// Dismisses the overlay
-  void _dismissOverlay() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-    if (mounted) {
-      setState(() {
-        _isOverlayVisible = false;
-      });
-    }
-  }
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Language Selection
@@ -194,7 +137,7 @@ class _LanguageSelectorButtonState
   ///
   /// **Phase 1: Instant Visual Feedback (~16ms)**
   /// - Optimistic UI update (button text changes immediately)
-  /// - Dismisses overlay
+  /// - Overlay dismissal handled by OverlayDropdownSelector
   ///
   /// **Phase 2: Parallel API Calls (~500ms, was ~1000ms)**
   /// - Persist to SharedPreferences
@@ -211,9 +154,6 @@ class _LanguageSelectorButtonState
     // ═══════════════════════════════════════════════════════════════════════════
     // PHASE 1: INSTANT VISUAL FEEDBACK (~16ms)
     // ═══════════════════════════════════════════════════════════════════════════
-
-    // Dismiss overlay immediately for responsive feel
-    _dismissOverlay();
 
     // Skip if selecting same language
     if (newLanguageCode == widget.currentLanguageCode) return;
@@ -307,132 +247,14 @@ class _LanguageSelectorButtonState
     // ✅ Use optimistic display language if available, otherwise use prop
     // This ensures instant visual feedback when language changes
     final displayLanguage = _displayLanguageCode ?? widget.currentLanguageCode;
-    final languageName = _getLanguageDisplayName(displayLanguage);
 
-    return GestureDetector(
-      onTap: () => _showOverlay(context),
-      child: Container(
-        key: _buttonKey,
-        width: widget.width,
-        height: widget.height ?? 50.0,
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface,
-          borderRadius: BorderRadius.circular(AppRadius.chip),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                languageName,
-                style: AppTypography.bodyRegular.copyWith(
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
-              Icon(
-                _isOverlayVisible
-                    ? Icons.keyboard_arrow_up_rounded
-                    : Icons.keyboard_arrow_down_rounded,
-                color: AppColors.textSecondary,
-                size: 24.0,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Build: Overlay
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  /// Builds the complete overlay positioned below the button
-  Widget _buildOverlay({
-    required BuildContext context,
-    required Offset buttonPosition,
-    required double buttonWidth,
-  }) {
-    return Stack(
-      children: [
-        // Invisible barrier to detect outside taps
-        Positioned.fill(
-          child: GestureDetector(
-            onTap: _dismissOverlay,
-            child: Container(color: Colors.transparent),
-          ),
-        ),
-        // Language selection overlay
-        Positioned(
-          left: buttonPosition.dx,
-          top: buttonPosition.dy + (widget.height ?? 50.0) + AppSpacing.xs,
-          child: _buildOverlayContent(context, buttonWidth),
-        ),
-      ],
-    );
-  }
-
-  /// Builds the overlay content container
-  Widget _buildOverlayContent(BuildContext context, double width) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        width: width,
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface,
-          borderRadius: BorderRadius.circular(AppRadius.chip),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 4.0,
-              spreadRadius: 1.0,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.only(
-          left: AppSpacing.md,
-          right: AppSpacing.md,
-          top: AppSpacing.xs,
-          bottom: AppSpacing.xs,
-        ),
-        child: _buildLanguageList(context),
-      ),
-    );
-  }
-
-  /// Builds the list of language options
-  Widget _buildLanguageList(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: _languageOrder.map((languageCode) {
-        return _buildLanguageItem(context, languageCode);
-      }).toList(),
-    );
-  }
-
-  /// Builds a single language item
-  Widget _buildLanguageItem(BuildContext context, String languageCode) {
-    return InkWell(
-      onTap: () => _handleLanguageSelection(languageCode),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.only(
-          left: AppSpacing.xs,
-          top: AppSpacing.md,
-          bottom: AppSpacing.md,
-        ),
-        child: Text(
-          _getLanguageDisplayName(languageCode),
-          style: AppTypography.bodyRegular.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
-        ),
-      ),
+    return OverlayDropdownSelector<String>(
+      items: _languageOrder,
+      selectedItem: displayLanguage,
+      onItemSelected: _handleLanguageSelection,
+      itemDisplayBuilder: _getLanguageDisplayName,
+      width: widget.width,
+      height: widget.height,
     );
   }
 }
