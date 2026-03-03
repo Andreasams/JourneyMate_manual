@@ -24,9 +24,9 @@ Each scenario below provides:
 3. **ARCHITECTURE.md** → State Management → When to Use What (lines 146-154)
 4. **ARCHITECTURE.md** → State Management → Page-Local State (lines 239-282)
 5. **DESIGN_SYSTEM_flutter.md** → Quick Start (lines 16-36)
-6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13, #14 (lines 1337-1349, 1382-1462, 1594-1650, 1653-1683)
-7. **ARCHITECTURE.md** → Location Permission Pattern (lines 973-1051) — if page needs location UI
-8. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 486-831) — if page has dismissible UI elements
+6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13, #14 (lines 1458-1470, 1503-1583, 1715-1771, 1774-1804)
+7. **ARCHITECTURE.md** → Location Permission Pattern (lines 1187-1265) — if page needs location UI
+8. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 692-1037) — if page has dismissible UI elements
 
 **Critical warnings:**
 - ⚠️ Page-local UI state (loading flags, TextControllers, ScrollControllers) → local State variables, NOT providers
@@ -52,8 +52,8 @@ Each scenario below provides:
 3. **DESIGN_SYSTEM_flutter.md** → Colors (lines 39-90)
 4. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 92-120)
 5. **DESIGN_SYSTEM_flutter.md** → Typography (lines 122-180)
-6. **ARCHITECTURE.md** → Common Pitfall #8, #13, #15, #16 (lines 1337-1349, 1594-1650, 1686-1726, 1729-1768)
-7. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 486-831) — if widget has dismissible/swipeable UI
+6. **ARCHITECTURE.md** → Common Pitfall #8, #13, #15, #16 (lines 1544-1556, 1801-1857, 1893-1933, 1936-1975)
+7. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 692-1037) — if widget has dismissible/swipeable UI
 
 **Critical warnings:**
 - ⚠️ Widgets read providers/context internally — NO infrastructure props (language, translations, dimensions)
@@ -72,11 +72,11 @@ Each scenario below provides:
 **Estimated reading time:** 15 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → API Service Pattern (lines 461-517)
+1. **ARCHITECTURE.md** → API Service Pattern (lines 1040-1096)
 2. **_reference/BUILDSHIP_API_REFERENCE.md** → Endpoint you need (e.g., lines 10-124 for SEARCH v9)
 3. **ARCHITECTURE.md** → State Management → AsyncNotifierProvider (lines 176-214)
-4. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 520-597)
-5. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1087-1117)
+4. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1107-1184)
+5. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1596-1673)
 
 **Critical warnings:**
 - ⚠️ All backend calls through `ApiService.instance` singleton — NO direct Supabase SDK
@@ -95,7 +95,7 @@ Each scenario below provides:
 **Estimated reading time:** 10 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Translation System (lines 704-764)
+1. **ARCHITECTURE.md** → Translation System (lines 1268-1328)
 2. **CLAUDE.md** → Code Patterns → Translations (lines 67-70)
 3. **_reference/BUILDSHIP_API_REFERENCE.md** → GET /languageText (search for "languageText")
 4. **ARCHITECTURE.md** → Philosophy → Single Source of Truth for Translations (lines 42-48)
@@ -120,9 +120,9 @@ Each scenario below provides:
 2. **ARCHITECTURE.md** → State Management → Provider Catalog (lines 133-146)
 3. **ARCHITECTURE.md** → State Management → Riverpod 3.x Patterns (lines 148-259)
 4. **_reference/PROVIDERS_REFERENCE.md** → Full provider details (entire file, 726 lines)
-5. **ARCHITECTURE.md** → Provider Initialization Order (lines 1211-1235)
-6. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1087-1117)
-7. **ARCHITECTURE.md** → Location Permission Pattern (lines 624-703) — if working with locationProvider
+5. **ARCHITECTURE.md** → Provider Initialization Order (lines 2003-2027)
+6. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1596-1673)
+7. **ARCHITECTURE.md** → Location Permission Pattern (lines 1187-1265) — if working with locationProvider
 
 **Critical warnings:**
 - ⚠️ Global/session state → `NotifierProvider` or `AsyncNotifierProvider`
@@ -146,9 +146,9 @@ Each scenario below provides:
 2. **ARCHITECTURE.md** → State Management → Page-Local State (lines 216-259)
 3. **DESIGN_SYSTEM_flutter.md** → Input Decorations (search for "AppInputDecorations")
 4. **DESIGN_SYSTEM_flutter.md** → Button Styles (search for "AppButtonStyles")
-5. **ARCHITECTURE.md** → API Service Pattern (lines 461-517)
-6. **ARCHITECTURE.md** → Common Pitfall #8 (lines 1042-1054)
-7. **ARCHITECTURE.md** → Common Pitfall #11 Variation B (lines 1103-1185)
+5. **ARCHITECTURE.md** → API Service Pattern (lines 1040-1096)
+6. **ARCHITECTURE.md** → Common Pitfall #8 (lines 1546-1558)
+7. **ARCHITECTURE.md** → Common Pitfall #11 Variation B (lines 1612-1673)
 
 **Critical warnings:**
 - ⚠️ Form state (TextEditingController, validation) → local State variables, NOT providers
@@ -173,7 +173,7 @@ Each scenario below provides:
 2. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 92-120)
 3. **DESIGN_SYSTEM_flutter.md** → Typography (lines 122-180)
 4. **DESIGN_SYSTEM_flutter.md** → Border Radius (search for "AppRadius")
-5. **ARCHITECTURE.md** → Code Quality Standards → Design Token Adherence (lines 924-931)
+5. **ARCHITECTURE.md** → Code Quality Standards → Design Token Adherence (lines 1420-1427)
 6. **CLAUDE.md** → Code Review Checklist (lines 84-104)
 
 **Critical warnings:**
@@ -197,10 +197,10 @@ Each scenario below provides:
 **Estimated reading time:** 20 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1087-1117)
-2. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 520-597)
+1. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1596-1673)
+2. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1107-1184)
 3. **ARCHITECTURE.md** → State Management → When to Use What (lines 123-131)
-4. **ARCHITECTURE.md** → Common Pitfall #5 (lines 995-1009)
+4. **ARCHITECTURE.md** → Common Pitfall #5 (lines 1504-1518)
 5. **CLAUDE.md** → Flutter Code Conventions (lines 126-140)
 
 **Critical warnings:**
@@ -218,7 +218,7 @@ Each scenario below provides:
 ---
 
 ## 9. Implementing Search/Filter Features
-**Estimated reading time:** 35 minutes
+**Estimated reading time:** 45 minutes
 
 **Read these sections:**
 1. **_reference/BUILDSHIP_API_REFERENCE.md** → SEARCH endpoint v9 (lines 10-124)
@@ -226,10 +226,12 @@ Each scenario below provides:
 3. **_reference/PROVIDERS_REFERENCE.md** → searchStateProvider (search for "searchStateProvider")
 4. **_reference/PROVIDERS_REFERENCE.md** → filterProvider (search for "filterProvider")
 5. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 437-483)
-6. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 893-970)
-7. **ARCHITECTURE.md** → Common Pitfall #11, #13, #14 (lines 1382-1462, 1594-1650, 1653-1683)
-8. **ARCHITECTURE.md** → Location Permission Pattern (lines 973-1051) — for search banner location UI
-9. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 486-831) — for dismissible location banner
+6. **ARCHITECTURE.md** → Widget Patterns → Filter Coordination Pattern (lines 485-569)
+7. **ARCHITECTURE.md** → Widget Patterns → Parent-Child Filter Pattern (lines 571-691)
+8. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1107-1184)
+9. **ARCHITECTURE.md** → Common Pitfall #11, #13, #14, #18 (lines 1596-1676, 1796-1852, 1852-1882, 2031-2089)
+10. **ARCHITECTURE.md** → Location Permission Pattern (lines 1187-1265) — for search banner location UI
+11. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 692-1037) — for dismissible location banner
 
 **Critical warnings:**
 - ⚠️ **SEARCH API v9 LIVE:** NO `filtersUsedForSearch` parameter (use `filters` only), NO `category` parameter (always returns all with `section` field), access new `fullMatchCount` output field
@@ -237,6 +239,8 @@ Each scenario below provides:
 - ⚠️ Filter hierarchy loaded via AsyncNotifierProvider from BuildShip
 - ⚠️ Search results pre-loaded on Welcome/Settings pages for instant Search page
 - ⚠️ Filter panel is bottom sheet (NOT inline overlay) — tab selection is local state
+- ⚠️ **Cross-filter dependencies:** When filters have interdependencies (neighbourhood → station, shopping area → neighbourhood), use parent callbacks to auto-clear invalidated state (Filter Coordination Pattern prevents sort button showing unavailable station)
+- ⚠️ **Parent-child filters:** When parent+child both selected, deduplicate BEFORE titleId lookup to prevent double-counting (Pitfall #18). Hide parent chips AFTER routed ID inclusion to preserve neighbourhood/shopping area display. Bakery children use lowercase format ("Bakery with seating"), others use colon ("Café: In bookstore").
 - ⚠️ Match categorization handled by BuildShip via `section` field (`"fullMatch"`, `"partialMatch"`, `"others"`) — Flutter renders section headers when value changes
 - ⚠️ Filter overlays that sync state on close: save notifier in `initState()`, use in `dispose()` (Pitfall #11 Variation B)
 - ⚠️ Collection callbacks: Use `Map<String, Object>{}` not `Map<String, dynamic>{}` in `orElse:` (Common Pitfall #13)
@@ -260,7 +264,7 @@ Each scenario below provides:
 1. **_reference/BUILDSHIP_API_REFERENCE.md** → GET /businessProfile (search for "businessProfile")
 2. **_reference/BUILDSHIP_API_REFERENCE.md** → GET /businessMenu (search for "businessMenu")
 3. **_reference/PROVIDERS_REFERENCE.md** → businessProvider (search for "businessProvider")
-4. **ARCHITECTURE.md** → API Service Pattern (lines 461-517)
+4. **ARCHITECTURE.md** → API Service Pattern (lines 1040-1096)
 5. **ARCHITECTURE.md** → State Management → NotifierProvider (lines 149-174)
 
 **Critical warnings:**
@@ -281,9 +285,9 @@ Each scenario below provides:
 **Estimated reading time:** 15 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Analytics Architecture (lines 834-908)
+1. **ARCHITECTURE.md** → Analytics Architecture (lines 1343-1417)
 2. **ARCHITECTURE.md** → Philosophy → Fire-and-Forget Analytics (lines 50-56)
-3. **ARCHITECTURE.md** → Common Pitfall #9, #10 (lines 1056-1085)
+3. **ARCHITECTURE.md** → Common Pitfall #9, #10 (lines 1565-1594)
 4. **_reference/BUILDSHIP_API_REFERENCE.md** → POST /analytics (search for "analytics")
 
 **Critical warnings:**
@@ -304,11 +308,11 @@ Each scenario below provides:
 **Estimated reading time:** 15 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Translation System (lines 704-764)
+1. **ARCHITECTURE.md** → Translation System (lines 1268-1328)
 2. **_reference/PROVIDERS_REFERENCE.md** → localeProvider (search for "localeProvider")
 3. **_reference/PROVIDERS_REFERENCE.md** → localizationProvider (search for "localizationProvider")
 4. **_reference/BUILDSHIP_API_REFERENCE.md** → GET /languageText (search for "languageText")
-5. **ARCHITECTURE.md** → Key Architectural Decisions → Translation: 100% Supabase (lines 1187-1191)
+5. **ARCHITECTURE.md** → Key Architectural Decisions → Translation: 100% Supabase (lines 1979-1983)
 
 **Critical warnings:**
 - ⚠️ All text via `td(ref, 'key')` function — NO hardcoded strings
@@ -316,6 +320,7 @@ Each scenario below provides:
 - ⚠️ Language change triggers full app rebuild via `localeProvider` + MaterialApp
 - ⚠️ Currency preference stored separately in `localizationProvider`
 - ⚠️ Exchange rates fetched from external API, cached in provider state
+- ⚠️ **Distance unit preference is English-only** — Non-English users ALWAYS see metric (km/meters), ignoring stored preference. `DistanceUnitSelectorButton` visible only when `currentLanguage == 'en'`. See CLAUDE.md Decision #14.
 
 **Reference files:**
 - `journey_mate/lib/services/translation_service.dart` — `td()` function (40 lines)
@@ -326,6 +331,9 @@ Each scenario below provides:
 
 ## Navigation Guide Changelog
 
+**2026-03-03:** Added Parent-Child Filter Pattern (lines 571-691) and Pitfall #18 to Scenario 9. Updated all line references across 12 scenarios due to 121-line insertion in ARCHITECTURE.md from commit a917eee
+**2026-03-03:** Added Filter Coordination Pattern (lines 485-569) to Scenario 9. Updated all line references across 12 scenarios due to 86-line insertion in ARCHITECTURE.md from commit 8606b21
+**2026-03-02:** Updated Scenario 12 with distance unit preference warning (English-only) from commit c767773
 **2026-03-02:** Updated Scenarios 1, 2, 9 with Swipe Gesture Patterns section (lines 486-831) and new Pitfalls #14-16 from commit 58a7549
 **2026-02-24:** Initial 12-scenario guide created with targeted reading lists
 **2026-02-24:** Updated Scenarios 6 & 9 to reference expanded Common Pitfall #11 (dispose pattern)
