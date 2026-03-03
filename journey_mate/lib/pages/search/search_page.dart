@@ -756,7 +756,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             color: isActive ? AppColors.accent : AppColors.border,
             width: 1.5,
           ),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppRadius.filter),
         ),
         child: Stack(
           clipBehavior: Clip.none,

@@ -137,14 +137,6 @@ class AppTypography {
     height: 1.2,
   );
 
-  /// Filter tab - Filter panel tabs (16px, weight 600)
-  static const TextStyle filterTab = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textSecondary,
-    height: 1.3,
-  );
-
   /// View toggle - List/Map toggle buttons (13.5px, weight 500)
   static const TextStyle viewToggle = TextStyle(
     fontSize: 13.5,

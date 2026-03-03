@@ -221,7 +221,6 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 | `AppTypography.button` | 18px | w600 | Button text |
 | `AppTypography.chip` | 12.5px | w600 | Chip/tag text |
 | `AppTypography.status` | 12.5px | w600 | Status indicators |
-| `AppTypography.filterTab` | 16px | w600 | Filter panel tabs |
 | `AppTypography.viewToggle` | 13.5px | w500 | List/Map toggle buttons |
 
 ### Card Elements
