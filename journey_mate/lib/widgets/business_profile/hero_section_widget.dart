@@ -5,6 +5,7 @@ import '../../providers/business_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/app_typography.dart';
 
 /// Hero Section Widget - Business logo, name, and key details
 ///
@@ -54,10 +55,8 @@ class HeroSectionWidget extends ConsumerWidget {
           child: Center(
             child: Text(
               logoInitial,
-              style: const TextStyle(
+              style: AppTypography.sectionHeading.copyWith(
                 color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -72,12 +71,9 @@ class HeroSectionWidget extends ConsumerWidget {
               // Business name
               Text(
                 businessName,
-                style: const TextStyle(
+                style: AppTypography.restaurantName.copyWith(
                   fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.72, // -0.03em × 24px
-                  height: 1.2,
+                  letterSpacing: -0.72,
                 ),
               ),
               SizedBox(height: AppSpacing.xs),
@@ -85,11 +81,9 @@ class HeroSectionWidget extends ConsumerWidget {
               // Cuisine type
               Text(
                 cuisineType,
-                style: const TextStyle(
-                  fontSize: 13.5,
+                style: AppTypography.viewToggle.copyWith(
                   fontWeight: FontWeight.w400,
                   color: AppColors.textTertiary,
-                  height: 1.2,
                 ),
               ),
               SizedBox(height: AppSpacing.xxs),
@@ -100,11 +94,9 @@ class HeroSectionWidget extends ConsumerWidget {
                   // Status (Open/Closed)
                   Text(
                     statusOpen ? 'Åben' : 'Lukket',
-                    style: TextStyle(
+                    style: AppTypography.chip.copyWith(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
                       color: statusOpen ? AppColors.green : AppColors.red,
-                      height: 1.2,
                     ),
                   ),
 
@@ -114,11 +106,9 @@ class HeroSectionWidget extends ConsumerWidget {
                     SizedBox(width: AppSpacing.xsm),
                     Text(
                       'til $closingTime',
-                      style: const TextStyle(
-                        fontSize: 13,
+                      style: AppTypography.viewToggle.copyWith(
                         fontWeight: FontWeight.w400,
                         color: AppColors.textMuted,
-                        height: 1.2,
                       ),
                     ),
                   ],
@@ -129,11 +119,9 @@ class HeroSectionWidget extends ConsumerWidget {
                     SizedBox(width: AppSpacing.xsm),
                     Text(
                       priceRange,
-                      style: const TextStyle(
-                        fontSize: 13,
+                      style: AppTypography.viewToggle.copyWith(
                         fontWeight: FontWeight.w400,
                         color: AppColors.textMuted,
-                        height: 1.2,
                       ),
                     ),
                   ],
@@ -145,11 +133,9 @@ class HeroSectionWidget extends ConsumerWidget {
               if (addressLine.isNotEmpty)
                 Text(
                   addressLine,
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: AppTypography.viewToggle.copyWith(
                     fontWeight: FontWeight.w400,
                     color: AppColors.textPlaceholder,
-                    height: 1.2,
                   ),
                 ),
             ],
