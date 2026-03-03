@@ -311,7 +311,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
           'session_duration_seconds': duration.inSeconds,
-          if (businessIdInt != null) 'business_id': businessIdInt,
+          ...?businessIdInt != null ? {'business_id': businessIdInt} : null,
         },
       );
     }
@@ -616,7 +616,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       eventData: {
         'action': _aboutExpanded ? 'expanded' : 'collapsed',
         'text_id': 'about',
-        if (businessIdInt != null) 'business_id': businessIdInt,
+        ...?businessIdInt != null ? {'business_id': businessIdInt} : null,
       },
     )
         .catchError((e) {
