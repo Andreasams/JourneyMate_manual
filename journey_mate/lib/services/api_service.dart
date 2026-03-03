@@ -150,7 +150,7 @@ class ApiService {
       'page': page,
       'pageSize': pageSize,
       if (neighbourhoodId != null && neighbourhoodId.isNotEmpty)
-        'neighbourhoodId': neighbourhoodId.join(','),
+        'neighbourhoodId': json.encode(neighbourhoodId),
       if (shoppingAreaId != null) 'shoppingAreaId': shoppingAreaId,
     });
   }
