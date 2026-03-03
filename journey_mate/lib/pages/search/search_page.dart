@@ -450,6 +450,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => SortBottomSheet(
         currentSort: _currentSort,
         onlyOpen: _onlyOpen,
@@ -619,7 +620,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   Widget _buildSearchBar() {
     return SearchBarWidget(
-      hintTextKey: 'search_placeholder',
+      hintTextKey: 'search_placeholder_restaurants',
       controller: _searchController,
       onChanged: _onSearchTextChanged,
       onSubmitted: _executeSearch,
@@ -1057,7 +1058,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     // Loading state
     if (_isLoading && searchState.searchResults == null) {
-      return const RestaurantListShimmerWidget();
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+        child: const RestaurantListShimmerWidget(),
+      );
     }
 
     // Error state
