@@ -75,10 +75,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     super.initState();
     _pageStartTime = DateTime.now();
 
-    // Try to show cached preview data immediately (optimistic UI)
-    _loadCachedPreview();
-
+    // Schedule both cache preview and API data load after frame renders
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadCachedPreview();
       _loadBusinessData();
     });
   }
