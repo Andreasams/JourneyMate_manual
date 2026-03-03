@@ -21,6 +21,7 @@ import '../../widgets/business_profile/quick_actions_pills_widget.dart';
 import '../../widgets/business_profile/match_card_widget.dart';
 import '../../widgets/business_profile/tags_row_widget.dart';
 import '../../widgets/business_profile/opening_hours_contact_widget.dart';
+import '../../widgets/business_profile/inline_gallery_widget.dart';
 
 /// Business Profile Page V2 - Complete rewrite from JSX blueprint
 ///
@@ -279,6 +280,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   Widget _buildContent() {
     return CustomScrollView(
       slivers: [
+        // Sections 1–5: rely on parent horizontal padding (no own h-padding)
         SliverPadding(
           padding: EdgeInsets.only(
             top: AppSpacing.lg,
@@ -303,21 +305,20 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
               const TagsRowWidget(),
               SizedBox(height: AppSpacing.lg),
 
-              // 5. Opening Hours & Contact (Phase 3)
+              // 5. Opening Hours & Contact
               const OpeningHoursContactWidget(),
               SizedBox(height: AppSpacing.lg),
-
-              // TODO: Remaining sections (Phase 4-7)
-              // - Gallery
-              // - Menu with inline filter panel
-              // - Facilities & payments
-              // - About section
-              // - Report link
-
-              SizedBox(height: AppSpacing.huge),
             ]),
           ),
         ),
+
+        // 6. Gallery — self-contained widget with own 24 px horizontal padding.
+        // Must be a separate SliverToBoxAdapter (not inside the SliverPadding
+        // above) to avoid 48 px double-padding. Matches v1 pattern (page.dart:536).
+        const SliverToBoxAdapter(child: InlineGalleryWidget()),
+
+        // TODO: Phase 5+ — Menu, Facilities, Payments, About, Report link
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.huge)),
       ],
     );
   }
