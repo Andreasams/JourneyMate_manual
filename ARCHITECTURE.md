@@ -2257,6 +2257,8 @@ if (shoppingAreaId != null) 'shoppingAreaId': shoppingAreaId,
 
 **Discovered:** 2026-03-03 during CI build failure — `flutter analyze` reported 3 issues blocking deployment
 
+**Git reference:** Commit `810377f` — fix: use null-aware spread operators in map literals
+
 ---
 
 ## Documentation Philosophy
