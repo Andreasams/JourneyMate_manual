@@ -568,6 +568,127 @@ FilterOverlayWidget(
 
 ---
 
+### Parent-Child Filter Pattern (Hierarchical Filters)
+
+**Discovered:** Commit `a917eee`, March 2026
+**Applies to:** Filter types with hierarchical relationships (parent category + specific sub-types)
+
+Some filters have parent-child relationships where selecting a child (specific sub-type) makes the parent (general category) redundant. The app handles this with:
+1. **Count deduplication** — Parent+child counts as 1 selection, not 2
+2. **Smart chip display** — Hide parent chip, show combined "Parent: Child" chip
+3. **Formatting rules** — Lowercase for Bakery children, colon for others
+
+```dart
+/// Parent-child filter relationships
+/// Bakery (56) → [585, 586]
+/// Café (58) → [158, 159]
+/// Food truck (55) → [588]
+/// Sharing menu (100) → [196-207]
+/// Multi-course menu (101) → [184-195]
+
+// ❌ WRONG: Parent and child both count separately
+final filterCounts = <int, int>{1: 0, 2: 0, 3: 0};
+for (final filterId in activeFilters) {  // [56, 585] → counts as 2
+  final titleId = _findTitleIdForFilter(filterId, lookupMap);
+  counts[titleId] = (counts[titleId] ?? 0) + 1;
+}
+// Result: Type filter shows count of 2 (incorrect - double-counts Bakery + With seating)
+
+// ✅ CORRECT: Deduplicate parent+child before counting
+final deduplicatedFilters = _deduplicateParentChildCombos(activeFilters);  // [56, 585] → [585]
+for (final filterId in deduplicatedFilters) {
+  final titleId = _findTitleIdForFilter(filterId, lookupMap);
+  counts[titleId] = (counts[titleId] ?? 0) + 1;
+}
+// Result: Type filter shows count of 1 (correct - combined selection)
+
+List<int> _deduplicateParentChildCombos(List<int> activeFilters) {
+  const parentChildRelationships = <int, List<int>>{
+    56: [585, 586],        // Bakery → [With seating, With café]
+    58: [158, 159],        // Café → [With in-house bakery, In bookstore]
+    55: [588],             // Food truck → [Other]
+    100: [196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207],  // Sharing menu → 12 courses
+    101: [184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195],  // Multi-course menu → 12 courses
+  };
+
+  final activeSet = activeFilters.toSet();
+  final parentsToRemove = <int>{};
+
+  for (final entry in parentChildRelationships.entries) {
+    final parentId = entry.key;
+    final childrenIds = entry.value;
+
+    // If parent + ANY child selected, remove parent from count
+    if (activeSet.contains(parentId)) {
+      final hasChild = childrenIds.any((id) => activeSet.contains(id));
+      if (hasChild) parentsToRemove.add(parentId);
+    }
+  }
+
+  return activeFilters.where((id) => !parentsToRemove.contains(id)).toList();
+}
+```
+
+**Display Logic: Hide Parent Chips**
+
+```dart
+// Hide parent chips when children are selected
+final parentsToHide = _findParentsToHide(selectedFilterIds);
+final visibleChips = allDisplayIds.where((id) => !parentsToHide.contains(id)).toList();
+
+Set<int> _findParentsToHide(List<int> selectedFilterIds) {
+  final parentsToHide = <int>{};
+  for (final entry in _parentChildRelationships.entries) {
+    final hasChild = entry.value.any((childId) => selectedFilterIds.contains(childId));
+    if (hasChild) parentsToHide.add(entry.key);
+  }
+  return parentsToHide;
+}
+```
+
+**Formatting Rules:**
+
+```dart
+// Bakery children (585, 586) — lowercase format
+// "Bakery with seating" (matches dietary composite pattern)
+if (_bakeryChildrenIds.contains(filterId) && parentName != null) {
+  final lowercasedName = _lowercaseFirstLetter(name);
+  return '$parentName $lowercasedName';  // NO colon
+}
+
+// All other children — colon format
+// "Café: In bookstore", "Sharing menu: 5 courses"
+if (_allChildrenIds.contains(filterId) && parentName != null) {
+  return '$parentName: $name';  // WITH colon
+}
+```
+
+**When to Use:**
+- Filter hierarchy where parent is redundant when child selected
+- Display needs to show context for ambiguous child names
+- Count accuracy matters (prevent double-counting)
+
+**Pattern Benefits:**
+- ✅ Prevents double-counting parent+child selections
+- ✅ Clearer UX (shows combined "Parent: Child" chip instead of two separate chips)
+- ✅ Count accuracy across multiple consumers (search_page.dart, filter_titles_row.dart)
+- ✅ Consistent formatting rules
+
+**Common Use Cases:**
+- Bakery with seating vs plain Bakery
+- Café with in-house bakery vs plain Café
+- Multi-course menu: 3 courses vs plain Multi-course menu
+- Any hierarchical filter where child adds specificity
+
+**Reference:**
+- `journey_mate/lib/utils/filter_count_helper.dart` — Count deduplication
+- `journey_mate/lib/widgets/shared/selected_filters_btns.dart` — Chip display logic
+- Commit `a917eee` — Parent-child display logic with count deduplication
+
+**CRITICAL ORDERING REQUIREMENT:** See Common Pitfall #18 for ordering requirements.
+
+---
+
 ## Swipe Gesture Patterns
 
 **Discovered:** Phase 8, commit `58a7549` — Search page location banner swipe-to-dismiss
@@ -1904,6 +2025,62 @@ final filterName = filter['name'] as String;  // ✅ Returns actual name
 - Database column `filter_name` is NOT exposed in API response
 
 **Common in:** Any widget displaying filter names using filterProvider state.
+
+---
+
+### Pitfall #18: Parent-Child Filter Deduplication Must Happen Before titleId Lookup
+
+**Problem:** When calculating filter counts for parent-child filter relationships, deduplication must occur BEFORE titleId lookup. If deduplication happens after lookup, both consumers (search_page.dart and filter_titles_row.dart) will see incorrect counts.
+
+**Discovered:** Commit `a917eee` — Parent-child filter count deduplication
+
+**Why it happens:**
+- `titleId` represents filter category (Location, Type, Preferences)
+- Filter count shows "Type (3)" or "Preferences (2)" based on titleId groups
+- If parent+child both get titleIds assigned, count becomes 2 instead of 1
+- Deduplication AFTER titleId lookup only affects one consumer, not both
+
+❌ **Incorrect:**
+```dart
+// WRONG: Deduplicate after titleId lookup
+final counts = <int, int>{1: 0, 2: 0, 3: 0};
+for (final filterId in activeFilters) {  // [56, 585]
+  final titleId = _findTitleIdForFilter(filterId, lookupMap);
+  counts[titleId] = (counts[titleId] ?? 0) + 1;  // Both get counted
+}
+// counts now = {2: 2} (Type category has 2 selections)
+// Deduplicating here won't help - count is already wrong
+```
+
+✅ **Correct:**
+```dart
+// Deduplicate BEFORE titleId lookup
+final deduplicatedFilters = _deduplicateParentChildCombos(activeFilters);  // [56, 585] → [585]
+for (final filterId in deduplicatedFilters) {
+  final titleId = _findTitleIdForFilter(filterId, lookupMap);
+  counts[titleId] = (counts[titleId] ?? 0) + 1;
+}
+// counts = {2: 1} (Type category has 1 selection, correct!)
+```
+
+**How to fix:**
+1. Call `_deduplicateParentChildCombos()` FIRST, before any lookups
+2. Use deduplicated list for all subsequent operations
+3. Both count consumers see correct values automatically
+
+**Where it applies:**
+- `filter_count_helper.dart` — calculateFilterCounts()
+- Any widget that groups filters by titleId for display
+- Any analytics that tracks filter selection counts
+
+**Why order matters:**
+- titleId lookup assigns category (Type, Location, Preferences)
+- Deduplication removes parent from list
+- If parent already got a titleId, deduplication comes too late
+
+**Git reference:** Commit `a917eee` — feat(filters): implement parent-child display logic
+
+**Related ordering requirement:** Parent hiding must happen AFTER routed ID inclusion (neighbourhood/shopping area chips need routed IDs preserved for display).
 
 ---
 
