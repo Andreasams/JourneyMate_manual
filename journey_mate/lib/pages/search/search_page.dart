@@ -221,13 +221,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           documents,
           resultCount,
           fullMatchCount,
+          scoringFilterIds,
         );
 
         // Store API's active filter IDs
         ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
-
-        // Store scoring filter IDs (for section grouping)
-        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
 
         // Track analytics
         final analytics = AnalyticsService.instance;
@@ -456,18 +454,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void _openSortBottomSheet() {
     final searchState = ref.read(searchStateProvider);
 
-    // Use same count logic as page title: fullMatchCount when scoring filters exist
-    final hasActiveFiltersOrSearch =
-        searchState.filtersUsedForSearch.isNotEmpty ||
-        searchState.selectedNeighbourhoodId != null ||
-        searchState.selectedShoppingAreaId != null ||
-        searchState.currentSearchText.isNotEmpty;
-
-    final count = (hasActiveFiltersOrSearch && searchState.scoringFilterIds.isNotEmpty)
-        ? searchState.fullMatchCount
-        : searchState.searchResultsCount;
-
-    final openPlacesCount = _onlyOpen ? count : 0;
+    // Use visibleResultCount: the exact number of items rendered by SearchResultsListView
+    final openPlacesCount = _onlyOpen ? searchState.visibleResultCount : 0;
 
     showModalBottomSheet(
       context: context,
