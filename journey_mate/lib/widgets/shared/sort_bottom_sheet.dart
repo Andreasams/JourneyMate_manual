@@ -37,6 +37,7 @@ class SortBottomSheet extends ConsumerStatefulWidget {
 class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   late String _selectedSort;
   late bool _onlyOpen;
+  late int? _selectedStation; // Track selected station locally for immediate visual feedback
   String _view = 'options'; // 'options' or 'stations'
 
   final TextEditingController _stationSearchController = TextEditingController();
@@ -47,6 +48,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     super.initState();
     _selectedSort = widget.currentSort;
     _onlyOpen = widget.onlyOpen;
+    _selectedStation = widget.selectedStation;
   }
 
   @override
@@ -111,15 +113,28 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.65,
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.bottomSheet),
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    // When keyboard is visible, expand sheet to show more content
+    // Otherwise use 65% of screen height
+    final sheetHeight = keyboardHeight > 0
+        ? MediaQuery.of(context).size.height * 0.85 // 85% when keyboard visible
+        : MediaQuery.of(context).size.height * 0.65;
+
+    return GestureDetector(
+      onTap: () {
+        // Dismiss keyboard when tapping on the sheet background
+        FocusScope.of(context).unfocus();
+      },
+      child: Container(
+        height: sheetHeight,
+        decoration: BoxDecoration(
+          color: AppColors.bgCard,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.bottomSheet),
+          ),
         ),
+        child: _view == 'options' ? _buildOptionsView() : _buildStationsView(),
       ),
-      child: _view == 'options' ? _buildOptionsView() : _buildStationsView(),
     );
   }
 
@@ -150,9 +165,6 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   }
 
   Widget _buildStationsView() {
-    // Detect keyboard height for padding calculation
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-
     final allStations = _getTrainStations();
     final filteredStations = _stationSearchText.isEmpty
         ? allStations
@@ -189,9 +201,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                 )
               : ListView.builder(
                   padding: EdgeInsets.only(
-                    bottom: keyboardHeight > 0
-                        ? keyboardHeight + AppSpacing.lg  // Keyboard visible: add clearance
-                        : AppSpacing.md,                   // Keyboard hidden: standard padding
+                    bottom: AppSpacing.md, // Standard padding - sheet height handles keyboard
                   ),
                   itemCount: filteredStations.length,
                   itemBuilder: (context, index) {
@@ -370,12 +380,12 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     final searchState = ref.read(searchStateProvider);
     final hasShoppingArea = searchState.selectedShoppingAreaId != null;
 
-    // Get station name if a station is selected
+    // Get station name if a station is selected (use local state for immediate visual feedback)
     String displayText = td(ref, translationKey);
-    if (selectedStationId != null) {
+    if (_selectedStation != null) {
       final trainStations = _getTrainStations();
       final selectedStation = trainStations.firstWhere(
-        (s) => s['id'] == selectedStationId,
+        (s) => s['id'] == _selectedStation,
         orElse: () => <String, Object>{},
       );
       if (selectedStation.isNotEmpty) {
@@ -469,7 +479,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   Widget _buildStationOption(Map<String, dynamic> station) {
     final stationId = station['id'] as int;
     final stationName = station['name'] as String;
-    final isSelected = widget.selectedStation == stationId;
+    final isSelected = _selectedStation == stationId; // Use local state for immediate visual feedback
 
     return Container(
       color: isSelected ? AppColors.bgSurface : Colors.transparent,
@@ -504,11 +514,17 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           // Toggle behavior: if already selected, deselect (return to 'nearest' default)
           // Backend handles degradation to alphabetical when location is off
           if (isSelected) {
-            setState(() => _selectedSort = 'nearest');
+            setState(() {
+              _selectedSort = 'nearest';
+              _selectedStation = null; // Clear local station selection
+            });
             widget.onSortChanged('nearest', _onlyOpen, null);
             // Keep sheet open on deselection so user sees the reset state
           } else {
-            setState(() => _selectedSort = 'station');
+            setState(() {
+              _selectedSort = 'station';
+              _selectedStation = stationId; // Update local station selection
+            });
             widget.onSortChanged('station', _onlyOpen, stationId);
             Navigator.pop(context);
           }
