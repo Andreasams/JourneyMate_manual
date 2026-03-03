@@ -159,7 +159,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // Filters are a top-level array (not nested inside businessInfo)
         final topLevelFilters = raw['filters'] as List? ?? [];
         final businessHours = raw['businessHours'] as Map<String, dynamic>? ?? {};
-        final openWindows = raw['openWindows'] as List? ?? [];
 
         final filterIds = topLevelFilters
             .whereType<Map<String, dynamic>>()
@@ -167,23 +166,10 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             .whereType<int>()
             .toList();
 
-        // Compute fields HeroSectionWidget expects that the API doesn't return directly
-        final priceMin = businessInfo['price_range_min'] as int?;
-        final priceMax = businessInfo['price_range_max'] as int?;
-        final priceCurrency = businessInfo['price_range_currency_code'] as String? ?? '';
-        final priceRange = (priceMin != null && priceMax != null)
-            ? '$priceMin–$priceMax $priceCurrency'
-            : '';
-
-        // Build enriched business map: merge filters + inject computed fields
+        // Build business map: spread businessInfo + merge top-level filters
         final business = <String, dynamic>{
           ...businessInfo,
           'filters': topLevelFilters,
-          'cuisine_type': businessInfo['business_type'] ?? '',
-          'price_range': priceRange,
-          'status_open': _computeStatusOpen(openWindows),
-          'closing_time': _computeClosingTime(openWindows),
-          'address': {'address_line': businessInfo['street'] ?? ''},
         };
 
         ref.read(businessProvider.notifier).setCurrentBusiness(
@@ -258,42 +244,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       timestamp: DateTime.now().toIso8601String(),
       eventData: {'business_id': businessIdInt},
     );
-  }
-
-  /// Compute whether business is currently open from openWindows data.
-  /// openWindows: [ { day: 0, open: 420, close: 1080 } ]
-  /// day is 0=Monday; open/close are minutes from midnight.
-  bool _computeStatusOpen(List openWindows) {
-    final now = DateTime.now();
-    final todayMinutes = now.hour * 60 + now.minute;
-    final todayIndex = now.weekday - 1; // DateTime.weekday: 1=Mon → index 0
-    for (final window in openWindows) {
-      if (window is Map<String, dynamic> && window['day'] == todayIndex) {
-        final open = window['open'] as int?;
-        final close = window['close'] as int?;
-        if (open != null && close != null) {
-          return todayMinutes >= open && todayMinutes < close;
-        }
-      }
-    }
-    return false;
-  }
-
-  /// Format today's closing time as "HH:MM" from openWindows data.
-  String _computeClosingTime(List openWindows) {
-    final now = DateTime.now();
-    final todayIndex = now.weekday - 1;
-    for (final window in openWindows) {
-      if (window is Map<String, dynamic> && window['day'] == todayIndex) {
-        final close = window['close'] as int?;
-        if (close != null) {
-          final hours = close ~/ 60;
-          final minutes = (close % 60).toString().padLeft(2, '0');
-          return '$hours:$minutes';
-        }
-      }
-    }
-    return '';
   }
 
   @override

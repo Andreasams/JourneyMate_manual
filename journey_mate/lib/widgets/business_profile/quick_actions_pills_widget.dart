@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:map_launcher/map_launcher.dart';
 
+import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/app_typography.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../services/translation_service.dart';
@@ -39,12 +41,12 @@ class QuickActionsPillsWidget extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    // Extract business data
-    final phone = business['phone_number'] as String?;
-    final website = business['website'] as String?;
-    final bookingUrl = business['booking_url'] as String?;
-    final latitude = business['address']?['latitude'] as double?;
-    final longitude = business['address']?['longitude'] as double?;
+    // Extract business data (real API field names)
+    final phone = business['general_phone'] as String?;
+    final website = business['website_url'] as String?;
+    final bookingUrl = business['reservation_url'] as String?;
+    final latitude = (business['latitude'] as num?)?.toDouble();
+    final longitude = (business['longitude'] as num?)?.toDouble();
     final businessName = business['business_name'] as String?;
 
     // Build action pills (only show if data available)
@@ -121,13 +123,13 @@ class QuickActionsPillsWidget extends ConsumerWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.filter),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 8,
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.mlg,
+            vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
             border: Border.all(
-              color: const Color(0xFFE8E8E8),
+              color: AppColors.border,
               width: 1.5,
             ),
             borderRadius: BorderRadius.circular(AppRadius.filter),
@@ -138,16 +140,15 @@ class QuickActionsPillsWidget extends ConsumerWidget {
               Icon(
                 icon,
                 size: 14,
-                color: const Color(0xFF666666), // Dark gray icon
+                color: AppColors.textSecondary,
               ),
               SizedBox(width: AppSpacing.xsm),
               Text(
                 label,
-                style: const TextStyle(
+                style: AppTypography.chip.copyWith(
                   fontSize: 13,
-                  fontWeight: FontWeight.w500, // 520 → w500
-                  color: Color(0xFF444444), // Dark gray text
-                  height: 1.2,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],

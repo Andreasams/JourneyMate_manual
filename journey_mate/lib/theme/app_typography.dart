@@ -79,6 +79,15 @@ class AppTypography {
     height: 1.43, // ~20px line height
   );
 
+  /// Subtitle - Descriptive text under headings (16px, weight 300)
+  /// Used for section descriptions on settings forms and explanatory text
+  static const TextStyle subtitle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w300,
+    color: AppColors.textSecondary,
+    height: 1.5, // 24px line height
+  );
+
   // ============================================================
   // UI ELEMENTS
   // ============================================================

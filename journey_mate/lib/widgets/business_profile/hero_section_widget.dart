@@ -1,7 +1,13 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
+import '../../providers/settings_providers.dart';
+import '../../services/custom_functions/business_status.dart';
+import '../../services/custom_functions/hours_formatter.dart';
+import '../../services/custom_functions/price_formatter.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
@@ -12,58 +18,87 @@ import '../../theme/app_typography.dart';
 /// Displays:
 /// - Business logo (64x64 circle with colored background + initial)
 /// - Business name (large heading)
-/// - Cuisine type (gray subtitle)
-/// - Status row: Open/Closed + closing time + price range
+/// - Status row: Open/Closed + timing + price range (dot-separated)
 /// - Address
 ///
 /// Design matches JSX lines 161-176
 /// Self-contained: reads from businessProvider internally
+/// Status/timing computed via shared utilities (same as search cards)
 class HeroSectionWidget extends ConsumerWidget {
   const HeroSectionWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final business = ref.watch(businessProvider).currentBusiness;
+    final businessState = ref.watch(businessProvider);
+    final business = businessState.currentBusiness;
 
     if (business == null) {
       return const SizedBox.shrink();
     }
 
-    // Extract business data
+    // --- Data extraction (real API fields) ---
     final businessName = business['business_name'] as String? ?? '';
-    final cuisineType = business['cuisine_type'] as String? ?? '';
-    final priceRange = business['price_range'] as String? ?? '';
-    final statusOpen = business['status_open'] as bool? ?? false;
-    final closingTime = business['closing_time'] as String? ?? '';
-    final addressLine = business['address']?['address_line'] as String? ?? '';
+    final street = business['street'] as String? ?? '';
 
-    // Logo data
+    // --- Logo / Profile picture ---
+    final profilePictureUrl = business['profile_picture_url'] as String?;
     final logoInitial = _getBusinessInitial(businessName);
     final logoColor = _getLogoColor(business);
+
+    // --- Status & timing (same utilities as search cards) ---
+    final openingHours = businessState.openingHours;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final translationsCache = ref.watch(translationsCacheProvider);
+
+    String? statusText;
+    Color? statusColor;
+    String? timingText;
+
+    if (openingHours != null) {
+      final now = DateTime.now();
+      final statusResult = determineStatusAndColor(
+        openingHours,
+        now,
+        languageCode,
+        translationsCache,
+      );
+      statusText = statusResult['text'] as String?;
+      statusColor = statusResult['color'] as Color?;
+
+      timingText = openClosesAt(
+        openingHours,
+        now,
+        languageCode,
+        translationsCache,
+      );
+    }
+
+    // --- Price range (same utility as search cards) ---
+    final priceRangeMin = business['price_range_min'] as num?;
+    final priceRangeMax = business['price_range_max'] as num?;
+    final exchangeRate = ref.watch(localizationProvider).exchangeRate;
+    final userCurrencyCode = ref.watch(localizationProvider).currencyCode;
+
+    String? priceRangeText;
+    if (priceRangeMin != null && priceRangeMax != null) {
+      priceRangeText = convertAndFormatPriceRange(
+        priceRangeMin.toDouble(),
+        priceRangeMax.toDouble(),
+        'DKK',
+        exchangeRate,
+        userCurrencyCode,
+        forceNoDecimals: true,
+      );
+    }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Logo circle
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: logoColor,
-            borderRadius: BorderRadius.circular(AppRadius.logoLarge),
-          ),
-          child: Center(
-            child: Text(
-              logoInitial,
-              style: AppTypography.sectionHeading.copyWith(
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
+        // Profile picture (with colored initial fallback)
+        _buildProfileImage(profilePictureUrl, logoColor, logoInitial),
         SizedBox(width: AppSpacing.lg),
 
-        // Business details (name, cuisine, status, address)
+        // Business details (name, status, address)
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,47 +113,44 @@ class HeroSectionWidget extends ConsumerWidget {
               ),
               SizedBox(height: AppSpacing.xs),
 
-              // Cuisine type
-              Text(
-                cuisineType,
-                style: AppTypography.viewToggle.copyWith(
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textTertiary,
-                ),
-              ),
-              SizedBox(height: AppSpacing.xxs),
-
-              // Status row: Open/Closed + dots + closing time + price range
+              // Status row: Open/Closed + dot + timing + dot + price range
               Row(
                 children: [
-                  // Status (Open/Closed)
-                  Text(
-                    statusOpen ? 'Åben' : 'Lukket',
-                    style: AppTypography.chip.copyWith(
-                      fontSize: 13,
-                      color: statusOpen ? AppColors.green : AppColors.red,
+                  // Status (Open/Closed) — from determineStatusAndColor
+                  if (statusText != null && statusText.isNotEmpty)
+                    Text(
+                      statusText,
+                      style: AppTypography.chip.copyWith(
+                        fontSize: 13,
+                        color: statusColor ?? AppColors.green,
+                      ),
                     ),
-                  ),
 
-                  if (closingTime.isNotEmpty) ...[
+                  // Timing text (e.g. "til 18:00") — from openClosesAt
+                  if (timingText != null && timingText.isNotEmpty) ...[
                     SizedBox(width: AppSpacing.xsm),
                     _buildDot(),
                     SizedBox(width: AppSpacing.xsm),
-                    Text(
-                      'til $closingTime',
-                      style: AppTypography.viewToggle.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textMuted,
+                    Flexible(
+                      child: Text(
+                        timingText,
+                        style: AppTypography.viewToggle.copyWith(
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textMuted,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
 
-                  if (priceRange.isNotEmpty) ...[
+                  // Price range — from convertAndFormatPriceRange
+                  if (priceRangeText != null && priceRangeText.isNotEmpty) ...[
                     SizedBox(width: AppSpacing.xsm),
                     _buildDot(),
                     SizedBox(width: AppSpacing.xsm),
                     Text(
-                      priceRange,
+                      priceRangeText,
                       style: AppTypography.viewToggle.copyWith(
                         fontWeight: FontWeight.w400,
                         color: AppColors.textMuted,
@@ -130,9 +162,9 @@ class HeroSectionWidget extends ConsumerWidget {
               SizedBox(height: 3),
 
               // Address
-              if (addressLine.isNotEmpty)
+              if (street.isNotEmpty)
                 Text(
-                  addressLine,
+                  street,
                   style: AppTypography.viewToggle.copyWith(
                     fontWeight: FontWeight.w400,
                     color: AppColors.textPlaceholder,
@@ -145,21 +177,51 @@ class HeroSectionWidget extends ConsumerWidget {
     );
   }
 
-  /// Get business initial (first letter or first 2 letters)
+  /// Build profile image: real photo if available, colored initial fallback
+  Widget _buildProfileImage(
+    String? profilePictureUrl,
+    Color logoColor,
+    String logoInitial,
+  ) {
+    Widget fallback() {
+      return Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: logoColor,
+          borderRadius: BorderRadius.circular(AppRadius.logoLarge),
+        ),
+        child: Center(
+          child: Text(
+            logoInitial,
+            style: AppTypography.sectionHeading.copyWith(
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (profilePictureUrl == null || profilePictureUrl.isEmpty) {
+      return fallback();
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.logoLarge),
+      child: CachedNetworkImage(
+        imageUrl: profilePictureUrl,
+        width: 64,
+        height: 64,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => fallback(),
+        errorWidget: (context, url, error) => fallback(),
+      ),
+    );
+  }
+
+  /// Get business initial (first letter of name)
   String _getBusinessInitial(String name) {
     if (name.isEmpty) return '?';
-
-    // Check if name has multiple words
-    final words = name.trim().split(' ');
-    if (words.length >= 2 && words[0].isNotEmpty && words[1].isNotEmpty) {
-      // Use first letter of first two words
-      return '${words[0][0]}${words[1][0]}'.toUpperCase();
-    }
-
-    // Use first two letters if available, otherwise just first letter
-    if (name.length >= 2) {
-      return name.substring(0, 2).toUpperCase();
-    }
     return name[0].toUpperCase();
   }
 
@@ -169,7 +231,6 @@ class HeroSectionWidget extends ConsumerWidget {
     final logoColorHex = business['logo_color'] as String?;
     if (logoColorHex != null && logoColorHex.isNotEmpty) {
       try {
-        // Remove '#' if present and parse hex color
         final hexColor = logoColorHex.replaceAll('#', '');
         return Color(int.parse('FF$hexColor', radix: 16));
       } catch (e) {

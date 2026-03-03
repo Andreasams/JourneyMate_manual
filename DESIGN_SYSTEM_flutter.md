@@ -209,6 +209,7 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 | `AppTypography.bodyMedium` | 16px | w500 | Emphasized body text |
 | `AppTypography.bodySmall` | 15px | w500 | Smaller body text |
 | `AppTypography.bodyTiny` | 14px | w400 | Tiny text, footnotes |
+| `AppTypography.subtitle` | 16px | w300 | Descriptive text under headings (settings forms) |
 
 ### UI Elements
 
@@ -531,22 +532,14 @@ Column(
     // Main page title (if present)
     Text(
       'Main Title',
-      style: GoogleFonts.roboto(
-        fontSize: 20,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textPrimary,
-      ),
+      style: AppTypography.sectionHeading,  // 20px, w700
     ),
     SizedBox(height: AppSpacing.sm),  // 8px
 
     // Main subtitle
     Text(
       'Description of the page',
-      style: GoogleFonts.roboto(
-        fontSize: 14,
-        fontWeight: FontWeight.w300,
-        color: AppColors.textSecondary,
-      ),
+      style: AppTypography.subtitle,  // 16px, w300, textSecondary
     ),
     SizedBox(height: 28),  // Tighter first gap (not 32px)
 
@@ -562,11 +555,7 @@ Column(
     // Section subtitle
     Text(
       'Section description',
-      style: GoogleFonts.roboto(
-        fontSize: 14,
-        fontWeight: FontWeight.w300,
-        color: AppColors.textSecondary,
-      ),
+      style: AppTypography.subtitle,  // 16px, w300, textSecondary
     ),
     SizedBox(height: AppSpacing.sm),  // 8px
 
@@ -587,12 +576,12 @@ Column(
 
 **Key Rules:**
 - Section titles: 16px, **w600**, textPrimary (darker, heavier)
-- Subtitles: **14px**, w300, textSecondary (lighter weight, lighter color)
+- Subtitles: **16px**, w300, textSecondary (lighter weight, lighter color) - use `AppTypography.subtitle`
 - Placeholders: **14px** (not default 16px)
 - First gap: **28px** (tighter than other sections)
 - Section spacing: **24px** (AppSpacing.xxl, not xl)
 
-**Rationale:** Consistent visual hierarchy across all settings forms. Weight (w600 vs w300) and color (textPrimary vs textSecondary) create clear distinction without size differences. Placeholders match subtitle size for visual consistency.
+**Rationale:** Consistent visual hierarchy across all settings forms. Weight (w600 vs w300) and color (textPrimary vs textSecondary) create clear distinction. Subtitles increased from 14px to 16px (March 2026) for improved readability while maintaining light w300 weight for visual hierarchy.
 
 **Example files:**
 - `journey_mate/lib/pages/settings/widgets/feedback_form_widget.dart`

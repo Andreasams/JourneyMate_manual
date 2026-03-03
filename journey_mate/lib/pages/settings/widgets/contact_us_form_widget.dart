@@ -164,11 +164,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           // Main subtitle
           Text(
             td(ref, 'contact_form_subtitle_main'),
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w300,
-              color: AppColors.textSecondary,
-            ),
+            style: AppTypography.subtitle,
           ),
           SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
@@ -287,11 +283,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           SizedBox(height: AppSpacing.xs),
           Text(
             subtitle,
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w300,
-              color: AppColors.textSecondary,
-            ),
+            style: AppTypography.subtitle,
           ),
         ],
 
