@@ -2084,6 +2084,55 @@ for (final filterId in deduplicatedFilters) {
 
 ---
 
+### Pitfall #19: Using Double Underscores for Unused Parameters
+
+**Problem:** Using `__` (double underscore) for parameter names triggers `unnecessary_underscores` lint error, causing `flutter analyze` to fail.
+
+**When it happens:**
+- Error callbacks with multiple ignored parameters: `(_, __) => ...`
+- Any function parameter where you need multiple ignored arguments
+- Flutter 3.41.x enforces stricter linting rules than earlier versions
+
+**Error message:**
+```
+info • Unnecessary use of multiple underscores • lib/pages/search/search_page.dart:380:46 • unnecessary_underscores
+
+1 issue found. (ran in 15.9s)
+Build failed :|
+Step 9 script `Flutter analyze` exited with status code 1
+```
+
+**Why it fails:** Dart lint rules prohibit consecutive underscores for parameter names as they reduce readability without adding value.
+
+❌ **Bad:**
+```dart
+// Error callback with double underscore
+error: (_, __) => true,  // ← Triggers unnecessary_underscores lint
+```
+
+✅ **Good:**
+```dart
+// Option 1: Simple parameter names
+error: (e, s) => true,  // ← Short names for error, stackTrace
+
+// Option 2: Descriptive names (if referenced)
+error: (error, stack) => true,
+
+// Option 3: Single underscore for ONE ignored param
+loading: (_) => true,  // ← Acceptable for single ignored parameter
+```
+
+**Naming conventions for unused parameters:**
+- Single ignored parameter: `_` (acceptable)
+- Two ignored parameters: `(e, s)` or `(error, stack)` (no `__`)
+- Mixed (first used, second ignored): `(value, _)` or better: `(value, s)`
+
+**Common in:** AsyncValue.when() callbacks, error handlers, Stream listeners with multiple parameters.
+
+**Reference:** Commit `1ba36c5` — fix(search): replace double underscore with simple parameter names
+
+---
+
 ## Documentation Philosophy
 
 JourneyMate maintains **three types of documentation**:

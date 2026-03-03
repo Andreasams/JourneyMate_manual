@@ -88,6 +88,11 @@ Read these documents IN ORDER at the start of every session:
 ### Flutter 3.x APIs
 - `WidgetStateProperty` (not MaterialStateProperty) | `.withValues(alpha:)` (not .withOpacity()) | `context.mounted` (not mounted after async)
 
+### Linting Rules
+- **Parameter names:** Never use double underscores `__` (triggers `unnecessary_underscores` lint)
+- **Ignored parameters:** Use single underscore `_` or simple names like `e`, `s`, `error`, `stack`
+- **Example:** `error: (e, s) => true` NOT `error: (_, __) => true`
+
 ---
 
 ## Code Review Checklist
