@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/search_providers.dart';
@@ -54,9 +53,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   // Filter overlay state
   int _activeFilterTab = 0;
   bool _isFilterSheetOpen = false;
-
-  // User position for distance display in restaurant cards
-  Position? _userPositionForDisplay;
 
   // Banner swipe state
   double _bannerDragOffset = 0.0;      // Current horizontal offset during drag
@@ -120,7 +116,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   Future<void> _initialize() async {
     // Refresh location state (checks both service + permission)
-    await ref.read(locationProvider.notifier).checkPermission();
+    final locationNotifier = ref.read(locationProvider.notifier);
+    await locationNotifier.checkPermission();
+
+    // Pre-fetch location for immediate availability
+    await locationNotifier.getCurrentPosition();
 
     // Load initial results if no cached results
     final searchState = ref.read(searchStateProvider);
@@ -154,28 +154,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     });
 
     final searchState = ref.read(searchStateProvider);
-    final locationState = ref.read(locationProvider);
 
-    // Get user location if usable (service on + permission granted)
-    Position? position;
-    if (locationState.isLocationUsable) {
-      try {
-        position = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.medium,
-            timeLimit: Duration(seconds: 5),
-          ),
-        );
-        // Store position for UI display
-        if (mounted) {
-          setState(() {
-            _userPositionForDisplay = position;
-          });
-        }
-      } catch (e) {
-        debugPrint('Location error: $e');
-      }
-    }
+    // Get user location from provider (cached for 5 minutes)
+    final position = await ref.read(locationProvider.notifier).getCurrentPosition();
 
     // ignore: use_build_context_synchronously
     final languageCode = Localizations.localeOf(context).languageCode;
@@ -1158,7 +1139,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl), // 20px per JSX
       child: SearchResultsListView(
-        userLocation: _userPositionForDisplay,
         onBusinessTap: (businessId) {
           // Navigate to business profile
           context.push('/business/$businessId');

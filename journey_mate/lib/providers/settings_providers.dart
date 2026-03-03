@@ -254,6 +254,46 @@ class LocationNotifier extends Notifier<LocationState> {
     }
   }
 
+  /// Fetches current GPS position if location is usable.
+  /// Returns cached position if < 5 minutes old.
+  /// Returns null if location not usable or fetch fails.
+  /// Safe to call multiple times - won't spam GPS.
+  Future<Position?> getCurrentPosition() async {
+    // Check if location is usable (service + permission)
+    if (!state.isLocationUsable) {
+      return null;
+    }
+
+    // Return cached position if < 5 minutes old
+    if (state.currentPosition != null && state.lastPositionFetch != null) {
+      final age = DateTime.now().difference(state.lastPositionFetch!);
+      if (age.inMinutes < 5) {
+        return state.currentPosition;
+      }
+    }
+
+    // Fetch fresh position
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 5),
+        ),
+      );
+
+      // Update state with fresh position
+      state = state.copyWith(
+        currentPosition: position,
+        lastPositionFetch: DateTime.now(),
+      );
+
+      return position;
+    } catch (e) {
+      debugPrint('⚠️ Error fetching position: $e');
+      return null;  // Defensive: don't throw, return null
+    }
+  }
+
   /// Synchronous initialization from pre-read SharedPreferences values
   void initializeFromPrefs({required bool isBannerDismissed}) {
     state = state.copyWith(isBannerDismissed: isBannerDismissed);

@@ -2,6 +2,8 @@
 /// Centralized to prevent circular import issues
 library;
 
+import 'package:geolocator/geolocator.dart';
+
 // ============================================================
 // ACCESSIBILITY STATE
 // ============================================================
@@ -522,11 +524,15 @@ class LocationState {
   final bool hasPermission;
   final bool isServiceEnabled;
   final bool isBannerDismissed;
+  final Position? currentPosition;        // GPS coordinates
+  final DateTime? lastPositionFetch;      // For 5-min cache
 
   const LocationState({
     required this.hasPermission,
     required this.isServiceEnabled,
     required this.isBannerDismissed,
+    this.currentPosition,                  // Nullable (not always available)
+    this.lastPositionFetch,
   });
 
   /// Whether location is actually usable (service on + permission granted)
@@ -537,6 +543,8 @@ class LocationState {
       hasPermission: false,
       isServiceEnabled: false,
       isBannerDismissed: false,
+      currentPosition: null,
+      lastPositionFetch: null,
     );
   }
 
@@ -544,11 +552,15 @@ class LocationState {
     bool? hasPermission,
     bool? isServiceEnabled,
     bool? isBannerDismissed,
+    Position? currentPosition,
+    DateTime? lastPositionFetch,
   }) {
     return LocationState(
       hasPermission: hasPermission ?? this.hasPermission,
       isServiceEnabled: isServiceEnabled ?? this.isServiceEnabled,
       isBannerDismissed: isBannerDismissed ?? this.isBannerDismissed,
+      currentPosition: currentPosition ?? this.currentPosition,
+      lastPositionFetch: lastPositionFetch ?? this.lastPositionFetch,
     );
   }
 }

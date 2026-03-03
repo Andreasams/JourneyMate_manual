@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../providers/search_providers.dart';
@@ -37,13 +36,11 @@ class SearchResultsListView extends ConsumerStatefulWidget {
     super.key,
     this.width,
     this.height,
-    required this.userLocation,
     this.onBusinessTap,
   });
 
   final double? width;
   final double? height;
-  final Position? userLocation;
   final void Function(int businessId)? onBusinessTap;
 
   @override
@@ -245,7 +242,6 @@ class _SearchResultsListViewState
             child: _BusinessListItem(
               key: ValueKey('business_$businessId'),
               businessData: businessData,
-              userLocation: widget.userLocation,
               matchVariant: 'none', // No match categorization
               activeFilterCount: 0,
               itemIndex: index,
@@ -287,7 +283,6 @@ class _SearchResultsListViewState
       child: _BusinessListItem(
         key: ValueKey('business_$businessId'),
         businessData: businessData,
-        userLocation: widget.userLocation,
         matchVariant: matchVariant,
         activeFilterCount: totalActiveFilters,
         itemIndex: itemIndex,
@@ -502,7 +497,6 @@ class _BusinessListItem extends ConsumerStatefulWidget {
   const _BusinessListItem({
     super.key,
     required this.businessData,
-    required this.userLocation,
     required this.matchVariant,
     required this.activeFilterCount,
     required this.itemIndex,
@@ -513,7 +507,6 @@ class _BusinessListItem extends ConsumerStatefulWidget {
   });
 
   final dynamic businessData;
-  final Position? userLocation;
   final String matchVariant; // 'full', 'partial', 'none'
   final int activeFilterCount; // Total number of active filters
   final int itemIndex; // Position in list for analytics
@@ -892,7 +885,10 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   String? _getDistanceText() {
-    if (widget.userLocation == null ||
+    // Read user location from provider
+    final userLocation = ref.read(locationProvider).currentPosition;
+
+    if (userLocation == null ||
         _latitude == null ||
         _longitude == null) {
       return null;
@@ -910,8 +906,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     // Create LatLng from user position
     final userLatLng = LatLng(
-      widget.userLocation!.latitude,
-      widget.userLocation!.longitude,
+      userLocation.latitude,
+      userLocation.longitude,
     );
 
     // Use returnDistance function from distance_calculator.dart

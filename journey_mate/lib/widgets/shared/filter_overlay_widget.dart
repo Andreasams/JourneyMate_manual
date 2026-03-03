@@ -10,6 +10,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/settings_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 
@@ -868,11 +869,18 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       final searchTerm = currentSearchState.currentSearchText;
       final languageCode = Localizations.localeOf(context).languageCode;
 
+      // Fetch user location for distance-based sorting
+      final position = await ref.read(locationProvider.notifier).getCurrentPosition();
+      final userLocationParam = position != null
+          ? 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})'
+          : null;
+
       final result = await ApiService.instance.search(
         searchInput: searchTerm,
         filters: currentSearchState.filtersUsedForSearch,
         cityId: AppConstants.kDefaultCityId.toString(),
         languageCode: languageCode,
+        userLocation: userLocationParam,
         selectedStation: trainStationId,
         neighbourhoodId: currentSearchState.selectedNeighbourhoodId,
         shoppingAreaId: currentSearchState.selectedShoppingAreaId,
