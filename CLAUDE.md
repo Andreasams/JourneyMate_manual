@@ -42,7 +42,7 @@ Read these documents IN ORDER at the start of every session:
 
 ## Working Directory
 
-`C:\Users\Rikke\Documents\JourneyMate-Organized\` — Production code in `journey_mate/`
+`C:\Users\Rikke\Documents\JourneyMate\Main\` — Production code in `journey_mate/`
 **GitHub repo:** `https://github.com/Andreasams/JourneyMate_manual`
 
 ---
