@@ -1,7 +1,7 @@
 # JourneyMate Flutter Design System
 
-**Version:** 1.0 - February 2026
-**Last Updated:** February 2026
+**Version:** 1.1 - March 2026
+**Last Updated:** March 2026
 **Implementation:** `journey_mate/lib/theme/` (design token source files)
 
 **Purpose:** Complete Flutter implementation reference for the JourneyMate design system. Every design decision from the JSX design system has been translated to Flutter/Dart patterns.
@@ -49,6 +49,7 @@ ElevatedButton(style: AppButtonStyles.primary, ...)
 | `AppColors.red` | `#c9403a` | Closed status, errors, warnings |
 | `AppColors.orangeBg` | `#fef8f2` | Background for partial-match cards |
 | `AppColors.orangeBorder` | `#f0dcc8` | Border for partial-match cards |
+| `AppColors.fullMatchCardBorder` | `#b8d4c0` | Border for full-match restaurant cards in search results |
 
 ### Text Colors
 
@@ -93,9 +94,13 @@ ElevatedButton(style: AppButtonStyles.primary, ...)
 
 | Constant | Value | Usage |
 |----------|-------|-------|
-| `AppSpacing.xs` | 4px | Minimal spacing |
+| `AppSpacing.xxs` | 2px | Tight row spacing (between card text lines) |
+| `AppSpacing.xs` | 4px | Minimal spacing, small icon-to-text gaps |
+| `AppSpacing.xsm` | 6px | Small inline spacing (status row gaps) |
 | `AppSpacing.sm` | 8px | Label to input, between paragraphs, heading to description |
+| `AppSpacing.msm` | 10px | Section header bottom margin |
 | `AppSpacing.md` | 12px | Between chips, moderate gaps |
+| `AppSpacing.mlg` | 14px | Card padding |
 | `AppSpacing.lg` | 16px | Standard spacing |
 | `AppSpacing.xl` | 20px | Between form fields |
 | `AppSpacing.xxl` | 24px | Page padding, before submit button |
@@ -191,7 +196,7 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 
 | Style | Size | Weight | Usage |
 |-------|------|--------|-------|
-| `AppTypography.pageTitle` | 26px | w800 | Page titles (h2) |
+| `AppTypography.pageTitle` | 26px | w700 | Page titles (h2) |
 | `AppTypography.restaurantName` | 26px | w800 | Business names (h1) |
 | `AppTypography.sectionHeading` | 20px | w700 | Section headings (h3) |
 | `AppTypography.categoryHeading` | 18px | w700 | Category headings (h4) |
@@ -216,6 +221,8 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 | `AppTypography.button` | 18px | w600 | Button text |
 | `AppTypography.chip` | 12.5px | w600 | Chip/tag text |
 | `AppTypography.status` | 12.5px | w600 | Status indicators |
+| `AppTypography.filterTab` | 16px | w600 | Filter panel tabs |
+| `AppTypography.viewToggle` | 13.5px | w500 | List/Map toggle buttons |
 
 ### Card Elements
 
@@ -224,6 +231,8 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 | `AppTypography.cardRestaurantName` | 15.5px | w700 | Restaurant name in cards |
 | `AppTypography.menuItemName` | 15px | w600 | Menu item names |
 | `AppTypography.price` | 13.5px | w600 | Prices (orange color) |
+| `AppTypography.cardDetail` | 14px | w400 | Status, cuisine, price in cards |
+| `AppTypography.cardDistance` | 14px | w500 | Distance label (right-aligned) |
 
 ### Common Patterns
 
@@ -305,7 +314,7 @@ TextField(
 
 ### Fixed Height Pattern
 
-For pixel-perfect 50px height:
+For pixel-perfect 50px height (form inputs):
 
 ```dart
 SizedBox(
@@ -315,6 +324,16 @@ SizedBox(
   ),
 )
 ```
+
+### Search Bar Exception
+
+The search bar on the search page uses a **custom `InputDecoration`** instead of `AppInputDecorations.standard()`. This is intentional — the search bar requires:
+- Transparent background when unfocused, accent border on focus
+- No visible outline borders (`InputBorder.none` on all states)
+- Compact 45px height (`AppConstants.searchBarHeight`) instead of 50px
+- Custom prefix/suffix icon handling
+
+All other form inputs (feedback, contact, missing place, etc.) should continue using `AppInputDecorations.standard()`.
 
 ---
 
@@ -660,10 +679,11 @@ AppConstants.screenHeight  // 844.0
 ### Component Heights
 
 ```dart
-AppConstants.statusBarHeight  // 54.0
-AppConstants.tabBarHeight     // 80.0
-AppConstants.inputHeight      // 50.0
-AppConstants.buttonHeight     // 50.0
+AppConstants.statusBarHeight   // 54.0
+AppConstants.tabBarHeight      // 80.0
+AppConstants.inputHeight       // 50.0 (form inputs: email, feedback, etc.)
+AppConstants.searchBarHeight   // 45.0 (search bars only — compact for header density)
+AppConstants.buttonHeight      // 50.0
 ```
 
 ### Card Dimensions
@@ -734,4 +754,4 @@ AppTypography.label  // Correct
 
 ---
 
-**Status:** Complete — All design tokens implemented | **Source of truth:** `journey_mate/lib/theme/` | **Last verified:** 2026-02-24
+**Status:** Complete — All design tokens implemented | **Source of truth:** `journey_mate/lib/theme/` | **Last verified:** 2026-03-03
