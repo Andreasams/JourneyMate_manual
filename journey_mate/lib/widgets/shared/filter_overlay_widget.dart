@@ -66,6 +66,7 @@ class FilterOverlayWidget extends ConsumerStatefulWidget {
     required this.mayLoad,
     required this.resultCount,
     required this.activeTabIndex,
+    this.onShoppingAreaSelected,
   });
 
   final double? width;
@@ -85,6 +86,7 @@ class FilterOverlayWidget extends ConsumerStatefulWidget {
   final bool mayLoad;
   final int? resultCount;
   final int activeTabIndex;
+  final VoidCallback? onShoppingAreaSelected;
 
   @override
   ConsumerState<FilterOverlayWidget> createState() =>
@@ -746,6 +748,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           [_trainStationCategoryId, _shoppingAreaCategoryId]);
       _selectedFilterIds.add(filterId);
       _currentSelectionType = FilterSelectionType.shoppingArea;
+
+      // Notify parent that shopping area was selected
+      widget.onShoppingAreaSelected?.call();
     }
   }
 

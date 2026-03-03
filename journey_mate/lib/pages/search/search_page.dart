@@ -344,6 +344,18 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           mayLoad: true,
                           resultCount: searchState.searchResultsCount,
                           activeTabIndex: _activeFilterTab,
+                          onShoppingAreaSelected: () {
+                            // Reset sort to nearest if currently using station sort
+                            if (_currentSort == 'station') {
+                              setState(() {
+                                _currentSort = 'nearest';
+                                _selectedStation = null;
+                              });
+                              // Trigger new search with updated sort
+                              final currentSearchText = ref.read(searchStateProvider).currentSearchText;
+                              _executeSearch(currentSearchText);
+                            }
+                          },
                         ),
                         loading: () => const Center(
                           child: CircularProgressIndicator(),
