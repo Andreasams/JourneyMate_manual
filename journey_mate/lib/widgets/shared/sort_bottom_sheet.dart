@@ -332,6 +332,8 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
 
   Widget _buildSortOptionWithSubmenu(String sortKey, String translationKey, int? selectedStationId) {
     final isSelected = _selectedSort == sortKey;
+    final searchState = ref.read(searchStateProvider);
+    final hasShoppingArea = searchState.selectedShoppingAreaId != null;
 
     // Get station name if a station is selected
     String displayText = td(ref, translationKey);
@@ -349,28 +351,38 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
 
     return Container(
       color: isSelected ? AppColors.bgSurface : Colors.transparent,
-      child: ListTile(
-        title: Text(
-          displayText,
-          style: AppTypography.bodyRegular.copyWith(
-            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+      child: Opacity(
+        opacity: hasShoppingArea ? 0.4 : 1.0,
+        child: IgnorePointer(
+          ignoring: hasShoppingArea,
+          child: ListTile(
+            title: Text(
+              displayText,
+              style: AppTypography.bodyRegular.copyWith(
+                color: hasShoppingArea
+                    ? AppColors.textSecondary.withValues(alpha: 0.5)
+                    : (isSelected ? AppColors.textPrimary : AppColors.textSecondary),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+            trailing: Icon(
+              Icons.chevron_right,
+              color: hasShoppingArea
+                  ? AppColors.textSecondary.withValues(alpha: 0.5)
+                  : AppColors.textSecondary,
+              size: 24,
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.sm,
+            ),
+            onTap: () {
+              setState(() => _view = 'stations');
+            },
           ),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
         ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: AppColors.textSecondary,
-          size: 24,
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.sm,
-        ),
-        onTap: () {
-          setState(() => _view = 'stations');
-        },
       ),
     );
   }
