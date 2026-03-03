@@ -1,37 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
-import '../../theme/app_radius.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../services/translation_service.dart';
-import '../../services/analytics_service.dart';
-import '../../services/api_service.dart';
 import '../shared/unified_filters_widget.dart';
+import '../shared/menu_categories_rows.dart';
+import '../shared/menu_dishes_list_view.dart';
 import '../shared/item_bottom_sheet.dart';
+import '../shared/package_bottom_sheet.dart';
+import '../shared/category_description_sheet.dart';
 
-/// Inline Menu Widget - Shows menu items with filter panel
+/// Inline menu section on the business profile page.
 ///
-/// Features:
-/// - Filter panel container (background: AppColors.bgSurface, borderRadius: 14px)
-/// - Shows active filter count + "Edit" button
-/// - Edit button opens UnifiedFiltersWidget in modal
-/// - Shows first 5 items by default
-/// - Expand/collapse toggle for full list
-/// - Tap opens ItemBottomSheet for item details
-/// - Self-contained (reads from businessProvider internally)
-/// - Shrink-wrapped and non-scrollable (part of main CustomScrollView)
-///
-/// Design:
-/// - Filter panel: bgSurface background, 14px borderRadius
-/// - Item spacing: 12px between items
-/// - Section heading: AppTypography.sectionHeading
-/// - 24px horizontal padding (AppSpacing.xxl)
-/// - 16px vertical spacing (AppSpacing.lg)
+/// Layout (matching FlutterFlow reference):
+/// (0) Column
+/// (1) Row: "Menu" title  |  "Last updated on [date]"
+/// (2) Column: generateFilterSummary + show/hide filters toggle +
+///             UnifiedFiltersWidget (inline, shown when toggled)
+/// (3) MenuCategoriesRows
+/// (4) Container(maxHeight: 337) → MenuDishesListView
+///     onItemTap → ItemBottomSheet
+///     onPackageTap → PackageBottomSheet
+///     onCategoryDescriptionTap → CategoryDescriptionSheet
+/// (5) Row: "View on full page" + arrow
 class InlineMenuWidget extends ConsumerStatefulWidget {
   final int businessId;
 
@@ -45,579 +43,320 @@ class InlineMenuWidget extends ConsumerStatefulWidget {
 }
 
 class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
-  bool _isExpanded = false;
-  String? _selectedCategoryId; // null = "All" categories
+  bool _showFilters = false;
+  int _visibleItemCount = 0;
+  int _numberOfCategoryRows = 1;
+  dynamic _visibleSelection; // JSON for MenuCategoriesRows bidirectional sync
+
+  // ─── Height constants (match FlutterFlow) ─────────────────────────────────
+  static const double _filterWidgetHeight = 350.0;
+  static const double _categoryRowsHeightSingle = 42.0;
+  static const double _categoryRowsHeightDouble = 72.0;
+  static const double _menuListMaxHeight = 337.0;
 
   @override
   Widget build(BuildContext context) {
     final businessState = ref.watch(businessProvider);
-    final menuItems = businessState.menuItems;
     final business = businessState.currentBusiness;
+    final menuItems = businessState.menuItems;
 
-    // Hide if no menu items
-    if (menuItems == null || menuItems.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    if (menuItems == null || business == null) return const SizedBox.shrink();
 
-    // Extract categories from menuCategories (from API)
-    final menuCategoriesRaw = business?['menuCategories'] as List?;
-    final categories = <Map<String, dynamic>>[];
-    if (menuCategoriesRaw != null) {
-      for (final cat in menuCategoriesRaw) {
-        if (cat is Map<String, dynamic>) {
-          categories.add({
-            'category_id': cat['menu_category_id']?.toString() ?? '',
-            'category_name': cat['category_name'] ?? '',
-            'display_order': cat['category_display_order'] ?? 999,
-          });
-        }
-      }
-      // Sort by display_order
-      categories.sort((a, b) =>
-          (a['display_order'] as int).compareTo(b['display_order'] as int));
-    }
+    final lastReviewedAt =
+        business['businessInfo']?['last_reviewed_at']?.toString() ?? '';
+    final menuCategories = business['menuCategories'];
+    final businessName =
+        business['businessInfo']?['business_name']?.toString() ?? '';
 
-    // Build flat list of all menu items with category_id
-    final allItems = <Map<String, dynamic>>[];
-    for (final menu in menuItems) {
-      final categoriesData = menu['categories'] as List? ?? [];
-      for (final category in categoriesData) {
-        final categoryId = category['menu_category_id']?.toString();
-        final items = category['items'] as List? ?? [];
-        for (final item in items) {
-          if (item is Map<String, dynamic>) {
-            // Add category_id to item for filtering
-            final itemWithCategory = Map<String, dynamic>.from(item);
-            itemWithCategory['_category_id'] = categoryId;
-            allItems.add(itemWithCategory);
-          }
-        }
-      }
-    }
+    final language = Localizations.localeOf(context).languageCode;
 
-    if (allItems.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Filter items by selected category
-    final filteredItems = _selectedCategoryId == null
-        ? allItems // "All" - show everything
-        : allItems
-            .where((item) => item['_category_id'] == _selectedCategoryId)
-            .toList();
-
-    // Show first 5 items, or all if expanded
-    final displayedItems =
-        _isExpanded ? filteredItems : filteredItems.take(5).toList();
-    final hasMore = filteredItems.length > 5;
+    final hasActiveFilters =
+        businessState.selectedDietaryRestrictionIds.isNotEmpty ||
+            businessState.selectedDietaryPreferenceId != null ||
+            businessState.excludedAllergyIds.isNotEmpty;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section heading
-          Text(
-            td(ref, 'menu_heading'),
-            style: AppTypography.sectionHeading,
+          // ── (1) Title row ──────────────────────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                td(ref, 'menu_heading'),
+                style: AppTypography.sectionHeading,
+              ),
+              Row(
+                children: [
+                  Text(
+                    td(ref, 'menu_last_updated_prefix'),
+                    style: AppTypography.bodySmall.copyWith(
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                  Text(
+                    _formatLocalizedDate(lastReviewedAt, language),
+                    style: AppTypography.bodySmall.copyWith(
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           SizedBox(height: AppSpacing.sm),
 
-          // Category chips (if multiple categories exist)
-          if (categories.length > 1) ...[
-            _buildCategoryChips(categories),
-            SizedBox(height: AppSpacing.md),
-          ],
+          // ── (2) Filter summary + show/hide toggle + UnifiedFiltersWidget ──
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Filter summary — shown only when filters are active
+              if (hasActiveFilters)
+                Padding(
+                  padding: EdgeInsets.only(bottom: AppSpacing.xs),
+                  child: Text(
+                    _buildFilterSummary(),
+                    style: AppTypography.bodyRegular,
+                  ),
+                ),
 
-          // Filter panel (dietary filters)
-          _buildFilterPanel(),
-          SizedBox(height: AppSpacing.md),
+              // Toggle: "Show filters" / "Hide filters"
+              Padding(
+                padding: EdgeInsets.only(bottom: 6),
+                child: GestureDetector(
+                  onTap: () => setState(() => _showFilters = !_showFilters),
+                  child: Text(
+                    _showFilters
+                        ? td(ref, 'menu_hide_filters')
+                        : td(ref, 'menu_show_filters'),
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ),
+              ),
 
-          // Menu items list
-          ...displayedItems.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            return Column(
-              children: [
-                _buildMenuItem(item, business),
-                if (index < displayedItems.length - 1)
-                  SizedBox(height: AppSpacing.md),
-              ],
-            );
-          }),
+              // UnifiedFiltersWidget — inline, shown when toggled
+              if (_showFilters)
+                Padding(
+                  padding: EdgeInsets.only(top: 6, bottom: 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: _filterWidgetHeight,
+                    child: UnifiedFiltersWidget(
+                      businessId: widget.businessId,
+                      width: double.infinity,
+                      height: _filterWidgetHeight,
+                      onFiltersChanged: () => setState(() {}),
+                      onVisibleItemCountChanged: (count) =>
+                          setState(() => _visibleItemCount = count),
+                    ),
+                  ),
+                ),
+            ],
+          ),
 
-          // Expand/Collapse toggle (if more than 5 items)
-          if (hasMore) ...[
-            SizedBox(height: AppSpacing.md),
-            SizedBox(
+          // ── (3) MenuCategoriesRows ─────────────────────────────────────────
+          Padding(
+            padding: EdgeInsets.only(
+              top: AppSpacing.md,
+              bottom: AppSpacing.lg,
+            ),
+            child: SizedBox(
               width: double.infinity,
-              child: TextButton(
-                onPressed: _handleToggleExpand,
-                style: TextButton.styleFrom(
-                  backgroundColor: AppColors.bgSurface,
-                  padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.button),
-                  ),
-                ),
-                child: Text(
-                  _isExpanded
-                      ? td(ref, 'menu_show_less')
-                      : td(ref, 'menu_show_all')
-                          .replaceAll('{count}', filteredItems.length.toString()),
-                  style: AppTypography.bodyRegular.copyWith(
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+              height: _numberOfCategoryRows == 1
+                  ? _categoryRowsHeightSingle
+                  : _categoryRowsHeightDouble,
+              child: MenuCategoriesRows(
+                width: double.infinity,
+                height: _numberOfCategoryRows == 1
+                    ? _categoryRowsHeightSingle
+                    : _categoryRowsHeightDouble,
+                businessID:
+                    business['businessInfo']?['business_id'] ?? widget.businessId,
+                apiResult: menuCategories,
+                visibleSelection: _visibleSelection,
+                onCategoryChanged: (categoryId, menuId) async {
+                  // No additional local state needed — MenuDishesListView
+                  // listens to its own provider state for scroll-to-category.
+                },
+                onNumberOfRows: (rows) async =>
+                    setState(() => _numberOfCategoryRows = rows),
               ),
             ),
-          ],
+          ),
 
-          // "View full menu" button
-          SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: _handleViewFullMenuTap,
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.button),
-                ),
-              ),
+          // ── (4) MenuDishesListView ─────────────────────────────────────────
+          Container(
+            constraints: const BoxConstraints(maxHeight: _menuListMaxHeight),
+            decoration: BoxDecoration(
+              color: AppColors.bgCard,
+            ),
+            child: MenuDishesListView(
+              width: double.infinity,
+              height: _menuListMaxHeight,
+              originalCurrencyCode: 'DKK',
+              isDynamicHeight: false,
+              onItemTap: (itemData, isBeverage, dietaryTypeIds, allergyIds,
+                  formattedPrice, hasVariations, formattedVariationPrice) async {
+                final localization = ref.read(localizationProvider);
+                final translationsCache = ref.read(translationsCacheProvider);
+                final lang = Localizations.localeOf(context).languageCode;
+
+                if (!context.mounted) return;
+                await showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (sheetContext) => GestureDetector(
+                    onTap: () {
+                      FocusScope.of(sheetContext).unfocus();
+                      FocusManager.instance.primaryFocus?.unfocus();
+                    },
+                    child: Padding(
+                      padding: MediaQuery.viewInsetsOf(sheetContext),
+                      child: ItemBottomSheet(
+                        itemData: itemData,
+                        chosenCurrency: localization.currencyCode,
+                        originalCurrencyCode: 'DKK',
+                        exchangeRate: localization.exchangeRate,
+                        currentLanguage: lang,
+                        businessName: businessName,
+                        translationsCache: translationsCache,
+                        hasVariations: hasVariations,
+                      ),
+                    ),
+                  ),
+                );
+              },
+              onPackageTap: (packageData) async {
+                final localization = ref.read(localizationProvider);
+                final normalizedMenuData =
+                    ref.read(businessProvider).menuItems;
+                final packageId =
+                    (packageData as Map<String, dynamic>)['package_id'] as int? ??
+                        0;
+
+                if (!context.mounted) return;
+                await showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  useSafeArea: true,
+                  builder: (sheetContext) => GestureDetector(
+                    onTap: () {
+                      FocusScope.of(sheetContext).unfocus();
+                      FocusManager.instance.primaryFocus?.unfocus();
+                    },
+                    child: Padding(
+                      padding: MediaQuery.viewInsetsOf(sheetContext),
+                      child: PackageBottomSheet(
+                        normalizedMenuData: normalizedMenuData,
+                        packageId: packageId,
+                        chosenCurrency: localization.currencyCode,
+                        originalCurrencyCode: 'DKK',
+                        exchangeRate: localization.exchangeRate,
+                        businessName: businessName,
+                      ),
+                    ),
+                  ),
+                );
+              },
+              onVisibleCategoryChanged: (selectionData) async =>
+                  setState(() => _visibleSelection = selectionData),
+              onCategoryDescriptionTap: (categoryData) async {
+                final data = categoryData as Map<String, dynamic>;
+                final catName = data['category_name']?.toString() ?? '';
+                final catDescription =
+                    data['category_description']?.toString() ?? '';
+
+                if (!context.mounted) return;
+                await showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (sheetContext) => GestureDetector(
+                    onTap: () {
+                      FocusScope.of(sheetContext).unfocus();
+                      FocusManager.instance.primaryFocus?.unfocus();
+                    },
+                    child: DraggableScrollableSheet(
+                      initialChildSize: 0.4,
+                      maxChildSize: 0.9,
+                      minChildSize: 0.25,
+                      builder: (sheetContext, scrollController) =>
+                          CategoryDescriptionSheet(
+                        categoryName: catName,
+                        categoryDescription: catDescription,
+                        scrollController: scrollController,
+                        width: double.infinity,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // ── (5) "View on full page" row ────────────────────────────────────
+          Padding(
+            padding: EdgeInsets.only(top: 12),
+            child: GestureDetector(
+              onTap: () =>
+                  context.go('/business/${widget.businessId}/menu'),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    td(ref, 'menu_view_full_page'),
-                    style: AppTypography.bodyRegular.copyWith(
-                      color: AppColors.accent,
-                      fontWeight: FontWeight.w500,
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      td(ref, 'menu_view_full_page'),
+                      style: AppTypography.bodyLarge.copyWith(
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
                   ),
-                  SizedBox(width: AppSpacing.xs),
-                  Icon(
-                    Icons.arrow_forward,
-                    color: AppColors.accent,
-                    size: 16,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Build horizontal category chips
-  Widget _buildCategoryChips(List<Map<String, dynamic>> categories) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          // "All" chip
-          Padding(
-            padding: EdgeInsets.only(right: AppSpacing.sm),
-            child: GestureDetector(
-              onTap: () => _onCategoryTapped(null), // null = "All"
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: _selectedCategoryId == null
-                      ? AppColors.accent
-                      : Colors.white,
-                  border: Border.all(
-                    color: _selectedCategoryId == null
-                        ? AppColors.accent
-                        : AppColors.border,
-                    width: 1.5,
-                  ),
-                  borderRadius: BorderRadius.circular(AppRadius.button),
-                ),
-                child: Text(
-                  td(ref, 'menu_category_all'),
-                  style: AppTypography.bodySmall.copyWith(
-                    color: _selectedCategoryId == null
-                        ? Colors.white
-                        : AppColors.textSecondary,
-                    fontWeight: _selectedCategoryId == null
-                        ? FontWeight.w600
-                        : FontWeight.w400,
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Individual category chips
-          ...categories.map((category) {
-            final categoryId = category['category_id'] as String;
-            final categoryName = category['category_name'] as String;
-            final isSelected = _selectedCategoryId == categoryId;
-
-            return Padding(
-              padding: EdgeInsets.only(right: AppSpacing.sm),
-              child: GestureDetector(
-                onTap: () => _onCategoryTapped(categoryId),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.accent : Colors.white,
-                    border: Border.all(
-                      color:
-                          isSelected ? AppColors.accent : AppColors.border,
-                      width: 1.5,
-                    ),
-                    borderRadius: BorderRadius.circular(AppRadius.button),
-                  ),
-                  child: Text(
-                    categoryName,
-                    style: AppTypography.bodySmall.copyWith(
-                      color:
-                          isSelected ? Colors.white : AppColors.textSecondary,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  /// Build filter panel with active count and Edit button
-  Widget _buildFilterPanel() {
-    final businessState = ref.watch(businessProvider);
-    final hasActiveFilters =
-        businessState.selectedDietaryRestrictionIds.isNotEmpty ||
-            businessState.selectedDietaryPreferenceId != null ||
-            businessState.excludedAllergyIds.isNotEmpty;
-
-    final activeCount = businessState.selectedDietaryRestrictionIds.length +
-        (businessState.selectedDietaryPreferenceId != null ? 1 : 0) +
-        businessState.excludedAllergyIds.length;
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(AppRadius.button),
-      ),
-      child: Row(
-        children: [
-          // Filter icon
-          Icon(
-            Icons.filter_list,
-            color: hasActiveFilters ? AppColors.accent : AppColors.textTertiary,
-            size: 20,
-          ),
-          SizedBox(width: AppSpacing.sm),
-
-          // Filter status text
-          Expanded(
-            child: Text(
-              hasActiveFilters
-                  ? td(ref, 'menu_filters_active')
-                      .replaceAll('{count}', activeCount.toString())
-                  : td(ref, 'menu_filters_none'),
-              style: AppTypography.bodyRegular.copyWith(
-                color: hasActiveFilters
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary,
-              ),
-            ),
-          ),
-
-          // Edit button
-          TextButton(
-            onPressed: _handleEditFiltersTap,
-            style: TextButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.sm,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-              ),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: Text(
-              td(ref, 'menu_filters_edit'),
-              style: AppTypography.label.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Build individual menu item card
-  Widget _buildMenuItem(Map<String, dynamic> item, dynamic business) {
-    final localization = ref.watch(localizationProvider);
-
-    // Extract item data
-    final name = item['name'] ?? '';
-    final description = item['description'] ?? '';
-    final price = item['price'] as num?;
-    final hasVariations = (item['variations'] as List?)?.isNotEmpty ?? false;
-
-    // Format price
-    String? formattedPrice;
-    if (price != null && price > 0) {
-      final convertedPrice = price * localization.exchangeRate;
-      formattedPrice =
-          '${localization.currencyCode} ${convertedPrice.toStringAsFixed(0)}';
-    }
-
-    return GestureDetector(
-      onTap: () => _handleItemTap(item, hasVariations),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.bgCard,
-          border: Border.all(color: AppColors.border, width: 1),
-          borderRadius: BorderRadius.circular(AppRadius.card),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Item name + price
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    name,
-                    style: AppTypography.bodyRegular.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (formattedPrice != null) ...[
-                  SizedBox(width: AppSpacing.sm),
-                  Text(
-                    formattedPrice,
-                    style: AppTypography.bodyRegular.copyWith(
-                      color: AppColors.accent,
-                      fontWeight: FontWeight.w500,
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 4),
+                    child: Icon(
+                      Icons.keyboard_arrow_right_sharp,
+                      color: AppColors.textPrimary,
+                      size: 20,
                     ),
                   ),
                 ],
-              ],
-            ),
-
-            // Item description (if available)
-            if (description.isNotEmpty) ...[
-              SizedBox(height: AppSpacing.xs),
-              Text(
-                description,
-                style: AppTypography.bodyRegular.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  /// Handle edit filters button tap - open UnifiedFiltersWidget modal
-  Future<void> _handleEditFiltersTap() async {
-    // Track analytics
-    final analytics = AnalyticsService.instance;
-    ApiService.instance
-        .postAnalytics(
-      eventType: 'menu_edit_filters_tapped',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
-      timestamp: DateTime.now().toIso8601String(),
-      eventData: {
-        'pageName': 'businessProfile',
-      },
-    )
-        .catchError((e) {
-      debugPrint('Analytics error: $e');
-      return ApiCallResponse.failure('Analytics failed');
-    });
-
-    // Open UnifiedFiltersWidget modal
-    if (mounted) {
-      await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (context) => UnifiedFiltersWidget(
-          businessId: widget.businessId,
-          height: 350.0,
-          onFiltersChanged: () async {
-            // Filters updated - UI will rebuild via provider watch
-            debugPrint('Dietary filters changed from inline menu');
-          },
-          onVisibleItemCountChanged: (int count) async {
-            debugPrint('Visible items after filter: $count');
-          },
-        ),
-      );
+  /// Formats an ISO date string to a short localized date.
+  /// e.g. "2026-02-22T00:00:00Z" → "Feb 22, 2026" (en) / "22. feb. 2026" (da)
+  String _formatLocalizedDate(String isoDate, String languageCode) {
+    if (isoDate.isEmpty) return '';
+    try {
+      final date = DateTime.parse(isoDate);
+      final locale = languageCode == 'da' ? 'da' : 'en';
+      return DateFormat.yMMMd(locale).format(date);
+    } catch (e) {
+      return isoDate;
     }
   }
 
-  /// Handle menu item tap - open ItemBottomSheet modal
-  Future<void> _handleItemTap(
-    Map<String, dynamic> item,
-    bool hasVariations,
-  ) async {
-    final localization = ref.read(localizationProvider);
-    final translationsCache = ref.read(translationsCacheProvider);
-    final business = ref.read(businessProvider).currentBusiness;
-    final currentLanguage = Localizations.localeOf(context).languageCode;
-    final originalCurrency = business?['price_range_currency_code'] ?? 'DKK';
-
-    // Track analytics
-    final analytics = AnalyticsService.instance;
-    ref.read(analyticsProvider.notifier).incrementItemClick();
-
-    ApiService.instance
-        .postAnalytics(
-      eventType: 'menu_item_tapped',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
-      timestamp: DateTime.now().toIso8601String(),
-      eventData: {
-        'pageName': 'businessProfile',
-        'itemName': item['name'] ?? '',
-      },
-    )
-        .catchError((e) {
-      debugPrint('Analytics error: $e');
-      return ApiCallResponse.failure('Analytics failed');
-    });
-
-    // Open ItemBottomSheet modal
-    if (mounted) {
-      await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (context) => ItemBottomSheet(
-          itemData: item,
-          chosenCurrency: localization.currencyCode,
-          originalCurrencyCode: originalCurrency,
-          exchangeRate: localization.exchangeRate,
-          currentLanguage: currentLanguage,
-          businessName: business?['business_name'] ?? '',
-          translationsCache: translationsCache,
-          hasVariations: hasVariations,
-        ),
-      );
+  /// Builds the filter summary string shown above the toggle when filters
+  /// are active. Mirrors FlutterFlow's generateFilterSummary custom function.
+  String _buildFilterSummary() {
+    final template = td(ref, 'menu_filter_summary');
+    if (template != 'menu_filter_summary') {
+      return template.replaceAll('{count}', _visibleItemCount.toString());
     }
-  }
-
-  /// Handle category chip tap
-  void _onCategoryTapped(String? categoryId) {
-    setState(() {
-      _selectedCategoryId = categoryId;
-      _isExpanded = false; // Reset expansion when category changes
-    });
-
-    // Track analytics
-    final analytics = AnalyticsService.instance;
-    ApiService.instance
-        .postAnalytics(
-      eventType: 'menu_category_selected',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
-      timestamp: DateTime.now().toIso8601String(),
-      eventData: {
-        'pageName': 'businessProfile',
-        'categoryId': categoryId ?? 'all',
-      },
-    )
-        .catchError((e) {
-      debugPrint('Analytics error: $e');
-      return ApiCallResponse.failure('Analytics failed');
-    });
-  }
-
-  /// Handle expand/collapse toggle
-  void _handleToggleExpand() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-    });
-
-    // Track analytics
-    final analytics = AnalyticsService.instance;
-    ApiService.instance
-        .postAnalytics(
-      eventType: 'menu_toggle_expand',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
-      timestamp: DateTime.now().toIso8601String(),
-      eventData: {
-        'pageName': 'businessProfile',
-        'isExpanded': _isExpanded,
-      },
-    )
-        .catchError((e) {
-      debugPrint('Analytics error: $e');
-      return ApiCallResponse.failure('Analytics failed');
-    });
-  }
-
-  /// Handle "View full menu" button tap - navigate to full menu page
-  Future<void> _handleViewFullMenuTap() async {
-    // Track analytics
-    final analytics = AnalyticsService.instance;
-    ApiService.instance
-        .postAnalytics(
-      eventType: 'menu_full_page_opened',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
-      timestamp: DateTime.now().toIso8601String(),
-      eventData: {
-        'pageName': 'businessProfile',
-        'businessId': widget.businessId,
-      },
-    )
-        .catchError((e) {
-      debugPrint('Analytics error: $e');
-      return ApiCallResponse.failure('Analytics failed');
-    });
-
-    // Navigate to full menu page (existing route at /business/:id/menu)
-    if (mounted) {
-      await Navigator.pushNamed(
-        context,
-        '/business/${widget.businessId}/menu',
-      );
-    }
+    return 'Showing $_visibleItemCount items';
   }
 }
