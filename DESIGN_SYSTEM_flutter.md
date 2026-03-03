@@ -325,15 +325,54 @@ SizedBox(
 )
 ```
 
-### Search Bar Exception
+### Search Bar Component
 
-The search bar on the search page uses a **custom `InputDecoration`** instead of `AppInputDecorations.standard()`. This is intentional — the search bar requires:
-- Transparent background when unfocused, accent border on focus
-- No visible outline borders (`InputBorder.none` on all states)
-- Compact 45px height (`AppConstants.searchBarHeight`) instead of 50px
-- Custom prefix/suffix icon handling
+Search bars are a **distinct component** from form inputs and do NOT use `AppInputDecorations.standard()`. Use this pattern whenever building a search bar:
 
-All other form inputs (feedback, contact, missing place, etc.) should continue using `AppInputDecorations.standard()`.
+```dart
+Container(
+  height: AppConstants.searchBarHeight,  // 45px (compact)
+  decoration: BoxDecoration(
+    color: AppColors.bgInput,
+    borderRadius: BorderRadius.circular(AppRadius.input),  // 12px
+    border: Border.all(
+      color: hasFocus ? AppColors.accent : Colors.transparent,
+      width: 1.5,
+    ),
+  ),
+  child: TextField(
+    style: AppTypography.input,
+    decoration: InputDecoration(
+      hintText: 'Search...',
+      hintStyle: AppTypography.placeholder,
+      filled: false,
+      prefixIcon: Icon(Icons.search, size: 17, color: AppColors.textMuted),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,   // 12px
+        vertical: AppSpacing.md,     // 12px
+      ),
+      border: InputBorder.none,
+      enabledBorder: InputBorder.none,
+      focusedBorder: InputBorder.none,
+    ),
+  ),
+)
+```
+
+**Key differences from form inputs (`AppInputDecorations.standard`):**
+
+| Property | Search Bar | Form Input |
+|----------|-----------|------------|
+| Height | 45px (`searchBarHeight`) | 50px (`inputHeight`) |
+| Background | `bgInput` always, border changes on focus | `bgInput` with visible border always |
+| Border (unfocused) | Transparent | `AppColors.border` |
+| Border (focused) | `AppColors.accent` | `AppColors.accent` |
+| Outline borders | `InputBorder.none` on all states | Standard `OutlineInputBorder` |
+| Decoration | Custom (as above) | `AppInputDecorations.standard()` |
+
+**When to use which:**
+- **Search bars** (search page, future search locations): Use the pattern above
+- **Form inputs** (feedback, contact, missing place, settings): Use `AppInputDecorations.standard()`
 
 ---
 
