@@ -324,7 +324,8 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           final newSort = isSelected ? 'nearest' : sortKey;
           setState(() => _selectedSort = newSort);
           widget.onSortChanged(newSort, _onlyOpen, widget.selectedStation);
-          Navigator.pop(context);
+          // Only close on selection; deselection keeps sheet open so user sees the reset state
+          if (!isSelected) Navigator.pop(context);
         },
       ),
     );
@@ -465,11 +466,12 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           if (isSelected) {
             setState(() => _selectedSort = 'nearest');
             widget.onSortChanged('nearest', _onlyOpen, null);
+            // Keep sheet open on deselection so user sees the reset state
           } else {
             setState(() => _selectedSort = 'station');
             widget.onSortChanged('station', _onlyOpen, stationId);
+            Navigator.pop(context);
           }
-          Navigator.pop(context);
         },
       ),
     );
