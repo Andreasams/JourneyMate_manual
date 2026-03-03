@@ -5,6 +5,7 @@ import '../../providers/filter_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_constants.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
@@ -38,11 +39,26 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   late bool _onlyOpen;
   String _view = 'options'; // 'options' or 'stations'
 
+  final TextEditingController _stationSearchController = TextEditingController();
+  final FocusNode _stationSearchFocusNode = FocusNode();
+  bool _stationSearchHasFocus = false;
+  String _stationSearchText = '';
+
   @override
   void initState() {
     super.initState();
     _selectedSort = widget.currentSort;
     _onlyOpen = widget.onlyOpen;
+    _stationSearchFocusNode.addListener(() {
+      setState(() => _stationSearchHasFocus = _stationSearchFocusNode.hasFocus);
+    });
+  }
+
+  @override
+  void dispose() {
+    _stationSearchController.dispose();
+    _stationSearchFocusNode.dispose();
+    super.dispose();
   }
 
   /// Gets train station list from filter provider
@@ -142,12 +158,27 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   Widget _buildStationsView() {
     final trainStations = _getTrainStations();
 
+    final filteredStations = _stationSearchText.isEmpty
+        ? trainStations
+        : trainStations
+            .where((s) => (s['name'] as String)
+                .toLowerCase()
+                .contains(_stationSearchText.toLowerCase()))
+            .toList();
+
     return Column(
       children: [
         _buildStationsHeader(),
         Divider(height: 1, color: AppColors.border),
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
+          child: _buildStationSearchBar(),
+        ),
         Expanded(
-          child: trainStations.isEmpty
+          child: filteredStations.isEmpty
               ? Center(
                   child: Text(
                     td(ref, 'hours_no_data'), // Generic "No data" message
@@ -158,14 +189,62 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                 )
               : ListView.builder(
                   padding: EdgeInsets.zero,
-                  itemCount: trainStations.length,
+                  itemCount: filteredStations.length,
                   itemBuilder: (context, index) {
-                    final station = trainStations[index];
-                    return _buildStationOption(station);
+                    return _buildStationOption(filteredStations[index]);
                   },
                 ),
         ),
       ],
+    );
+  }
+
+  Widget _buildStationSearchBar() {
+    return Container(
+      height: AppConstants.searchBarHeight,
+      decoration: BoxDecoration(
+        color: AppColors.bgInput,
+        borderRadius: BorderRadius.circular(AppRadius.input),
+        border: Border.all(
+          color: _stationSearchHasFocus ? AppColors.accent : Colors.transparent,
+          width: 1.5,
+        ),
+      ),
+      child: TextField(
+        controller: _stationSearchController,
+        focusNode: _stationSearchFocusNode,
+        onChanged: (value) => setState(() => _stationSearchText = value),
+        style: AppTypography.input,
+        decoration: InputDecoration(
+          hintText: td(ref, 'search_placeholder'),
+          hintStyle: AppTypography.placeholder,
+          filled: false,
+          prefixIcon: Icon(
+            Icons.search,
+            size: 17,
+            color: AppColors.textMuted,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.md,
+          ),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+          suffixIcon: _stationSearchText.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 20),
+                  color: AppColors.textMuted,
+                  onPressed: () {
+                    _stationSearchController.clear();
+                    setState(() => _stationSearchText = '');
+                  },
+                )
+              : null,
+        ),
+      ),
     );
   }
 
@@ -408,7 +487,13 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             children: [
               IconButton(
                 icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-                onPressed: () => setState(() => _view = 'options'),
+                onPressed: () {
+                  _stationSearchController.clear();
+                  setState(() {
+                    _view = 'options';
+                    _stationSearchText = '';
+                  });
+                },
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(),
               ),

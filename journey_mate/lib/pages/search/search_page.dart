@@ -901,8 +901,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             final stationName = (stationData['name'] as String?) ??
                                (stationData['filter_name'] as String?) ??
                                td(ref, 'sort_station');
-            // Use translation key that will be updated in Supabase
-            return '${td(ref, 'sort_station')}: $stationName';
+            return stationName;
           }
           return td(ref, 'sort_station');
         },
