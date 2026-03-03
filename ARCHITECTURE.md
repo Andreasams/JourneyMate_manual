@@ -482,6 +482,90 @@ Widget _buildSheetHandle() {
 }
 ```
 
+### Filter Coordination Pattern (Parent Callbacks)
+
+**Discovered:** Commit `8606b21`, March 2026
+**Applies to:** Widgets with interdependent filter state (one filter affects another's validity)
+
+When filter selections have dependencies (e.g., neighbourhood filter affects station availability), use parent callbacks to coordinate state:
+
+```dart
+// ❌ WRONG: No coordination - UI shows invalid station
+FilterOverlayWidget(
+  width: MediaQuery.of(context).size.width,
+  height: MediaQuery.of(context).size.height,
+  // ... other props, but no callbacks
+)
+// Problem: User selects neighbourhood that doesn't include current station
+// Result: Sort button displays station that's not available in filter list
+
+// ✅ CORRECT: Callback notifies parent to check and fix inconsistencies
+FilterOverlayWidget(
+  width: MediaQuery.of(context).size.width,
+  height: MediaQuery.of(context).size.height,
+  onNeighbourhoodSelected: () {
+    // Check if current station is still valid for new neighbourhood
+    if (_currentSort == 'station' && _selectedStation != null) {
+      final searchState = ref.read(searchStateProvider);
+      final neighbourhoodId = searchState.selectedNeighbourhoodId;
+
+      if (neighbourhoodId != null) {
+        // Check station compatibility using same logic as filter
+        final filterState = ref.read(filterProvider);
+        final isStationInNeighbourhood = filterState.when(
+          data: (state) {
+            final stationData = state.filterLookupMap[_selectedStation];
+            if (stationData != null) {
+              final neighbourhoodId1 = stationData['neighbourhood_id_1'] as int?;
+              final neighbourhoodId2 = stationData['neighbourhood_id_2'] as int?;
+              return neighbourhoodId1 == neighbourhoodId ||
+                     neighbourhoodId2 == neighbourhoodId;
+            }
+            return false;
+          },
+          loading: () => true,  // Keep station while loading
+          error: (_, __) => true, // Keep station on error
+        );
+
+        // Reset to default if station is no longer valid
+        if (!isStationInNeighbourhood) {
+          setState(() {
+            _currentSort = 'nearest';
+            _selectedStation = null;
+          });
+          _executeSearch(searchState.currentSearchText); // Trigger new search
+        }
+      }
+    }
+  },
+  onShoppingAreaSelected: () {
+    // Similar logic for shopping area dependencies
+  },
+)
+```
+
+**When to Use:**
+- One filter selection invalidates another filter's current value
+- Filter UI needs to stay consistent (don't show unavailable options)
+- Parent page holds state that depends on filter selections
+
+**Pattern Benefits:**
+- ✅ Prevents UI inconsistencies (sort button showing unavailable station)
+- ✅ Automatic state correction (resets to safe default when needed)
+- ✅ Uses same validation logic as filter list (neighbourhood_id_1 OR neighbourhood_id_2)
+- ✅ Handles AsyncData states gracefully (keeps selection while loading)
+
+**Common Use Cases:**
+- Neighbourhood filter → affects station list (commit `8606b21`)
+- Shopping area filter → affects neighbourhood list
+- Cuisine type → affects dish availability
+- Date/time selection → affects "Open Now" filter validity
+
+**Reference:**
+- `journey_mate/lib/widgets/shared/filter_overlay_widget.dart` — Callback parameters
+- `journey_mate/lib/pages/search/search_page.dart` — Callback implementation
+- Commit `8606b21` — Auto-clear station sort when filtered out by neighbourhood
+
 ---
 
 ## Swipe Gesture Patterns
