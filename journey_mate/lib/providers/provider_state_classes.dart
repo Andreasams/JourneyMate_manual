@@ -181,7 +181,7 @@ class SearchState {
   final String previousSearchText; // Snapshot before last change
   final String previousFilterSessionId; // Snapshot before last change
   final int currentRefinementSequence; // Count of refinements in this search
-  final int? selectedNeighbourhoodId; // Neighbourhood filter ID routed from overlay (API param, not in filters array)
+  final List<int>? selectedNeighbourhoodId; // Neighbourhood filter IDs routed from overlay (API param, not in filters array)
   final int? selectedShoppingAreaId; // Shopping area filter ID routed from overlay (API param, not in filters array)
   final DateTime? lastRefinementTime;
   final DateTime? lastFetchTime; // Timestamp of most recent search API call
@@ -243,7 +243,7 @@ class SearchState {
     String? previousSearchText,
     String? previousFilterSessionId,
     int? currentRefinementSequence,
-    int? selectedNeighbourhoodId,
+    List<int>? selectedNeighbourhoodId,
     int? selectedShoppingAreaId,
     DateTime? lastRefinementTime,
     DateTime? lastFetchTime,
@@ -286,7 +286,7 @@ class SearchState {
     String? previousSearchText,
     String? previousFilterSessionId,
     int? currentRefinementSequence,
-    int? selectedNeighbourhoodId,
+    List<int>? selectedNeighbourhoodId,
     int? selectedShoppingAreaId,
     DateTime? lastRefinementTime,
     DateTime? lastFetchTime,

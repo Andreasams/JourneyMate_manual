@@ -66,7 +66,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     return filterState.when(
       data: (state) {
         final filterLookupMap = state.filterLookupMap;
-        final activeNeighbourhoodId = searchState.selectedNeighbourhoodId;
+        final activeNeighbourhoodIds = searchState.selectedNeighbourhoodId;
 
         // Get filters that are train stations
         // Check type field or parent_id to distinguish from food items
@@ -81,13 +81,13 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                      (entry.key >= 10000 && parentId == 7);
 
               // Apply neighbourhood filter if active
-              if (isTrainStation && activeNeighbourhoodId != null) {
+              if (isTrainStation && activeNeighbourhoodIds != null && activeNeighbourhoodIds.isNotEmpty) {
                 final neighbourhoodId1 = value['neighbourhood_id_1'] as int?;
                 final neighbourhoodId2 = value['neighbourhood_id_2'] as int?;
 
-                // Station belongs to neighbourhood if EITHER field matches (OR logic)
-                return neighbourhoodId1 == activeNeighbourhoodId ||
-                       neighbourhoodId2 == activeNeighbourhoodId;
+                // Station belongs to neighbourhood if EITHER field matches any selected neighbourhood
+                return activeNeighbourhoodIds.any((nId) =>
+                    neighbourhoodId1 == nId || neighbourhoodId2 == nId);
               }
 
               return isTrainStation;

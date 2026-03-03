@@ -131,7 +131,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   /// Selection type tracking (neighborhood/shopping/train station)
   FilterSelectionType _currentSelectionType = FilterSelectionType.none;
-  int? _selectedNeighborhoodId;
+  List<int> _selectedNeighborhoodIds = [];
 
   /// Saved provider notifier for safe disposal (must be set before dispose)
   late final SearchStateNotifier _savedSearchNotifier;
@@ -321,13 +321,14 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     // needs them in _selectedFilterIds for visual selection state.
     final searchState = ref.read(searchStateProvider);
     if (searchState.selectedNeighbourhoodId != null) {
-      _selectedFilterIds.add(searchState.selectedNeighbourhoodId!);
+      _selectedFilterIds.addAll(searchState.selectedNeighbourhoodId!);
+      _selectedNeighborhoodIds = List<int>.from(searchState.selectedNeighbourhoodId!);
     }
     if (searchState.selectedShoppingAreaId != null) {
       _selectedFilterIds.add(searchState.selectedShoppingAreaId!);
     }
 
-    final hasRoutedIds = searchState.selectedNeighbourhoodId != null ||
+    final hasRoutedIds = (searchState.selectedNeighbourhoodId?.isNotEmpty == true) ||
         searchState.selectedShoppingAreaId != null;
     _isInitialState = !hasSearchTerm && !hasSelectedFilters && !hasRoutedIds;
     _searchPerformed = !_isInitialState;
@@ -416,7 +417,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   List<dynamic> _getItems(int categoryId) {
     final items = _getItemsWithoutActiveFiltering(categoryId);
-    if (_selectedNeighborhoodId == null) return items;
+    if (_selectedNeighborhoodIds.isEmpty) return items;
 
     if (categoryId == _shoppingAreaCategoryId) {
       // Shopping areas now use standard greying (no special hiding)
@@ -424,9 +425,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       return items;
     } else if (categoryId == _trainStationCategoryId) {
       return items
-          .where((item) =>
-              item['neighbourhood_id_1'] == _selectedNeighborhoodId ||
-              item['neighbourhood_id_2'] == _selectedNeighborhoodId)
+          .where((item) => _selectedNeighborhoodIds.any((nId) =>
+              item['neighbourhood_id_1'] == nId ||
+              item['neighbourhood_id_2'] == nId))
           .toList();
     }
     return items;
@@ -582,11 +583,12 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   bool _hasActiveTrainStations(int categoryId) {
-    if (_selectedNeighborhoodId == null) return true;
+    if (_selectedNeighborhoodIds.isEmpty) return true;
     final allTrainStations = _getItemsWithoutActiveFiltering(categoryId);
     return allTrainStations.any((station) =>
-        station['neighbourhood_id_1'] == _selectedNeighborhoodId ||
-        station['neighbourhood_id_2'] == _selectedNeighborhoodId);
+        _selectedNeighborhoodIds.any((nId) =>
+            station['neighbourhood_id_1'] == nId ||
+            station['neighbourhood_id_2'] == nId));
   }
 
   bool _hasActiveChildrenDuringEmptySearch(int parentId, String filterType) {
@@ -760,14 +762,16 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   void _handleNeighborhoodSelection(int filterId) {
     _toggleFilter(filterId);
     if (_selectedFilterIds.contains(filterId)) {
+      _selectedNeighborhoodIds.add(filterId);
       _currentSelectionType = FilterSelectionType.neighborhood;
-      _selectedNeighborhoodId = filterId;
 
       // Notify parent that neighbourhood was selected
       widget.onNeighbourhoodSelected?.call();
     } else {
-      _currentSelectionType = FilterSelectionType.none;
-      _selectedNeighborhoodId = null;
+      _selectedNeighborhoodIds.remove(filterId);
+      if (_selectedNeighborhoodIds.isEmpty) {
+        _currentSelectionType = FilterSelectionType.none;
+      }
     }
   }
 

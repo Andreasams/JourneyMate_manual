@@ -349,13 +349,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                             }
                           },
                           onNeighbourhoodSelected: () {
-                            // Check if selected station is still valid for the new neighbourhood
+                            // Check if selected station is still valid for the new neighbourhood(s)
                             if (_currentSort == 'station' && _selectedStation != null) {
                               final searchState = ref.read(searchStateProvider);
-                              final neighbourhoodId = searchState.selectedNeighbourhoodId;
+                              final neighbourhoodIds = searchState.selectedNeighbourhoodId;
 
-                              if (neighbourhoodId != null) {
-                                // Check if station belongs to the neighbourhood
+                              if (neighbourhoodIds != null && neighbourhoodIds.isNotEmpty) {
+                                // Check if station belongs to any of the selected neighbourhoods
                                 final filterState = ref.read(filterProvider);
                                 final isStationInNeighbourhood = filterState.when(
                                   data: (state) {
@@ -363,8 +363,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                                     if (stationData != null) {
                                       final neighbourhoodId1 = stationData['neighbourhood_id_1'] as int?;
                                       final neighbourhoodId2 = stationData['neighbourhood_id_2'] as int?;
-                                      return neighbourhoodId1 == neighbourhoodId ||
-                                             neighbourhoodId2 == neighbourhoodId;
+                                      return neighbourhoodIds.any((nId) =>
+                                          neighbourhoodId1 == nId || neighbourhoodId2 == nId);
                                     }
                                     return false;
                                   },
@@ -372,7 +372,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                                   error: (e, s) => true, // Keep station on error
                                 );
 
-                                // Reset to nearest if station is not in the neighbourhood
+                                // Reset to nearest if station is not in any selected neighbourhood
                                 if (!isStationInNeighbourhood) {
                                   setState(() {
                                     _currentSort = 'nearest';
@@ -477,7 +477,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     // Calculate filter counts per category for badges
     // Include routed neighbourhood/shopping area in Location tab badge count
-    final extraLocationCount = (searchState.selectedNeighbourhoodId != null ? 1 : 0)
+    final extraLocationCount = (searchState.selectedNeighbourhoodId?.length ?? 0)
                              + (searchState.selectedShoppingAreaId != null ? 1 : 0);
     final filterCounts = _calculateFilterCounts(
       searchState.filtersUsedForSearch,
