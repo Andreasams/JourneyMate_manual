@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -139,6 +140,10 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
 
           // Visual indicator dots
           _buildIndicatorDots(galleryCategories.length),
+          SizedBox(height: AppSpacing.md),
+
+          // "Se alle billeder →" link to full gallery page
+          _buildViewAllButton(business?['business_id'] as int?),
         ],
       ),
     );
@@ -355,6 +360,62 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
         ),
       );
     }
+  }
+
+  /// Build "Se alle billeder →" text link to full gallery page
+  /// JSX reference: business_profile.jsx line 291
+  Widget _buildViewAllButton(int? businessId) {
+    if (businessId == null) return const SizedBox.shrink();
+
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+        onPressed: () => _handleViewAllTap(businessId),
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              td(ref, 'gallery_view_all'),
+              style: AppTypography.viewToggle.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(width: AppSpacing.xs),
+            const Icon(
+              Icons.arrow_forward,
+              color: AppColors.textSecondary,
+              size: 14,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Navigate to full gallery page and track analytics
+  void _handleViewAllTap(int businessId) {
+    final analytics = AnalyticsService.instance;
+    ApiService.instance
+        .postAnalytics(
+      eventType: 'gallery_view_all_tapped',
+      deviceId: analytics.deviceId ?? '',
+      sessionId: analytics.currentSessionId ?? '',
+      userId: analytics.userId ?? '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {
+        'pageName': 'businessProfile',
+        'businessId': businessId,
+      },
+    )
+        .catchError((e) {
+      debugPrint('Analytics error: $e');
+      return ApiCallResponse.failure('Analytics failed');
+    });
+
+    context.push('/business/$businessId/gallery');
   }
 
   /// Track analytics for tab change
