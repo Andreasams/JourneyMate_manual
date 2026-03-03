@@ -1009,11 +1009,14 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   int? _currentCount() {
-    final hasActiveFilters = _selectedFilterIds.isNotEmpty;
+    // Match provider logic: check for active filters OR search term
+    final hasActiveFiltersOrSearch = _selectedFilterIds.isNotEmpty ||
+        (widget.searchTerm?.isNotEmpty ?? false);
     final hasScoringFilters = _currentScoringFilterIds.isNotEmpty;
 
-    // Use full match count when there are active filters AND scoring filters
-    if (hasActiveFilters && hasScoringFilters && _optimisticFullMatchCount != null) {
+    // Use full match count when there are active filters/search AND scoring filters
+    // (matches visibleResultCount logic in SearchStateNotifier)
+    if (hasActiveFiltersOrSearch && hasScoringFilters && _optimisticFullMatchCount != null) {
       return _optimisticFullMatchCount;
     }
 

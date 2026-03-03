@@ -316,7 +316,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           },
                           searchTerm: searchState.currentSearchText,
                           mayLoad: true,
-                          resultCount: searchState.searchResultsCount,
+                          resultCount: searchState.visibleResultCount,
                           activeTabIndex: _activeFilterTab,
                           onShoppingAreaSelected: () {
                             // Reset sort to nearest if currently using station sort
@@ -615,9 +615,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         searchState.selectedShoppingAreaId != null ||
         searchState.currentSearchText.isNotEmpty;
 
-    final count = (hasActiveFiltersOrSearch && searchState.scoringFilterIds.isNotEmpty)
-        ? searchState.fullMatchCount
-        : searchState.searchResultsCount;
+    // Use visibleResultCount (matches what SearchResultsListView displays)
+    final count = searchState.visibleResultCount;
 
     final title = hasActiveFiltersOrSearch
         ? '${td(ref, 'feedback_page_search_results')} ($count)'
