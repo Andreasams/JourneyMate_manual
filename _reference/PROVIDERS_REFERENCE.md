@@ -233,6 +233,7 @@ class SearchState {
   final String previousFilterSessionId;
   final int currentRefinementSequence;      // Refinement count
   final DateTime? lastRefinementTime;
+  final int visibleResultCount;             // Count for Open Now badge & page title
 }
 ```
 
@@ -243,7 +244,7 @@ class SearchState {
 ### Methods
 
 ```dart
-// Search results
+// Search results (atomic — updates results, counts, and visibleResultCount together)
 ref.read(searchStateProvider.notifier).updateSearchResults(results, count);
 ref.read(searchStateProvider.notifier).setSearchText(String text);
 ref.read(searchStateProvider.notifier).markSearchInactive();

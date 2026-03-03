@@ -1,7 +1,7 @@
 # JourneyMate Architecture Guide
 
 **Version:** 1.0
-**Last Updated:** February 2026
+**Last Updated:** March 2026
 **Project Phase:** Maintenance & Debugging (Phase 8)
 **App Status:** Live on TestFlight
 
@@ -283,6 +283,35 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 ```
 
 **Key Rule:** If state is only relevant to one page, use local `State` variables. If state is shared across pages or needs persistence, use a `NotifierProvider`.
+
+### Atomic State Updates for Dependent Fields
+
+When multiple state fields depend on each other, update them together in a single provider method call. Separate `state = state.copyWith(...)` calls create stale-state windows where consumers see inconsistent values between frames.
+
+```dart
+// Inside searchStateProvider notifier:
+void updateSearchResults({
+  required List<Map<String, dynamic>> normalizedResults,
+  required int fullMatchCount,
+  required List<int> scoringFilterIds,
+}) {
+  // All dependent fields update atomically — consumers never see partial state
+  state = state.copyWith(
+    normalizedResults: normalizedResults,
+    fullMatchCount: fullMatchCount,
+    scoringFilterIds: scoringFilterIds,
+    visibleResultCount: scoringFilterIds.isNotEmpty
+        ? fullMatchCount
+        : normalizedResults.length,
+  );
+}
+```
+
+**Why:** `visibleResultCount` depends on both `fullMatchCount` and `scoringFilterIds`. If updated separately, the Open Now badge and page title could briefly show a count from the previous search while new results are already visible.
+
+**Rule:** If field B is derived from fields A and C, always update A, B, and C in the same `copyWith()` call.
+
+**Git reference:** Commits `e48e0cf`, `5eba0e4` — fix: use full-match count for Open Now badge
 
 ---
 
@@ -2133,6 +2162,51 @@ loading: (_) => true,  // ← Acceptable for single ignored parameter
 
 ---
 
+### Pitfall #20: Using Colors.white/Colors.black Instead of AppColors
+
+**Problem:** Flutter's built-in `Colors.white` and `Colors.black` bypass the design system just like raw hex values. Developers assume named Flutter colors are "safe" since they're not `Color(0xFF...)`, but they prevent theming and break consistency.
+
+❌ **Bad:**
+```dart
+TextButton(
+  style: ButtonStyle(
+    backgroundColor: WidgetStateProperty.all(Colors.white),  // ← Bypasses AppColors
+    foregroundColor: WidgetStateProperty.all(Colors.black),   // ← Bypasses AppColors
+    textStyle: WidgetStateProperty.all(TextStyle(fontSize: 16)),  // ← Hardcoded size
+  ),
+  child: Text('Submit'),
+)
+```
+
+✅ **Good:**
+```dart
+TextButton(
+  style: ButtonStyle(
+    backgroundColor: WidgetStateProperty.all(AppColors.accent),
+    foregroundColor: WidgetStateProperty.all(AppColors.textWhite),
+    textStyle: WidgetStateProperty.all(
+      AppTypography.button.copyWith(fontWeight: FontWeight.w600),
+    ),
+  ),
+  child: Text('Submit'),
+)
+```
+
+**Mapping:**
+| Flutter Color | AppColors Equivalent |
+|---------------|---------------------|
+| `Colors.white` | `AppColors.bgPage` or `AppColors.textWhite` (context-dependent) |
+| `Colors.black` | `AppColors.textPrimary` |
+| Hardcoded `fontSize` | `AppTypography.button.fontSize` or other `AppTypography.*` |
+
+**Why it matters:** All colors must come from `AppColors` so the design system remains the single source of truth. This includes Flutter's named colors, not just raw hex.
+
+**Common in:** Button styles, background colors, text colors across form pages and settings.
+
+**Git reference:** Commit `604bdb6` — fix: unify button style across settings/welcome pages to match filter overlay
+
+---
+
 ## Documentation Philosophy
 
 JourneyMate maintains **three types of documentation**:
@@ -2222,8 +2296,8 @@ Providers MUST initialize in this exact order at app startup:
 ## References
 
 - **API Contracts:** `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines, 12 endpoints)
-- **Provider Catalog:** `_reference/PROVIDERS_REFERENCE.md` (726 lines, 8 providers)
-- **Design Tokens:** `DESIGN_SYSTEM_flutter.md` (683 lines, colors/spacing/typography)
+- **Provider Catalog:** `_reference/PROVIDERS_REFERENCE.md` (797 lines, 8 providers)
+- **Design Tokens:** `DESIGN_SYSTEM_flutter.md` (819 lines, colors/spacing/typography)
 - **Quick Start:** `CLAUDE.md` (streamlined session primer)
 - **Developer Onboarding:** `CONTRIBUTING.md` (workflow and standards)
 - **Migration History:** `_reference/archive/MIGRATION_STATUS.md` (Phase 1-7 archived)
@@ -2231,6 +2305,6 @@ Providers MUST initialize in this exact order at app startup:
 
 ---
 
-**Last Updated:** February 2026
+**Last Updated:** March 2026
 **Maintainer:** Development team
 **Questions?** Read this file first, then check reference docs, then ask.
