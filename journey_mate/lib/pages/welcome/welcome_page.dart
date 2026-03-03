@@ -473,24 +473,32 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 // Primary "Continue" button (always shown)
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
+                  height: AppConstants.buttonHeight,
+                  child: TextButton(
                     onPressed: _isReturningUser
                         ? _handleReturningUserContinue
                         : _handleEnglishSetup,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.button),
+                    style: ButtonStyle(
+                      backgroundColor:
+                          WidgetStateProperty.all(AppColors.accent),
+                      foregroundColor:
+                          WidgetStateProperty.all(AppColors.bgPage),
+                      overlayColor:
+                          WidgetStateProperty.all(Colors.transparent),
+                      elevation: WidgetStateProperty.all(0),
+                      minimumSize: WidgetStateProperty.all(Size.zero),
+                      shape: WidgetStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppRadius.filter),
+                          side: const BorderSide(
+                              color: AppColors.accent, width: 1.5),
+                        ),
                       ),
-                      elevation: 0,
+                      textStyle:
+                          WidgetStateProperty.all(AppTypography.button),
                     ),
-                    child: Text(
-                      td(ref, 'd2mrwxr4'), // "Continue" / "Fortsæt"
-                      style: AppTypography.button.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: Text(td(ref, 'd2mrwxr4')), // "Continue" / "Fortsæt"
                   ),
                 ),
 
@@ -499,26 +507,31 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                   const SizedBox(height: AppSpacing.md),
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
-                    child: OutlinedButton(
+                    height: AppConstants.buttonHeight,
+                    child: TextButton(
                       onPressed: _handleDanishDirect,
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: AppColors.bgPage,
-                        side: const BorderSide(
-                          color: AppColors.accent,
-                          width: 2,
+                      style: ButtonStyle(
+                        backgroundColor:
+                            WidgetStateProperty.all(AppColors.bgPage),
+                        foregroundColor:
+                            WidgetStateProperty.all(AppColors.accent),
+                        overlayColor:
+                            WidgetStateProperty.all(Colors.transparent),
+                        elevation: WidgetStateProperty.all(0),
+                        minimumSize: WidgetStateProperty.all(Size.zero),
+                        shape: WidgetStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.filter),
+                            side: const BorderSide(
+                                color: AppColors.accent, width: 1.5),
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.button),
-                        ),
-                        elevation: 0,
+                        textStyle:
+                            WidgetStateProperty.all(AppTypography.button),
                       ),
                       child: Text(
-                        td(ref, 'cuy6esxb'), // "Fortsæt på dansk"
-                        style: AppTypography.button.copyWith(
-                          color: AppColors.accent,
-                        ),
-                      ),
+                          td(ref, 'cuy6esxb')), // "Fortsæt på dansk"
                     ),
                   ),
                 ],

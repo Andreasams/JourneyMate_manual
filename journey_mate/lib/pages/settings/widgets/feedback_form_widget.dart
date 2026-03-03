@@ -637,30 +637,40 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
     return SizedBox(
       width: double.infinity,
       height: AppConstants.buttonHeight,
-      child: ElevatedButton(
+      child: TextButton(
         onPressed: _isSubmitting ? null : _submitForm,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.accent,
-          disabledBackgroundColor: AppColors.textDisabled,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.button),
-          ),
-          elevation: 0,
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return AppColors.textDisabled;
+            }
+            return AppColors.accent;
+          }),
+          foregroundColor: WidgetStateProperty.all(AppColors.bgPage),
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+          elevation: WidgetStateProperty.all(0),
+          minimumSize: WidgetStateProperty.all(Size.zero),
+          shape: WidgetStateProperty.resolveWith((states) {
+            final borderColor = states.contains(WidgetState.disabled)
+                ? AppColors.textDisabled
+                : AppColors.accent;
+            return RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.filter),
+              side: BorderSide(color: borderColor, width: 1.5),
+            );
+          }),
+          textStyle: WidgetStateProperty.all(AppTypography.button),
         ),
         child: _isSubmitting
-            ? SizedBox(
+            ? const SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.bgPage),
                 ),
               )
-            : Text(
-                td(ref, 'feedback_form_button_submit'),
-                style: AppTypography.button.copyWith(color: Colors.white),
-              ),
+            : Text(td(ref, 'feedback_form_button_submit')),
       ),
     );
   }
