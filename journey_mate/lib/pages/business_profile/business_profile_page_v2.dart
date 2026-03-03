@@ -142,33 +142,71 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       final menuResponse = results[1];
 
       if (businessResponse.succeeded && businessResponse.jsonBody != null && mounted) {
-        final businessData = businessResponse.jsonBody as Map<String, dynamic>;
+        final raw = businessResponse.jsonBody as Map<String, dynamic>;
         final menuData = menuResponse.succeeded ? menuResponse.jsonBody as Map<String, dynamic>? : null;
 
-        // Store business data in provider
+        // API top-level keys: businessInfo, filters, businessHours, openWindows
+        final businessInfo = raw['businessInfo'] as Map<String, dynamic>?;
+        if (businessInfo == null) {
+          debugPrint('❌ Business not found: id=$businessIdInt');
+          setState(() {
+            _errorMessage = 'Business not found';
+            _isLoading = false;
+          });
+          return;
+        }
+
+        // Filters are a top-level array (not nested inside businessInfo)
+        final topLevelFilters = raw['filters'] as List? ?? [];
+        final businessHours = raw['businessHours'] as Map<String, dynamic>? ?? {};
+        final openWindows = raw['openWindows'] as List? ?? [];
+
+        final filterIds = topLevelFilters
+            .whereType<Map<String, dynamic>>()
+            .map((f) => f['filter_id'] as int?)
+            .whereType<int>()
+            .toList();
+
+        // Compute fields HeroSectionWidget expects that the API doesn't return directly
+        final priceMin = businessInfo['price_range_min'] as int?;
+        final priceMax = businessInfo['price_range_max'] as int?;
+        final priceCurrency = businessInfo['price_range_currency_code'] as String? ?? '';
+        final priceRange = (priceMin != null && priceMax != null)
+            ? '$priceMin–$priceMax $priceCurrency'
+            : '';
+
+        // Build enriched business map: merge filters + inject computed fields
+        final business = <String, dynamic>{
+          ...businessInfo,
+          'filters': topLevelFilters,
+          'cuisine_type': businessInfo['business_type'] ?? '',
+          'price_range': priceRange,
+          'status_open': _computeStatusOpen(openWindows),
+          'closing_time': _computeClosingTime(openWindows),
+          'address': {'address_line': businessInfo['street'] ?? ''},
+        };
+
         ref.read(businessProvider.notifier).setCurrentBusiness(
-              business: businessData['business_data'],
-              filterIds: List<int>.from(businessData['filter_ids'] ?? []),
-              hours: businessData['business_data']?['business_hours'] ?? {},
+              business: business,
+              filterIds: filterIds,
+              hours: businessHours,
             );
 
         // Store menu data
         if (menuData != null) {
-          ref.read(businessProvider.notifier).setMenuItems(menuData);
+          ref.read(businessProvider.notifier).setMenuItems(menuData['menu_items']);
 
-          // Extract available dietary options
-          final preferences =
-              List<int>.from(menuData['available_dietary_preferences'] ?? []);
-          final restrictions =
-              List<int>.from(menuData['available_dietary_restrictions'] ?? []);
+          final preferences = List<int>.from(menuData['availablePreferences'] ?? []);
+          final restrictions = List<int>.from(menuData['availableRestrictions'] ?? []);
           ref.read(businessProvider.notifier).setDietaryOptions(
                 preferences: preferences,
                 restrictions: restrictions,
               );
         }
 
-        // Track page view
+        // Track page view and menu session start
         _trackPageView();
+        _trackMenuSessionStart();
       }
 
       setState(() {
@@ -193,15 +231,13 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     final analyticsState = ref.read(analyticsProvider);
 
     if (businessId != null) {
-      // Fire-and-forget analytics
       ApiService.instance.postAnalytics(
-        eventType: 'page_viewed',
+        eventType: 'business_profile_viewed',
         deviceId: analyticsState.deviceId,
         sessionId: analyticsState.sessionId ?? '',
-        userId: '', // Anonymous user
+        userId: '',
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
-          'page_name': 'businessProfile',
           'business_id': businessId,
           'business_name': businessName ?? '',
         },
@@ -209,21 +245,73 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     }
   }
 
+  /// Track menu session start (fire-and-forget)
+  void _trackMenuSessionStart() {
+    final businessIdInt = int.tryParse(widget.businessId);
+    if (businessIdInt == null) return;
+    final analyticsState = ref.read(analyticsProvider);
+    ApiService.instance.postAnalytics(
+      eventType: 'menu_session_started',
+      deviceId: analyticsState.deviceId,
+      sessionId: analyticsState.sessionId ?? '',
+      userId: '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {'business_id': businessIdInt},
+    );
+  }
+
+  /// Compute whether business is currently open from openWindows data.
+  /// openWindows: [ { day: 0, open: 420, close: 1080 } ]
+  /// day is 0=Monday; open/close are minutes from midnight.
+  bool _computeStatusOpen(List openWindows) {
+    final now = DateTime.now();
+    final todayMinutes = now.hour * 60 + now.minute;
+    final todayIndex = now.weekday - 1; // DateTime.weekday: 1=Mon → index 0
+    for (final window in openWindows) {
+      if (window is Map<String, dynamic> && window['day'] == todayIndex) {
+        final open = window['open'] as int?;
+        final close = window['close'] as int?;
+        if (open != null && close != null) {
+          return todayMinutes >= open && todayMinutes < close;
+        }
+      }
+    }
+    return false;
+  }
+
+  /// Format today's closing time as "HH:MM" from openWindows data.
+  String _computeClosingTime(List openWindows) {
+    final now = DateTime.now();
+    final todayIndex = now.weekday - 1;
+    for (final window in openWindows) {
+      if (window is Map<String, dynamic> && window['day'] == todayIndex) {
+        final close = window['close'] as int?;
+        if (close != null) {
+          final hours = close ~/ 60;
+          final minutes = (close % 60).toString().padLeft(2, '0');
+          return '$hours:$minutes';
+        }
+      }
+    }
+    return '';
+  }
+
   @override
   void dispose() {
-    // Track session duration
     if (_pageStartTime != null) {
       final duration = DateTime.now().difference(_pageStartTime!);
       final analyticsState = ref.read(analyticsProvider);
+      final businessIdInt = int.tryParse(widget.businessId);
 
       ApiService.instance.postAnalytics(
-        eventType: 'business_profile_session_end',
+        eventType: 'menu_session_ended',
         deviceId: analyticsState.deviceId,
         sessionId: analyticsState.sessionId ?? '',
-        userId: '', // Anonymous user
+        userId: '',
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
           'session_duration_seconds': duration.inSeconds,
+          if (businessIdInt != null) 'business_id': businessIdInt,
         },
       );
     }
@@ -517,14 +605,19 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       _aboutExpanded = !_aboutExpanded;
     });
     final analytics = AnalyticsService.instance;
+    final businessIdInt = int.tryParse(widget.businessId);
     ApiService.instance
         .postAnalytics(
-      eventType: _aboutExpanded ? 'about_expanded' : 'about_collapsed',
+      eventType: 'expandable_text_toggled',
       deviceId: analytics.deviceId ?? '',
       sessionId: analytics.currentSessionId ?? '',
       userId: analytics.userId ?? '',
       timestamp: DateTime.now().toIso8601String(),
-      eventData: {'pageName': 'businessProfile'},
+      eventData: {
+        'action': _aboutExpanded ? 'expanded' : 'collapsed',
+        'text_id': 'about',
+        if (businessIdInt != null) 'business_id': businessIdInt,
+      },
     )
         .catchError((e) {
       debugPrint('Analytics error: $e');
@@ -594,10 +687,10 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
     // Track share event
     ApiService.instance.postAnalytics(
-      eventType: 'business_profile_shared',
+      eventType: 'share_button_clicked',
       deviceId: analyticsState.deviceId,
       sessionId: analyticsState.sessionId ?? '',
-      userId: '', // Anonymous user
+      userId: '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
         'business_id': businessId ?? 0,

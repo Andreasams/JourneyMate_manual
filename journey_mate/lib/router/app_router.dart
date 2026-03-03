@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../pages/welcome/welcome_page.dart';
 import '../pages/app_settings_initiate_flow/app_settings_initiate_flow_page.dart';
 import '../pages/search/search_page.dart';
-import '../pages/business_profile/business_profile_page.dart';
+import '../pages/business_profile/business_profile_page_v2.dart';
 import '../pages/menu_full_page/menu_full_page.dart';
 import '../pages/gallery_full_page/gallery_full_page.dart';
 import '../pages/business_information/business_information_page.dart';
@@ -44,7 +44,7 @@ final appRouter = GoRouter(
       path: '/business/:id',
       builder: (context, state) {
         final businessId = state.pathParameters['id']!;
-        return BusinessProfilePage(businessId: businessId);
+        return BusinessProfilePageV2(businessId: businessId);
       },
     ),
 
