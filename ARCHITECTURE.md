@@ -2207,6 +2207,60 @@ TextButton(
 
 ---
 
+### Pitfall #21: Using Explicit Null Checks in Map Literals Instead of Null-Aware Spread
+
+**Lint rule:** `use_null_aware_elements`
+
+**Problem:** When adding conditional key-value pairs to map literals, Flutter analyzer enforces using the null-aware spread operator `...?` instead of explicit `if` statements. This is required for idiomatic Dart code and will cause CI/CD builds to fail.
+
+❌ **Bad:**
+```dart
+eventData: {
+  'session_duration_seconds': duration.inSeconds,
+  if (businessIdInt != null) 'business_id': businessIdInt,  // ← Analyzer error
+},
+```
+
+✅ **Good:**
+```dart
+eventData: {
+  'session_duration_seconds': duration.inSeconds,
+  ...?businessIdInt != null ? {'business_id': businessIdInt} : null,
+},
+```
+
+**Pattern breakdown:**
+```dart
+// Conditional key-value pair in map:
+if (condition) 'key': value,                           // ❌ Analyzer rejects
+...?condition ? {'key': value} : null,                 // ✅ Null-aware spread
+
+// Multiple conditional keys:
+if (neighbourhoodId != null) 'neighbourhoodId': json.encode(neighbourhoodId),
+if (shoppingAreaId != null) 'shoppingAreaId': shoppingAreaId,
+// Becomes:
+...?neighbourhoodId != null ? {'neighbourhoodId': json.encode(neighbourhoodId)} : null,
+...?shoppingAreaId != null ? {'shoppingAreaId': shoppingAreaId} : null,
+```
+
+**Why this matters:**
+- **CI/CD blocks builds** if `flutter analyze` finds this pattern
+- The `...?` operator safely spreads a nullable map, adding key-value pairs only if the map exists
+- Enforced by Flutter analyzer's `use_null_aware_elements` lint rule since Flutter 3.x
+
+**Real-world fix locations:**
+- `lib/pages/business_profile/business_profile_page_v2.dart:314` — Analytics event data with optional business_id
+- `lib/pages/business_profile/business_profile_page_v2.dart:619` — About section toggle event with optional business_id
+- `lib/services/api_service.dart:154` — Search API request params with optional neighbourhoodId/shoppingAreaId
+
+**Common in:** Analytics event data, API request parameters, configuration maps with optional fields.
+
+**Discovered:** 2026-03-03 during CI build failure — `flutter analyze` reported 3 issues blocking deployment
+
+**Git reference:** Commit `810377f` — fix: use null-aware spread operators in map literals
+
+---
+
 ## Documentation Philosophy
 
 JourneyMate maintains **three types of documentation**:

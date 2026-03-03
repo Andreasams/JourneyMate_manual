@@ -92,6 +92,8 @@ Read these documents IN ORDER at the start of every session:
 - **Parameter names:** Never use double underscores `__` (triggers `unnecessary_underscores` lint)
 - **Ignored parameters:** Use single underscore `_` or simple names like `e`, `s`, `error`, `stack`
 - **Example:** `error: (e, s) => true` NOT `error: (_, __) => true`
+- **Conditional map entries:** Use null-aware spread `...?condition ? {'key': value} : null` (NOT `if (condition) 'key': value`)
+- **See ARCHITECTURE.md → Pitfall #21** for null-aware elements pattern details
 
 ---
 
