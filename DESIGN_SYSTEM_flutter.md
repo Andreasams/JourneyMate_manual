@@ -326,51 +326,43 @@ SizedBox(
 
 ### Search Bar Component
 
-Search bars are a **distinct component** from form inputs and do NOT use `AppInputDecorations.standard()`. Use this pattern whenever building a search bar:
+Search bars are a **distinct component** from form inputs and do NOT use `AppInputDecorations.standard()`.
+
+**Always use the shared widget — never build the raw Container+TextField pattern inline:**
 
 ```dart
-Container(
-  height: AppConstants.searchBarHeight,  // 45px (compact)
-  decoration: BoxDecoration(
-    color: AppColors.bgInput,
-    borderRadius: BorderRadius.circular(AppRadius.input),  // 12px
-    border: Border.all(
-      color: hasFocus ? AppColors.accent : Colors.transparent,
-      width: 1.5,
-    ),
-  ),
-  child: TextField(
-    style: AppTypography.input,
-    decoration: InputDecoration(
-      hintText: 'Search...',
-      hintStyle: AppTypography.placeholder,
-      filled: false,
-      prefixIcon: Icon(Icons.search, size: 17, color: AppColors.textMuted),
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,   // 12px
-        vertical: AppSpacing.md,     // 12px
-      ),
-      border: InputBorder.none,
-      enabledBorder: InputBorder.none,
-      focusedBorder: InputBorder.none,
-    ),
-  ),
+// lib/widgets/shared/search_bar_widget.dart
+SearchBarWidget(
+  hintTextKey: 'search_placeholder',   // translation key
+  controller: _searchController,        // optional external controller
+  onChanged: _onSearchTextChanged,      // called on every keystroke AND clear
+  onSubmitted: _executeSearch,          // optional — keyboard submit action
 )
 ```
 
+**Current usages:**
+- `lib/pages/search/search_page.dart` — main search bar (with debounced API call)
+- `lib/widgets/shared/sort_bottom_sheet.dart` — station list filter (local filtering)
+
+**Widget internals (for reference):**
+- Manages its own `FocusNode` (drives the transparent → orange border on focus)
+- Creates an internal `TextEditingController` when none is passed in
+- Shows a clear button (`Icons.clear`) when the field has text; tapping it calls `onChanged('')`
+- Height: `AppConstants.searchBarHeight` (45px), radius: `AppRadius.input` (12px)
+
 **Key differences from form inputs (`AppInputDecorations.standard`):**
 
-| Property | Search Bar | Form Input |
-|----------|-----------|------------|
+| Property | Search Bar (`SearchBarWidget`) | Form Input |
+|----------|-------------------------------|------------|
 | Height | 45px (`searchBarHeight`) | 50px (`inputHeight`) |
 | Background | `bgInput` always, border changes on focus | `bgInput` with visible border always |
 | Border (unfocused) | Transparent | `AppColors.border` |
-| Border (focused) | `AppColors.accent` | `AppColors.accent` |
+| Border (focused) | `AppColors.accent` (1.5px) | `AppColors.accent` |
 | Outline borders | `InputBorder.none` on all states | Standard `OutlineInputBorder` |
-| Decoration | Custom (as above) | `AppInputDecorations.standard()` |
+| Decoration | `SearchBarWidget` | `AppInputDecorations.standard()` |
 
 **When to use which:**
-- **Search bars** (search page, future search locations): Use the pattern above
+- **Search bars** (search page, station picker, any future search locations): Use `SearchBarWidget`
 - **Form inputs** (feedback, contact, missing place, settings): Use `AppInputDecorations.standard()`
 
 ---

@@ -47,7 +47,7 @@ JourneyMate was migrated from FlutterFlow to production Flutter with five core a
 - **All typography** from `AppTypography` — no inline `TextStyle`
 - **All radii** from `AppRadius` — no hardcoded border radius values
 
-**Why:** Ensures visual consistency across 12 pages and 34 shared widgets. Design changes propagate automatically.
+**Why:** Ensures visual consistency across 12 pages and 35 shared widgets. Design changes propagate automatically.
 
 ### 2. Riverpod 3.x State Management (Predictable State)
 - **NotifierProvider** for global and session state
@@ -125,7 +125,7 @@ journey_mate/
 │   │       ├── contact_us_page.dart   # Contact form wrapper
 │   │       ├── share_feedback_page.dart # Feedback form wrapper
 │   │       └── missing_place_page.dart # Missing place form wrapper
-│   ├── widgets/                       # 34 shared widgets
+│   ├── widgets/                       # 35 shared widgets
 │   │   ├── shared/                    # Reusable components
 │   │   ├── activity_scope.dart        # Automatic engagement tracking
 │   │   └── app_lifecycle_observer.dart # App state lifecycle hooks

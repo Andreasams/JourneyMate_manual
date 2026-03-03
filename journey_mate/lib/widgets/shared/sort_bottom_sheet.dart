@@ -9,6 +9,7 @@ import '../../theme/app_constants.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
+import './search_bar_widget.dart';
 
 /// Sort Bottom Sheet
 /// Allows users to change sort order and toggle "only open" filter
@@ -40,8 +41,6 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   String _view = 'options'; // 'options' or 'stations'
 
   final TextEditingController _stationSearchController = TextEditingController();
-  final FocusNode _stationSearchFocusNode = FocusNode();
-  bool _stationSearchHasFocus = false;
   String _stationSearchText = '';
 
   @override
@@ -49,15 +48,11 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
     super.initState();
     _selectedSort = widget.currentSort;
     _onlyOpen = widget.onlyOpen;
-    _stationSearchFocusNode.addListener(() {
-      setState(() => _stationSearchHasFocus = _stationSearchFocusNode.hasFocus);
-    });
   }
 
   @override
   void dispose() {
     _stationSearchController.dispose();
-    _stationSearchFocusNode.dispose();
     super.dispose();
   }
 
@@ -156,7 +151,14 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   }
 
   Widget _buildStationsView() {
-    final trainStations = _getTrainStations();
+    final allStations = _getTrainStations();
+    final filteredStations = _stationSearchText.isEmpty
+        ? allStations
+        : allStations
+            .where((s) => (s['name'] as String)
+                .toLowerCase()
+                .contains(_stationSearchText.toLowerCase()))
+            .toList();
 
     final filteredStations = _stationSearchText.isEmpty
         ? trainStations
@@ -175,13 +177,17 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.md,
           ),
-          child: _buildStationSearchBar(),
+          child: SearchBarWidget(
+            hintTextKey: 'search_placeholder',
+            controller: _stationSearchController,
+            onChanged: (text) => setState(() => _stationSearchText = text),
+          ),
         ),
         Expanded(
           child: filteredStations.isEmpty
               ? Center(
                   child: Text(
-                    td(ref, 'hours_no_data'), // Generic "No data" message
+                    td(ref, 'hours_no_data'),
                     style: AppTypography.bodyRegular.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -196,55 +202,6 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                 ),
         ),
       ],
-    );
-  }
-
-  Widget _buildStationSearchBar() {
-    return Container(
-      height: AppConstants.searchBarHeight,
-      decoration: BoxDecoration(
-        color: AppColors.bgInput,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: _stationSearchHasFocus ? AppColors.accent : Colors.transparent,
-          width: 1.5,
-        ),
-      ),
-      child: TextField(
-        controller: _stationSearchController,
-        focusNode: _stationSearchFocusNode,
-        onChanged: (value) => setState(() => _stationSearchText = value),
-        style: AppTypography.input,
-        decoration: InputDecoration(
-          hintText: td(ref, 'search_placeholder'),
-          hintStyle: AppTypography.placeholder,
-          filled: false,
-          prefixIcon: Icon(
-            Icons.search,
-            size: 17,
-            color: AppColors.textMuted,
-          ),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.md,
-          ),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
-          suffixIcon: _stationSearchText.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear, size: 20),
-                  color: AppColors.textMuted,
-                  onPressed: () {
-                    _stationSearchController.clear();
-                    setState(() => _stationSearchText = '');
-                  },
-                )
-              : null,
-        ),
-      ),
     );
   }
 
