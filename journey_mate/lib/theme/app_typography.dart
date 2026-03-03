@@ -9,10 +9,10 @@ class AppTypography {
   // HEADINGS
   // ============================================================
 
-  /// Page title (h2) - 26px, weight 720 → w800
+  /// Page title (h2) - 26px, weight 720 → w700
   static const TextStyle pageTitle = TextStyle(
     fontSize: 26,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
     letterSpacing: -0.65, // -0.025em × 26px
     height: 1.2,
@@ -135,14 +135,6 @@ class AppTypography {
     fontSize: 12.5,
     fontWeight: FontWeight.w600,
     height: 1.2,
-  );
-
-  /// Filter tab - Filter panel tabs (16px, weight 600)
-  static const TextStyle filterTab = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textSecondary,
-    height: 1.3,
   );
 
   /// View toggle - List/Map toggle buttons (13.5px, weight 500)

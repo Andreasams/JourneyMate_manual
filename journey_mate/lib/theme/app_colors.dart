@@ -24,6 +24,9 @@ class AppColors {
   /// Green border - Border accent for full-match cards and green pills
   static const Color greenBorder = Color(0xFFD0ECD8);
 
+  /// Full-match card border - Subtle green border for full-match result cards
+  static const Color fullMatchCardBorder = Color(0xFFB8D4C0);
+
   /// Red - Closed status, missed needs, warning states
   static const Color red = Color(0xFFC9403A);
 

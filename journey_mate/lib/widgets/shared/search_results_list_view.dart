@@ -9,6 +9,7 @@ import '../../providers/settings_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/filter_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_constants.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
@@ -480,7 +481,7 @@ class _SearchResultsListViewState
             size: 64,
             color: AppColors.textTertiary,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             td(ref, 'noresultsfound'),
             style: AppTypography.bodyRegular.copyWith(
@@ -535,7 +536,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   // Constants
   // ---------------------------------------------------------------------------
 
-  static const double _imageSize = 42.0; // Reduced from 50px for less prominence
+  static const double _imageSize = AppConstants.logoCircleSize; // 50px per design spec
   static const String _placeholderImageUrl =
       'https://tlqfuazpshfaozdvmcbh.supabase.co/storage/v1/object/public/profilepic_restaurants/placeholder.webp';
 
@@ -591,12 +592,12 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   Color get _borderColor {
     switch (widget.matchVariant) {
       case 'full':
-        return const Color(0xFFb8d4c0); // Green border for full match
+        return AppColors.fullMatchCardBorder;
       case 'partial':
-        return const Color(0xFFf0dcc8); // Light orange for partial match
+        return AppColors.orangeBorder;
       case 'none':
       default:
-        return const Color(0xFFe8e8e8); // Gray for no match
+        return AppColors.border;
     }
   }
 
@@ -689,7 +690,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildImage(),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(child: _buildInfoColumn()),
                   ],
                 ),
@@ -800,14 +801,14 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           ),
         ),
         if (timingText != null && timingText.isNotEmpty) ...[
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             '•',
             style: AppTypography.cardDetail.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
           Flexible(
             child: Text(
               timingText,
@@ -859,11 +860,11 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     if (priceRange != null && priceRange.isNotEmpty) {
       if (items.isNotEmpty) {
         items.addAll([
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
           Text('•',
               style: AppTypography.cardDetail
                   .copyWith(color: AppColors.textSecondary)),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
         ]);
       }
       items.add(Text(
@@ -961,8 +962,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   Widget _buildCollapseChevron() {
     return Padding(
       padding: EdgeInsets.only(
-        top: AppSpacing.xsm,  // 6px per JSX
-        bottom: 4,            // 4px per JSX
+        top: AppSpacing.xsm,
+        bottom: AppSpacing.xs,
       ),
       child: Center(
         child: Icon(
@@ -978,21 +979,21 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Container(
           height: 1,
-          color: const Color(0xFFf2f2f2),
+          color: AppColors.divider,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         // Full address
         _buildFullAddress(),
-        const SizedBox(height: 6),
+        const SizedBox(height: AppSpacing.xsm),
         // Today's hours
         _buildTodayHours(),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         // Swipeable gallery
         if (_galleryImages != null && _galleryImages!.isNotEmpty) _buildSwipeableGallery(),
-        if (_galleryImages != null && _galleryImages!.isNotEmpty) const SizedBox(height: 12),
+        if (_galleryImages != null && _galleryImages!.isNotEmpty) const SizedBox(height: AppSpacing.md),
         // "See more" button
         _buildSeeMoreButton(),
       ],
@@ -1022,7 +1023,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       fullAddress,
       style: AppTypography.bodyRegular.copyWith(
         fontSize: 12.5,
-        color: const Color(0xFF888888),
+        color: AppColors.textTertiary,
       ),
     );
   }
@@ -1216,14 +1217,14 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           }
         },
         style: OutlinedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 9), // 9px per JSX
-          backgroundColor: Colors.white, // White background per JSX
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          backgroundColor: Colors.white,
           side: BorderSide(
-            color: Color(0xFFe8e8e8), // Grey border per JSX
+            color: AppColors.border,
             width: 1.5,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10), // Pill shape per JSX
+            borderRadius: BorderRadius.circular(AppRadius.filter),
           ),
         ),
         child: Row(
@@ -1232,16 +1233,16 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
             Text(
               td(ref, 'expandable_show_more'),
               style: AppTypography.cardDetail.copyWith( // 14px now
-                color: Color(0xFF555555), // Dark grey per JSX, not orange
+                color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: AppSpacing.xs),
             Text(
               '→',
               style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF555555),
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -1295,10 +1296,10 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     return Container(
       margin: EdgeInsets.only(top: AppSpacing.sm), // 8px top spacing inside card
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: const Color(0xFFfef8f2), // Light orange background
-        borderRadius: BorderRadius.circular(10),
+        color: AppColors.orangeBg,
+        borderRadius: BorderRadius.circular(AppRadius.filter),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1308,7 +1309,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
             size: 14,
             color: AppColors.accent,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               missedNames.isNotEmpty ? '$matchesText · $missingText' : matchesText,
