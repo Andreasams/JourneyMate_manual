@@ -247,7 +247,7 @@ Each scenario below provides:
 - ⚠️ Collection callbacks: Use `Map<String, Object>{}` not `Map<String, dynamic>{}` in `orElse:` (Common Pitfall #13)
 - ⚠️ Use `enableLocation()` for search page location banner (NOT `requestPermission()`)
 - ⚠️ Location banner uses swipe-to-dismiss gesture: `HitTestBehavior.translucent` + adaptive 30% threshold (commit 58a7549)
-- ⚠️ **v9 Geographic filters:** Use `neighbourhood_id` (number | number[]) and `shopping_area_id` (number) parameters for filtering
+- ⚠️ **v9 Geographic filters:** Use `neighbourhood_id` (number | number[]) and `shopping_area_id` (number) parameters for filtering. Flutter sends `neighbourhoodId` as `List<int>?` (JSON-encoded array via `json.encode()`). Station validation uses `.any()` OR logic across selected neighbourhoods (commits `bd1c12f`/`61a7cea`)
 - ⚠️ **v9 Pagination:** When `onlyOpen=true`, `totalPages` = `-1` (use `hasMore` field instead for infinite scroll)
 
 **Reference files:**
@@ -334,6 +334,7 @@ Each scenario below provides:
 
 ## Navigation Guide Changelog
 
+**2026-03-03:** Updated neighbourhood filter docs to multi-select (`List<int>?`) pattern from commits bd1c12f/61a7cea. ARCHITECTURE.md Filter Coordination Pattern code example updated, PROVIDERS_REFERENCE.md SearchState fields and setFiltersWithRouting() method added. No line-number shifts in ARCHITECTURE.md
 **2026-03-03:** Updated all line references after 6-branch merge documentation (Pitfall #20, atomic state updates, submit button pattern, v2 business profile). Updated Scenario 5 with atomic state pattern, Scenario 10 with v2 profile info
 **2026-03-03:** Added Parent-Child Filter Pattern (lines 571-691) and Pitfall #18 to Scenario 9. Updated all line references across 12 scenarios due to 121-line insertion in ARCHITECTURE.md from commit a917eee
 **2026-03-03:** Added Filter Coordination Pattern (lines 485-569) to Scenario 9. Updated all line references across 12 scenarios due to 86-line insertion in ARCHITECTURE.md from commit 8606b21

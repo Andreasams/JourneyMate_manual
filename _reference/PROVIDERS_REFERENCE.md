@@ -232,7 +232,10 @@ class SearchState {
   final String previousSearchText;
   final String previousFilterSessionId;
   final int currentRefinementSequence;      // Refinement count
+  final List<int>? selectedNeighbourhoodId;  // Neighbourhood filter IDs (multi-select, routed from overlay)
+  final int? selectedShoppingAreaId;          // Shopping area filter ID (routed from overlay)
   final DateTime? lastRefinementTime;
+  final DateTime? lastFetchTime;             // Timestamp of most recent search API call
   final int visibleResultCount;             // Count for Open Now badge & page title
 }
 ```
@@ -256,6 +259,12 @@ ref.read(searchStateProvider.notifier).addFilters(List<int> filterIds);
 ref.read(searchStateProvider.notifier).removeFilters(List<int> filterIds);
 ref.read(searchStateProvider.notifier).clearFilters();
 ref.read(searchStateProvider.notifier).setFilters(List<int> filterIds);
+
+// Geographic filter routing (separates neighbourhood/shopping area/station from regular filters)
+// Neighbourhoods → selectedNeighbourhoodId (List<int>), shopping areas → selectedShoppingAreaId,
+// train stations → dropped (handled via selectedStation param), rest → filtersUsedForSearch
+ref.read(searchStateProvider.notifier).setFiltersWithRouting(
+    List<int> allIds, Map<int, dynamic> filterLookup);
 
 // Filter session tracking
 ref.read(searchStateProvider.notifier).setFilterSessionId(String sessionId);
