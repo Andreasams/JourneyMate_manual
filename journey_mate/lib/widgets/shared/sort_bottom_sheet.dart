@@ -150,6 +150,9 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   }
 
   Widget _buildStationsView() {
+    // Detect keyboard height for padding calculation
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
     final allStations = _getTrainStations();
     final filteredStations = _stationSearchText.isEmpty
         ? allStations
@@ -169,7 +172,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             vertical: AppSpacing.md,
           ),
           child: SearchBarWidget(
-            hintTextKey: 'search_placeholder',
+            hintTextKey: 'search_placeholder_train_station',
             controller: _stationSearchController,
             onChanged: (text) => setState(() => _stationSearchText = text),
           ),
@@ -185,7 +188,11 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                   ),
                 )
               : ListView.builder(
-                  padding: EdgeInsets.zero,
+                  padding: EdgeInsets.only(
+                    bottom: keyboardHeight > 0
+                        ? keyboardHeight + AppSpacing.lg  // Keyboard visible: add clearance
+                        : AppSpacing.md,                   // Keyboard hidden: standard padding
+                  ),
                   itemCount: filteredStations.length,
                   itemBuilder: (context, index) {
                     return _buildStationOption(filteredStations[index]);
