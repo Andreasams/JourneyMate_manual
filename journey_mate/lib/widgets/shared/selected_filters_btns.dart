@@ -270,7 +270,8 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     ];
 
     // Filter out parents when children are selected
-    final parentsToHide = _findParentsToHide(selectedFilterIds);
+    // Use allDisplayIds (not just selectedFilterIds) to include routed neighbourhoods
+    final parentsToHide = _findParentsToHide(allDisplayIds);
     final visibleDisplayIds = allDisplayIds.where((id) => !parentsToHide.contains(id)).toList();
 
     final selectedFilters = _flattenedFilters!
@@ -308,8 +309,23 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
 
     // Neighborhood children - use original capitalization with dash separator
     // Example: "Indre By - Kongens Nytorv"
-    if (AppConstants.kNeighborhoodChildren.contains(filterId) && parentName != null) {
-      return '$parentName - $name';
+    if (AppConstants.kNeighborhoodChildren.contains(filterId)) {
+      // Look up parent from relationships map to get correct parent name
+      final actualParentId = _findParentForChild(filterId);
+      if (actualParentId != null) {
+        final parentFilter = _flattenedFilters?.firstWhere(
+          (f) => f['id'] == actualParentId,
+          orElse: () => <String, dynamic>{},
+        );
+        final actualParentName = parentFilter?['name'] as String?;
+        if (actualParentName != null) {
+          return '$actualParentName - $name';
+        }
+      }
+      // Fallback to parentName from filter if available
+      if (parentName != null) {
+        return '$parentName - $name';
+      }
     }
 
     // Check if this is a dietary composite (6-digit ID starting with 593-597)

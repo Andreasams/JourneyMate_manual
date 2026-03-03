@@ -175,7 +175,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
   }
 
   /// Route filter IDs based on type, splitting them into the correct state fields:
-  /// - is_neighborhood == true → selectedNeighbourhoodId (API param, not in filters array)
+  /// - is_neighborhood == true OR in neighbourhood hierarchy → selectedNeighbourhoodId (API param, not in filters array)
   /// - id >= 20000 → selectedShoppingAreaId (API param, not in filters array)
   /// - id >= 10000 && < 20000 → dropped (train stations handled via selectedStation param)
   /// - everything else → filtersUsedForSearch
@@ -192,7 +192,14 @@ class SearchStateNotifier extends Notifier<SearchState> {
         continue;
       } else {
         final meta = filterLookup[id];
-        if (meta != null && meta['is_neighborhood'] == true) {
+        // Check both metadata flag AND hierarchy constants to identify neighbourhoods
+        // (parent neighbourhoods might not have is_neighborhood flag set in metadata)
+        final isNeighbourhoodByMeta = meta != null && meta['is_neighborhood'] == true;
+        final isNeighbourhoodByHierarchy =
+            AppConstants.kNeighborhoodHierarchy.containsKey(id) ||  // Parent neighbourhood
+            AppConstants.kNeighborhoodChildren.contains(id);         // Child neighbourhood
+
+        if (isNeighbourhoodByMeta || isNeighbourhoodByHierarchy) {
           neighbourhoodIds.add(id);
         } else {
           regularFilters.add(id);
