@@ -421,9 +421,12 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     final items = _getItemsWithoutActiveFiltering(categoryId);
 
     // Hide Frederiksberg C (635) - it's bundled with Frederiksberg (36)
+    // Hide child neighborhoods - they appear in column 3 when parent is selected
     if (categoryId == _neighborhoodCategoryId) {
       return items
-          .where((item) => item['id'] != AppConstants.kFrederikbergC)
+          .where((item) =>
+              item['id'] != AppConstants.kFrederikbergC &&
+              !AppConstants.kNeighborhoodChildren.contains(item['id']))
           .toList();
     }
 
@@ -459,6 +462,16 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   List<dynamic> _getSubItems(int itemId) {
+    // Check if itemId is a parent neighborhood
+    if (AppConstants.kNeighborhoodHierarchy.containsKey(itemId)) {
+      final childIds = AppConstants.kNeighborhoodHierarchy[itemId]!;
+      final allNeighborhoods = _getItemsWithoutActiveFiltering(_neighborhoodCategoryId);
+      return allNeighborhoods
+          .where((item) => childIds.contains(item['id']))
+          .toList();
+    }
+
+    // Existing: Category 8 sub-items logic
     final filters = _extractFiltersArray();
 
     for (var title in (filters as List? ?? [])) {
@@ -770,25 +783,40 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   void _handleNeighborhoodSelection(int filterId) {
-    _toggleFilter(filterId);
-    if (_selectedFilterIds.contains(filterId)) {
-      _selectedNeighborhoodIds.add(filterId);
-      _currentSelectionType = FilterSelectionType.neighborhood;
+    final isParent = AppConstants.kNeighborhoodHierarchy.containsKey(filterId);
+    final isChild = AppConstants.kNeighborhoodChildren.contains(filterId);
 
-      // Special rule: When Frederiksberg (36) is selected, also add Frederiksberg C (635)
-      if (filterId == AppConstants.kFrederiksberg) {
-        if (!_selectedFilterIds.contains(AppConstants.kFrederikbergC)) {
-          _selectedFilterIds.add(AppConstants.kFrederikbergC);
-          _selectedNeighborhoodIds.add(AppConstants.kFrederikbergC);
+    if (_selectedFilterIds.contains(filterId)) {
+      // DESELECTING
+      _selectedFilterIds.remove(filterId);
+      _selectedNeighborhoodIds.remove(filterId);
+
+      // If deselecting a parent, also deselect all children
+      if (isParent) {
+        final childIds = AppConstants.kNeighborhoodHierarchy[filterId]!;
+        _selectedFilterIds.removeAll(childIds);
+        for (final childId in childIds) {
+          _selectedNeighborhoodIds.remove(childId);
+        }
+        // Close column 3
+        if (selectedItemId == filterId) {
+          selectedItemId = null;
         }
       }
 
-      // Notify parent that neighbourhood was selected
-      widget.onNeighbourhoodSelected?.call();
-    } else {
-      _selectedNeighborhoodIds.remove(filterId);
+      // If deselecting a child, keep parent selected and revert to parent search
+      if (isChild) {
+        final parentId = _findParentForChild(filterId);
+        if (parentId != null) {
+          // Parent stays in _selectedFilterIds (for visual selection)
+          // Add parent back to _selectedNeighborhoodIds (revert to parent search)
+          if (!_selectedNeighborhoodIds.contains(parentId)) {
+            _selectedNeighborhoodIds.add(parentId);
+          }
+        }
+      }
 
-      // Special rule: When Frederiksberg (36) is deselected, also remove Frederiksberg C (635)
+      // Frederiksberg special rule
       if (filterId == AppConstants.kFrederiksberg) {
         _selectedFilterIds.remove(AppConstants.kFrederikbergC);
         _selectedNeighborhoodIds.remove(AppConstants.kFrederikbergC);
@@ -797,7 +825,50 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       if (_selectedNeighborhoodIds.isEmpty) {
         _currentSelectionType = FilterSelectionType.none;
       }
+    } else {
+      // SELECTING
+      _selectedFilterIds.add(filterId);
+      _selectedNeighborhoodIds.add(filterId);
+      _currentSelectionType = FilterSelectionType.neighborhood;
+
+      // If selecting a parent, show column 3
+      if (isParent) {
+        selectedItemId = filterId;
+      }
+
+      // If selecting a child (refinement), ensure parent is visually selected
+      if (isChild) {
+        final parentId = _findParentForChild(filterId);
+        if (parentId != null) {
+          _selectedFilterIds.add(parentId);
+          // Remove parent from _selectedNeighborhoodIds (only child goes to API)
+          _selectedNeighborhoodIds.remove(parentId);
+        }
+      }
+
+      // Frederiksberg special rule
+      if (filterId == AppConstants.kFrederiksberg) {
+        if (!_selectedFilterIds.contains(AppConstants.kFrederikbergC)) {
+          _selectedFilterIds.add(AppConstants.kFrederikbergC);
+          _selectedNeighborhoodIds.add(AppConstants.kFrederikbergC);
+        }
+      }
+
+      widget.onNeighbourhoodSelected?.call();
     }
+
+    setState(() {});
+    _executeSearchAndTrackAnalytics();
+  }
+
+  /// Helper method to find parent for a child ID
+  int? _findParentForChild(int childId) {
+    for (final entry in AppConstants.kNeighborhoodHierarchy.entries) {
+      if (entry.value.contains(childId)) {
+        return entry.key;
+      }
+    }
+    return null;
   }
 
   void _removeConflictingFilters(List<int> conflictingCategoryIds) {

@@ -9,6 +9,19 @@ class AppConstants {
   static const int kFrederiksberg = 36;           // Main Frederiksberg
   static const int kFrederikbergC = 635;          // Frederiksberg C (hidden, bundled with 36)
 
+  /// Hierarchical neighborhood relationships (parent → children)
+  /// Only applies to city_id=17 (Copenhagen)
+  static const Map<int, List<int>> kNeighborhoodHierarchy = {
+    44: [41, 42, 34],  // Indre By → Kongens Nytorv, Nyhavn, Christianshavn
+    48: [35, 43],      // Amager → Islands Brygge, Ørestad
+    37: [30],          // Nordvest → Bispebjerg
+    31: [40],          // Vanløse → Grøndal
+  };
+
+  /// Flattened set of all child neighborhood IDs for quick lookup
+  static final Set<int> kNeighborhoodChildren =
+      kNeighborhoodHierarchy.values.expand((list) => list).toSet();
+
   // Screen dimensions (reference - iPhone 14/15 standard)
   static const double screenWidth = 390.0;
   static const double screenHeight = 844.0;

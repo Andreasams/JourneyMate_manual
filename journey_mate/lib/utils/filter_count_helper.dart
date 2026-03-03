@@ -77,6 +77,11 @@ List<int> _deduplicateParentChildCombos(List<int> activeFilters) {
     55: [588],
     100: [196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207],
     101: [184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195],
+    // Neighborhood hierarchies
+    44: [41, 42, 34],
+    48: [35, 43],
+    37: [30],
+    31: [40],
   };
 
   final activeSet = activeFilters.toSet();
