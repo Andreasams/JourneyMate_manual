@@ -344,6 +344,55 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           mayLoad: true,
                           resultCount: searchState.searchResultsCount,
                           activeTabIndex: _activeFilterTab,
+                          onShoppingAreaSelected: () {
+                            // Reset sort to nearest if currently using station sort
+                            if (_currentSort == 'station') {
+                              setState(() {
+                                _currentSort = 'nearest';
+                                _selectedStation = null;
+                              });
+                              // Trigger new search with updated sort
+                              final currentSearchText = ref.read(searchStateProvider).currentSearchText;
+                              _executeSearch(currentSearchText);
+                            }
+                          },
+                          onNeighbourhoodSelected: () {
+                            // Check if selected station is still valid for the new neighbourhood
+                            if (_currentSort == 'station' && _selectedStation != null) {
+                              final searchState = ref.read(searchStateProvider);
+                              final neighbourhoodId = searchState.selectedNeighbourhoodId;
+
+                              if (neighbourhoodId != null) {
+                                // Check if station belongs to the neighbourhood
+                                final filterState = ref.read(filterProvider);
+                                final isStationInNeighbourhood = filterState.when(
+                                  data: (state) {
+                                    final stationData = state.filterLookupMap[_selectedStation];
+                                    if (stationData != null) {
+                                      final neighbourhoodId1 = stationData['neighbourhood_id_1'] as int?;
+                                      final neighbourhoodId2 = stationData['neighbourhood_id_2'] as int?;
+                                      return neighbourhoodId1 == neighbourhoodId ||
+                                             neighbourhoodId2 == neighbourhoodId;
+                                    }
+                                    return false;
+                                  },
+                                  loading: () => true, // Keep station while loading
+                                  error: (_, __) => true, // Keep station on error
+                                );
+
+                                // Reset to nearest if station is not in the neighbourhood
+                                if (!isStationInNeighbourhood) {
+                                  setState(() {
+                                    _currentSort = 'nearest';
+                                    _selectedStation = null;
+                                  });
+                                  // Trigger new search with updated sort
+                                  final currentSearchText = searchState.currentSearchText;
+                                  _executeSearch(currentSearchText);
+                                }
+                              }
+                            }
+                          },
                         ),
                         loading: () => const Center(
                           child: CircularProgressIndicator(),
@@ -406,7 +455,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   void _openSortBottomSheet() {
     final searchState = ref.read(searchStateProvider);
-    final openPlacesCount = _onlyOpen ? searchState.searchResultsCount : 0;
+
+    // Use same count logic as page title: fullMatchCount when scoring filters exist
+    final hasActiveFiltersOrSearch =
+        searchState.filtersUsedForSearch.isNotEmpty ||
+        searchState.selectedNeighbourhoodId != null ||
+        searchState.selectedShoppingAreaId != null ||
+        searchState.currentSearchText.isNotEmpty;
+
+    final count = (hasActiveFiltersOrSearch && searchState.scoringFilterIds.isNotEmpty)
+        ? searchState.fullMatchCount
+        : searchState.searchResultsCount;
+
+    final openPlacesCount = _onlyOpen ? count : 0;
 
     showModalBottomSheet(
       context: context,

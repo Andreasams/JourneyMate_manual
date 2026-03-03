@@ -26,13 +26,19 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
   }
 
   /// Synchronous initialization from pre-read SharedPreferences values
-  /// Loads both currency code and cached exchange rate (if available)
-  void initializeFromPrefs({required String currencyCode, double? exchangeRate}) {
+  /// Loads currency code, cached exchange rate (if available), and distance unit
+  void initializeFromPrefs({
+    required String currencyCode,
+    double? exchangeRate,
+    required String distanceUnit,
+  }) {
     state = state.copyWith(
       currencyCode: currencyCode,
       exchangeRate: exchangeRate ?? 1.0,
+      distanceUnit: distanceUnit,
     );
     debugPrint('✅ Loaded currency: $currencyCode (rate: ${exchangeRate ?? 1.0})');
+    debugPrint('✅ Loaded distance unit: $distanceUnit');
   }
 
   /// Load currency code from SharedPreferences
@@ -106,6 +112,20 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
   /// Reset to default currency
   Future<void> resetToDefault() async {
     await setCurrency('DKK', 1.0);
+  }
+
+  /// Set distance unit preference and persist to SharedPreferences
+  Future<void> setDistanceUnit(String unit) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_distance_unit', unit);
+      state = state.copyWith(distanceUnit: unit);
+      debugPrint('✅ Distance unit set: $unit');
+    } catch (e) {
+      debugPrint('⚠️ Failed to save distance unit: $e');
+      // Still update in-memory state (graceful degradation)
+      state = state.copyWith(distanceUnit: unit);
+    }
   }
 
   /// Auto-suggests currency based on language change

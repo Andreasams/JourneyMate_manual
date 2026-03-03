@@ -39,6 +39,10 @@ void main() async {
   final fontScale = prefs.getDouble('font_scale') ?? 1.0;
   final isBannerDismissed = prefs.getBool('location_banner_dismissed') ?? false;
 
+  // Distance unit: Default to 'imperial' for English, 'metric' for others
+  final defaultDistanceUnit = storedLanguage == 'en' ? 'imperial' : 'metric';
+  final storedDistanceUnit = prefs.getString('user_distance_unit') ?? defaultDistanceUnit;
+
   // Load cached translations from SharedPreferences (if available)
   final cachedTranslations = await TranslationsCacheNotifier.loadFromCache(storedLanguage);
   final isCacheFresh = await TranslationsCacheNotifier.isCacheFresh(storedLanguage);
@@ -66,6 +70,7 @@ void main() async {
   container.read(localizationProvider.notifier).initializeFromPrefs(
     currencyCode: storedCurrency,
     exchangeRate: storedExchangeRate,
+    distanceUnit: storedDistanceUnit,
   );
 
   container.read(locationProvider.notifier).initializeFromPrefs(

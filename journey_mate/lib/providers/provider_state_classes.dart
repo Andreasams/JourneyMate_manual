@@ -473,30 +473,35 @@ class FilterState {
 // LOCALIZATION STATE
 // ============================================================
 
-/// Localization preferences (currency with exchange rate)
+/// Localization preferences (currency with exchange rate, distance unit)
 class LocalizationState {
   final String currencyCode; // Persisted
   final double exchangeRate; // Not persisted (ephemeral)
+  final String distanceUnit; // Persisted: 'imperial' or 'metric'
 
   const LocalizationState({
     required this.currencyCode,
     required this.exchangeRate,
+    required this.distanceUnit,
   });
 
   factory LocalizationState.initial() {
     return const LocalizationState(
       currencyCode: 'DKK',
       exchangeRate: 1.0,
+      distanceUnit: 'imperial', // Default to imperial (English default)
     );
   }
 
   LocalizationState copyWith({
     String? currencyCode,
     double? exchangeRate,
+    String? distanceUnit,
   }) {
     return LocalizationState(
       currencyCode: currencyCode ?? this.currencyCode,
       exchangeRate: exchangeRate ?? this.exchangeRate,
+      distanceUnit: distanceUnit ?? this.distanceUnit,
     );
   }
 }

@@ -3,16 +3,16 @@ import '../../../models/lat_lng.dart';
 
 /// Calculates the great-circle distance between two geographical points using the Haversine formula.
 ///
-/// Automatically converts output to miles for English language users and kilometers for all other languages.
+/// Returns distance in kilometers by default. Converts to miles when distanceUnit is 'imperial'.
 ///
 /// Args:
 ///   currentDeviceLocation: The current location of the device as a LatLng object
 ///   businessLatitude: The latitude of the business location (-90 to 90)
 ///   businessLongitude: The longitude of the business location (-180 to 180)
-///   languageCode: ISO language code (e.g., 'en' for English, 'da' for Danish)
+///   distanceUnit: Distance unit preference ('imperial' for miles, 'metric' for kilometers)
 ///
 /// Returns:
-///   Distance rounded to one decimal place in kilometers or miles
+///   Distance rounded to one decimal place in kilometers (metric) or miles (imperial)
 ///
 /// Throws:
 ///   Exception if latitude or longitude values are out of valid bounds
@@ -20,7 +20,7 @@ double returnDistance(
   LatLng currentDeviceLocation,
   double businessLatitude,
   double businessLongitude,
-  String languageCode,
+  String distanceUnit,
 ) {
   // Validate latitude bounds
   if (businessLatitude < -90 || businessLatitude > 90) {
@@ -49,8 +49,9 @@ double returnDistance(
   // Distance in kilometers (Earth's diameter = 12742 km)
   var result = 12742 * math.asin(math.sqrt(a));
 
-  // If language code is English, convert to miles
-  if (languageCode.toLowerCase() == 'en') {
+  // Convert to miles if imperial unit is selected
+  // If metric, skip conversion (keep kilometers)
+  if (distanceUnit.toLowerCase() == 'imperial') {
     result = result * 0.621371;
   }
 

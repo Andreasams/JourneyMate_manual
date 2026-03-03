@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/translation_service.dart';
 import '../../providers/filter_providers.dart';
+import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -46,12 +47,15 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
 
   /// Gets train station list from filter provider
   /// Train stations have 'type' == 'train_station' or specific parent_id
+  /// Filters by active neighbourhood when present
   List<Map<String, dynamic>> _getTrainStations() {
     final filterState = ref.read(filterProvider);
+    final searchState = ref.read(searchStateProvider);
 
     return filterState.when(
       data: (state) {
         final filterLookupMap = state.filterLookupMap;
+        final activeNeighbourhoodId = searchState.selectedNeighbourhoodId;
 
         // Get filters that are train stations
         // Check type field or parent_id to distinguish from food items
@@ -61,10 +65,21 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               final type = value['type'] as String?;
               final parentId = value['parent_id'];
 
-              // Filter by type 'train_station' or ID >= 10000 with parent_id = 7
-              // This excludes food items which have different parent_ids
-              return type == 'train_station' ||
+              // Check if it's a train station
+              final isTrainStation = type == 'train_station' ||
                      (entry.key >= 10000 && parentId == 7);
+
+              // Apply neighbourhood filter if active
+              if (isTrainStation && activeNeighbourhoodId != null) {
+                final neighbourhoodId1 = value['neighbourhood_id_1'] as int?;
+                final neighbourhoodId2 = value['neighbourhood_id_2'] as int?;
+
+                // Station belongs to neighbourhood if EITHER field matches (OR logic)
+                return neighbourhoodId1 == activeNeighbourhoodId ||
+                       neighbourhoodId2 == activeNeighbourhoodId;
+              }
+
+              return isTrainStation;
             })
             .map((entry) => {
                   'id': entry.key,
@@ -317,6 +332,8 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
 
   Widget _buildSortOptionWithSubmenu(String sortKey, String translationKey, int? selectedStationId) {
     final isSelected = _selectedSort == sortKey;
+    final searchState = ref.read(searchStateProvider);
+    final hasShoppingArea = searchState.selectedShoppingAreaId != null;
 
     // Get station name if a station is selected
     String displayText = td(ref, translationKey);
@@ -334,28 +351,38 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
 
     return Container(
       color: isSelected ? AppColors.bgSurface : Colors.transparent,
-      child: ListTile(
-        title: Text(
-          displayText,
-          style: AppTypography.bodyRegular.copyWith(
-            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+      child: Opacity(
+        opacity: hasShoppingArea ? 0.4 : 1.0,
+        child: IgnorePointer(
+          ignoring: hasShoppingArea,
+          child: ListTile(
+            title: Text(
+              displayText,
+              style: AppTypography.bodyRegular.copyWith(
+                color: hasShoppingArea
+                    ? AppColors.textSecondary.withValues(alpha: 0.5)
+                    : (isSelected ? AppColors.textPrimary : AppColors.textSecondary),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+            trailing: Icon(
+              Icons.chevron_right,
+              color: hasShoppingArea
+                  ? AppColors.textSecondary.withValues(alpha: 0.5)
+                  : AppColors.textSecondary,
+              size: 24,
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.sm,
+            ),
+            onTap: () {
+              setState(() => _view = 'stations');
+            },
           ),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
         ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: AppColors.textSecondary,
-          size: 24,
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.sm,
-        ),
-        onTap: () {
-          setState(() => _view = 'stations');
-        },
       ),
     );
   }

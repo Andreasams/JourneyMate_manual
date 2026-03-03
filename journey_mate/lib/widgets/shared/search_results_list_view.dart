@@ -903,7 +903,15 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       return null;
     }
 
+    // Get current language
     final languageCode = Localizations.localeOf(context).languageCode;
+
+    // Determine effective distance unit
+    // Non-English: ALWAYS metric (ignore stored preference)
+    // English: Use stored preference (imperial or metric)
+    final distanceUnit = languageCode == 'en'
+        ? ref.read(localizationProvider).distanceUnit
+        : 'metric'; // Force metric for non-English
 
     // Create LatLng from user position
     final userLatLng = LatLng(
@@ -916,12 +924,12 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       userLatLng,
       _latitude!,
       _longitude!,
-      languageCode,
+      distanceUnit,
     );
 
-    // English: Use feet only for very short distances (< 0.1 mi)
-    // Other languages: Use meters for distances < 1 km
-    if (languageCode == 'en') {
+    // Imperial: Use feet only for very short distances (< 0.1 mi)
+    // Metric: Use meters for distances < 1 km
+    if (distanceUnit == 'imperial') {
       if (distance < 0.1) {
         // Convert miles to feet (1 mile = 5280 feet), round to nearest 10
         final feet = (distance * 5280).round();
