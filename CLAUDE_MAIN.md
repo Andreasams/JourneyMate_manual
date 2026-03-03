@@ -145,6 +145,8 @@ These decisions have been confirmed and must not be re-debated:
 
 14. **Distance units: Imperial ONLY for English** — Distance unit preference (Imperial/Metric) is **only available when language is English**. Non-English users **always** see metric (km/meters), ignoring any stored preference. English users default to Imperial (miles/feet) for backward compatibility. Rationale: European languages expect metric exclusively; preference would confuse non-English users. Implementation: `DistanceUnitSelectorButton` visible only when `currentLanguage == 'en'`.
 
+15. **Business Profile v2 is the active route** — Router serves `BusinessProfilePageV2` (not v1). The v2 page reads from a flat `businessInfo` API response, merges top-level `filters` into the business map, and computes `status_open`/`closing_time`/`price_range` client-side from `openWindows` data. Analytics events use v2 naming: `business_profile_viewed`, `share_button_clicked`, `menu_session_started`, `menu_session_ended`. See `_reference/PROFILE_V2_GAP_ANALYSIS.md` for full API structure.
+
 ---
 
 ## What NOT to Do

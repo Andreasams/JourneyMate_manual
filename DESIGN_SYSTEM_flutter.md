@@ -418,6 +418,38 @@ SizedBox(
 )
 ```
 
+### Submit Button (TextButton — Unified Pattern)
+
+All submit/action buttons across settings pages and welcome page use this `TextButton` pattern (not `ElevatedButton`). Unified in commit `604bdb6` to match the filter overlay's apply button.
+
+```dart
+SizedBox(
+  width: double.infinity,
+  child: TextButton(
+    onPressed: _handleSubmit,
+    style: ButtonStyle(
+      backgroundColor: WidgetStateProperty.all(AppColors.accent),
+      foregroundColor: WidgetStateProperty.all(AppColors.textWhite),
+      padding: WidgetStateProperty.all(
+        EdgeInsets.symmetric(vertical: AppSpacing.lg),
+      ),
+      shape: WidgetStateProperty.all(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.button),
+        ),
+      ),
+      textStyle: WidgetStateProperty.all(
+        AppTypography.button.copyWith(fontWeight: FontWeight.w600),
+      ),
+      minimumSize: WidgetStateProperty.all(Size(double.infinity, 50)),
+    ),
+    child: Text(td(ref, 'submit_button_key')),
+  ),
+)
+```
+
+**Used in:** `contact_us_form_widget.dart`, `feedback_form_widget.dart`, `missing_location_form_widget.dart`, `welcome_page.dart`, `filter_overlay_widget.dart`
+
 ---
 
 ## 7. Common UI Patterns
