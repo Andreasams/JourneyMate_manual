@@ -30,9 +30,13 @@ class SearchStateNotifier extends Notifier<SearchState> {
       normalizedResults = results['documents'];
     }
 
+    // Derive the visible count from the actual list the ListView will render
+    final visibleCount = normalizedResults is List ? (normalizedResults as List).length : 0;
+
     state = state.copyWith(
       searchResults: normalizedResults,
       searchResultsCount: count,
+      visibleResultCount: visibleCount,
       fullMatchCount: fullMatchCount,
       hasActiveSearch: true,
       lastFetchTime: DateTime.now(), // Record fetch timestamp
@@ -221,6 +225,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
     state = state.copyWithNullable(
       hasActiveSearch: false,
       searchResultsCount: 0,
+      visibleResultCount: 0,
       clearResults: true,
     );
   }

@@ -169,6 +169,7 @@ class AnalyticsState {
 class SearchState {
   final dynamic searchResults; // JSON from API
   final int searchResultsCount;
+  final int visibleResultCount; // Count of documents actually rendered by SearchResultsListView
   final int fullMatchCount; // Count of documents where matchCount === scoringFilterIds.length (all needs met)
   final bool hasActiveSearch;
   final String currentSearchText;
@@ -188,6 +189,7 @@ class SearchState {
   const SearchState({
     required this.searchResults,
     required this.searchResultsCount,
+    required this.visibleResultCount,
     required this.fullMatchCount,
     required this.hasActiveSearch,
     required this.currentSearchText,
@@ -209,6 +211,7 @@ class SearchState {
     return const SearchState(
       searchResults: null,
       searchResultsCount: 0,
+      visibleResultCount: 0,
       fullMatchCount: 0,
       hasActiveSearch: false,
       currentSearchText: '',
@@ -228,6 +231,7 @@ class SearchState {
   SearchState copyWith({
     dynamic searchResults,
     int? searchResultsCount,
+    int? visibleResultCount,
     int? fullMatchCount,
     bool? hasActiveSearch,
     String? currentSearchText,
@@ -247,6 +251,7 @@ class SearchState {
     return SearchState(
       searchResults: searchResults ?? this.searchResults,
       searchResultsCount: searchResultsCount ?? this.searchResultsCount,
+      visibleResultCount: visibleResultCount ?? this.visibleResultCount,
       fullMatchCount: fullMatchCount ?? this.fullMatchCount,
       hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
       currentSearchText: currentSearchText ?? this.currentSearchText,
@@ -269,6 +274,7 @@ class SearchState {
   SearchState copyWithNullable({
     dynamic searchResults,
     int? searchResultsCount,
+    int? visibleResultCount,
     int? fullMatchCount,
     bool? hasActiveSearch,
     String? currentSearchText,
@@ -295,6 +301,7 @@ class SearchState {
     return SearchState(
       searchResults: clearResults ? null : (searchResults ?? this.searchResults),
       searchResultsCount: searchResultsCount ?? this.searchResultsCount,
+      visibleResultCount: visibleResultCount ?? this.visibleResultCount,
       fullMatchCount: fullMatchCount ?? this.fullMatchCount,
       hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
       currentSearchText: currentSearchText ?? this.currentSearchText,
