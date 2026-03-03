@@ -9,10 +9,10 @@ class AppTypography {
   // HEADINGS
   // ============================================================
 
-  /// Page title (h2) - 26px, weight 720 → w800
+  /// Page title (h2) - 26px, weight 720 → w700
   static const TextStyle pageTitle = TextStyle(
     fontSize: 26,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
     letterSpacing: -0.65, // -0.025em × 26px
     height: 1.2,
