@@ -133,7 +133,7 @@ class ApiService {
     String category = 'all',
     int page = 1,
     int pageSize = 20,
-    int? neighbourhoodId,
+    List<int>? neighbourhoodId,
     int? shoppingAreaId,
   }) {
     return _makeGetRequest('/search', {
@@ -149,8 +149,9 @@ class ApiService {
       'category': category,
       'page': page,
       'pageSize': pageSize,
-      'neighbourhoodId': ?neighbourhoodId,
-      'shoppingAreaId': ?shoppingAreaId,
+      if (neighbourhoodId != null && neighbourhoodId.isNotEmpty)
+        'neighbourhoodId': neighbourhoodId.join(','),
+      if (shoppingAreaId != null) 'shoppingAreaId': shoppingAreaId,
     });
   }
 

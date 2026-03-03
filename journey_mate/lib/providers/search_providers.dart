@@ -44,7 +44,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
     // total count otherwise. This equals the number of items in the top
     // (full-match) section of the ListView when sections are shown.
     final hasActiveFiltersOrSearch = state.filtersUsedForSearch.isNotEmpty ||
-        state.selectedNeighbourhoodId != null ||
+        state.selectedNeighbourhoodId?.isNotEmpty == true ||
         state.selectedShoppingAreaId != null ||
         state.currentSearchText.isNotEmpty;
     final visibleResultCount = (hasActiveFiltersOrSearch && scoringFilterIds.isNotEmpty)
@@ -174,7 +174,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
   /// - id >= 10000 && < 20000 → dropped (train stations handled via selectedStation param)
   /// - everything else → filtersUsedForSearch
   void setFiltersWithRouting(List<int> allIds, Map<int, dynamic> filterLookup) {
-    int? neighbourhoodId;
+    final List<int> neighbourhoodIds = [];
     int? shoppingAreaId;
     final regularFilters = <int>[];
 
@@ -187,7 +187,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
       } else {
         final meta = filterLookup[id];
         if (meta != null && meta['is_neighborhood'] == true) {
-          neighbourhoodId = id;
+          neighbourhoodIds.add(id);
         } else {
           regularFilters.add(id);
         }
@@ -196,9 +196,9 @@ class SearchStateNotifier extends Notifier<SearchState> {
 
     state = state.copyWithNullable(
       filtersUsedForSearch: regularFilters,
-      selectedNeighbourhoodId: neighbourhoodId,
+      selectedNeighbourhoodId: neighbourhoodIds.isEmpty ? null : neighbourhoodIds,
       selectedShoppingAreaId: shoppingAreaId,
-      clearNeighbourhoodId: neighbourhoodId == null,
+      clearNeighbourhoodId: neighbourhoodIds.isEmpty,
       clearShoppingAreaId: shoppingAreaId == null,
     );
   }
