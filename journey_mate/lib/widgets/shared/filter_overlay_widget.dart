@@ -644,6 +644,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
             .any((item) => _hasActiveChildren(item['id'] as int, 'item'));
       case 'item':
         // Always show selected items as available (prevent greying when no results)
+        // This ensures selected items remain visually active (orange checkbox/text) even if they return 0 results
         if (_selectedFilterIds.contains(parentId)) {
           return true;
         }
@@ -665,7 +666,8 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           return widget.activeFilterIds.contains(parentId);
         }
       case 'sub_item':
-        // Always show selected subitems as available
+        // Always show selected subitems as available (prevent greying when no results)
+        // This ensures selected items remain visually active (orange checkbox/text) even if they return 0 results
         if (_selectedFilterIds.contains(parentId)) {
           return true;
         }
