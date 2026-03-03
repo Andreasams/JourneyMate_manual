@@ -149,9 +149,10 @@ class ApiService {
       'category': category,
       'page': page,
       'pageSize': pageSize,
-      if (neighbourhoodId != null && neighbourhoodId.isNotEmpty)
-        'neighbourhoodId': json.encode(neighbourhoodId),
-      if (shoppingAreaId != null) 'shoppingAreaId': shoppingAreaId,
+      ...?neighbourhoodId != null && neighbourhoodId.isNotEmpty
+          ? {'neighbourhoodId': json.encode(neighbourhoodId)}
+          : null,
+      ...?shoppingAreaId != null ? {'shoppingAreaId': shoppingAreaId} : null,
     });
   }
 
