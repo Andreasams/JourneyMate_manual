@@ -1,0 +1,3 @@
+# Docs worktree: Always keep our version of CLAUDE.md during merges from main
+# This prevents main's CLAUDE.md (code instructions) from overwriting docs' CLAUDE.md (documentation instructions)
+CLAUDE.md merge=ours
