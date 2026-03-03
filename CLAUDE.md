@@ -107,6 +107,21 @@ This worktree exists to maintain documentation separately from code development.
 
 **Why this matters:** If both worktrees can modify documentation, merge conflicts are inevitable. Single source of truth = clean workflow.
 
+### CLAUDE.md: Worktree-Specific Versions
+
+**Problem:** Each worktree needs its own CLAUDE.md with different instructions, but merging overwrites one with the other.
+
+**Solution:** Docs worktree maintains TWO files:
+- `CLAUDE.md` - Instructions for documentation maintenance (this file, docs-specific)
+- `CLAUDE_MAIN.md` - Copy of main worktree's CLAUDE.md (for code development)
+
+**When to edit which:**
+- Updating **docs workflow** → Edit `CLAUDE.md`
+- Adding **Critical Product Decision** → Edit `CLAUDE_MAIN.md`
+- Adding **Code Pattern** → Edit `CLAUDE_MAIN.md`
+
+**In PRs:** Include `CLAUDE_MAIN.md` which merges to main as `CLAUDE.md`. NEVER include docs' `CLAUDE.md` in PRs to main.
+
 **Main worktree's job:**
 - Write code
 - Write detailed commit messages with "Discovered:", "Decision:", and "See also:" sections
@@ -193,7 +208,9 @@ Main worktree commits follow [COMMIT_MESSAGE_TEMPLATE.md](COMMIT_MESSAGE_TEMPLAT
 
 Based on skill recommendations:
 1. Review proposed changes
-2. Edit affected .md files (CLAUDE.md, ARCHITECTURE.md, etc.)
+2. Edit affected .md files:
+   - **Main worktree's CLAUDE.md** → Edit `CLAUDE_MAIN.md` (NOT `CLAUDE.md`)
+   - **Other docs** → Edit directly (ARCHITECTURE.md, DESIGN_SYSTEM_flutter.md, etc.)
 3. Verify cross-references are correct
 4. Update NAVIGATION_GUIDE.md if section line numbers shifted
 
@@ -201,9 +218,11 @@ Based on skill recommendations:
 
 ```bash
 # Commit documentation updates
-git add CLAUDE.md ARCHITECTURE.md  # (or other affected files)
+git add ARCHITECTURE.md NAVIGATION_GUIDE.md CLAUDE_MAIN.md  # (or other affected files)
+# NOTE: NEVER add CLAUDE.md (docs-specific) to commits going to main
 git commit -m "docs: document [change] from commit <hash>
 
+- CLAUDE_MAIN.md: added Critical Product Decision #[N]
 - ARCHITECTURE.md: added Common Pitfall #[N]
 - NAVIGATION_GUIDE.md: updated scenario [X] reading list
 - Cross-references validated
@@ -215,15 +234,32 @@ Commit reviewed: <hash> ([original commit message])
 git push origin docs
 
 # Create PR via GitHub
-gh pr create --base main --head docs --title "docs: [summary]" --body "[details with commit links]"
+gh pr create --base main --head docs --title "docs: [summary]" --body "[details]"
 ```
 
 ### 6. Merge and Sync
 
 After PR is merged to main:
 ```bash
-git checkout docs
+# In main worktree: Copy CLAUDE_MAIN.md to CLAUDE.md
+cd "C:\Users\Rikke\Documents\JourneyMate\Main"
 git pull origin main
+cp CLAUDE_MAIN.md CLAUDE.md
+git add CLAUDE.md
+git commit -m "docs: sync CLAUDE.md from CLAUDE_MAIN.md"
+git push origin main
+
+# In docs worktree: Pull changes but keep docs' CLAUDE.md
+cd "C:\Users\Rikke\Documents\JourneyMate\Docs"
+git pull origin main
+# If CLAUDE.md has conflicts, keep docs version:
+# git checkout --ours CLAUDE.md
+git push origin docs
+
+# Update CLAUDE_MAIN.md to match main's CLAUDE.md
+cp "C:\Users\Rikke\Documents\JourneyMate\Main\CLAUDE.md" CLAUDE_MAIN.md
+git add CLAUDE_MAIN.md
+git commit -m "docs: sync CLAUDE_MAIN.md with main worktree"
 git push origin docs
 ```
 
@@ -287,6 +323,7 @@ Use these patterns to:
 ## Documentation Review Checklist
 
 Before committing documentation updates:
+- [ ] **CLAUDE.md separation:** Edited `CLAUDE_MAIN.md` for main worktree changes, NOT `CLAUDE.md` (docs-specific)
 - [ ] **Commit hash referenced:** Include git commit hash(es) being documented
 - [ ] **Primary location identified:** Use documentation-maintenance skill's decision matrix
 - [ ] **Cross-references validated:** All line references and links are correct
@@ -294,6 +331,7 @@ Before committing documentation updates:
 - [ ] **No duplication:** Concept documented once (primary location) with cross-refs elsewhere
 - [ ] **Code examples validated:** Type-safe code in examples (Map<String, Object> not dynamic in callbacks)
 - [ ] **Commit message format:** `docs: [what changed] from commit <hash>`
+- [ ] **PR excludes docs' CLAUDE.md:** Never include docs' CLAUDE.md in PRs to main
 
 ---
 
