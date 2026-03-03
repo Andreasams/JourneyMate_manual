@@ -118,6 +118,11 @@ class SearchStateNotifier extends Notifier<SearchState> {
       filtersUsedForSearch: [],
       clearNeighbourhoodId: true,
       clearShoppingAreaId: true,
+      clearResults: true,           // Triggers shimmer display
+      clearScoringFilterIds: true,  // Removes match sections
+      searchResultsCount: 0,        // Resets result count
+      visibleResultCount: 0,        // Resets visible count
+      fullMatchCount: 0,            // Resets full-match count
     );
   }
 
