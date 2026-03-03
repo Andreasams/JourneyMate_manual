@@ -1404,7 +1404,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       foregroundColor:
           WidgetStateProperty.all(shouldHighlight ? _whiteColor : _accentColor),
       padding:
-          WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 12)),
+          WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: AppSpacing.sm)),
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
@@ -1436,7 +1436,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       backgroundColor: WidgetStateProperty.all(_whiteColor),
       foregroundColor: WidgetStateProperty.all(_blackColor),
       padding:
-          WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 12)),
+          WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: AppSpacing.sm)),
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
