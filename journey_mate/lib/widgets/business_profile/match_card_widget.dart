@@ -243,10 +243,9 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
           ),
           const SizedBox(width: 4),
           Text(
-            filter['name'] ?? '',
-            style: const TextStyle(
+            filter['filter_name'] ?? '',
+            style: AppTypography.chip.copyWith(
               fontSize: 11,
-              fontWeight: FontWeight.w600,
               color: AppColors.green,
             ),
           ),
@@ -277,10 +276,9 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
           ),
           const SizedBox(width: 4),
           Text(
-            filter['name'] ?? '',
-            style: const TextStyle(
+            filter['filter_name'] ?? '',
+            style: AppTypography.chip.copyWith(
               fontSize: 11,
-              fontWeight: FontWeight.w600,
               color: AppColors.red,
             ),
           ),
