@@ -141,6 +141,49 @@ See also:
 - Needs update: ARCHITECTURE.md (add pitfall about ref.read() staleness)
 ```
 
+### 🛡️ Automated CLAUDE.md Protection
+
+**Problem:** When pulling main into docs worktree (`git pull origin main`), git tries to merge main's CLAUDE.md (code instructions) with docs' CLAUDE.md (documentation instructions), causing overwrites.
+
+**Solution (Automatic):**
+Two layers of protection ensure docs' CLAUDE.md is never lost:
+
+1. **`.gitattributes` merge strategy:**
+   ```
+   CLAUDE.md merge=ours
+   ```
+   Tells git to always keep docs branch version during merges. Configuration: `git config merge.ours.driver true`
+
+2. **Post-merge hook (safety net):**
+   Located at `.git/worktrees/Docs/hooks/post-merge`, automatically runs after `git pull`:
+   - Detects if CLAUDE.md was changed in merge
+   - Checks if it still has "Worktree Identity: Documentation Maintenance" marker
+   - If overwritten, auto-restores from previous commit and commits fix
+   - Logs result: ✅ correct or ❌ restored
+
+**Verification:**
+```bash
+# Check .gitattributes exists
+cat .gitattributes  # Should show: CLAUDE.md merge=ours
+
+# Check hook exists
+ls -la C:/Users/Rikke/Documents/JourneyMate/Main/.git/worktrees/Docs/hooks/post-merge
+
+# Test: Pull from main and check CLAUDE.md starts with "⚠️ Worktree Identity"
+git pull origin main && head -10 CLAUDE.md
+```
+
+**Manual Recovery (if needed):**
+If both protections fail:
+```bash
+# Restore from last known good commit on docs branch
+git show HEAD~1:CLAUDE.md > CLAUDE.md
+git add CLAUDE.md
+git commit -m "docs: restore docs worktree's CLAUDE.md"
+```
+
+**Why this is critical:** Without protection, opening Claude Code in docs worktree after pulling main would load main's instructions, causing Claude to try modifying code instead of documentation.
+
 ### 1. Sync with Main Branch
 
 Before starting documentation work:
