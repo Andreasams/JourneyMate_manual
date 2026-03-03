@@ -615,6 +615,11 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   bool _hasActiveChildrenDuringEmptySearch(int parentId, String filterType) {
+    // Always show selected items as available during empty search
+    if (_selectedFilterIds.contains(parentId)) {
+      return true;
+    }
+
     if (filterType == 'category') {
       final items = _getItems(parentId);
       return items.any((item) {
@@ -638,10 +643,19 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         return items
             .any((item) => _hasActiveChildren(item['id'] as int, 'item'));
       case 'item':
+        // Always show selected items as available (prevent greying when no results)
+        if (_selectedFilterIds.contains(parentId)) {
+          return true;
+        }
+
         final subitems = _getSubItems(parentId);
         if (subitems.isNotEmpty) {
-          return subitems.any((subitem) =>
-              widget.activeFilterIds.contains(subitem['id'] as int));
+          // Check if any subitem is active OR selected
+          return subitems.any((subitem) {
+            final subitemId = subitem['id'] as int;
+            return widget.activeFilterIds.contains(subitemId) ||
+                   _selectedFilterIds.contains(subitemId);
+          });
         } else {
           final filter = _findFilterById(parentId);
           if (filter != null &&
@@ -651,6 +665,10 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           return widget.activeFilterIds.contains(parentId);
         }
       case 'sub_item':
+        // Always show selected subitems as available
+        if (_selectedFilterIds.contains(parentId)) {
+          return true;
+        }
         return widget.activeFilterIds.contains(parentId);
       default:
         return false;
@@ -857,8 +875,37 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       widget.onNeighbourhoodSelected?.call();
     }
 
+    // Update provider state with search-only IDs (excluding visual-only parents)
+    final searchIds = _buildSearchFilterIds();
+    ref.read(searchStateProvider.notifier).setFiltersWithRouting(
+      searchIds,
+      _filterMap,
+    );
+
     setState(() {});
     _executeSearchAndTrackAnalytics();
+  }
+
+  /// Builds filter ID list for search, excluding visual-only neighborhood parents
+  List<int> _buildSearchFilterIds() {
+    final searchIds = <int>{};
+
+    for (final id in _selectedFilterIds) {
+      // For neighborhood parents: only include if no child is selected
+      if (AppConstants.kNeighborhoodHierarchy.containsKey(id)) {
+        final childIds = AppConstants.kNeighborhoodHierarchy[id]!;
+        final hasSelectedChild = childIds.any((childId) => _selectedFilterIds.contains(childId));
+        if (!hasSelectedChild) {
+          searchIds.add(id);
+        }
+        // If child is selected, parent is excluded (child will be added in its own iteration)
+      } else {
+        // Not a neighborhood parent - include normally
+        searchIds.add(id);
+      }
+    }
+
+    return searchIds.toList();
   }
 
   /// Helper method to find parent for a child ID
