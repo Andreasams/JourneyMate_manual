@@ -377,7 +377,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                                     return false;
                                   },
                                   loading: () => true, // Keep station while loading
-                                  error: (_, __) => true, // Keep station on error
+                                  error: (e, s) => true, // Keep station on error
                                 );
 
                                 // Reset to nearest if station is not in the neighbourhood
