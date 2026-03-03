@@ -5,6 +5,10 @@ class AppConstants {
   // Application constants
   static const int kDefaultCityId = 17; // Copenhagen
 
+  // Special neighbourhood filter rules
+  static const int kFrederiksberg = 36;           // Main Frederiksberg
+  static const int kFrederikbergC = 635;          // Frederiksberg C (hidden, bundled with 36)
+
   // Screen dimensions (reference - iPhone 14/15 standard)
   static const double screenWidth = 390.0;
   static const double screenHeight = 844.0;

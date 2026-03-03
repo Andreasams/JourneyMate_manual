@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'provider_state_classes.dart';
+import '../theme/app_constants.dart';
 
 // ============================================================
 // SEARCH STATE PROVIDER
@@ -197,6 +198,12 @@ class SearchStateNotifier extends Notifier<SearchState> {
           regularFilters.add(id);
         }
       }
+    }
+
+    // Special rule: If Frederiksberg (36) is selected, ensure Frederiksberg C (635) is included
+    if (neighbourhoodIds.contains(AppConstants.kFrederiksberg) &&
+        !neighbourhoodIds.contains(AppConstants.kFrederikbergC)) {
+      neighbourhoodIds.add(AppConstants.kFrederikbergC);
     }
 
     state = state.copyWithNullable(

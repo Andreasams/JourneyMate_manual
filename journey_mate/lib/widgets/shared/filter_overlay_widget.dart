@@ -419,6 +419,14 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   List<dynamic> _getItems(int categoryId) {
     final items = _getItemsWithoutActiveFiltering(categoryId);
+
+    // Hide Frederiksberg C (635) - it's bundled with Frederiksberg (36)
+    if (categoryId == _neighborhoodCategoryId) {
+      return items
+          .where((item) => item['id'] != AppConstants.kFrederikbergC)
+          .toList();
+    }
+
     if (_selectedNeighborhoodIds.isEmpty) return items;
 
     if (categoryId == _shoppingAreaCategoryId) {
@@ -767,10 +775,25 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       _selectedNeighborhoodIds.add(filterId);
       _currentSelectionType = FilterSelectionType.neighborhood;
 
+      // Special rule: When Frederiksberg (36) is selected, also add Frederiksberg C (635)
+      if (filterId == AppConstants.kFrederiksberg) {
+        if (!_selectedFilterIds.contains(AppConstants.kFrederikbergC)) {
+          _selectedFilterIds.add(AppConstants.kFrederikbergC);
+          _selectedNeighborhoodIds.add(AppConstants.kFrederikbergC);
+        }
+      }
+
       // Notify parent that neighbourhood was selected
       widget.onNeighbourhoodSelected?.call();
     } else {
       _selectedNeighborhoodIds.remove(filterId);
+
+      // Special rule: When Frederiksberg (36) is deselected, also remove Frederiksberg C (635)
+      if (filterId == AppConstants.kFrederiksberg) {
+        _selectedFilterIds.remove(AppConstants.kFrederikbergC);
+        _selectedNeighborhoodIds.remove(AppConstants.kFrederikbergC);
+      }
+
       if (_selectedNeighborhoodIds.isEmpty) {
         _currentSelectionType = FilterSelectionType.none;
       }
