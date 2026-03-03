@@ -172,6 +172,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         languageCode: languageCode,
         sortBy: _normalizeSort(_currentSort),
         sortOrder: 'desc',
+        selectedStation: _selectedStation,
         onlyOpen: _onlyOpen,
         neighbourhoodId: searchState.selectedNeighbourhoodId,
         shoppingAreaId: searchState.selectedShoppingAreaId,
