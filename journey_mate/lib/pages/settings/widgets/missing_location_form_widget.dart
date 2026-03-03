@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../services/api_service.dart';
 import '../../../services/translation_service.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_constants.dart';
 import '../../../theme/app_spacing.dart';
 import '../../../theme/app_typography.dart';
 import '../../../theme/app_radius.dart';
@@ -325,41 +326,43 @@ class _MissingLocationFormWidgetState
 
   /// State 1: Default submit button
   Widget _buildSubmitButton() {
-    return Center(
-      child: SizedBox(
-        width: 200.0,
-        height: 40.0,
-        child: ElevatedButton(
-          onPressed: _isSubmitting ? null : _handleSubmit,
-          style: ElevatedButton.styleFrom(
-            // FlutterFlow used #E9874B for button and #249689 for success.
-            // Design system compliance: Using AppColors.accent and AppColors.success instead.
-            backgroundColor: AppColors.accent,
-            disabledBackgroundColor: AppColors.accent.withValues(alpha:0.5),
-            shape: RoundedRectangleBorder(
+    return SizedBox(
+      width: double.infinity,
+      height: AppConstants.buttonHeight,
+      child: TextButton(
+        onPressed: _isSubmitting ? null : _handleSubmit,
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return AppColors.textDisabled;
+            }
+            return AppColors.accent;
+          }),
+          foregroundColor: WidgetStateProperty.all(AppColors.bgPage),
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+          elevation: WidgetStateProperty.all(0),
+          minimumSize: WidgetStateProperty.all(Size.zero),
+          shape: WidgetStateProperty.resolveWith((states) {
+            final borderColor = states.contains(WidgetState.disabled)
+                ? AppColors.textDisabled
+                : AppColors.accent;
+            return RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.filter),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            elevation: 0,
-          ),
-          child: _isSubmitting
-              ? const SizedBox(
-                  width: 20.0,
-                  height: 20.0,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Text(
-                  td(ref, 'missing_location_button_submit'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+              side: BorderSide(color: borderColor, width: 1.5),
+            );
+          }),
+          textStyle: WidgetStateProperty.all(AppTypography.button),
         ),
+        child: _isSubmitting
+            ? const SizedBox(
+                width: 20.0,
+                height: 20.0,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.bgPage),
+                ),
+              )
+            : Text(td(ref, 'missing_location_button_submit')),
       ),
     );
   }

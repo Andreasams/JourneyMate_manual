@@ -7,6 +7,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_constants.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../services/api_service.dart';
@@ -140,8 +141,8 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// =========================================================================
 
   // Base colors
-  static const Color _whiteColor = Colors.white;
-  static const Color _blackColor = Colors.black;
+  static const Color _whiteColor = AppColors.bgPage;
+  static const Color _blackColor = AppColors.textPrimary;
   static const Color _transparentColor = Colors.transparent;
 
   // Brand/accent colors
@@ -1409,7 +1410,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       overlayColor: WidgetStateProperty.all(_transparentColor),
       textStyle: WidgetStateProperty.all(
         TextStyle(
-          fontSize: _adjustedFontSize(16),
+          fontSize: _adjustedFontSize(AppTypography.button.fontSize!),
           fontWeight: shouldHighlight ? FontWeight.w500 : FontWeight.w400,
         ),
       ),
@@ -1441,7 +1442,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       overlayColor: WidgetStateProperty.all(_transparentColor),
       textStyle: WidgetStateProperty.all(
         TextStyle(
-          fontSize: _adjustedFontSize(16),
+          fontSize: _adjustedFontSize(AppTypography.button.fontSize!),
           fontWeight: FontWeight.w400,
         ),
       ),
