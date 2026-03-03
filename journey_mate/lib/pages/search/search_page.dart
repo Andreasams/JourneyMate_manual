@@ -221,13 +221,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           documents,
           resultCount,
           fullMatchCount,
+          scoringFilterIds,
         );
 
         // Store API's active filter IDs
         ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
-
-        // Store scoring filter IDs (for section grouping)
-        ref.read(searchStateProvider.notifier).updateScoringFilterIds(scoringFilterIds);
 
         // Track analytics
         final analytics = AnalyticsService.instance;
