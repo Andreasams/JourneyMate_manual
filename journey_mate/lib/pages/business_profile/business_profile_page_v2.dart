@@ -7,7 +7,10 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
+import '../../providers/filter_providers.dart';
 import '../../providers/locale_provider.dart';
+import '../../providers/search_providers.dart';
+import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 import '../../services/business_cache.dart';
@@ -15,13 +18,18 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
+import '../../widgets/shared/business_feature_buttons.dart';
+import '../../widgets/shared/erroneous_info_form_widget.dart';
+import '../../widgets/shared/payment_options_widget.dart';
 import '../../widgets/shared/restaurant_shimmer_widget.dart';
+import '../../widgets/business_profile/facilities_info_sheet.dart';
 import '../../widgets/business_profile/hero_section_widget.dart';
-import '../../widgets/business_profile/quick_actions_pills_widget.dart';
-import '../../widgets/business_profile/match_card_widget.dart';
-import '../../widgets/business_profile/tags_row_widget.dart';
-import '../../widgets/business_profile/opening_hours_contact_widget.dart';
 import '../../widgets/business_profile/inline_gallery_widget.dart';
+import '../../widgets/business_profile/inline_menu_widget.dart';
+import '../../widgets/business_profile/match_card_widget.dart';
+import '../../widgets/business_profile/opening_hours_contact_widget.dart';
+import '../../widgets/business_profile/quick_actions_pills_widget.dart';
+import '../../widgets/business_profile/tags_row_widget.dart';
 
 /// Business Profile Page V2 - Complete rewrite from JSX blueprint
 ///
@@ -56,10 +64,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   DateTime? _pageStartTime;
   bool _isLoading = false;
   String? _errorMessage;
-  // TODO: Phase 7 - About section expansion state
-  // bool _aboutExpanded = false; // JSX: collapsed by default
-  // TODO: Phase 2 - Match card expansion state
-  // bool _matchCardExpanded = false; // JSX: collapsed by default
+  bool _aboutExpanded = false; // JSX: collapsed by default (aboutOpen = false)
 
   // ============================================================================
   // LIFECYCLE METHODS
@@ -317,7 +322,35 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // above) to avoid 48 px double-padding. Matches v1 pattern (page.dart:536).
         const SliverToBoxAdapter(child: InlineGalleryWidget()),
 
-        // TODO: Phase 5+ — Menu, Facilities, Payments, About, Report link
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+
+        // 7. Menu (category chips + inline filter panel + items list)
+        SliverToBoxAdapter(
+          child: InlineMenuWidget(
+            businessId: int.parse(widget.businessId),
+          ),
+        ),
+
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+
+        // 8. Facilities & Services
+        SliverToBoxAdapter(child: _buildFacilitiesSection()),
+
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+
+        // 9. Payment Options
+        SliverToBoxAdapter(child: _buildPaymentsSection()),
+
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+
+        // 10. About (collapsible)
+        SliverToBoxAdapter(child: _buildAboutSection()),
+
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+
+        // 11. Report link
+        SliverToBoxAdapter(child: _buildReportLink()),
+
         SliverToBoxAdapter(child: SizedBox(height: AppSpacing.huge)),
       ],
     );
@@ -355,6 +388,188 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
               child: Text(td(ref, 'retry')),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Build facilities & services section
+  /// JSX reference: business_profile.jsx lines 501-537
+  Widget _buildFacilitiesSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            td(ref, 'facilities_heading'),
+            style: AppTypography.sectionHeading,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          BusinessFeatureButtons(
+            containerWidth:
+                MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
+            onInitialCount: (int count) async {},
+            onFilterTap: (int filterId, String filterName,
+                String? filterDescription) async {
+              if (context.mounted) {
+                await showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => FacilitiesInfoSheet(
+                    filterName: filterName,
+                    filterDescription: filterDescription,
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build payment options section
+  /// JSX reference: business_profile.jsx lines 542-550
+  Widget _buildPaymentsSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            td(ref, 'about_payment_options_label'),
+            style: AppTypography.sectionHeading,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          PaymentOptionsWidget(
+            containerWidth:
+                MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
+            filters:
+                ref.watch(filterProvider).value?.filtersForLanguage ?? [],
+            filtersUsedForSearch:
+                ref.watch(searchStateProvider).filtersUsedForSearch,
+            filtersOfThisBusiness:
+                ref.watch(businessProvider).businessFilterIds,
+            onInitialCount: (int count) async {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build about section (collapsible description)
+  /// JSX reference: business_profile.jsx lines 554-563 (aboutOpen = false by default)
+  Widget _buildAboutSection() {
+    final business = ref.read(businessProvider).currentBusiness;
+    final description = business?['description'] as String?;
+
+    if (description == null || description.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: GestureDetector(
+        onTap: _toggleAboutExpanded,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    td(ref, 'about_description_label'),
+                    style: AppTypography.sectionHeading,
+                  ),
+                ),
+                AnimatedRotation(
+                  turns: _aboutExpanded ? 0.5 : 0.0,
+                  duration: const Duration(milliseconds: 250),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppColors.textPrimary,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+            if (_aboutExpanded) ...[
+              SizedBox(height: AppSpacing.sm),
+              Text(
+                description,
+                style: AppTypography.bodyRegular.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Toggle About expanded/collapsed and track analytics
+  void _toggleAboutExpanded() {
+    setState(() {
+      _aboutExpanded = !_aboutExpanded;
+    });
+    final analytics = AnalyticsService.instance;
+    ApiService.instance
+        .postAnalytics(
+      eventType: _aboutExpanded ? 'about_expanded' : 'about_collapsed',
+      deviceId: analytics.deviceId ?? '',
+      sessionId: analytics.currentSessionId ?? '',
+      userId: analytics.userId ?? '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {'pageName': 'businessProfile'},
+    )
+        .catchError((e) {
+      debugPrint('Analytics error: $e');
+      return ApiCallResponse.failure('Analytics failed');
+    });
+  }
+
+  /// Build report link button at bottom of page
+  /// JSX reference: business_profile.jsx lines 567-572
+  Widget _buildReportLink() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Center(
+        child: TextButton.icon(
+          onPressed: () async {
+            final analytics = AnalyticsService.instance;
+            ApiService.instance
+                .postAnalytics(
+              eventType: 'report_link_tapped',
+              deviceId: analytics.deviceId ?? '',
+              sessionId: analytics.currentSessionId ?? '',
+              userId: analytics.userId ?? '',
+              timestamp: DateTime.now().toIso8601String(),
+              eventData: {'pageName': 'businessProfile'},
+            )
+                .catchError((e) {
+              debugPrint('Analytics error: $e');
+              return ApiCallResponse.failure('Analytics failed');
+            });
+            if (mounted) {
+              await showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const ErroneousInfoFormWidget(),
+              );
+            }
+          },
+          icon: Icon(Icons.report_outlined, color: AppColors.textSecondary),
+          label: Text(
+            td(ref, 'about_report_incorrect_info'),
+            style: AppTypography.label.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
         ),
       ),
     );
