@@ -474,7 +474,7 @@ class _OpeningHoursContactWidgetState
           ),
           AnimatedRotation(
             turns: _isExpanded ? 0.5 : 0.0,
-            duration: const Duration(milliseconds: 100),
+            duration: const Duration(milliseconds: 150),
             child: const Icon(
               Icons.keyboard_arrow_down,
               color: AppColors.textMuted,
@@ -490,28 +490,31 @@ class _OpeningHoursContactWidgetState
   Widget _buildExpandedContent(Map<String, dynamic> openingHours) {
     final business = ref.watch(businessProvider).currentBusiness;
 
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 100),
-      child: _isExpanded
-          ? Container(
-              margin: const EdgeInsets.only(top: 14),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.bgSurface, // #fafafa
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHoursSection(openingHours),
-                  const SizedBox(height: 16),
-                  const Divider(height: 1, thickness: 1, color: AppColors.border),
-                  const SizedBox(height: 16),
-                  _buildContactSection(business),
-                ],
-              ),
-            )
-          : const SizedBox.shrink(),
+    if (!_isExpanded) {
+      return const SizedBox.shrink();
+    }
+
+    return AnimatedOpacity(
+      opacity: _isExpanded ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 150),
+      child: Container(
+        margin: const EdgeInsets.only(top: 14),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.bgSurface, // #fafafa
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHoursSection(openingHours),
+            const SizedBox(height: 16),
+            const Divider(height: 1, thickness: 1, color: AppColors.border),
+            const SizedBox(height: 16),
+            _buildContactSection(business),
+          ],
+        ),
+      ),
     );
   }
 
