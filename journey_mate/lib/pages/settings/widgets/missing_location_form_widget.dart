@@ -181,9 +181,9 @@ class _MissingLocationFormWidgetState
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.xl,
+        AppSpacing.xl,
         bottomPadding,
       ),
       child: Column(

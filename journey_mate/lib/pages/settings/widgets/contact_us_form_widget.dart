@@ -146,9 +146,9 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
 
     return SingleChildScrollView(
       padding: EdgeInsets.only(
-        left: AppSpacing.xxl,
-        right: AppSpacing.xxl,
-        top: AppSpacing.xxl,
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
+        top: AppSpacing.xl,
         bottom: bottomPadding,
       ),
       child: Column(

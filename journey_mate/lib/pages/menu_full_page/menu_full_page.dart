@@ -162,9 +162,9 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
         // ── Menu heading + Last updated ──
         Padding(
           padding: EdgeInsets.fromLTRB(
-            AppSpacing.lg,
+            AppSpacing.xl,
             AppSpacing.md,
-            AppSpacing.lg,
+            AppSpacing.xl,
             AppSpacing.sm,
           ),
           child: Row(

@@ -251,8 +251,8 @@ class _BusinessInformationPageState
 
     return Positioned(
       top: 168, // 200px map height - 32px overlay height
-      left: AppSpacing.md,
-      right: AppSpacing.md,
+      left: AppSpacing.xl,
+      right: AppSpacing.xl,
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(
@@ -316,8 +316,8 @@ class _BusinessInformationPageState
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         top: 250, // Map 200px + overlay 32px + gap 18px
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
         bottom: AppSpacing.xxl,
       ),
       child: Column(

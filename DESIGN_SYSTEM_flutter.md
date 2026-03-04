@@ -104,8 +104,8 @@ ElevatedButton(style: AppButtonStyles.primary, ...)
 | `AppSpacing.md` | 12px | Between chips, moderate gaps |
 | `AppSpacing.mlg` | 14px | Card padding |
 | `AppSpacing.lg` | 16px | Standard spacing |
-| `AppSpacing.xl` | 20px | Between form fields |
-| `AppSpacing.xxl` | 24px | Page padding, before submit button |
+| `AppSpacing.xl` | 20px | **Standard page padding (all pages)**, between form fields |
+| `AppSpacing.xxl` | 24px | Before submit button, major section gaps |
 | `AppSpacing.xxxl` | 32px | Section spacing |
 | `AppSpacing.huge` | 40px | Major section spacing |
 
@@ -121,8 +121,8 @@ const SizedBox(height: AppSpacing.xl)  // 20px
 // Before submit button
 const SizedBox(height: AppSpacing.xxl)  // 24px
 
-// Page padding
-padding: const EdgeInsets.all(AppSpacing.xxl)  // 24px
+// Page padding (standard for all pages)
+padding: const EdgeInsets.all(AppSpacing.xl)  // 20px
 
 // Heading to description
 const SizedBox(height: AppSpacing.sm)  // 8px
@@ -798,7 +798,7 @@ AppTypography.label  // Correct
 | Between form fields | `AppSpacing.xl` | 20px | General forms |
 | Form page sections | `AppSpacing.xxl` | 24px | Settings forms only |
 | First gap (forms) | Custom `28` | 28px | After main subtitle |
-| Page padding | `AppSpacing.xxl` | 24px | |
+| **Page horizontal padding** | **`AppSpacing.xl`** | **20px** | **Standard for ALL pages** |
 | Input radius | `AppRadius.input` | 12px | |
 | Button radius | `AppRadius.button` | 14px | |
 | Card radius | `AppRadius.card` | 16px | |

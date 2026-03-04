@@ -396,7 +396,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(AppSpacing.xxl),
+        padding: EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -433,7 +433,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 501-537
   Widget _buildFacilitiesSection() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -470,7 +470,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 542-550
   Widget _buildPaymentsSection() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -506,7 +506,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: GestureDetector(
         onTap: _toggleAboutExpanded,
         child: Column(
@@ -577,7 +577,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 567-572
   Widget _buildReportLink() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: Center(
         child: TextButton.icon(
           onPressed: () async {
