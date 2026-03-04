@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/locale_provider.dart';
 import '../../services/translation_service.dart';
@@ -102,6 +103,50 @@ class _OpeningHoursContactWidgetState
       'phone': {
         'da': 'Telefon',
         'en': 'Phone',
+      },
+      'phone_number_label': {
+        'da': 'Telefonnummer',
+        'en': 'Phone Number',
+      },
+      'email_label': {
+        'da': 'E-mail',
+        'en': 'Email',
+      },
+      'facebook_label': {
+        'da': 'Facebook',
+        'en': 'Facebook',
+      },
+      'tiktok_label': {
+        'da': 'TikTok',
+        'en': 'TikTok',
+      },
+      'send_email_action': {
+        'da': 'Send e-mail',
+        'en': 'Send email',
+      },
+      'visit_website_action': {
+        'da': 'Besøg hjemmeside',
+        'en': 'Visit website',
+      },
+      'make_reservation_action': {
+        'da': 'Foretag en reservation',
+        'en': 'Make reservation',
+      },
+      'view_instagram_action': {
+        'da': 'Se på Instagram',
+        'en': 'View on Instagram',
+      },
+      'view_facebook_action': {
+        'da': 'Se på Facebook',
+        'en': 'View on Facebook',
+      },
+      'view_tiktok_action': {
+        'da': 'Se på TikTok',
+        'en': 'View on TikTok',
+      },
+      'error_cannot_open_email': {
+        'da': 'Kan ikke åbne e-mail app',
+        'en': 'Cannot open email app',
       },
       'website': {
         'da': 'Hjemmeside',
@@ -294,6 +339,38 @@ class _OpeningHoursContactWidgetState
     }
   }
 
+  Future<void> _handleEmailTap(String email) async {
+    _trackContactLinkTap('email');
+
+    final uri = Uri(scheme: 'mailto', path: email);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_t('error_cannot_open_email')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleEmailLongPress(String email) async {
+    await Clipboard.setData(ClipboardData(text: email));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_t('copied_to_clipboard')),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   // ============================================================================
   // ANALYTICS
   // ============================================================================
@@ -330,7 +407,7 @@ class _OpeningHoursContactWidgetState
       userId: analytics.userId ?? '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
-        'link_type': linkType, // 'phone', 'website', 'booking', 'instagram'
+        'link_type': linkType, // 'phone', 'email', 'website', 'booking', 'instagram', 'facebook', 'tiktok'
         'business_id': businessId?.toString() ?? '',
         'pageName': 'businessProfile',
       },
@@ -368,7 +445,7 @@ class _OpeningHoursContactWidgetState
     final todayPreview = _getTodayPreview(openingHours);
     final isClosed = todayPreview.contains(_t('closed'));
 
-    return InkWell(
+    return GestureDetector(
       onTap: _handleToggle,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -379,21 +456,16 @@ class _OpeningHoursContactWidgetState
               children: [
                 Text(
                   _t('opening_hours_and_contact'),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F0F0F),
-                  ),
+                  style: AppTypography.categoryHeading,
                 ),
                 if (!_isExpanded)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       todayPreview,
-                      style: TextStyle(
-                        fontSize: 13,
+                      style: AppTypography.chip.copyWith(
                         fontWeight: FontWeight.w400,
-                        color: isClosed ? const Color(0xFFC9403A) : const Color(0xFF888888),
+                        color: isClosed ? AppColors.red : AppColors.textTertiary,
                       ),
                     ),
                   ),
@@ -402,11 +474,11 @@ class _OpeningHoursContactWidgetState
           ),
           AnimatedRotation(
             turns: _isExpanded ? 0.5 : 0.0,
-            duration: const Duration(milliseconds: 250),
+            duration: const Duration(milliseconds: 100),
             child: const Icon(
               Icons.keyboard_arrow_down,
-              color: Color(0xFF999999),
-              size: 14,
+              color: AppColors.textMuted,
+              size: 20,
             ),
           ),
         ],
@@ -419,7 +491,7 @@ class _OpeningHoursContactWidgetState
     final business = ref.watch(businessProvider).currentBusiness;
 
     return AnimatedSize(
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 100),
       child: _isExpanded
           ? Container(
               margin: const EdgeInsets.only(top: 14),
@@ -433,7 +505,7 @@ class _OpeningHoursContactWidgetState
                 children: [
                   _buildHoursSection(openingHours),
                   const SizedBox(height: 16),
-                  const Divider(height: 1, thickness: 1, color: Color(0xFFE8E8E8)),
+                  const Divider(height: 1, thickness: 1, color: AppColors.border),
                   const SizedBox(height: 16),
                   _buildContactSection(business),
                 ],
@@ -451,11 +523,8 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           _t('opening_hours_label'),
-          style: const TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF666666),
-            letterSpacing: 0.04 * 11.5, // 0.04em
+          style: AppTypography.chip.copyWith(
+            color: const Color(0xFF666666), // Section label gray (not in AppColors)
           ),
         ),
         const SizedBox(height: 10),
@@ -467,7 +536,7 @@ class _OpeningHoursContactWidgetState
               children: [
                 _buildDayRow(index, openingHours),
                 if (!isLastRow)
-                  const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)),
+                  const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)), // Lighter divider for row separation
               ],
             );
           }),
@@ -489,10 +558,10 @@ class _OpeningHoursContactWidgetState
             width: 90,
             child: Text(
               _getDayName(dayIndex),
-              style: const TextStyle(
+              style: AppTypography.bodyTiny.copyWith(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF333333),
+                color: const Color(0xFF333333),
               ),
             ),
           ),
@@ -509,10 +578,10 @@ class _OpeningHoursContactWidgetState
     if (_isDayClosed(dayHours)) {
       return Text(
         _t('closed'),
-        style: const TextStyle(
+        style: AppTypography.bodyTiny.copyWith(
           fontSize: 13.5,
           fontWeight: FontWeight.w600,
-          color: Color(0xFFC9403A), // Red for closed
+          color: AppColors.red,
         ),
       );
     }
@@ -551,10 +620,9 @@ class _OpeningHoursContactWidgetState
     if (cutoffs.isEmpty) {
       return Text(
         hoursText,
-        style: const TextStyle(
+        style: AppTypography.bodyTiny.copyWith(
           fontSize: 13.5,
-          fontWeight: FontWeight.w400,
-          color: Color(0xFF444444),
+          color: const Color(0xFF444444),
         ),
       );
     }
@@ -571,18 +639,15 @@ class _OpeningHoursContactWidgetState
       children: [
         Text(
           hoursText,
-          style: const TextStyle(
+          style: AppTypography.bodyTiny.copyWith(
             fontSize: 13.5,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF444444),
+            color: const Color(0xFF444444),
           ),
         ),
         Text(
           cutoffText,
-          style: const TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF999999),
+          style: AppTypography.chip.copyWith(
+            color: AppColors.textMuted,
           ),
         ),
       ],
@@ -594,28 +659,43 @@ class _OpeningHoursContactWidgetState
     if (business == null) return const SizedBox.shrink();
 
     final phone = business['phone_number'] as String?;
+    final email = business['email'] as String?;
     final website = business['website'] as String?;
     final instagram = business['instagram_url'] as String?;
+    final facebook = business['facebook_url'] as String?;
+    final tiktok = business['tiktok_url'] as String?;
     final booking = business['booking_url'] as String?;
 
     // Collect available contact fields
     final contactFields = <Widget>[];
 
     if (phone != null && phone.isNotEmpty) {
+      // Format phone with +45 prefix and preserve spacing
+      final formattedPhone = '+45 ${phone.replaceAll(RegExp(r'\s+'), ' ')}';
       contactFields.add(_buildContactRow(
-        label: _t('phone'),
-        value: phone,
-        valueColor: const Color(0xFF222222), // Dark gray (NOT orange)
+        label: _t('phone_number_label'),
+        value: formattedPhone,
+        valueColor: const Color(0xFF222222), // Dark gray per JSX design (not orange)
         onTap: () => _handlePhoneTap(phone),
         onLongPress: () => _handlePhoneLongPress(phone),
+      ));
+    }
+
+    if (email != null && email.isNotEmpty) {
+      contactFields.add(_buildContactRow(
+        label: _t('email_label'),
+        value: _t('send_email_action'),
+        valueColor: AppColors.accent,
+        onTap: () => _handleEmailTap(email),
+        onLongPress: () => _handleEmailLongPress(email),
       ));
     }
 
     if (website != null && website.isNotEmpty) {
       contactFields.add(_buildContactRow(
         label: _t('website'),
-        value: website,
-        valueColor: AppColors.accent, // Orange
+        value: _t('visit_website_action'),
+        valueColor: AppColors.accent,
         onTap: () => _handleLinkTap('website', website),
       ));
     }
@@ -623,17 +703,35 @@ class _OpeningHoursContactWidgetState
     if (instagram != null && instagram.isNotEmpty) {
       contactFields.add(_buildContactRow(
         label: _t('instagram'),
-        value: instagram,
-        valueColor: AppColors.accent, // Orange
+        value: _t('view_instagram_action'),
+        valueColor: AppColors.accent,
         onTap: () => _handleLinkTap('instagram', instagram),
+      ));
+    }
+
+    if (facebook != null && facebook.isNotEmpty) {
+      contactFields.add(_buildContactRow(
+        label: _t('facebook_label'),
+        value: _t('view_facebook_action'),
+        valueColor: AppColors.accent,
+        onTap: () => _handleLinkTap('facebook', facebook),
+      ));
+    }
+
+    if (tiktok != null && tiktok.isNotEmpty) {
+      contactFields.add(_buildContactRow(
+        label: _t('tiktok_label'),
+        value: _t('view_tiktok_action'),
+        valueColor: AppColors.accent,
+        onTap: () => _handleLinkTap('tiktok', tiktok),
       ));
     }
 
     if (booking != null && booking.isNotEmpty) {
       contactFields.add(_buildContactRow(
         label: _t('booking'),
-        value: booking,
-        valueColor: AppColors.accent, // Orange
+        value: _t('make_reservation_action'),
+        valueColor: AppColors.accent,
         onTap: () => _handleLinkTap('booking', booking),
       ));
     }
@@ -649,11 +747,8 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           _t('contact_label'),
-          style: const TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF666666),
-            letterSpacing: 0.04 * 11.5, // 0.04em
+          style: AppTypography.chip.copyWith(
+            color: const Color(0xFF666666), // Section label gray (not in AppColors)
           ),
         ),
         const SizedBox(height: 10),
@@ -665,7 +760,7 @@ class _OpeningHoursContactWidgetState
               children: [
                 contactFields[index],
                 if (!isLastRow)
-                  const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)),
+                  const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)), // Lighter divider for row separation
               ],
             );
           }),
@@ -689,10 +784,9 @@ class _OpeningHoursContactWidgetState
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: AppTypography.bodyRegular.copyWith(
               fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF555555),
+              color: const Color(0xFF555555),
             ),
           ),
           GestureDetector(
@@ -700,7 +794,7 @@ class _OpeningHoursContactWidgetState
             onLongPress: onLongPress,
             child: Text(
               value,
-              style: TextStyle(
+              style: AppTypography.bodyRegular.copyWith(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: valueColor,
