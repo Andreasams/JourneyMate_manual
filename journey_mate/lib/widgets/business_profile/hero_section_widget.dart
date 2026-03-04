@@ -212,7 +212,7 @@ class HeroSectionWidget extends ConsumerWidget {
         imageUrl: profilePictureUrl,
         width: 64,
         height: 64,
-        fit: BoxFit.cover,
+        fit: BoxFit.scaleDown,
         placeholder: (context, url) => fallback(),
         errorWidget: (context, url, error) => fallback(),
       ),

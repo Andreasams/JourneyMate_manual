@@ -27,11 +27,13 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'action_website': 'Website',
     'action_booking': 'Book',
     'action_map': 'Map',
+    'choose_map_app': 'Choose map app',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Unable to open phone app',
     'error_cannot_open_website': 'Unable to open website',
     'error_cannot_open_booking': 'Unable to open booking page',
+    'error_no_location_data': 'Location not available for this business',
     'error_no_map_app': 'No map app found on your device',
     'error_cannot_open_map': 'Unable to open map',
 
@@ -75,11 +77,13 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'action_website': 'Hjemmeside',
     'action_booking': 'Book',
     'action_map': 'Kort',
+    'choose_map_app': 'Vælg kortapp',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Kan ikke åbne telefon-app',
     'error_cannot_open_website': 'Kan ikke åbne hjemmeside',
     'error_cannot_open_booking': 'Kan ikke åbne bookingside',
+    'error_no_location_data': 'Placering ikke tilgængelig for denne virksomhed',
     'error_no_map_app': 'Ingen kort-app fundet på din enhed',
     'error_cannot_open_map': 'Kan ikke åbne kort',
 
@@ -123,11 +127,13 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'action_website': 'Webseite',
     'action_booking': 'Buchen',
     'action_map': 'Karte',
+    'choose_map_app': 'Karten-App wählen',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Telefon-App kann nicht geöffnet werden',
     'error_cannot_open_website': 'Webseite kann nicht geöffnet werden',
     'error_cannot_open_booking': 'Buchungsseite kann nicht geöffnet werden',
+    'error_no_location_data': 'Standort für dieses Unternehmen nicht verfügbar',
     'error_no_map_app': 'Keine Karten-App auf Ihrem Gerät gefunden',
     'error_cannot_open_map': 'Karte kann nicht geöffnet werden',
 
@@ -171,11 +177,13 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'action_website': 'Sitio web',
     'action_booking': 'Reservar',
     'action_map': 'Mapa',
+    'choose_map_app': 'Elegir app de mapas',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'No se puede abrir la aplicación de teléfono',
     'error_cannot_open_website': 'No se puede abrir el sitio web',
     'error_cannot_open_booking': 'No se puede abrir la página de reservas',
+    'error_no_location_data': 'Ubicación no disponible para este negocio',
     'error_no_map_app': 'No se encontró ninguna aplicación de mapas',
     'error_cannot_open_map': 'No se puede abrir el mapa',
 
@@ -219,11 +227,13 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'action_website': 'Site web',
     'action_booking': 'Réserver',
     'action_map': 'Carte',
+    'choose_map_app': 'Choisir l\'app de carte',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Impossible d\'ouvrir l\'application téléphone',
     'error_cannot_open_website': 'Impossible d\'ouvrir le site web',
     'error_cannot_open_booking': 'Impossible d\'ouvrir la page de réservation',
+    'error_no_location_data': 'Localisation non disponible pour cette entreprise',
     'error_no_map_app': 'Aucune application de carte trouvée',
     'error_cannot_open_map': 'Impossible d\'ouvrir la carte',
 
@@ -267,11 +277,13 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'action_website': 'Sito web',
     'action_booking': 'Prenota',
     'action_map': 'Mappa',
+    'choose_map_app': 'Scegli app mappe',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Impossibile aprire l\'app telefono',
     'error_cannot_open_website': 'Impossibile aprire il sito web',
     'error_cannot_open_booking': 'Impossibile aprire la pagina di prenotazione',
+    'error_no_location_data': 'Posizione non disponibile per questa attività',
     'error_no_map_app': 'Nessuna app mappe trovata sul dispositivo',
     'error_cannot_open_map': 'Impossibile aprire la mappa',
 
@@ -315,11 +327,13 @@ const Map<String, Map<String, String>> businessProfileFallbackTranslations = {
     'action_website': 'Webbplats',
     'action_booking': 'Boka',
     'action_map': 'Karta',
+    'choose_map_app': 'Välj kartapp',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Kan inte öppna telefonappen',
     'error_cannot_open_website': 'Kan inte öppna webbplatsen',
     'error_cannot_open_booking': 'Kan inte öppna bokningssidan',
+    'error_no_location_data': 'Plats inte tillgänglig för detta företag',
     'error_no_map_app': 'Ingen kartapp hittades på enheten',
     'error_cannot_open_map': 'Kan inte öppna kartan',
 
