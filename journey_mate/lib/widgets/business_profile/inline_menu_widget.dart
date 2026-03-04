@@ -337,14 +337,27 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
   }
 
   /// Formats an ISO date string to a short localized date.
-  /// e.g. "2026-02-22T00:00:00Z" → "Feb 22, 2026" (en) / "22. feb. 2026" (da)
+  ///
+  /// Supports all 15 languages with automatic locale-specific formatting:
+  /// - English (en): "Feb 22, 2026"
+  /// - Danish (da): "22. feb. 2026"
+  /// - Japanese (ja): "2026年2月22日"
+  /// - Korean (ko): "2026. 2. 22."
+  /// - Chinese (zh): "2026年2月22日"
+  /// - And 10 more European languages
   String _formatLocalizedDate(String isoDate, String languageCode) {
     if (isoDate.isEmpty) return '';
     try {
       final date = DateTime.parse(isoDate);
-      final locale = languageCode == 'da' ? 'da' : 'en';
-      return DateFormat.yMMMd(locale).format(date);
+      try {
+        // Use language code directly - intl package supports all 15 languages
+        return DateFormat.yMMMd(languageCode).format(date);
+      } catch (e) {
+        // Fallback to English if locale not supported
+        return DateFormat.yMMMd('en').format(date);
+      }
     } catch (e) {
+      // Could not parse date at all
       return isoDate;
     }
   }
