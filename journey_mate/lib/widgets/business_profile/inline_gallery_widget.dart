@@ -21,7 +21,7 @@ import '../shared/image_gallery_widget.dart';
 /// - Swipeable PageView content area
 /// - Visual indicator dots below content (current tab highlighted)
 /// - Tab selection syncs with swipe gestures
-/// - 3-column grid with 3px gap within each tab
+/// - 4-column × 2-row grid (8 images) with 3px gap within each tab
 /// - Variable border radii (10/12/14px alternating) for visual interest
 /// - Taps open ImageGalleryWidget modal (full-screen gallery)
 /// - Self-contained (reads from businessProvider internally)
@@ -48,10 +48,10 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
 
   // Tab configuration: matches JSX tab order and API keys
   static const _tabs = [
-    {'key': 'food', 'labelKey': 'gallery_tab_food'}, // "Mad"
-    {'key': 'menu', 'labelKey': 'gallery_tab_menu'}, // "Menu"
-    {'key': 'interior', 'labelKey': 'gallery_tab_interior'}, // "Inde"
-    {'key': 'outdoor', 'labelKey': 'gallery_tab_exterior'}, // "Ude"
+    {'key': 'food', 'labelKey': 'gallery_food'}, // "Mad"
+    {'key': 'menu', 'labelKey': 'gallery_menu'}, // "Menu"
+    {'key': 'interior', 'labelKey': 'gallery_interior'}, // "Inde"
+    {'key': 'outdoor', 'labelKey': 'gallery_outdoor'}, // "Ude"
   ];
 
   @override
@@ -77,6 +77,7 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
     }
 
     // Parse gallery categories from API response
+    // Only include categories that have images
     final galleryCategories = <Map<String, dynamic>>[];
     for (final tab in _tabs) {
       final key = tab['key'] as String;
@@ -91,18 +92,18 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
         }
       }
 
-      galleryCategories.add({
-        'key': key,
-        'labelKey': tab['labelKey'],
-        'images': imageUrls,
-      });
+      // Only add category if it has images (hide empty categories)
+      if (imageUrls.isNotEmpty) {
+        galleryCategories.add({
+          'key': key,
+          'labelKey': tab['labelKey'],
+          'images': imageUrls,
+        });
+      }
     }
 
-    // Check if any category has images
-    final hasAnyImages =
-        galleryCategories.any((cat) => (cat['images'] as List).isNotEmpty);
-
-    if (!hasAnyImages) {
+    // If no categories have images, hide the entire gallery section
+    if (galleryCategories.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -122,20 +123,8 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
           _buildTabChips(galleryCategories),
           SizedBox(height: AppSpacing.md),
 
-          // Swipeable content area
-          SizedBox(
-            height: 300, // Fixed height for PageView
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: _onPageChanged,
-              itemCount: galleryCategories.length,
-              itemBuilder: (context, index) {
-                final category = galleryCategories[index];
-                final images = category['images'] as List<String>;
-                return _buildGalleryGrid(images, category['key'] as String);
-              },
-            ),
-          ),
+          // Swipeable content area with calculated height for 4x2 grid
+          _buildGalleryPageView(galleryCategories),
           SizedBox(height: AppSpacing.sm),
 
           // Visual indicator dots
@@ -149,6 +138,37 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
     );
   }
 
+  /// Build gallery page view with calculated height for 4x2 grid
+  Widget _buildGalleryPageView(List<Map<String, dynamic>> categories) {
+    // Calculate height: 2 rows + spacing
+    // Container width minus horizontal padding (24px on each side)
+    final screenWidth = MediaQuery.of(context).size.width;
+    final containerWidth = screenWidth - (AppSpacing.xxl * 2);
+    final gridSpacing = 3.0;
+    final columns = 4;
+    final rows = 2;
+
+    // Calculate image width: (container width - spacing between columns) / number of columns
+    final imageWidth = (containerWidth - (gridSpacing * (columns - 1))) / columns;
+
+    // Calculate total height: (image height × rows) + spacing between rows
+    final totalHeight = (imageWidth * rows) + (gridSpacing * (rows - 1));
+
+    return SizedBox(
+      height: totalHeight,
+      child: PageView.builder(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final images = category['images'] as List<String>;
+          return _buildGalleryGrid(images, category['key'] as String);
+        },
+      ),
+    );
+  }
+
   /// Build horizontal tab chips
   Widget _buildTabChips(List<Map<String, dynamic>> categories) {
     return SingleChildScrollView(
@@ -157,14 +177,7 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
         children: List.generate(categories.length, (index) {
           final category = categories[index];
           final labelKey = category['labelKey'] as String;
-          final images = category['images'] as List<String>;
           final isSelected = _currentTabIndex == index;
-          final hasImages = images.isNotEmpty;
-
-          // Don't show tab if no images (graceful degradation)
-          if (!hasImages) {
-            return const SizedBox.shrink();
-          }
 
           return Padding(
             padding: EdgeInsets.only(right: AppSpacing.sm),
@@ -198,27 +211,16 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
     );
   }
 
-  /// Build 3-column grid for a category
+  /// Build 4-column × 2-row grid for a category (8 images)
   Widget _buildGalleryGrid(List<String> images, String categoryKey) {
-    if (images.isEmpty) {
-      return Center(
-        child: Text(
-          td(ref, 'gallery_no_images'),
-          style: AppTypography.bodyRegular.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-      );
-    }
-
-    // Show first 9 images in grid
-    final displayedImages = images.take(9).toList();
+    // Show first 8 images in 4×2 grid
+    final displayedImages = images.take(8).toList();
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: 4,
         crossAxisSpacing: 3.0,
         mainAxisSpacing: 3.0,
         childAspectRatio: 1.0, // Square images
