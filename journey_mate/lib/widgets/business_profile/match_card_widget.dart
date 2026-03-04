@@ -25,8 +25,9 @@ import '../../services/api_service.dart';
 /// Features:
 /// - Collapsible: tap to expand/collapse filter list
 /// - Default state: collapsed (header + chevron only)
-/// - Green background/border for 100% match
-/// - Orange background/border for partial match
+/// - Green background/border for 100% match (all filters matched)
+/// - Orange background/border for partial match (some filters matched)
+/// - Red background/border for no match (zero filters matched)
 /// - Shows matched filters with green check chip (when expanded)
 /// - Shows missed filters with red X chip (when expanded)
 /// - Chevron rotates 180° with smooth animation
@@ -139,14 +140,34 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
     required List<Map<String, dynamic>> matchedFilters,
     required List<Map<String, dynamic>> missedFilters,
   }) {
-    // Determine if full match (all filters matched)
+    // Determine match state: full match, partial match, or no match
     final isFullMatch = matchedCount == totalCount && totalCount > 0;
+    final isNoMatch = matchedCount == 0;
 
-    // Conditional styling
-    final backgroundColor = isFullMatch ? AppColors.greenBg : AppColors.orangeBg;
-    final borderColor = isFullMatch ? AppColors.greenBorder : AppColors.orangeBorder;
-    final primaryColor = isFullMatch ? AppColors.green : AppColors.accent;
-    final icon = isFullMatch ? Icons.check_circle : Icons.info_outline;
+    // Conditional styling based on match state
+    final backgroundColor = isFullMatch
+        ? AppColors.greenBg
+        : isNoMatch
+            ? AppColors.redBg
+            : AppColors.orangeBg;
+
+    final borderColor = isFullMatch
+        ? AppColors.greenBorder
+        : isNoMatch
+            ? AppColors.redBorder
+            : AppColors.orangeBorder;
+
+    final primaryColor = isFullMatch
+        ? AppColors.green
+        : isNoMatch
+            ? AppColors.red
+            : AppColors.accent;
+
+    final icon = isFullMatch
+        ? Icons.check_circle
+        : isNoMatch
+            ? Icons.error_outline
+            : Icons.info_outline;
 
     return GestureDetector(
       onTap: _toggleExpanded,
@@ -330,6 +351,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
         'matched_count': matchedCount,
         'total_count': totalCount,
         'is_full_match': isFullMatch,
+        'is_no_match': matchedCount == 0,
       },
     )
         .catchError((e) {

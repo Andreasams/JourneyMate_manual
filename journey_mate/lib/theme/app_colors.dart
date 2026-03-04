@@ -33,6 +33,9 @@ class AppColors {
   /// Red border - Border for missed-need chips in match cards
   static const Color redBorder = Color(0xFFF5D5D2);
 
+  /// Red background - Subtle surface for no-match cards and error states
+  static const Color redBg = Color(0xFFFEF4F3);
+
   /// Orange background - Warm surface for partial-match cards
   static const Color orangeBg = Color(0xFFFEF8F2);
 

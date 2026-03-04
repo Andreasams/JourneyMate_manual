@@ -47,6 +47,8 @@ ElevatedButton(style: AppButtonStyles.primary, ...)
 | `AppColors.greenBg` | `#f0f9f3` | Background for full-match cards |
 | `AppColors.greenBorder` | `#d0ecd8` | Border for full-match cards |
 | `AppColors.red` | `#c9403a` | Closed status, errors, warnings |
+| `AppColors.redBorder` | `#f5d5d2` | Border for missed-need chips in match cards |
+| `AppColors.redBg` | `#fef4f3` | Background for no-match cards and error states |
 | `AppColors.orangeBg` | `#fef8f2` | Background for partial-match cards |
 | `AppColors.orangeBorder` | `#f0dcc8` | Border for partial-match cards |
 | `AppColors.fullMatchCardBorder` | `#b8d4c0` | Border for full-match restaurant cards in search results |
