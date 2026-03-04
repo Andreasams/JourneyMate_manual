@@ -306,7 +306,7 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
             padding: EdgeInsets.only(top: 12),
             child: GestureDetector(
               onTap: () =>
-                  context.go('/business/${widget.businessId}/menu'),
+                  context.push('/business/${widget.businessId}/menu'),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
