@@ -152,6 +152,7 @@ Documents arrive **pre-sorted** by Typesense `_eval()` score (full â†’ partial â
 | `business_type` | string | e.g. `"Restaurant"`, `"Bakery"` |
 | `description` | string | Business description |
 | `is_active` | bool | |
+| `last_reviewed_at` | string | ISO 8601 date when menu/data was last reviewed, e.g. `"2026-02-22T00:00:00Z"` |
 | `price_range_min` | int | e.g. `140` |
 | `price_range_max` | int | e.g. `530` |
 | `price_range_currency_code` | string | e.g. `"DKK"` |

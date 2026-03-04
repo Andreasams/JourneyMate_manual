@@ -164,7 +164,7 @@ class _BusinessInformationPageState
     if (business == null) {
       return Center(
         child: Text(
-          'No business data',
+          td(ref, 'no_business_data'),
           style: AppTypography.bodyRegular.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -205,7 +205,7 @@ class _BusinessInformationPageState
           color: AppColors.bgInput,
           child: Center(
             child: Text(
-              'Map unavailable',
+              td(ref, 'map_unavailable'),
               style: AppTypography.bodyRegular.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -270,7 +270,7 @@ class _BusinessInformationPageState
               // Business Name
               Text(
                 businessName,
-                style: AppTypography.sectionHeading.copyWith(fontSize: 20),
+                style: AppTypography.sectionHeading.copyWith(fontSize: 24),
               ),
               SizedBox(height: AppSpacing.xs),
 
@@ -280,8 +280,8 @@ class _BusinessInformationPageState
                   children: [
                     // Colored dot
                     Container(
-                      width: 12,
-                      height: 12,
+                      width: 6,
+                      height: 6,
                       decoration: BoxDecoration(
                         color: _statusColor ?? AppColors.error,
                         shape: BoxShape.circle,

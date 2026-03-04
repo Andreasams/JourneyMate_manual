@@ -127,7 +127,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
     if (gallery == null) {
       return Center(
         child: Text(
-          'Loading gallery...',
+          td(ref, 'gallery_loading'),
           style: AppTypography.bodyRegular.copyWith(
             color: AppColors.textSecondary,
           ),
