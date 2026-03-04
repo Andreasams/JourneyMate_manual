@@ -402,13 +402,77 @@ class _SearchResultsListViewState
     }
   }
 
+  /// Maps section strings to numeric levels for comparison
+  int _getSectionLevel(String section) {
+    switch (section) {
+      case 'fullMatch': return 0;
+      case 'partialMatch': return 1;
+      case 'others': return 2;
+      default: return 2; // Treat unknown as 'others'
+    }
+  }
+
+  /// Validates that documents are in proper section order (fullMatch → partialMatch → others)
+  bool _isProperlyOrdered(List<dynamic> documents, int totalActiveFilters) {
+    if (documents.isEmpty) return true;
+
+    int maxSectionLevel = -1; // fullMatch=0, partialMatch=1, others=2
+
+    for (final doc in documents) {
+      final section = _getSection(doc, totalActiveFilters);
+      final currentLevel = _getSectionLevel(section);
+
+      // Backwards transition detected (e.g., others → partial)
+      if (currentLevel < maxSectionLevel) {
+        return false;
+      }
+
+      maxSectionLevel = currentLevel;
+    }
+
+    return true; // All transitions are forward
+  }
+
+  /// Ensures documents are in proper section order
+  /// Fast path: If already ordered, return as-is (99% of cases)
+  /// Backup path: Re-group by section if ordering is wrong
+  List<dynamic> _ensureProperSectionOrder(List<dynamic> documents, int totalActiveFilters) {
+    // Fast path: If already ordered, return as-is (99% of cases)
+    if (_isProperlyOrdered(documents, totalActiveFilters)) {
+      return documents;
+    }
+
+    // Backup path: Re-group by section
+    debugPrint('⚠️ Documents not properly ordered. Re-grouping client-side...');
+
+    // Group into three lists
+    final fullMatch = <dynamic>[];
+    final partialMatch = <dynamic>[];
+    final others = <dynamic>[];
+
+    for (final doc in documents) {
+      final section = _getSection(doc, totalActiveFilters);
+      switch (section) {
+        case 'fullMatch': fullMatch.add(doc); break;
+        case 'partialMatch': partialMatch.add(doc); break;
+        case 'others': others.add(doc); break;
+      }
+    }
+
+    // Return in proper order (preserves original order within each section)
+    return [...fullMatch, ...partialMatch, ...others];
+  }
+
   /// Builds sectioned list with backend-driven section headers
   Widget _buildSectionedList(List<dynamic> documents, int totalActiveFilters) {
+    // Safety net - ensure proper order
+    final orderedDocuments = _ensureProperSectionOrder(documents, totalActiveFilters);
+
     final items = <Widget>[];
     String? previousSection;
     int itemIndex = 0; // Global analytics counter
 
-    for (final doc in documents) {
+    for (final doc in orderedDocuments) {
       final currentSection = _getSection(doc, totalActiveFilters);
 
       // Insert header when section changes
