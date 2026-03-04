@@ -447,6 +447,7 @@ class _OpeningHoursContactWidgetState
 
     return GestureDetector(
       onTap: _handleToggle,
+      behavior: HitTestBehavior.opaque,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -456,7 +457,7 @@ class _OpeningHoursContactWidgetState
               children: [
                 Text(
                   _t('opening_hours_and_contact'),
-                  style: AppTypography.categoryHeading,
+                  style: AppTypography.sectionHeading,
                 ),
                 if (!_isExpanded)
                   Padding(
@@ -678,7 +679,7 @@ class _OpeningHoursContactWidgetState
       contactFields.add(_buildContactRow(
         label: _t('phone_number_label'),
         value: formattedPhone,
-        valueColor: const Color(0xFF222222), // Dark gray per JSX design (not orange)
+        valueColor: AppColors.accent,
         onTap: () => _handlePhoneTap(phone),
         onLongPress: () => _handlePhoneLongPress(phone),
       ));
