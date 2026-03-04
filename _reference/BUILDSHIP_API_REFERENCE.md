@@ -163,9 +163,11 @@ Documents arrive **pre-sorted** by Typesense `_eval()` score (full â†’ partial â
 | `google_maps_url` | string | |
 | `profile_picture_url` | string | Flat field (not a nested object) |
 | `website_url` | string? | |
+| `facebook_url` | string? | |
 | `instagram_url` | string? | |
 | `reservation_url` | string? | |
 | `general_phone` | string? | e.g. `"51 85 69 96"` |
+| `general_email` | string? | e.g. `"info@emmerys.dk"` |
 | `tags` | string[] | e.g. `["Aperol", "Brunch"]` |
 
 **Not present in API response** (must be computed client-side if needed): `cuisine_type`, `price_range` (string), `status_open`, `closing_time`, `address.address_line`.

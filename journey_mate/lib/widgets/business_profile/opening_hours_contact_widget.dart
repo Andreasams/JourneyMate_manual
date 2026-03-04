@@ -661,13 +661,13 @@ class _OpeningHoursContactWidgetState
   Widget _buildContactSection(Map<String, dynamic>? business) {
     if (business == null) return const SizedBox.shrink();
 
-    final phone = business['phone_number'] as String?;
-    final email = business['email'] as String?;
-    final website = business['website'] as String?;
+    final phone = business['general_phone'] as String?;
+    final email = business['general_email'] as String?;
+    final website = business['website_url'] as String?;
     final instagram = business['instagram_url'] as String?;
     final facebook = business['facebook_url'] as String?;
-    final tiktok = business['tiktok_url'] as String?;
-    final booking = business['booking_url'] as String?;
+    final tiktok = business['tiktok_url'] as String?; // Not in API yet, but UI ready
+    final booking = business['reservation_url'] as String?;
 
     // Collect available contact fields
     final contactFields = <Widget>[];

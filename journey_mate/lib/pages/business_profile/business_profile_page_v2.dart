@@ -143,7 +143,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         final raw = businessResponse.jsonBody as Map<String, dynamic>;
         final menuData = menuResponse.succeeded ? menuResponse.jsonBody as Map<String, dynamic>? : null;
 
-        // API top-level keys: businessInfo, filters, businessHours, openWindows
+        // API top-level keys: businessInfo, filters, businessHours, openWindows, gallery, menuCategories
         final businessInfo = raw['businessInfo'] as Map<String, dynamic>?;
         if (businessInfo == null) {
           debugPrint('❌ Business not found: id=$businessIdInt');
@@ -154,8 +154,10 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
           return;
         }
 
-        // Filters are a top-level array (not nested inside businessInfo)
+        // Filters, gallery, and menuCategories are top-level (not nested inside businessInfo)
         final topLevelFilters = raw['filters'] as List? ?? [];
+        final topLevelGallery = raw['gallery'] as Map<String, dynamic>? ?? {};
+        final topLevelMenuCategories = raw['menuCategories'] as List? ?? [];
         final businessHours = raw['businessHours'] as Map<String, dynamic>? ?? {};
 
         final filterIds = topLevelFilters
@@ -164,10 +166,12 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             .whereType<int>()
             .toList();
 
-        // Build business map: spread businessInfo + merge top-level filters
+        // Build business map: spread businessInfo + merge top-level arrays
         final business = <String, dynamic>{
           ...businessInfo,
           'filters': topLevelFilters,
+          'gallery': topLevelGallery,
+          'menuCategories': topLevelMenuCategories,
         };
 
         ref.read(businessProvider.notifier).setCurrentBusiness(

@@ -63,10 +63,10 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
     if (menuItems == null || business == null) return const SizedBox.shrink();
 
     final lastReviewedAt =
-        business['businessInfo']?['last_reviewed_at']?.toString() ?? '';
+        business['last_reviewed_at']?.toString() ?? '';
     final menuCategories = business['menuCategories'];
     final businessName =
-        business['businessInfo']?['business_name']?.toString() ?? '';
+        business['business_name']?.toString() ?? '';
 
     final language = Localizations.localeOf(context).languageCode;
 
@@ -176,7 +176,7 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
                     ? _categoryRowsHeightSingle
                     : _categoryRowsHeightDouble,
                 businessID:
-                    business['businessInfo']?['business_id'] ?? widget.businessId,
+                    business['business_id'] ?? widget.businessId,
                 apiResult: menuCategories,
                 visibleSelection: _visibleSelection,
                 onCategoryChanged: (categoryId, menuId) async {
