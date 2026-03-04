@@ -29,7 +29,6 @@ import '../../widgets/business_profile/inline_menu_widget.dart';
 import '../../widgets/business_profile/match_card_widget.dart';
 import '../../widgets/business_profile/opening_hours_contact_widget.dart';
 import '../../widgets/business_profile/quick_actions_pills_widget.dart';
-import '../../widgets/business_profile/tags_row_widget.dart';
 
 /// Business Profile Page V2 - Complete rewrite from JSX blueprint
 ///
@@ -343,11 +342,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
               const MatchCardWidget(),
               SizedBox(height: AppSpacing.lg),
 
-              // 4. Tags Row (conditional on tags available)
-              const TagsRowWidget(),
-              SizedBox(height: AppSpacing.lg),
-
-              // 5. Opening Hours & Contact
+              // 4. Opening Hours & Contact
               const OpeningHoursContactWidget(),
               SizedBox(height: AppSpacing.lg),
             ]),
