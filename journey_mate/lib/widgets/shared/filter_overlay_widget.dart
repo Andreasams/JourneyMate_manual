@@ -870,6 +870,11 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       }
     } else {
       // SELECTING
+      // Clear all existing neighbourhoods first (exclusive selection)
+      // This ensures only one neighbourhood (or parent + child) can be active at a time
+      _removeConflictingFilters([_neighborhoodCategoryId]);
+      _selectedNeighborhoodIds.clear();
+
       _selectedFilterIds.add(filterId);
       _selectedNeighborhoodIds.add(filterId);
       _currentSelectionType = FilterSelectionType.neighborhood;
