@@ -387,6 +387,18 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       if (widget.selectedFilterIds != null) {
         _selectedFilterIds.addAll(widget.selectedFilterIds!);
       }
+
+      // Re-add routed IDs (neighbourhood, shopping area) from provider
+      // This mirrors logic in _initializeStateFromProps (lines 321-331)
+      // Without this, neighbourhood IDs get orphaned during widget updates
+      final searchState = ref.read(searchStateProvider);
+      if (searchState.selectedNeighbourhoodId != null) {
+        _selectedFilterIds.addAll(searchState.selectedNeighbourhoodId!);
+        _selectedNeighborhoodIds = List<int>.from(searchState.selectedNeighbourhoodId!);
+      }
+      if (searchState.selectedShoppingAreaId != null) {
+        _selectedFilterIds.add(searchState.selectedShoppingAreaId!);
+      }
     }
   }
 
@@ -719,6 +731,17 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   void _handleItemSelection(int itemId, bool hasSubitems) {
+    // Detect parent neighbourhood FIRST - route to neighbourhood handler
+    // This handles: selection + search trigger + column 3 opening + exclusive selection
+    final isParentNeighbourhood = AppConstants.kNeighborhoodHierarchy.containsKey(itemId);
+
+    if (isParentNeighbourhood) {
+      // Route to neighbourhood handler which has all the correct logic
+      _handleNeighborhoodSelection(itemId);
+      return;  // Early return prevents falling through to broken branches below
+    }
+
+    // Business Type parents (category 8) - searchable with subitems
     if (_isSearchableParentItem(itemId)) {
       final isCurrentlySelected = _selectedFilterIds.contains(itemId);
       final isColumnThreeShowing = selectedItemId == itemId;
