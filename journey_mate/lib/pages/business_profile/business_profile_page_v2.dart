@@ -29,7 +29,6 @@ import '../../widgets/business_profile/inline_menu_widget.dart';
 import '../../widgets/business_profile/match_card_widget.dart';
 import '../../widgets/business_profile/opening_hours_contact_widget.dart';
 import '../../widgets/business_profile/quick_actions_pills_widget.dart';
-import '../../widgets/business_profile/tags_row_widget.dart';
 
 /// Business Profile Page V2 - Complete rewrite from JSX blueprint
 ///
@@ -75,10 +74,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     super.initState();
     _pageStartTime = DateTime.now();
 
-    // Try to show cached preview data immediately (optimistic UI)
-    _loadCachedPreview();
-
+    // Schedule both cache preview and API data load after frame renders
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadCachedPreview();
       _loadBusinessData();
     });
   }
@@ -145,7 +143,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         final raw = businessResponse.jsonBody as Map<String, dynamic>;
         final menuData = menuResponse.succeeded ? menuResponse.jsonBody as Map<String, dynamic>? : null;
 
-        // API top-level keys: businessInfo, filters, businessHours, openWindows
+        // API top-level keys: businessInfo, filters, businessHours, openWindows, gallery, menuCategories
         final businessInfo = raw['businessInfo'] as Map<String, dynamic>?;
         if (businessInfo == null) {
           debugPrint('❌ Business not found: id=$businessIdInt');
@@ -156,10 +154,11 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
           return;
         }
 
-        // Filters are a top-level array (not nested inside businessInfo)
+        // Filters, gallery, and menuCategories are top-level (not nested inside businessInfo)
         final topLevelFilters = raw['filters'] as List? ?? [];
+        final topLevelGallery = raw['gallery'] as Map<String, dynamic>? ?? {};
+        final topLevelMenuCategories = raw['menuCategories'] as List? ?? [];
         final businessHours = raw['businessHours'] as Map<String, dynamic>? ?? {};
-        final openWindows = raw['openWindows'] as List? ?? [];
 
         final filterIds = topLevelFilters
             .whereType<Map<String, dynamic>>()
@@ -167,23 +166,12 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             .whereType<int>()
             .toList();
 
-        // Compute fields HeroSectionWidget expects that the API doesn't return directly
-        final priceMin = businessInfo['price_range_min'] as int?;
-        final priceMax = businessInfo['price_range_max'] as int?;
-        final priceCurrency = businessInfo['price_range_currency_code'] as String? ?? '';
-        final priceRange = (priceMin != null && priceMax != null)
-            ? '$priceMin–$priceMax $priceCurrency'
-            : '';
-
-        // Build enriched business map: merge filters + inject computed fields
+        // Build business map: spread businessInfo + merge top-level arrays
         final business = <String, dynamic>{
           ...businessInfo,
           'filters': topLevelFilters,
-          'cuisine_type': businessInfo['business_type'] ?? '',
-          'price_range': priceRange,
-          'status_open': _computeStatusOpen(openWindows),
-          'closing_time': _computeClosingTime(openWindows),
-          'address': {'address_line': businessInfo['street'] ?? ''},
+          'gallery': topLevelGallery,
+          'menuCategories': topLevelMenuCategories,
         };
 
         ref.read(businessProvider.notifier).setCurrentBusiness(
@@ -258,42 +246,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       timestamp: DateTime.now().toIso8601String(),
       eventData: {'business_id': businessIdInt},
     );
-  }
-
-  /// Compute whether business is currently open from openWindows data.
-  /// openWindows: [ { day: 0, open: 420, close: 1080 } ]
-  /// day is 0=Monday; open/close are minutes from midnight.
-  bool _computeStatusOpen(List openWindows) {
-    final now = DateTime.now();
-    final todayMinutes = now.hour * 60 + now.minute;
-    final todayIndex = now.weekday - 1; // DateTime.weekday: 1=Mon → index 0
-    for (final window in openWindows) {
-      if (window is Map<String, dynamic> && window['day'] == todayIndex) {
-        final open = window['open'] as int?;
-        final close = window['close'] as int?;
-        if (open != null && close != null) {
-          return todayMinutes >= open && todayMinutes < close;
-        }
-      }
-    }
-    return false;
-  }
-
-  /// Format today's closing time as "HH:MM" from openWindows data.
-  String _computeClosingTime(List openWindows) {
-    final now = DateTime.now();
-    final todayIndex = now.weekday - 1;
-    for (final window in openWindows) {
-      if (window is Map<String, dynamic> && window['day'] == todayIndex) {
-        final close = window['close'] as int?;
-        if (close != null) {
-          final hours = close ~/ 60;
-          final minutes = (close % 60).toString().padLeft(2, '0');
-          return '$hours:$minutes';
-        }
-      }
-    }
-    return '';
   }
 
   @override
@@ -394,11 +346,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
               const MatchCardWidget(),
               SizedBox(height: AppSpacing.lg),
 
-              // 4. Tags Row (conditional on tags available)
-              const TagsRowWidget(),
-              SizedBox(height: AppSpacing.lg),
-
-              // 5. Opening Hours & Contact
+              // 4. Opening Hours & Contact
               const OpeningHoursContactWidget(),
               SizedBox(height: AppSpacing.lg),
             ]),
@@ -448,7 +396,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(AppSpacing.xxl),
+        padding: EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -485,7 +433,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 501-537
   Widget _buildFacilitiesSection() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -522,7 +470,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 542-550
   Widget _buildPaymentsSection() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -558,7 +506,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: GestureDetector(
         onTap: _toggleAboutExpanded,
         child: Column(
@@ -629,7 +577,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 567-572
   Widget _buildReportLink() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: Center(
         child: TextButton.icon(
           onPressed: () async {

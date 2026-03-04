@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../providers/search_providers.dart';
@@ -37,13 +36,11 @@ class SearchResultsListView extends ConsumerStatefulWidget {
     super.key,
     this.width,
     this.height,
-    required this.userLocation,
     this.onBusinessTap,
   });
 
   final double? width;
   final double? height;
-  final Position? userLocation;
   final void Function(int businessId)? onBusinessTap;
 
   @override
@@ -245,7 +242,6 @@ class _SearchResultsListViewState
             child: _BusinessListItem(
               key: ValueKey('business_$businessId'),
               businessData: businessData,
-              userLocation: widget.userLocation,
               matchVariant: 'none', // No match categorization
               activeFilterCount: 0,
               itemIndex: index,
@@ -287,7 +283,6 @@ class _SearchResultsListViewState
       child: _BusinessListItem(
         key: ValueKey('business_$businessId'),
         businessData: businessData,
-        userLocation: widget.userLocation,
         matchVariant: matchVariant,
         activeFilterCount: totalActiveFilters,
         itemIndex: itemIndex,
@@ -407,13 +402,77 @@ class _SearchResultsListViewState
     }
   }
 
+  /// Maps section strings to numeric levels for comparison
+  int _getSectionLevel(String section) {
+    switch (section) {
+      case 'fullMatch': return 0;
+      case 'partialMatch': return 1;
+      case 'others': return 2;
+      default: return 2; // Treat unknown as 'others'
+    }
+  }
+
+  /// Validates that documents are in proper section order (fullMatch → partialMatch → others)
+  bool _isProperlyOrdered(List<dynamic> documents, int totalActiveFilters) {
+    if (documents.isEmpty) return true;
+
+    int maxSectionLevel = -1; // fullMatch=0, partialMatch=1, others=2
+
+    for (final doc in documents) {
+      final section = _getSection(doc, totalActiveFilters);
+      final currentLevel = _getSectionLevel(section);
+
+      // Backwards transition detected (e.g., others → partial)
+      if (currentLevel < maxSectionLevel) {
+        return false;
+      }
+
+      maxSectionLevel = currentLevel;
+    }
+
+    return true; // All transitions are forward
+  }
+
+  /// Ensures documents are in proper section order
+  /// Fast path: If already ordered, return as-is (99% of cases)
+  /// Backup path: Re-group by section if ordering is wrong
+  List<dynamic> _ensureProperSectionOrder(List<dynamic> documents, int totalActiveFilters) {
+    // Fast path: If already ordered, return as-is (99% of cases)
+    if (_isProperlyOrdered(documents, totalActiveFilters)) {
+      return documents;
+    }
+
+    // Backup path: Re-group by section
+    debugPrint('⚠️ Documents not properly ordered. Re-grouping client-side...');
+
+    // Group into three lists
+    final fullMatch = <dynamic>[];
+    final partialMatch = <dynamic>[];
+    final others = <dynamic>[];
+
+    for (final doc in documents) {
+      final section = _getSection(doc, totalActiveFilters);
+      switch (section) {
+        case 'fullMatch': fullMatch.add(doc); break;
+        case 'partialMatch': partialMatch.add(doc); break;
+        case 'others': others.add(doc); break;
+      }
+    }
+
+    // Return in proper order (preserves original order within each section)
+    return [...fullMatch, ...partialMatch, ...others];
+  }
+
   /// Builds sectioned list with backend-driven section headers
   Widget _buildSectionedList(List<dynamic> documents, int totalActiveFilters) {
+    // Safety net - ensure proper order
+    final orderedDocuments = _ensureProperSectionOrder(documents, totalActiveFilters);
+
     final items = <Widget>[];
     String? previousSection;
     int itemIndex = 0; // Global analytics counter
 
-    for (final doc in documents) {
+    for (final doc in orderedDocuments) {
       final currentSection = _getSection(doc, totalActiveFilters);
 
       // Insert header when section changes
@@ -502,7 +561,6 @@ class _BusinessListItem extends ConsumerStatefulWidget {
   const _BusinessListItem({
     super.key,
     required this.businessData,
-    required this.userLocation,
     required this.matchVariant,
     required this.activeFilterCount,
     required this.itemIndex,
@@ -513,7 +571,6 @@ class _BusinessListItem extends ConsumerStatefulWidget {
   });
 
   final dynamic businessData;
-  final Position? userLocation;
   final String matchVariant; // 'full', 'partial', 'none'
   final int activeFilterCount; // Total number of active filters
   final int itemIndex; // Position in list for analytics
@@ -892,7 +949,10 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   String? _getDistanceText() {
-    if (widget.userLocation == null ||
+    // Read user location from provider
+    final userLocation = ref.read(locationProvider).currentPosition;
+
+    if (userLocation == null ||
         _latitude == null ||
         _longitude == null) {
       return null;
@@ -910,8 +970,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     // Create LatLng from user position
     final userLatLng = LatLng(
-      widget.userLocation!.latitude,
-      widget.userLocation!.longitude,
+      userLocation.latitude,
+      userLocation.longitude,
     );
 
     // Use returnDistance function from distance_calculator.dart

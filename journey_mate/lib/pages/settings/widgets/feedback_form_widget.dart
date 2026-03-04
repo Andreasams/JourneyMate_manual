@@ -173,9 +173,9 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
 
     return SingleChildScrollView(
       padding: EdgeInsets.only(
-        left: AppSpacing.xxl,
-        right: AppSpacing.xxl,
-        top: AppSpacing.xxl,
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
+        top: AppSpacing.xl,
         bottom: bottomPadding,
       ),
       child: Column(
@@ -191,11 +191,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           // Main subtitle
           Text(
             td(ref, 'feedback_form_subtitle_main'),
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w300,
-              color: AppColors.textSecondary,
-            ),
+            style: AppTypography.subtitle,
           ),
           SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
@@ -252,11 +248,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section subtitle
         Text(
           td(ref, 'feedback_form_subtitle_topic'),
-          style: GoogleFonts.roboto(
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.subtitle,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -335,11 +327,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Subtitle
         Text(
           td(ref, 'feedback_form_subtitle_message'),
-          style: GoogleFonts.roboto(
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.subtitle,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -412,11 +400,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section subtitle
         Text(
           td(ref, 'feedback_form_subtitle_contact_consent'),
-          style: GoogleFonts.roboto(
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.subtitle,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -571,11 +555,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             // Subtitle
             Text(
               td(ref, 'feedback_form_subtitle_contact'),
-              style: GoogleFonts.roboto(
-                fontSize: 14,
-                fontWeight: FontWeight.w300,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.subtitle,
             ),
             SizedBox(height: AppSpacing.sm),
 

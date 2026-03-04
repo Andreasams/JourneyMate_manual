@@ -47,6 +47,8 @@ ElevatedButton(style: AppButtonStyles.primary, ...)
 | `AppColors.greenBg` | `#f0f9f3` | Background for full-match cards |
 | `AppColors.greenBorder` | `#d0ecd8` | Border for full-match cards |
 | `AppColors.red` | `#c9403a` | Closed status, errors, warnings |
+| `AppColors.redBorder` | `#f5d5d2` | Border for missed-need chips in match cards |
+| `AppColors.redBg` | `#fef4f3` | Background for no-match cards and error states |
 | `AppColors.orangeBg` | `#fef8f2` | Background for partial-match cards |
 | `AppColors.orangeBorder` | `#f0dcc8` | Border for partial-match cards |
 | `AppColors.fullMatchCardBorder` | `#b8d4c0` | Border for full-match restaurant cards in search results |
@@ -102,8 +104,8 @@ ElevatedButton(style: AppButtonStyles.primary, ...)
 | `AppSpacing.md` | 12px | Between chips, moderate gaps |
 | `AppSpacing.mlg` | 14px | Card padding |
 | `AppSpacing.lg` | 16px | Standard spacing |
-| `AppSpacing.xl` | 20px | Between form fields |
-| `AppSpacing.xxl` | 24px | Page padding, before submit button |
+| `AppSpacing.xl` | 20px | **Standard page padding (all pages)**, between form fields |
+| `AppSpacing.xxl` | 24px | Before submit button, major section gaps |
 | `AppSpacing.xxxl` | 32px | Section spacing |
 | `AppSpacing.huge` | 40px | Major section spacing |
 
@@ -119,8 +121,8 @@ const SizedBox(height: AppSpacing.xl)  // 20px
 // Before submit button
 const SizedBox(height: AppSpacing.xxl)  // 24px
 
-// Page padding
-padding: const EdgeInsets.all(AppSpacing.xxl)  // 24px
+// Page padding (standard for all pages)
+padding: const EdgeInsets.all(AppSpacing.xl)  // 20px
 
 // Heading to description
 const SizedBox(height: AppSpacing.sm)  // 8px
@@ -209,6 +211,7 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 | `AppTypography.bodyMedium` | 16px | w500 | Emphasized body text |
 | `AppTypography.bodySmall` | 15px | w500 | Smaller body text |
 | `AppTypography.bodyTiny` | 14px | w400 | Tiny text, footnotes |
+| `AppTypography.subtitle` | 16px | w300 | Descriptive text under headings (settings forms) |
 
 ### UI Elements
 
@@ -531,22 +534,14 @@ Column(
     // Main page title (if present)
     Text(
       'Main Title',
-      style: GoogleFonts.roboto(
-        fontSize: 20,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textPrimary,
-      ),
+      style: AppTypography.sectionHeading,  // 20px, w700
     ),
     SizedBox(height: AppSpacing.sm),  // 8px
 
     // Main subtitle
     Text(
       'Description of the page',
-      style: GoogleFonts.roboto(
-        fontSize: 14,
-        fontWeight: FontWeight.w300,
-        color: AppColors.textSecondary,
-      ),
+      style: AppTypography.subtitle,  // 16px, w300, textSecondary
     ),
     SizedBox(height: 28),  // Tighter first gap (not 32px)
 
@@ -562,11 +557,7 @@ Column(
     // Section subtitle
     Text(
       'Section description',
-      style: GoogleFonts.roboto(
-        fontSize: 14,
-        fontWeight: FontWeight.w300,
-        color: AppColors.textSecondary,
-      ),
+      style: AppTypography.subtitle,  // 16px, w300, textSecondary
     ),
     SizedBox(height: AppSpacing.sm),  // 8px
 
@@ -587,12 +578,12 @@ Column(
 
 **Key Rules:**
 - Section titles: 16px, **w600**, textPrimary (darker, heavier)
-- Subtitles: **14px**, w300, textSecondary (lighter weight, lighter color)
+- Subtitles: **16px**, w300, textSecondary (lighter weight, lighter color) - use `AppTypography.subtitle`
 - Placeholders: **14px** (not default 16px)
 - First gap: **28px** (tighter than other sections)
 - Section spacing: **24px** (AppSpacing.xxl, not xl)
 
-**Rationale:** Consistent visual hierarchy across all settings forms. Weight (w600 vs w300) and color (textPrimary vs textSecondary) create clear distinction without size differences. Placeholders match subtitle size for visual consistency.
+**Rationale:** Consistent visual hierarchy across all settings forms. Weight (w600 vs w300) and color (textPrimary vs textSecondary) create clear distinction. Subtitles increased from 14px to 16px (March 2026) for improved readability while maintaining light w300 weight for visual hierarchy.
 
 **Example files:**
 - `journey_mate/lib/pages/settings/widgets/feedback_form_widget.dart`
@@ -807,7 +798,7 @@ AppTypography.label  // Correct
 | Between form fields | `AppSpacing.xl` | 20px | General forms |
 | Form page sections | `AppSpacing.xxl` | 24px | Settings forms only |
 | First gap (forms) | Custom `28` | 28px | After main subtitle |
-| Page padding | `AppSpacing.xxl` | 24px | |
+| **Page horizontal padding** | **`AppSpacing.xl`** | **20px** | **Standard for ALL pages** |
 | Input radius | `AppRadius.input` | 12px | |
 | Button radius | `AppRadius.button` | 14px | |
 | Card radius | `AppRadius.card` | 16px | |

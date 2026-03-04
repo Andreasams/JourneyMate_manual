@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_icon_sizes.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/search_providers.dart';
@@ -22,26 +25,28 @@ import '../../services/api_service.dart';
 /// Features:
 /// - Collapsible: tap to expand/collapse filter list
 /// - Default state: collapsed (header + chevron only)
-/// - Green background/border for 100% match
-/// - Orange background/border for partial match
+/// - Green background/border for 100% match (all filters matched)
+/// - Orange background/border for partial match (some filters matched)
+/// - Red background/border for no match (zero filters matched)
 /// - Shows matched filters with green check chip (when expanded)
 /// - Shows missed filters with red X chip (when expanded)
 /// - Chevron rotates 180° with smooth animation
 /// - Self-contained (reads from providers internally)
 ///
-/// Design Updates (Phase 2):
-/// - borderRadius: 12px (not AppRadius.card which is 16px)
-/// - border width: 1.5px (not 1px)
-/// - Header padding: 14px horizontal, 12px vertical
-/// - Icon before text: 16px (check_circle for full match, info_outline for partial)
-/// - Chevron: 24px
-/// - Expanded content: Wrap with chips (not Column with rows)
-/// - Chip gap: 5px horizontal and vertical
-/// - Chip padding: 3px vertical, 8px horizontal
-/// - Chip font: 11px, w600
-/// - Chip icons: 16px
-/// - Matched chip: green text/icons, #d0ecd8 border
-/// - Missed chip: red text/icons, #f5d5d2 border
+/// Design (matches JSX lines 190-234):
+/// - borderRadius: AppRadius.input (12px)
+/// - border width: 1.5px
+/// - Header padding: AppSpacing.mlg horizontal, AppSpacing.md vertical
+/// - Header icon: AppIconSize.md (16px), check_circle / info_outline
+/// - Header text: AppTypography.viewToggle w600, AppColors.textPrimary
+/// - Chevron: AppIconSize.sm (12px), AppColors.textMuted
+/// - Expanded: Wrap with AppSpacing.xs gap
+/// - Chip padding: AppSpacing.xs vertical, AppSpacing.sm horizontal
+/// - Chip borderRadius: AppRadius.chip (8px)
+/// - Chip font: AppTypography.chip (12.5px, matched w600, missed w500)
+/// - Chip icons: AppIconSize.xs (8px), gap AppSpacing.xs
+/// - Matched chip: green text/icons, AppColors.greenBorder
+/// - Missed chip: red text/icons, AppColors.redBorder
 class MatchCardWidget extends ConsumerStatefulWidget {
   const MatchCardWidget({super.key});
 
@@ -135,14 +140,34 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
     required List<Map<String, dynamic>> matchedFilters,
     required List<Map<String, dynamic>> missedFilters,
   }) {
-    // Determine if full match (all filters matched)
+    // Determine match state: full match, partial match, or no match
     final isFullMatch = matchedCount == totalCount && totalCount > 0;
+    final isNoMatch = matchedCount == 0;
 
-    // Conditional styling
-    final backgroundColor = isFullMatch ? AppColors.greenBg : AppColors.orangeBg;
-    final borderColor = isFullMatch ? AppColors.greenBorder : AppColors.orangeBorder;
-    final primaryColor = isFullMatch ? AppColors.green : AppColors.accent;
-    final icon = isFullMatch ? Icons.check_circle : Icons.info_outline;
+    // Conditional styling based on match state
+    final backgroundColor = isFullMatch
+        ? AppColors.greenBg
+        : isNoMatch
+            ? AppColors.redBg
+            : AppColors.orangeBg;
+
+    final borderColor = isFullMatch
+        ? AppColors.greenBorder
+        : isNoMatch
+            ? AppColors.redBorder
+            : AppColors.orangeBorder;
+
+    final primaryColor = isFullMatch
+        ? AppColors.green
+        : isNoMatch
+            ? AppColors.red
+            : AppColors.accent;
+
+    final icon = isFullMatch
+        ? Icons.check_circle
+        : isNoMatch
+            ? Icons.error_outline
+            : Icons.info_outline;
 
     return GestureDetector(
       onTap: _toggleExpanded,
@@ -151,14 +176,14 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(color: borderColor, width: 1.5),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.input),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header: Icon + Match count + Chevron
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.mlg, vertical: AppSpacing.md),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -167,17 +192,18 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
                       children: [
                         Icon(
                           icon,
-                          size: 16,
+                          size: AppIconSize.md,
                           color: primaryColor,
                         ),
-                        const SizedBox(width: 6),
+                        SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
                             td(ref, 'match_card_matches')
                                 .replaceAll('{count}', matchedCount.toString())
                                 .replaceAll('{total}', totalCount.toString()),
-                            style: AppTypography.sectionHeading.copyWith(
-                              color: primaryColor,
+                            style: AppTypography.viewToggle.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ),
@@ -186,12 +212,12 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
                   ),
                   // Animated chevron icon
                   AnimatedRotation(
-                    turns: _isExpanded ? 0.5 : 0.0, // 0.5 turns = 180 degrees
+                    turns: _isExpanded ? 0.5 : 0.0,
                     duration: const Duration(milliseconds: 250),
                     child: Icon(
                       Icons.keyboard_arrow_down,
-                      color: primaryColor,
-                      size: 24,
+                      color: AppColors.textMuted,
+                      size: AppIconSize.sm,
                     ),
                   ),
                 ],
@@ -201,10 +227,10 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
             // Expanded content: filter chips in Wrap
             if (_isExpanded) ...[
               Padding(
-                padding: const EdgeInsets.only(left: 14, right: 14, bottom: 14),
+                padding: EdgeInsets.only(left: AppSpacing.mlg, right: AppSpacing.mlg, bottom: AppSpacing.mlg),
                 child: Wrap(
-                  spacing: 5,  // 5px horizontal gap between chips
-                  runSpacing: 5,  // 5px vertical gap between rows
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
                   children: [
                     // Matched filter chips
                     ...matchedFilters.map((filter) => _buildMatchedChip(filter)),
@@ -224,28 +250,27 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
   /// Build matched filter chip (green)
   Widget _buildMatchedChip(Map<String, dynamic> filter) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
-          color: AppColors.greenBorder,  // #d0ecd8
+          color: AppColors.greenBorder,
           width: 1,
         ),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppRadius.chip),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle,
-            size: 16,
+            size: AppIconSize.xs,
             color: AppColors.green,
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: AppSpacing.xs),
           Text(
             filter['filter_name'] ?? '',
             style: AppTypography.chip.copyWith(
-              fontSize: 11,
               color: AppColors.green,
             ),
           ),
@@ -257,28 +282,28 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
   /// Build missed filter chip (red)
   Widget _buildMissedChip(Map<String, dynamic> filter) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
-          color: const Color(0xFFF5D5D2),  // Light red border
+          color: AppColors.redBorder,
           width: 1,
         ),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppRadius.chip),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.close,  // X icon
-            size: 16,
+          Icon(
+            Icons.close,
+            size: AppIconSize.xs,
             color: AppColors.red,
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: AppSpacing.xs),
           Text(
             filter['filter_name'] ?? '',
             style: AppTypography.chip.copyWith(
-              fontSize: 11,
+              fontWeight: FontWeight.w500,
               color: AppColors.red,
             ),
           ),
@@ -326,6 +351,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
         'matched_count': matchedCount,
         'total_count': totalCount,
         'is_full_match': isFullMatch,
+        'is_no_match': matchedCount == 0,
       },
     )
         .catchError((e) {

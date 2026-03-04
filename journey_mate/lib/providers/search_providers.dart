@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'provider_state_classes.dart';
+import '../theme/app_constants.dart';
 
 // ============================================================
 // SEARCH STATE PROVIDER
@@ -118,6 +119,11 @@ class SearchStateNotifier extends Notifier<SearchState> {
       filtersUsedForSearch: [],
       clearNeighbourhoodId: true,
       clearShoppingAreaId: true,
+      clearResults: true,           // Triggers shimmer display
+      clearScoringFilterIds: true,  // Removes match sections
+      searchResultsCount: 0,        // Resets result count
+      visibleResultCount: 0,        // Resets visible count
+      fullMatchCount: 0,            // Resets full-match count
     );
   }
 
@@ -169,7 +175,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
   }
 
   /// Route filter IDs based on type, splitting them into the correct state fields:
-  /// - is_neighborhood == true → selectedNeighbourhoodId (API param, not in filters array)
+  /// - is_neighborhood == true OR in neighbourhood hierarchy → selectedNeighbourhoodId (API param, not in filters array)
   /// - id >= 20000 → selectedShoppingAreaId (API param, not in filters array)
   /// - id >= 10000 && < 20000 → dropped (train stations handled via selectedStation param)
   /// - everything else → filtersUsedForSearch
@@ -186,12 +192,25 @@ class SearchStateNotifier extends Notifier<SearchState> {
         continue;
       } else {
         final meta = filterLookup[id];
-        if (meta != null && meta['is_neighborhood'] == true) {
+        // Check both metadata flag AND hierarchy constants to identify neighbourhoods
+        // (parent neighbourhoods might not have is_neighborhood flag set in metadata)
+        final isNeighbourhoodByMeta = meta != null && meta['is_neighborhood'] == true;
+        final isNeighbourhoodByHierarchy =
+            AppConstants.kNeighborhoodHierarchy.containsKey(id) ||  // Parent neighbourhood
+            AppConstants.kNeighborhoodChildren.contains(id);         // Child neighbourhood
+
+        if (isNeighbourhoodByMeta || isNeighbourhoodByHierarchy) {
           neighbourhoodIds.add(id);
         } else {
           regularFilters.add(id);
         }
       }
+    }
+
+    // Special rule: If Frederiksberg (36) is selected, ensure Frederiksberg C (635) is included
+    if (neighbourhoodIds.contains(AppConstants.kFrederiksberg) &&
+        !neighbourhoodIds.contains(AppConstants.kFrederikbergC)) {
+      neighbourhoodIds.add(AppConstants.kFrederikbergC);
     }
 
     state = state.copyWithNullable(

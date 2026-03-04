@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../services/api_service.dart';
 import '../../../services/translation_service.dart';
 import '../../../theme/app_colors.dart';
@@ -182,9 +181,9 @@ class _MissingLocationFormWidgetState
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.xl,
+        AppSpacing.xl,
         bottomPadding,
       ),
       child: Column(
@@ -219,20 +218,12 @@ class _MissingLocationFormWidgetState
         const SizedBox(height: AppSpacing.sm),
         Text(
           td(ref, 'missing_location_subtitle_main_1'),
-          style: GoogleFonts.roboto(
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.subtitle,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           td(ref, 'missing_location_subtitle_main_2'),
-          style: GoogleFonts.roboto(
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.subtitle,
         ),
       ],
     );
@@ -266,11 +257,7 @@ class _MissingLocationFormWidgetState
         const SizedBox(height: AppSpacing.xs),
         Text(
           td(ref, 'missing_location_subtitle_business_address'),
-          style: GoogleFonts.roboto(
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.subtitle,
         ),
         const SizedBox(height: AppSpacing.sm),
         _buildTextField(
@@ -293,11 +280,7 @@ class _MissingLocationFormWidgetState
         const SizedBox(height: AppSpacing.xs),
         Text(
           td(ref, 'missing_location_subtitle_message'),
-          style: GoogleFonts.roboto(
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.subtitle,
         ),
         const SizedBox(height: AppSpacing.sm),
         _buildTextField(

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:map_launcher/map_launcher.dart';
 
+import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/app_typography.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../services/translation_service.dart';
@@ -39,12 +41,12 @@ class QuickActionsPillsWidget extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    // Extract business data
-    final phone = business['phone_number'] as String?;
-    final website = business['website'] as String?;
-    final bookingUrl = business['booking_url'] as String?;
-    final latitude = business['address']?['latitude'] as double?;
-    final longitude = business['address']?['longitude'] as double?;
+    // Extract business data (real API field names)
+    final phone = business['general_phone'] as String?;
+    final website = business['website_url'] as String?;
+    final bookingUrl = business['reservation_url'] as String?;
+    final latitude = (business['latitude'] as num?)?.toDouble();
+    final longitude = (business['longitude'] as num?)?.toDouble();
     final businessName = business['business_name'] as String?;
 
     // Build action pills (only show if data available)
@@ -121,13 +123,13 @@ class QuickActionsPillsWidget extends ConsumerWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.filter),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 8,
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.mlg,
+            vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
             border: Border.all(
-              color: const Color(0xFFE8E8E8),
+              color: AppColors.border,
               width: 1.5,
             ),
             borderRadius: BorderRadius.circular(AppRadius.filter),
@@ -138,16 +140,15 @@ class QuickActionsPillsWidget extends ConsumerWidget {
               Icon(
                 icon,
                 size: 14,
-                color: const Color(0xFF666666), // Dark gray icon
+                color: AppColors.textSecondary,
               ),
               SizedBox(width: AppSpacing.xsm),
               Text(
                 label,
-                style: const TextStyle(
+                style: AppTypography.chip.copyWith(
                   fontSize: 13,
-                  fontWeight: FontWeight.w500, // 520 → w500
-                  color: Color(0xFF444444), // Dark gray text
-                  height: 1.2,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
@@ -321,42 +322,165 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     try {
       final availableMaps = await MapLauncher.installedMaps;
 
+      if (!context.mounted) return;
+
       if (availableMaps.isEmpty) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(td(ref, 'error_no_map_app'))),
-          );
-        }
+        // Fallback: Use Apple Maps URL scheme (always works on iOS)
+        await _launchAppleMaps(context, ref, latitude, longitude, businessName);
+
+        // Track map tap
+        final analyticsState = ref.read(analyticsProvider);
+        ApiService.instance.postAnalytics(
+          eventType: 'business_map_tapped',
+          deviceId: analyticsState.deviceId,
+          sessionId: analyticsState.sessionId ?? '',
+          userId: '',
+          timestamp: DateTime.now().toIso8601String(),
+          eventData: {
+            'business_id': businessId ?? 0,
+            'latitude': latitude,
+            'longitude': longitude,
+            'map_app': 'apple_maps_fallback',
+          },
+        );
         return;
       }
 
-      // Use first available map (usually default map app)
-      await availableMaps.first.showMarker(
-        coords: Coords(latitude, longitude),
-        title: businessName,
-      );
+      // If multiple maps available, show picker dialog
+      if (availableMaps.length > 1) {
+        await _showMapPicker(
+          context,
+          ref,
+          availableMaps,
+          latitude,
+          longitude,
+          businessName,
+          businessId,
+        );
+      } else {
+        // Single map available, open it directly
+        await availableMaps.first.showMarker(
+          coords: Coords(latitude, longitude),
+          title: businessName,
+        );
 
-      // Track map tap
-      final analyticsState = ref.read(analyticsProvider);
-      ApiService.instance.postAnalytics(
-        eventType: 'business_map_tapped',
-        deviceId: analyticsState.deviceId,
-        sessionId: analyticsState.sessionId ?? '',
-        userId: '', // Anonymous user
-        timestamp: DateTime.now().toIso8601String(),
-        eventData: {
-          'business_id': businessId ?? 0,
-          'latitude': latitude,
-          'longitude': longitude,
-        },
-      );
-    } catch (e) {
-      debugPrint('❌ Error launching map: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(td(ref, 'error_cannot_open_map'))),
+        // Track map tap
+        final analyticsState = ref.read(analyticsProvider);
+        ApiService.instance.postAnalytics(
+          eventType: 'business_map_tapped',
+          deviceId: analyticsState.deviceId,
+          sessionId: analyticsState.sessionId ?? '',
+          userId: '',
+          timestamp: DateTime.now().toIso8601String(),
+          eventData: {
+            'business_id': businessId ?? 0,
+            'latitude': latitude,
+            'longitude': longitude,
+            'map_app': availableMaps.first.mapName,
+          },
         );
       }
+    } catch (e) {
+      debugPrint('❌ Error launching map: $e');
+      // Final fallback: Try Apple Maps
+      if (context.mounted) {
+        try {
+          await _launchAppleMaps(context, ref, latitude, longitude, businessName);
+        } catch (fallbackError) {
+          debugPrint('❌ Fallback to Apple Maps also failed: $fallbackError');
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(td(ref, 'error_cannot_open_map'))),
+            );
+          }
+        }
+      }
+    }
+  }
+
+  /// Show a picker dialog to let user choose which map app to use
+  Future<void> _showMapPicker(
+    BuildContext context,
+    WidgetRef ref,
+    List<AvailableMap> availableMaps,
+    double latitude,
+    double longitude,
+    String businessName,
+    int? businessId,
+  ) async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.card),
+        ),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: AppSpacing.mlg),
+            Text(
+              td(ref, 'choose_map_app'),
+              style: AppTypography.sectionHeading,
+            ),
+            SizedBox(height: AppSpacing.mlg),
+            ...availableMaps.map((map) {
+              return ListTile(
+                leading: Icon(Icons.map, color: AppColors.accent),
+                title: Text(
+                  map.mapName,
+                  style: AppTypography.bodyRegular,
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await map.showMarker(
+                    coords: Coords(latitude, longitude),
+                    title: businessName,
+                  );
+
+                  // Track map tap with chosen app
+                  final analyticsState = ref.read(analyticsProvider);
+                  ApiService.instance.postAnalytics(
+                    eventType: 'business_map_tapped',
+                    deviceId: analyticsState.deviceId,
+                    sessionId: analyticsState.sessionId ?? '',
+                    userId: '',
+                    timestamp: DateTime.now().toIso8601String(),
+                    eventData: {
+                      'business_id': businessId ?? 0,
+                      'latitude': latitude,
+                      'longitude': longitude,
+                      'map_app': map.mapName,
+                    },
+                  );
+                },
+              );
+            }),
+            SizedBox(height: AppSpacing.mlg),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Fallback method to launch Apple Maps (always available on iOS)
+  Future<void> _launchAppleMaps(
+    BuildContext context,
+    WidgetRef ref,
+    double latitude,
+    double longitude,
+    String businessName,
+  ) async {
+    final uri = Uri.parse(
+      'https://maps.apple.com/?q=${Uri.encodeComponent(businessName)}&ll=$latitude,$longitude',
+    );
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw Exception('Cannot launch Apple Maps');
     }
   }
 }

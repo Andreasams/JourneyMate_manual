@@ -386,7 +386,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.xxl,
+            horizontal: AppSpacing.xl,
             vertical: AppSpacing.huge,
           ),
           child: Column(

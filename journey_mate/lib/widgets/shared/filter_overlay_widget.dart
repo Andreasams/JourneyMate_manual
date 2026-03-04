@@ -10,6 +10,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/settings_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 
@@ -386,6 +387,18 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       if (widget.selectedFilterIds != null) {
         _selectedFilterIds.addAll(widget.selectedFilterIds!);
       }
+
+      // Re-add routed IDs (neighbourhood, shopping area) from provider
+      // This mirrors logic in _initializeStateFromProps (lines 321-331)
+      // Without this, neighbourhood IDs get orphaned during widget updates
+      final searchState = ref.read(searchStateProvider);
+      if (searchState.selectedNeighbourhoodId != null) {
+        _selectedFilterIds.addAll(searchState.selectedNeighbourhoodId!);
+        _selectedNeighborhoodIds = List<int>.from(searchState.selectedNeighbourhoodId!);
+      }
+      if (searchState.selectedShoppingAreaId != null) {
+        _selectedFilterIds.add(searchState.selectedShoppingAreaId!);
+      }
     }
   }
 
@@ -418,6 +431,17 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   List<dynamic> _getItems(int categoryId) {
     final items = _getItemsWithoutActiveFiltering(categoryId);
+
+    // Hide Frederiksberg C (635) - it's bundled with Frederiksberg (36)
+    // Hide child neighborhoods - they appear in column 3 when parent is selected
+    if (categoryId == _neighborhoodCategoryId) {
+      return items
+          .where((item) =>
+              item['id'] != AppConstants.kFrederikbergC &&
+              !AppConstants.kNeighborhoodChildren.contains(item['id']))
+          .toList();
+    }
+
     if (_selectedNeighborhoodIds.isEmpty) return items;
 
     if (categoryId == _shoppingAreaCategoryId) {
@@ -450,6 +474,16 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   List<dynamic> _getSubItems(int itemId) {
+    // Check if itemId is a parent neighborhood
+    if (AppConstants.kNeighborhoodHierarchy.containsKey(itemId)) {
+      final childIds = AppConstants.kNeighborhoodHierarchy[itemId]!;
+      final allNeighborhoods = _getItemsWithoutActiveFiltering(_neighborhoodCategoryId);
+      return allNeighborhoods
+          .where((item) => childIds.contains(item['id']))
+          .toList();
+    }
+
+    // Existing: Category 8 sub-items logic
     final filters = _extractFiltersArray();
 
     for (var title in (filters as List? ?? [])) {
@@ -593,6 +627,11 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   bool _hasActiveChildrenDuringEmptySearch(int parentId, String filterType) {
+    // Always show selected items as available during empty search
+    if (_selectedFilterIds.contains(parentId)) {
+      return true;
+    }
+
     if (filterType == 'category') {
       final items = _getItems(parentId);
       return items.any((item) {
@@ -616,10 +655,20 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         return items
             .any((item) => _hasActiveChildren(item['id'] as int, 'item'));
       case 'item':
+        // Always show selected items as available (prevent greying when no results)
+        // This ensures selected items remain visually active (orange checkbox/text) even if they return 0 results
+        if (_selectedFilterIds.contains(parentId)) {
+          return true;
+        }
+
         final subitems = _getSubItems(parentId);
         if (subitems.isNotEmpty) {
-          return subitems.any((subitem) =>
-              widget.activeFilterIds.contains(subitem['id'] as int));
+          // Check if any subitem is active OR selected
+          return subitems.any((subitem) {
+            final subitemId = subitem['id'] as int;
+            return widget.activeFilterIds.contains(subitemId) ||
+                   _selectedFilterIds.contains(subitemId);
+          });
         } else {
           final filter = _findFilterById(parentId);
           if (filter != null &&
@@ -629,6 +678,11 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           return widget.activeFilterIds.contains(parentId);
         }
       case 'sub_item':
+        // Always show selected subitems as available (prevent greying when no results)
+        // This ensures selected items remain visually active (orange checkbox/text) even if they return 0 results
+        if (_selectedFilterIds.contains(parentId)) {
+          return true;
+        }
         return widget.activeFilterIds.contains(parentId);
       default:
         return false;
@@ -677,6 +731,17 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   void _handleItemSelection(int itemId, bool hasSubitems) {
+    // Detect parent neighbourhood FIRST - route to neighbourhood handler
+    // This handles: selection + search trigger + column 3 opening + exclusive selection
+    final isParentNeighbourhood = AppConstants.kNeighborhoodHierarchy.containsKey(itemId);
+
+    if (isParentNeighbourhood) {
+      // Route to neighbourhood handler which has all the correct logic
+      _handleNeighborhoodSelection(itemId);
+      return;  // Early return prevents falling through to broken branches below
+    }
+
+    // Business Type parents (category 8) - searchable with subitems
     if (_isSearchableParentItem(itemId)) {
       final isCurrentlySelected = _selectedFilterIds.contains(itemId);
       final isColumnThreeShowing = selectedItemId == itemId;
@@ -761,19 +826,126 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   void _handleNeighborhoodSelection(int filterId) {
-    _toggleFilter(filterId);
-    if (_selectedFilterIds.contains(filterId)) {
-      _selectedNeighborhoodIds.add(filterId);
-      _currentSelectionType = FilterSelectionType.neighborhood;
+    final isParent = AppConstants.kNeighborhoodHierarchy.containsKey(filterId);
+    final isChild = AppConstants.kNeighborhoodChildren.contains(filterId);
 
-      // Notify parent that neighbourhood was selected
-      widget.onNeighbourhoodSelected?.call();
-    } else {
+    if (_selectedFilterIds.contains(filterId)) {
+      // DESELECTING
+      _selectedFilterIds.remove(filterId);
       _selectedNeighborhoodIds.remove(filterId);
+
+      // If deselecting a parent, also deselect all children
+      if (isParent) {
+        final childIds = AppConstants.kNeighborhoodHierarchy[filterId]!;
+        _selectedFilterIds.removeAll(childIds);
+        for (final childId in childIds) {
+          _selectedNeighborhoodIds.remove(childId);
+        }
+        // Close column 3
+        if (selectedItemId == filterId) {
+          selectedItemId = null;
+        }
+      }
+
+      // If deselecting a child, keep parent selected and revert to parent search
+      if (isChild) {
+        final parentId = _findParentForChild(filterId);
+        if (parentId != null) {
+          // Parent stays in _selectedFilterIds (for visual selection)
+          // Add parent back to _selectedNeighborhoodIds (revert to parent search)
+          if (!_selectedNeighborhoodIds.contains(parentId)) {
+            _selectedNeighborhoodIds.add(parentId);
+          }
+        }
+      }
+
+      // Frederiksberg special rule
+      if (filterId == AppConstants.kFrederiksberg) {
+        _selectedFilterIds.remove(AppConstants.kFrederikbergC);
+        _selectedNeighborhoodIds.remove(AppConstants.kFrederikbergC);
+      }
+
       if (_selectedNeighborhoodIds.isEmpty) {
         _currentSelectionType = FilterSelectionType.none;
       }
+    } else {
+      // SELECTING
+      // Clear all existing neighbourhoods first (exclusive selection)
+      // This ensures only one neighbourhood (or parent + child) can be active at a time
+      _removeConflictingFilters([_neighborhoodCategoryId]);
+      _selectedNeighborhoodIds.clear();
+
+      _selectedFilterIds.add(filterId);
+      _selectedNeighborhoodIds.add(filterId);
+      _currentSelectionType = FilterSelectionType.neighborhood;
+
+      // If selecting a parent, show column 3
+      if (isParent) {
+        selectedItemId = filterId;
+      }
+
+      // If selecting a child (refinement), ensure parent is visually selected
+      if (isChild) {
+        final parentId = _findParentForChild(filterId);
+        if (parentId != null) {
+          _selectedFilterIds.add(parentId);
+          // Remove parent from _selectedNeighborhoodIds (only child goes to API)
+          _selectedNeighborhoodIds.remove(parentId);
+        }
+      }
+
+      // Frederiksberg special rule
+      if (filterId == AppConstants.kFrederiksberg) {
+        if (!_selectedFilterIds.contains(AppConstants.kFrederikbergC)) {
+          _selectedFilterIds.add(AppConstants.kFrederikbergC);
+          _selectedNeighborhoodIds.add(AppConstants.kFrederikbergC);
+        }
+      }
+
+      widget.onNeighbourhoodSelected?.call();
     }
+
+    // Update provider state with search-only IDs (excluding visual-only parents)
+    final searchIds = _buildSearchFilterIds();
+    ref.read(searchStateProvider.notifier).setFiltersWithRouting(
+      searchIds,
+      _filterMap,
+    );
+
+    setState(() {});
+    _executeSearchAndTrackAnalytics();
+  }
+
+  /// Builds filter ID list for search, excluding visual-only neighborhood parents
+  List<int> _buildSearchFilterIds() {
+    final searchIds = <int>{};
+
+    for (final id in _selectedFilterIds) {
+      // For neighborhood parents: only include if no child is selected
+      if (AppConstants.kNeighborhoodHierarchy.containsKey(id)) {
+        final childIds = AppConstants.kNeighborhoodHierarchy[id]!;
+        final hasSelectedChild = childIds.any((childId) => _selectedFilterIds.contains(childId));
+        if (!hasSelectedChild) {
+          searchIds.add(id);
+        }
+        // If child is selected, parent is excluded (child will be added in its own iteration)
+      } else {
+        // Not a neighborhood parent - include normally
+        searchIds.add(id);
+      }
+    }
+
+    return searchIds.toList();
+  }
+
+  /// Helper method to find parent for a child ID
+  int? _findParentForChild(int childId) {
+    for (final entry in AppConstants.kNeighborhoodHierarchy.entries) {
+      if (entry.value.contains(childId)) {
+        return entry.key;
+      }
+    }
+    return null;
   }
 
   void _removeConflictingFilters(List<int> conflictingCategoryIds) {
@@ -868,11 +1040,18 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       final searchTerm = currentSearchState.currentSearchText;
       final languageCode = Localizations.localeOf(context).languageCode;
 
+      // Fetch user location for distance-based sorting
+      final position = await ref.read(locationProvider.notifier).getCurrentPosition();
+      final userLocationParam = position != null
+          ? 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})'
+          : null;
+
       final result = await ApiService.instance.search(
         searchInput: searchTerm,
         filters: currentSearchState.filtersUsedForSearch,
         cityId: AppConstants.kDefaultCityId.toString(),
         languageCode: languageCode,
+        userLocation: userLocationParam,
         selectedStation: trainStationId,
         neighbourhoodId: currentSearchState.selectedNeighbourhoodId,
         shoppingAreaId: currentSearchState.selectedShoppingAreaId,
@@ -1001,11 +1180,14 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   int? _currentCount() {
-    final hasActiveFilters = _selectedFilterIds.isNotEmpty;
+    // Match provider logic: check for active filters OR search term
+    final hasActiveFiltersOrSearch = _selectedFilterIds.isNotEmpty ||
+        (widget.searchTerm?.isNotEmpty ?? false);
     final hasScoringFilters = _currentScoringFilterIds.isNotEmpty;
 
-    // Use full match count when there are active filters AND scoring filters
-    if (hasActiveFilters && hasScoringFilters && _optimisticFullMatchCount != null) {
+    // Use full match count when there are active filters/search AND scoring filters
+    // (matches visibleResultCount logic in SearchStateNotifier)
+    if (hasActiveFiltersOrSearch && hasScoringFilters && _optimisticFullMatchCount != null) {
       return _optimisticFullMatchCount;
     }
 
@@ -1404,7 +1586,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       foregroundColor:
           WidgetStateProperty.all(shouldHighlight ? _whiteColor : _accentColor),
       padding:
-          WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 12)),
+          WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: AppSpacing.sm)),
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
@@ -1436,7 +1618,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       backgroundColor: WidgetStateProperty.all(_whiteColor),
       foregroundColor: WidgetStateProperty.all(_blackColor),
       padding:
-          WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 12)),
+          WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: AppSpacing.sm)),
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(

@@ -24,7 +24,15 @@ Map<int, int> calculateFilterCounts(
   // Deduplicate parent+child combos to prevent double-counting
   final deduplicatedFilters = _deduplicateParentChildCombos(activeFilters);
 
-  for (final filterId in deduplicatedFilters) {
+  // Filter out neighbourhood IDs since they're counted via extraLocationCount
+  // (neighbourhoods are routed to selectedNeighbourhoodId, not filtersUsedForSearch,
+  // but if any leak through, we must exclude them to prevent double-counting)
+  final nonNeighbourhoodFilters = deduplicatedFilters.where((filterId) {
+    final meta = filterLookupMap[filterId];
+    return meta == null || meta['is_neighborhood'] != true;
+  }).toList();
+
+  for (final filterId in nonNeighbourhoodFilters) {
     final titleId = _findTitleIdForFilter(filterId, filterLookupMap);
     if (titleId != null) {
       counts[titleId] = (counts[titleId] ?? 0) + 1;
@@ -68,6 +76,10 @@ int? _findTitleIdForFilter(int filterId, Map<int, dynamic> lookupMap) {
 /// NOTE: Parent-child relationships duplicated from selected_filters_btns.dart.
 /// If adding new relationships, update both files.
 ///
+/// IMPORTANT: For neighbourhoods, parent IDs should NOT be in activeFilters
+/// (they're routed to selectedNeighbourhoodId via setFiltersWithRouting).
+/// This deduplication is a safety net for non-neighbourhood parent-child combos.
+///
 /// Example: [56, 585] → [585] (Bakery + With seating → just 585)
 ///          [100, 196, 197] → [196, 197] (Sharing menu + 2 courses → just children)
 List<int> _deduplicateParentChildCombos(List<int> activeFilters) {
@@ -77,6 +89,11 @@ List<int> _deduplicateParentChildCombos(List<int> activeFilters) {
     55: [588],
     100: [196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207],
     101: [184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195],
+    // Neighborhood hierarchies (shouldn't appear in activeFilters, but kept for safety)
+    44: [41, 42, 34],
+    48: [35, 43],
+    37: [30],
+    31: [40],
   };
 
   final activeSet = activeFilters.toSet();

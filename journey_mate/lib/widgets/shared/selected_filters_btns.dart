@@ -4,6 +4,7 @@ import '../../providers/search_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/app_constants.dart';
 
 /// Displays selected filters as removable buttons with a "Clear All" action.
 ///
@@ -89,6 +90,11 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     55: [588],             // Food truck → [Other]
     100: [196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207], // Sharing menu → 12 courses
     101: [184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195], // Multi-course menu → 12 courses
+    // Neighborhood hierarchies
+    44: [41, 42, 34],      // Indre By → Kongens Nytorv, Nyhavn, Christianshavn
+    48: [35, 43],          // Amager → Islands Brygge, Ørestad
+    37: [30],              // Nordvest → Bispebjerg
+    31: [40],              // Vanløse → Grøndal
   };
 
   /// Children IDs from Bakery parent (use lowercase formatting)
@@ -264,7 +270,8 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     ];
 
     // Filter out parents when children are selected
-    final parentsToHide = _findParentsToHide(selectedFilterIds);
+    // Use allDisplayIds (not just selectedFilterIds) to include routed neighbourhoods
+    final parentsToHide = _findParentsToHide(allDisplayIds);
     final visibleDisplayIds = allDisplayIds.where((id) => !parentsToHide.contains(id)).toList();
 
     final selectedFilters = _flattenedFilters!
@@ -299,6 +306,27 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     final parentId = filter['parent_id'] as int?;
     final parentName = filter['parent_name'] as String?;
     final name = filter['name'] as String;
+
+    // Neighborhood children - use original capitalization with dash separator
+    // Example: "Indre By - Kongens Nytorv"
+    if (AppConstants.kNeighborhoodChildren.contains(filterId)) {
+      // Look up parent from relationships map to get correct parent name
+      final actualParentId = _findParentForChild(filterId);
+      if (actualParentId != null) {
+        final parentFilter = _flattenedFilters?.firstWhere(
+          (f) => f['id'] == actualParentId,
+          orElse: () => <String, dynamic>{},
+        );
+        final actualParentName = parentFilter?['name'] as String?;
+        if (actualParentName != null) {
+          return '$actualParentName - $name';
+        }
+      }
+      // Fallback to parentName from filter if available
+      if (parentName != null) {
+        return '$parentName - $name';
+      }
+    }
 
     // Check if this is a dietary composite (6-digit ID starting with 593-597)
     // BUT exclude 592 ("All") which should display normally
@@ -385,10 +413,52 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
   ///
   /// Updates filter state (toggles filter or clears routed ID) and invokes
   /// the [onFilterRemoved] callback to trigger a new search with remaining filters.
+  ///
+  /// For parent-child relationships:
+  /// - First tap on merged chip removes child (reverts to parent)
+  /// - Second tap removes parent
   void _handleFilterRemoval(int filterId) {
-    // Check if this is a routed ID (neighbourhood or shopping area)
     final searchState = ref.read(searchStateProvider);
     final notifier = ref.read(searchStateProvider.notifier);
+
+    // Check if this is a child in a parent-child relationship
+    final parentId = _findParentForChild(filterId);
+
+    if (parentId != null) {
+      // This is a child - check if parent is also selected (merged chip scenario)
+      final allSelectedIds = [
+        ...searchState.filtersUsedForSearch,
+        ...?searchState.selectedNeighbourhoodId,
+      ];
+
+      if (allSelectedIds.contains(parentId)) {
+        // FIRST TAP: Remove child, keep parent
+        // The filter overlay widget handles this - just remove the child
+        notifier.toggleFilter(filterId);
+        widget.onFilterRemoved?.call(filterId);
+        return;
+      }
+    }
+
+    // Check if this is a parent with children selected
+    final childIds = _parentChildRelationships[filterId];
+    if (childIds != null) {
+      final allSelectedIds = [
+        ...searchState.filtersUsedForSearch,
+        ...?searchState.selectedNeighbourhoodId,
+      ];
+
+      final hasSelectedChild = childIds.any((id) => allSelectedIds.contains(id));
+      if (hasSelectedChild) {
+        // This shouldn't happen (chip shows child, not parent)
+        // But handle gracefully: remove all children and parent
+        for (final childId in childIds) {
+          notifier.toggleFilter(childId);
+        }
+      }
+    }
+
+    // Default removal logic (existing)
     final isRoutedNeighbourhood = searchState.selectedNeighbourhoodId?.contains(filterId) ?? false;
     final isRoutedShoppingArea = searchState.selectedShoppingAreaId == filterId;
 
@@ -405,6 +475,16 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
 
     // Delegate search execution to the parent (stays mounted)
     widget.onFilterRemoved?.call(filterId);
+  }
+
+  /// Helper method to find parent for a child ID
+  int? _findParentForChild(int childId) {
+    for (final entry in _parentChildRelationships.entries) {
+      if (entry.value.contains(childId)) {
+        return entry.key;
+      }
+    }
+    return null;
   }
 
   /// Handles "Clear All" — clears state and delegates search to parent.

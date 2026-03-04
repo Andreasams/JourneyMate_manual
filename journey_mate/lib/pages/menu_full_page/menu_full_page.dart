@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
@@ -151,9 +152,52 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
       );
     }
 
+    // Extract last reviewed date
+    final lastReviewedAt = business?['last_reviewed_at']?.toString() ?? '';
+    final language = Localizations.localeOf(context).languageCode;
+
     // Data available - build 3-widget stack
     return Column(
       children: [
+        // ── Menu heading + Last updated ──
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.md,
+            AppSpacing.xl,
+            AppSpacing.sm,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                td(ref, 'menu_heading'),
+                style: AppTypography.sectionHeading,
+              ),
+              if (lastReviewedAt.isNotEmpty)
+                Row(
+                  children: [
+                    Text(
+                      td(ref, 'menu_last_updated_prefix'),
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: FontWeight.w300,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    Text(
+                      _formatLocalizedDate(lastReviewedAt, language),
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: FontWeight.w300,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+
         // Widget 1: Unified Filters (Dietary filtering)
         UnifiedFiltersWidget(
           businessId: int.parse(widget.businessId),
@@ -329,5 +373,31 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
     return businessState.selectedDietaryPreferenceId != null ||
         businessState.selectedDietaryRestrictionIds.isNotEmpty ||
         businessState.excludedAllergyIds.isNotEmpty;
+  }
+
+  /// Formats an ISO date string to a short localized date
+  ///
+  /// Supports all 15 languages with automatic locale-specific formatting:
+  /// - English (en): "Feb 22, 2026"
+  /// - Danish (da): "22. feb. 2026"
+  /// - Japanese (ja): "2026年2月22日"
+  /// - Korean (ko): "2026. 2. 22."
+  /// - Chinese (zh): "2026年2月22日"
+  /// - And 10 more European languages
+  String _formatLocalizedDate(String isoDate, String languageCode) {
+    if (isoDate.isEmpty) return '';
+    try {
+      final date = DateTime.parse(isoDate);
+      try {
+        // Use language code directly - intl package supports all 15 languages
+        return DateFormat.yMMMd(languageCode).format(date);
+      } catch (e) {
+        // Fallback to English if locale not supported
+        return DateFormat.yMMMd('en').format(date);
+      }
+    } catch (e) {
+      // Could not parse date at all
+      return isoDate;
+    }
   }
 }

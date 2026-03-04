@@ -164,7 +164,7 @@ class _BusinessInformationPageState
     if (business == null) {
       return Center(
         child: Text(
-          'No business data',
+          td(ref, 'no_business_data'),
           style: AppTypography.bodyRegular.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -205,7 +205,7 @@ class _BusinessInformationPageState
           color: AppColors.bgInput,
           child: Center(
             child: Text(
-              'Map unavailable',
+              td(ref, 'map_unavailable'),
               style: AppTypography.bodyRegular.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -251,8 +251,8 @@ class _BusinessInformationPageState
 
     return Positioned(
       top: 168, // 200px map height - 32px overlay height
-      left: AppSpacing.md,
-      right: AppSpacing.md,
+      left: AppSpacing.xl,
+      right: AppSpacing.xl,
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(
@@ -270,7 +270,7 @@ class _BusinessInformationPageState
               // Business Name
               Text(
                 businessName,
-                style: AppTypography.sectionHeading.copyWith(fontSize: 20),
+                style: AppTypography.sectionHeading.copyWith(fontSize: 24),
               ),
               SizedBox(height: AppSpacing.xs),
 
@@ -280,8 +280,8 @@ class _BusinessInformationPageState
                   children: [
                     // Colored dot
                     Container(
-                      width: 12,
-                      height: 12,
+                      width: 6,
+                      height: 6,
                       decoration: BoxDecoration(
                         color: _statusColor ?? AppColors.error,
                         shape: BoxShape.circle,
@@ -316,8 +316,8 @@ class _BusinessInformationPageState
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         top: 250, // Map 200px + overlay 32px + gap 18px
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
         bottom: AppSpacing.xxl,
       ),
       child: Column(

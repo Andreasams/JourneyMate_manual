@@ -127,7 +127,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
     if (gallery == null) {
       return Center(
         child: Text(
-          'Loading gallery...',
+          td(ref, 'gallery_loading'),
           style: AppTypography.bodyRegular.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -136,7 +136,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
     }
 
     return Padding(
-      padding: EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
