@@ -24,7 +24,7 @@ Each scenario below provides:
 3. **ARCHITECTURE.md** → State Management → When to Use What (lines 147-155)
 4. **ARCHITECTURE.md** → State Management → Page-Local State (lines 239-285)
 5. **DESIGN_SYSTEM_flutter.md** → Quick Start (lines 16-36)
-6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13, #14, #20 (lines 1580-1593, 1625-1710, 1825-1880, 1881-1920, 2165-2207)
+6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13, #14, #20, #22 (lines 1580-1593, 1625-1710, 1825-1880, 1881-1920, 2165-2207, 2262-2317)
 7. **ARCHITECTURE.md** → Location Permission Pattern (lines 1216-1296) — if page needs location UI
 8. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 721-1068) — if page has dismissible UI elements
 
@@ -35,6 +35,7 @@ Each scenario below provides:
 - ⚠️ Save notifier with `ref.read()` BEFORE any `await` in pre-loading patterns
 - ⚠️ Use `enableLocation()` for user-facing "Enable Location" buttons (NOT `requestPermission()`)
 - ⚠️ For swipe gestures with tappable children: use `HitTestBehavior.translucent` (Pitfall #15)
+- ⚠️ **Navigation to full pages: use `context.push()` (NOT `context.go()`)** — go() clears navigation stack and breaks back button (Pitfall #22)
 
 **Reference files:**
 - `journey_mate/lib/pages/search/search_page.dart` — Full page pattern with local state + provider reads
@@ -52,7 +53,7 @@ Each scenario below provides:
 3. **DESIGN_SYSTEM_flutter.md** → Colors (lines 39-90)
 4. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 93-130)
 5. **DESIGN_SYSTEM_flutter.md** → Typography (lines 177-265)
-6. **ARCHITECTURE.md** → Common Pitfall #8, #13, #15, #16, #20 (lines 1580-1593, 1825-1880, 1921-1963, 1964-2014, 2165-2207)
+6. **ARCHITECTURE.md** → Common Pitfall #8, #13, #15, #16, #20, #23 (lines 1580-1593, 1825-1880, 1921-1963, 1964-2014, 2165-2207, 2318-2372)
 7. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 721-1068) — if widget has dismissible/swipeable UI
 
 **Critical warnings:**
@@ -61,6 +62,7 @@ Each scenario below provides:
 - ⚠️ All spacing from `AppSpacing` (no magic numbers: `16.0`)
 - ⚠️ All typography from `AppTypography` (no inline `TextStyle(...)`)
 - ⚠️ For swipe gestures: use adaptive thresholds (percentage, not fixed pixels) — see Pitfall #16
+- ⚠️ **For expand/collapse animations: use `AnimatedOpacity` (NOT `AnimatedSize`)** — AnimatedSize causes jankiness with complex children (Pitfall #23)
 
 **Reference files:**
 - `journey_mate/lib/pages/settings/widgets/contact_us_form_widget.dart` — Self-contained form widget
@@ -229,10 +231,11 @@ Each scenario below provides:
 5. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 467-513)
 6. **ARCHITECTURE.md** → Widget Patterns → Filter Coordination Pattern (lines 514-599)
 7. **ARCHITECTURE.md** → Widget Patterns → Parent-Child Filter Pattern (lines 600-720)
-8. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1136-1215)
-9. **ARCHITECTURE.md** → Common Pitfall #11, #13, #14, #18 (lines 1625-1710, 1825-1880, 1881-1920, 2060-2115)
-10. **ARCHITECTURE.md** → Location Permission Pattern (lines 1216-1296) — for search banner location UI
-11. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 721-1068) — for dismissible location banner
+8. **ARCHITECTURE.md** → Widget Patterns → Filter Exclusivity Pattern (lines 721-778)
+9. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1136-1215)
+10. **ARCHITECTURE.md** → Common Pitfall #11, #13, #14, #18, #24 (lines 1625-1710, 1825-1880, 1881-1920, 2060-2115, 2373-2504)
+11. **ARCHITECTURE.md** → Location Permission Pattern (lines 1216-1296) — for search banner location UI
+12. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 779-1126) — for dismissible location banner
 
 **Critical warnings:**
 - ⚠️ **SEARCH API v9 LIVE:** NO `filtersUsedForSearch` parameter (use `filters` only), NO `category` parameter (always returns all with `section` field), access new `fullMatchCount` output field
@@ -242,6 +245,8 @@ Each scenario below provides:
 - ⚠️ Filter panel is bottom sheet (NOT inline overlay) — tab selection is local state
 - ⚠️ **Cross-filter dependencies:** When filters have interdependencies (neighbourhood → station, shopping area → neighbourhood), use parent callbacks to auto-clear invalidated state (Filter Coordination Pattern prevents sort button showing unavailable station)
 - ⚠️ **Parent-child filters:** When parent+child both selected, deduplicate BEFORE titleId lookup to prevent double-counting (Pitfall #18). Hide parent chips AFTER routed ID inclusion to preserve neighbourhood/shopping area display. Bakery children use lowercase format ("Bakery with seating"), others use colon ("Café: In bookstore").
+- ⚠️ **Filter exclusivity:** Neighbourhoods, train stations, and shopping areas are mutually exclusive — call `_removeConflictingFilters()` BEFORE adding new selection (Filter Exclusivity Pattern). Without this, multiple location anchors can be active simultaneously, breaking search results.
+- ⚠️ **Filter state management:** Parent neighbourhoods need special routing logic (check `kNeighborhoodHierarchy` FIRST before `hasSubitems`). Widget updates must restore routed IDs (neighbourhoods, shopping areas) to prevent orphaned state (Pitfall #24).
 - ⚠️ Match categorization handled by BuildShip via `section` field (`"fullMatch"`, `"partialMatch"`, `"others"`) — Flutter renders section headers when value changes
 - ⚠️ Filter overlays that sync state on close: save notifier in `initState()`, use in `dispose()` (Pitfall #11 Variation B)
 - ⚠️ Collection callbacks: Use `Map<String, Object>{}` not `Map<String, dynamic>{}` in `orElse:` (Common Pitfall #13)
@@ -267,7 +272,8 @@ Each scenario below provides:
 3. **_reference/PROVIDERS_REFERENCE.md** → businessProvider (search for "businessProvider")
 4. **ARCHITECTURE.md** → API Service Pattern (lines 1069-1135)
 5. **ARCHITECTURE.md** → State Management → NotifierProvider (lines 149-174)
-6. **_reference/PROFILE_V2_GAP_ANALYSIS.md** → Actual API response structure (source of truth)
+6. **ARCHITECTURE.md** → Common Pitfall #22, #23 (lines 2262-2317, 2318-2372)
+7. **_reference/PROFILE_V2_GAP_ANALYSIS.md** → Actual API response structure (source of truth)
 
 **Critical warnings:**
 - ⚠️ **v2 is live** — Router serves `BusinessProfilePageV2` (Decision #15 in CLAUDE.md)
@@ -276,6 +282,8 @@ Each scenario below provides:
 - ⚠️ Menu items have dietary filters (vegan, vegetarian, gluten-free, lactose-free)
 - ⚠️ Opening hours are pre-computed `openWindows` arrays from BuildShip
 - ⚠️ Image gallery is categorized: `{ interior: [], food: [], outdoor: [], menu: [] }`
+- ⚠️ **Navigation to full pages (gallery/menu/info): use `context.push()` (NOT `context.go()`)** — go() breaks back button (Pitfall #22)
+- ⚠️ **Expandable sections: use `AnimatedOpacity` (NOT `AnimatedSize`)** — AnimatedSize causes jankiness (Pitfall #23)
 
 **Reference files:**
 - `journey_mate/lib/pages/business_profile/business_profile_page_v2.dart` — Business data display (v2, active)

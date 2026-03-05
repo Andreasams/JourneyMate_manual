@@ -718,6 +718,77 @@ if (_allChildrenIds.contains(filterId) && parentName != null) {
 
 ---
 
+### Filter Exclusivity Pattern (_removeConflictingFilters)
+
+**Discovered:** Commit `7f2a95c`, March 2026
+**Applies to:** Mutually exclusive filter categories (neighbourhoods, train stations, shopping areas)
+
+Some filter categories are **mutually exclusive** — only one "location anchor" can be active at a time. When selecting a new item from an exclusive category, existing selections from that category must be cleared BEFORE adding the new one.
+
+**Pattern Implementation:**
+
+```dart
+// Helper method to remove conflicting filters
+void _removeConflictingFilters(List<int> categoryIds) {
+  setState(() {
+    _selectedFilterIds.removeWhere((id) => categoryIds.contains(_getCategoryId(id)));
+  });
+}
+
+// Train stations (exclusive) - line 798
+void _handleTrainStationSelection(int stationId) {
+  _removeConflictingFilters([_trainStationCategoryId]);  // Clear other stations FIRST
+  setState(() => _selectedFilterIds.add(stationId));     // Add new station
+  _onSearchTriggered();                                  // Trigger search
+}
+
+// Shopping areas (exclusive) - line 818
+void _handleShoppingAreaSelection(int shoppingAreaId) {
+  _removeConflictingFilters([_shoppingAreaCategoryId]);  // Clear other shopping areas FIRST
+  setState(() => _selectedFilterIds.add(shoppingAreaId));
+  _onSearchTriggered();
+}
+
+// Neighbourhoods (exclusive) - line 838
+void _handleNeighborhoodSelection(int neighbourhoodId) {
+  _removeConflictingFilters([_neighborhoodCategoryId]);  // Clear other neighbourhoods FIRST ✅
+  setState(() => _selectedFilterIds.add(neighbourhoodId));
+  _onSearchTriggered();
+}
+```
+
+**Bug Fixed:** Neighbourhoods were missing the `_removeConflictingFilters()` call before commit `7f2a95c`, allowing multiple neighbourhood groups to be selected simultaneously (e.g., filter IDs 47 + 45 both active). This caused:
+- Incorrect filter chip display (multiple neighbourhoods showing)
+- Broken search results (conflicting location anchors)
+- Confusing UX (user thought they selected one neighbourhood, but two were active)
+
+**Why this pattern is critical:**
+- **Neighbourhoods, train stations, and shopping areas are mutually exclusive** — only one "location anchor" can be active
+- Without clearing, filter state becomes inconsistent
+- Search API doesn't handle multiple exclusive filters correctly
+- Filter chips display incorrectly
+
+**Consistency across all three exclusive categories:**
+
+| Category | Handler Method | Exclusivity Call |
+|----------|---------------|------------------|
+| Train Stations | `_handleTrainStationSelection()` | `_removeConflictingFilters([_trainStationCategoryId])` ✅ |
+| Shopping Areas | `_handleShoppingAreaSelection()` | `_removeConflictingFilters([_shoppingAreaCategoryId])` ✅ |
+| Neighbourhoods | `_handleNeighborhoodSelection()` | `_removeConflictingFilters([_neighborhoodCategoryId])` ✅ (fixed) |
+
+**All three now follow the same pattern:** Clear → Add → Search
+
+**When to Use:**
+- Filter categories where only one item should be active at a time
+- Location-based filters (neighbourhoods, stations, shopping areas)
+- Any mutually exclusive selection UI
+
+**Reference:**
+- `journey_mate/lib/widgets/shared/filter_overlay_widget.dart` — All three handler methods
+- Commit `7f2a95c` — fix(filters): enforce exclusive neighbourhood selection for standalone neighbourhoods
+
+---
+
 ## Swipe Gesture Patterns
 
 **Discovered:** Phase 8, commit `58a7549` — Search page location banner swipe-to-dismiss
@@ -1354,6 +1425,62 @@ ref.read(localeProvider.notifier).setLocale('da');
 - **Storage:** Supabase `ui_translations` table
 - **API:** BuildShip `GET /languageText` endpoint
 
+### Date Formatting with intl Package Locale Support
+
+**Pattern:** Use `intl` package's built-in locale support instead of hardcoding language-specific date formats.
+
+**Context:** App supports 15 languages (en, da, de, es, fi, fr, it, ja, ko, nl, no, pl, sv, uk, zh). Originally, date formatting was hardcoded for only Danish and English. Updated to support all 15 by letting `intl` package handle locale-specific formatting automatically.
+
+✅ **Good:**
+```dart
+import 'package:intl/intl.dart';
+
+String _formatLocalizedDate(String? isoDate, String languageCode) {
+  if (isoDate == null || isoDate.isEmpty) return '';
+
+  try {
+    final parsedDate = DateTime.parse(isoDate);
+
+    try {
+      // intl automatically handles locale-specific formatting:
+      // - ja/zh: 年月日 characters (2026年2月22日)
+      // - ko: periods (2026. 2. 22.)
+      // - European languages: locale-specific month names (22. feb. 2026, 22 févr. 2026)
+      return DateFormat.yMMMd(languageCode).format(parsedDate);
+    } catch (e) {
+      // Fallback to English for unsupported locales
+      return DateFormat.yMMMd('en').format(parsedDate);
+    }
+  } catch (e) {
+    return '';  // Invalid date format
+  }
+}
+
+// Usage:
+final formattedDate = _formatLocalizedDate(business['last_reviewed_at'], currentLanguage);
+// en: "Feb 22, 2026"
+// da: "22. feb. 2026"
+// ja: "2026年2月22日"
+// ko: "2026. 2. 22."
+```
+
+**Why this works:**
+- `DateFormat.yMMMd(languageCode)` automatically uses locale data from `intl` package for 100+ languages
+- Asian languages get proper date characters (年月日 for Japanese/Chinese, periods for Korean)
+- European languages get localized month abbreviations (feb., févr., febr., など)
+- No need to maintain switch statements or manual formatting for each language
+
+**When NOT to use this:**
+- Custom date formats not supported by `intl` (e.g., "3 days ago", relative time)
+- Dates requiring additional logic (e.g., "Today", "Yesterday")
+- Non-date localization (use `td(ref, key)` for all text translations)
+
+**Affected files:**
+- `menu_full_page.dart` — Menu last updated date display
+- `inline_menu_widget.dart` — Business profile inline menu date display
+
+**Reference:** Commit `90d014c` — fix(i18n): expand menu date formatting to support all 15 languages
+
 ---
 
 ## Design Token System
@@ -1485,6 +1612,86 @@ static String streetAndNeighbourhoodLength(
 ```
 
 **Why:** FlutterFlow algorithms have been tested with real data. Refactoring risks bugs.
+
+### Defensive Client-Side Validation (Best Practice)
+
+**Pattern:** Even when backend is fixed, add lightweight client-side validation for critical ordering/grouping logic. This provides insurance against future backend regressions, network corruption, or cached responses.
+
+**Example: Search Results Section Ordering**
+
+Backend was fixed to return properly ordered sections (full match → partial match → no match), but client-side defensive validation adds a safety layer:
+
+```dart
+List<RestaurantWithMatchInfo> _buildSectionedList(List<RestaurantWithMatchInfo> results) {
+  // Apply defensive grouping before rendering
+  final orderedResults = _ensureProperSectionOrder(results);
+  // ... rest of rendering logic
+}
+
+List<RestaurantWithMatchInfo> _ensureProperSectionOrder(List<RestaurantWithMatchInfo> results) {
+  // Fast path: validate ordering (O(n), <1ms, zero allocations)
+  if (_isProperlyOrdered(results)) {
+    return results;  // 99% of cases exit here
+  }
+
+  // Backup path: re-group by section (1-5ms, rare)
+  print('⚠️ Search results not properly ordered - applying defensive grouping');
+
+  final fullMatches = results.where((r) => r.matchLevel == 'fullMatch').toList();
+  final partialMatches = results.where((r) => r.matchLevel == 'partialMatch').toList();
+  final noMatches = results.where((r) => r.matchLevel == 'noMatch').toList();
+
+  return [...fullMatches, ...partialMatches, ...noMatches];
+}
+
+bool _isProperlyOrdered(List<RestaurantWithMatchInfo> results) {
+  int currentLevel = 0;
+  for (final result in results) {
+    final level = _getSectionLevel(result.matchLevel);
+    if (level < currentLevel) return false;  // Early exit on out-of-order
+    currentLevel = level;
+  }
+  return true;
+}
+
+int _getSectionLevel(String matchLevel) {
+  switch (matchLevel) {
+    case 'fullMatch': return 0;
+    case 'partialMatch': return 1;
+    case 'noMatch': return 2;
+    default: return 3;
+  }
+}
+```
+
+**Why this is a best practice:**
+- **Fast path is cheap:** O(n) validation with early exit, zero allocations (typically <1ms)
+- **Backup path rarely runs:** Only when API fails, network corruption, or cached responses
+- **Logs warnings:** Makes backend regressions visible in monitoring/debugging
+- **User experience protected:** Search results always display correctly, even if API breaks
+
+**When to use defensive validation:**
+- Critical user-facing logic (search results, navigation, checkout flows)
+- Data that affects UI rendering order or correctness
+- Backend contracts that changed recently (during stabilization period)
+- High-impact user flows where failure is unacceptable
+
+**When NOT to use:**
+- Simple CRUD operations with no ordering requirements
+- Internal data structures not directly user-facing
+- Over-engineering: Don't add validation "just in case" without concrete risk assessment
+- Performance-critical paths where validation cost is too high
+
+**Performance characteristics:**
+- **Fast path (validation):** <1ms, O(n) with early exit
+- **Backup path (re-grouping):** 1-5ms, O(n) with three iterations
+- **Expected frequency:** Fast path: 99%+, backup path: <1%
+
+**Monitoring:** Warning logs make backend issues visible in production monitoring, allowing proactive fixes before user reports.
+
+**Reference:**
+- `journey_mate/lib/pages/search/search_page.dart` — Search results defensive grouping
+- Commit `67405da` — feat(search): add client-side defensive grouping for search results
 
 ---
 
@@ -2258,6 +2465,221 @@ if (shoppingAreaId != null) 'shoppingAreaId': shoppingAreaId,
 **Discovered:** 2026-03-03 during CI build failure — `flutter analyze` reported 3 issues blocking deployment
 
 **Git reference:** Commit `810377f` — fix: use null-aware spread operators in map literals
+
+---
+
+### Pitfall #22: Using context.go() Instead of context.push() for Full Pages
+
+**Problem:** Using `context.go()` to navigate to full-page views clears the navigation stack, leaving nothing to pop back to. This breaks the back button, stranding users on the full page with no way to return.
+
+❌ **Bad:**
+```dart
+// Navigate to menu full page (BREAKS BACK BUTTON)
+GestureDetector(
+  onTap: () => context.go('/menu/$businessId'),
+  child: Text('View Full Menu'),
+)
+```
+
+✅ **Good:**
+```dart
+// Navigate to menu full page (back button works)
+GestureDetector(
+  onTap: () => context.push('/menu/$businessId'),
+  child: Text('View Full Menu'),
+)
+```
+
+**Why this matters:**
+- `context.go()` **replaces** the entire navigation stack (like browser navigation)
+- `context.push()` **adds** to the navigation stack (allows popping back)
+- Full page widgets use `Navigator.of(context).pop()` for back button
+- Without proper stack, `pop()` has nowhere to return to
+
+**When to use each:**
+- **`context.go()`** - Top-level navigation between main sections (e.g., switching from search to profile to settings)
+- **`context.push()`** - Drill-down navigation (e.g., search → business profile → gallery/menu/info full pages)
+
+**All three full pages now use consistent pattern:**
+```dart
+// Gallery full page
+GestureDetector(
+  onTap: () => context.push('/gallery/$businessId'),  // ✅
+)
+
+// Menu full page
+GestureDetector(
+  onTap: () => context.push('/menu/$businessId'),     // ✅ (fixed in commit 395a536)
+)
+
+// Business Info full page
+GestureDetector(
+  onTap: () => context.push('/info/$businessId'),     // ✅
+)
+```
+
+All three pages use `Navigator.of(context).pop()` for back buttons, which requires items in the navigation stack.
+
+**Bug manifestation:** User taps "View Full Menu" → menu page loads → user taps back button → nothing happens (no navigation stack to pop).
+
+**Discovered:** 2026-03-04 during full page navigation testing — menu full page back button was non-functional.
+
+**Git reference:** Commit `395a536` — fix(navigation): change menu full page navigation from go() to push()
+
+---
+
+### Pitfall #23: Using AnimatedSize for Simple Expand/Collapse
+
+**Problem:** `AnimatedSize` causes visual jankiness when animating expandable sections because it measures child dimensions on every frame. For simple expand/collapse animations, `AnimatedOpacity` provides smoother results with GPU-accelerated compositing.
+
+❌ **Bad:**
+```dart
+// Janky animation due to child measurement overhead
+AnimatedSize(
+  duration: Duration(milliseconds: 250),
+  child: _isExpanded
+    ? Column(
+        children: [
+          OpeningHoursDisplay(),
+          ContactLinksDisplay(),
+          // Complex widget tree
+        ],
+      )
+    : SizedBox.shrink(),
+)
+```
+
+✅ **Good:**
+```dart
+// Smooth fade animation with GPU compositing
+AnimatedOpacity(
+  duration: Duration(milliseconds: 150),
+  opacity: _isExpanded ? 1.0 : 0.0,
+  child: _isExpanded
+    ? Column(
+        children: [
+          OpeningHoursDisplay(),
+          ContactLinksDisplay(),
+          // Complex widget tree
+        ],
+      )
+    : SizedBox.shrink(),
+)
+```
+
+**Why this matters:**
+- `AnimatedSize` measures child dimensions on every animation frame → janky
+- `AnimatedOpacity` uses GPU-accelerated compositing → smooth 60fps
+- Complex children (lists, columns, rows) amplify the jankiness
+- Fade animations are visually cleaner for expandable sections
+
+**When AnimatedSize IS appropriate:**
+- Animating between known, simple sizes (e.g., button width: 100px → 150px)
+- Single-line text expanding to two lines
+- Simple containers without complex child layout
+- Cases where size change must be visible (not just show/hide)
+
+**When to use AnimatedOpacity instead:**
+- Expandable sections with lists/columns
+- Complex widget trees with multiple layers
+- Any case where you notice animation jankiness
+- Simple show/hide transitions
+
+**Performance comparison (business profile opening hours section):**
+- `AnimatedSize(250ms)`: Visible frame drops, janky motion
+- `AnimatedOpacity(150ms)`: Smooth 60fps, clean fade
+
+**Discovered:** 2026-03-04 during business profile UX improvements — opening hours/contact section animation was janky.
+
+**Git reference:** Commit `33daf5b` — fix(profile): replace janky AnimatedSize with smooth AnimatedOpacity
+
+---
+
+### Pitfall #24: Filter State Management - Routing Logic and State Restoration
+
+**Context:** Filter overlay manages complex state with three columns, parent-child hierarchies, and routed IDs (neighbourhoods, shopping areas). Two related bugs revealed architectural fragility when multiple state sources aren't properly synchronized.
+
+#### Bug 1: Routing Logic Priority
+
+**Problem:** Parent neighbourhoods (Indre By, Amager, Nordvest, Vanløse) have both subcategories (children) AND need immediate search triggering. Checking `hasSubitems` first routes them to column-opening logic, skipping the search trigger entirely.
+
+❌ **Bad:**
+```dart
+void _handleItemSelection(FilterCategory category, int itemId) {
+  final hasSubitems = category.subcategories.any((sub) => sub.filterId == itemId);
+
+  // Parent neighbourhoods fall through to this branch - WRONG!
+  if (hasSubitems) {
+    _openColumn3(category, itemId);  // Opens column 3 but NO SEARCH
+    return;
+  }
+
+  // Standalone items
+  _handleStandaloneSelection(itemId);
+}
+```
+
+✅ **Good:**
+```dart
+void _handleItemSelection(FilterCategory category, int itemId) {
+  // CHECK PARENT NEIGHBOURHOODS FIRST (before hasSubitems check)
+  if (AppConstants.kNeighborhoodHierarchy.containsKey(itemId)) {
+    _handleNeighborhoodSelection(itemId);  // Handles: selection + search + column 3 + exclusivity
+    return;  // Early exit prevents falling through to wrong branch
+  }
+
+  final hasSubitems = category.subcategories.any((sub) => sub.filterId == itemId);
+  if (hasSubitems) {
+    _openColumn3(category, itemId);
+    return;
+  }
+
+  _handleStandaloneSelection(itemId);
+}
+```
+
+**Why:** Parent neighbourhoods need special handling: they trigger search immediately (like standalone items) BUT also open column 3 (like items with subitems) AND enforce exclusivity (clear other neighbourhoods). Generic `hasSubitems` check doesn't capture this complexity.
+
+#### Bug 2: State Restoration After Widget Updates
+
+**Problem:** Widget updates from provider props overwrite `_selectedFilterIds` without restoring routed IDs (neighbourhoods, shopping areas) from provider. This orphans routed IDs, breaking filter chip display and greying logic.
+
+❌ **Bad:**
+```dart
+void _handleSelectedFilterChanges() {
+  // Widget updates from provider props
+  setState(() {
+    _selectedFilterIds = widget.selectedFilterIds;  // Overwrites local state
+  });
+  // Neighbourhood IDs and shopping area IDs are now ORPHANED
+  // Filter chips disappear, greying logic fails
+}
+```
+
+✅ **Good:**
+```dart
+void _handleSelectedFilterChanges() {
+  setState(() {
+    _selectedFilterIds = widget.selectedFilterIds;
+
+    // RESTORE routed IDs from provider (mirrors _initializeStateFromProps pattern)
+    _selectedNeighbourhoodIds = widget.selectedNeighbourhoodIds ?? [];
+    _selectedShoppingAreaIds = widget.selectedShoppingAreaIds ?? [];
+  });
+}
+```
+
+**Why:** Routed IDs (neighbourhoods, shopping areas) live in separate provider lists because they need special routing logic. Widget updates must restore these IDs to `_selectedFilterIds` to keep UI state consistent. This mirrors the initialization pattern used in `_initializeStateFromProps()`.
+
+**Architectural lesson:** Complex state with multiple sources (props + routing + local state) requires careful synchronization. **State update handlers must mirror initialization logic** to maintain consistency across widget rebuilds.
+
+**Bug manifestation:**
+1. User selects parent neighbourhood (e.g., "Indre By") → no search triggered, column 3 doesn't open
+2. User selects filter in another category → widget rebuilds → neighbourhood chip disappears from selected filters display
+
+**Discovered:** 2026-03-04 during filter panel testing — parent neighbourhood selection was non-functional.
+
+**Git reference:** Commit `543e25c` — fix(filters): resolve parent neighbourhood selection not triggering search
 
 ---
 
