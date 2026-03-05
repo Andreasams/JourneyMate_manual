@@ -55,6 +55,23 @@ Read these documents IN ORDER at the start of every session:
 
 ---
 
+## Code Development Process
+
+**Follow systematic workflow when writing code:**
+
+See **CODE_DEVELOPMENT_WORKFLOW.md** for complete development process including:
+- **Pre-development:** Use NAVIGATION_GUIDE.md to find which docs to read for your task
+- **Development:** Follow patterns from ARCHITECTURE.md while writing code
+- **Pre-commit validation:** Systematic review against checklist and pitfalls
+
+**Quick reference:**
+1. Before coding → NAVIGATION_GUIDE.md (find your scenario)
+2. During coding → Follow ARCHITECTURE.md patterns
+3. Before commit → ARCHITECTURE.md → Code Review Checklist (lines 1698-1778)
+4. Validate against → ARCHITECTURE.md → Common Pitfalls (lines 1778-2780)
+
+---
+
 ## Architectural Patterns
 
 **For all code patterns, see ARCHITECTURE.md:**

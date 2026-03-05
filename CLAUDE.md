@@ -45,6 +45,7 @@
 4. **NAVIGATION_GUIDE.md** — Which task scenarios are affected by documentation changes
 
 **Optional (task-specific):**
+- **CODE_DEVELOPMENT_WORKFLOW.md** — When documenting workflow or process changes
 - **DESIGN_SYSTEM_flutter.md** — When documenting design token changes
 - **_reference/BUILDSHIP_API_REFERENCE.md** — When documenting API changes
 - **_reference/PROVIDERS_REFERENCE.md** — When documenting state management changes

@@ -2869,6 +2869,7 @@ Providers MUST initialize in this exact order at app startup:
 
 ## References
 
+- **Development Process:** `CODE_DEVELOPMENT_WORKFLOW.md` (systematic workflow for writing code)
 - **API Contracts:** `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines, 12 endpoints)
 - **Provider Catalog:** `_reference/PROVIDERS_REFERENCE.md` (797 lines, 8 providers)
 - **Design Tokens:** `DESIGN_SYSTEM_flutter.md` (819 lines, colors/spacing/typography)
