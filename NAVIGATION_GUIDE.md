@@ -24,7 +24,7 @@ Each scenario below provides:
 3. **ARCHITECTURE.md** → State Management → When to Use What (lines 147-155)
 4. **ARCHITECTURE.md** → State Management → Page-Local State (lines 239-285)
 5. **DESIGN_SYSTEM_flutter.md** → Quick Start (lines 16-36)
-6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13, #14, #20, #22 (lines 1580-1593, 1625-1710, 1825-1880, 1881-1920, 2165-2207, 2262-2317)
+6. **ARCHITECTURE.md** → Common Pitfalls #8, #11, #13, #14, #20, #22 (lines 1580-1593, 1625-1710, 1825-1880, 1881-1920, 2165-2207, 2471-2530)
 7. **ARCHITECTURE.md** → Location Permission Pattern (lines 1216-1296) — if page needs location UI
 8. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 721-1068) — if page has dismissible UI elements
 
@@ -53,7 +53,7 @@ Each scenario below provides:
 3. **DESIGN_SYSTEM_flutter.md** → Colors (lines 39-90)
 4. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 93-130)
 5. **DESIGN_SYSTEM_flutter.md** → Typography (lines 177-265)
-6. **ARCHITECTURE.md** → Common Pitfall #8, #13, #15, #16, #20, #23 (lines 1580-1593, 1825-1880, 1921-1963, 1964-2014, 2165-2207, 2318-2372)
+6. **ARCHITECTURE.md** → Common Pitfall #8, #13, #15, #16, #20, #23 (lines 1580-1593, 1825-1880, 1921-1963, 1964-2014, 2165-2207, 2531-2597)
 7. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 721-1068) — if widget has dismissible/swipeable UI
 
 **Critical warnings:**
@@ -231,11 +231,11 @@ Each scenario below provides:
 5. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 467-513)
 6. **ARCHITECTURE.md** → Widget Patterns → Filter Coordination Pattern (lines 514-599)
 7. **ARCHITECTURE.md** → Widget Patterns → Parent-Child Filter Pattern (lines 600-720)
-8. **ARCHITECTURE.md** → Widget Patterns → Filter Exclusivity Pattern (lines 721-778)
+8. **ARCHITECTURE.md** → Widget Patterns → Filter Exclusivity Pattern (lines 721-791)
 9. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1136-1215)
-10. **ARCHITECTURE.md** → Common Pitfall #11, #13, #14, #18, #24 (lines 1625-1710, 1825-1880, 1881-1920, 2060-2115, 2373-2504)
+10. **ARCHITECTURE.md** → Common Pitfall #11, #13, #14, #18, #24 (lines 1625-1710, 1825-1880, 1881-1920, 2060-2115, 2598-2685)
 11. **ARCHITECTURE.md** → Location Permission Pattern (lines 1216-1296) — for search banner location UI
-12. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 779-1126) — for dismissible location banner
+12. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 792-1139) — for dismissible location banner
 
 **Critical warnings:**
 - ⚠️ **SEARCH API v9 LIVE:** NO `filtersUsedForSearch` parameter (use `filters` only), NO `category` parameter (always returns all with `section` field), access new `fullMatchCount` output field
@@ -272,7 +272,7 @@ Each scenario below provides:
 3. **_reference/PROVIDERS_REFERENCE.md** → businessProvider (search for "businessProvider")
 4. **ARCHITECTURE.md** → API Service Pattern (lines 1069-1135)
 5. **ARCHITECTURE.md** → State Management → NotifierProvider (lines 149-174)
-6. **ARCHITECTURE.md** → Common Pitfall #22, #23 (lines 2262-2317, 2318-2372)
+6. **ARCHITECTURE.md** → Common Pitfall #22, #23 (lines 2471-2530, 2531-2597)
 7. **_reference/PROFILE_V2_GAP_ANALYSIS.md** → Actual API response structure (source of truth)
 
 **Critical warnings:**
