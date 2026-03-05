@@ -84,20 +84,7 @@ Read these documents IN ORDER at the start of every session:
 - **ConsumerWidget:** Pure display (no local state)
 - **ConsumerStatefulWidget:** Page/widget with local state + provider reads
 - **Bottom sheets:** `showModalBottomSheet` with `DraggableScrollableSheet`
-
-### Navigation
-- **Drill-down navigation:** `context.push()` for full pages (gallery, menu, business info)
-- **Top-level navigation:** `context.go()` for main sections (search, profile, settings)
-- **NEVER use `context.go()` for full pages** — clears navigation stack, breaks back button
-- **See ARCHITECTURE.md → Pitfall #22** for navigation pattern details
-
-### Animations
-- **Expand/collapse:** `AnimatedOpacity` (smooth, GPU-accelerated)
-- **NEVER use `AnimatedSize` for complex children** — causes jankiness
-- **See ARCHITECTURE.md → Pitfall #23** for animation pattern details
-
-### Flutter 3.x APIs
-- `WidgetStateProperty` (not MaterialStateProperty) | `.withValues(alpha:)` (not .withOpacity()) | `context.mounted` (not mounted after async)
+- **See ARCHITECTURE.md** for detailed patterns (navigation, animations, filters, etc.)
 
 ### Linting Rules
 - **Parameter names:** Never use double underscores `__` (triggers `unnecessary_underscores` lint)
@@ -114,10 +101,8 @@ Before every commit:
 - [ ] Design tokens: All colors/spacing/typography from `App*` classes (no raw hex/numbers)
 - [ ] Color semantics: Orange for CTAs only, green for match confirmation only
 - [ ] State: No FFAppState, page-local state in widgets not providers, all text via `td(ref, key)`
-- [ ] Navigation: `context.push()` for full pages (NOT `context.go()` — breaks back button)
-- [ ] Animations: `AnimatedOpacity` for expand/collapse (NOT `AnimatedSize` — causes jankiness)
-- [ ] Filter state: `_removeConflictingFilters()` before adding exclusive filters (neighbourhoods/stations/shopping areas)
 - [ ] Shared sources: Check theme (app_theme.dart) and shared widgets (lib/widgets/shared/) before modifying individual pages
+- [ ] Code patterns: Follow ARCHITECTURE.md patterns (navigation, animations, filters, etc.)
 - [ ] Quality: `flutter analyze` clean, no unaddressed TODOs
 
 ---
