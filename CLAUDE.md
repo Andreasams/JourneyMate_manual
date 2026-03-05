@@ -281,31 +281,65 @@ git push origin docs
 gh pr create --base main --head docs --title "docs: [summary]" --body "[details]"
 ```
 
-### 6. Merge and Sync
+**⚠️ AFTER PR IS MERGED: Immediately proceed to Step 6 (Merge and Sync) to sync both worktrees locally.**
 
-After PR is merged to main:
+### 6. Merge and Sync (REQUIRED after every PR)
+
+**CRITICAL: This step must be done immediately after PR merge to keep local worktrees in sync with GitHub.**
+
+After PR is merged to main on GitHub, run these commands:
+
 ```bash
-# In main worktree: Copy CLAUDE_MAIN.md to CLAUDE.md
+# ============================================
+# STEP 1: Sync Main Worktree (code development)
+# ============================================
 cd "C:\Users\Rikke\Documents\JourneyMate\Main"
+
+# Pull merged changes from GitHub
 git pull origin main
+
+# Replace CLAUDE.md with correct version from CLAUDE_MAIN.md
 cp CLAUDE_MAIN.md CLAUDE.md
+
+# Remove CLAUDE_MAIN.md (staging file only needed in docs worktree)
+rm CLAUDE_MAIN.md
+
+# Commit and push the cleanup
 git add CLAUDE.md
-git commit -m "docs: sync CLAUDE.md from CLAUDE_MAIN.md"
+git rm CLAUDE_MAIN.md
+git commit -m "docs: sync CLAUDE.md from CLAUDE_MAIN.md and remove staging file"
 git push origin main
 
-# In docs worktree: Pull changes but keep docs' CLAUDE.md
-cd "C:\Users\Rikke\Documents\JourneyMate\Docs"
-git pull origin main
-# If CLAUDE.md has conflicts, keep docs version:
-# git checkout --ours CLAUDE.md
-git push origin docs
+# Verify correct file exists
+ls -lh *.md | grep -E "(CLAUDE|CODE_DEVELOPMENT)"
+# Should show: CLAUDE.md (correct), CODE_DEVELOPMENT_WORKFLOW.md (new), no CLAUDE_MAIN.md
 
-# Update CLAUDE_MAIN.md to match main's CLAUDE.md
+# ============================================
+# STEP 2: Sync Docs Worktree (documentation maintenance)
+# ============================================
+cd "C:\Users\Rikke\Documents\JourneyMate\Docs"
+
+# Pull main worktree's cleanup commit
+git pull origin main
+
+# Verify CLAUDE.md protected (should still be docs version)
+head -10 CLAUDE.md | grep "Worktree Identity: Documentation Maintenance"
+# Should output: ## ⚠️ Worktree Identity: Documentation Maintenance
+
+# Update CLAUDE_MAIN.md to match main's CLAUDE.md (for future edits)
 cp "C:\Users\Rikke\Documents\JourneyMate\Main\CLAUDE.md" CLAUDE_MAIN.md
+
+# Commit and push CLAUDE_MAIN.md update
 git add CLAUDE_MAIN.md
 git commit -m "docs: sync CLAUDE_MAIN.md with main worktree"
 git push origin docs
 ```
+
+**Verification checklist:**
+- [ ] Main worktree: `CLAUDE.md` exists, `CLAUDE_MAIN.md` removed, `CODE_DEVELOPMENT_WORKFLOW.md` exists
+- [ ] Docs worktree: `CLAUDE.md` (docs version) protected, `CLAUDE_MAIN.md` updated
+- [ ] GitHub main branch: Has cleanup commit removing `CLAUDE_MAIN.md`
+- [ ] Both worktrees pushed to GitHub (no uncommitted changes)
 
 ### Documentation Placement Decision Matrix
 
