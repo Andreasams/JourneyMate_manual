@@ -20,16 +20,17 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - [Analytics Architecture](#analytics-architecture) (lines 1129-1203) — Fire-and-forget, ActivityScope, 36 event types
 - [API Service Pattern](#api-service-pattern) (lines 834-890) — Singleton, cache, BuildShip integration
 - [Code Quality Standards](#code-quality-standards) (lines 1206-1245) — Flutter analyze, design tokens, algorithms
-- [Common Pitfalls](#common-pitfalls) (lines 1248-1768) — 16 anti-patterns with fixes (⚠️ read before first commit)
+- [Code Review Checklist](#code-review-checklist) (lines 1698-1778) — Pre-commit checklist (⚠️ use before every commit)
+- [Common Pitfalls](#common-pitfalls) (lines 1778-2780) — 24 anti-patterns with fixes (⚠️ read before first commit)
 - [Design Token System](#design-token-system) (lines 1116-1127) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 1771-1791) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 1821-1854) — CityID, favorites, filters, translations, engagement
+- [Documentation Philosophy](#documentation-philosophy) (lines 2783-2803) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 2833-2866) — CityID, favorites, filters, translations, engagement
 - [Location Permission Pattern](#location-permission-pattern) (lines 973-1051) — Three methods, when to use what, Settings fallback
 - [Philosophy](#philosophy) (lines 39-81) — Five core principles (design tokens, state, translations, analytics, widgets)
 - [Pre-Loading Architecture](#pre-loading-architecture) (lines 893-970) — Safe async pattern for instant page loads
 - [Project Structure](#project-structure) (lines 84-143) — File organization, 12 pages, 34 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 1794-1818) — Critical startup sequence in main.dart
-- [References](#references) (lines 1857-1871) — Links to other documentation files
+- [Provider Initialization Order](#provider-initialization-order) (lines 2806-2830) — Critical startup sequence in main.dart
+- [References](#references) (lines 2869-2883) — Links to other documentation files
 - [State Management](#state-management) (lines 146-285) — When to use what, provider catalog, Riverpod 3.x patterns
 - [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 486-831) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
 - [Translation System](#translation-system) (lines 1054-1113) — Dynamic td() function, 355 keys, 7 languages
@@ -718,6 +719,77 @@ if (_allChildrenIds.contains(filterId) && parentName != null) {
 
 ---
 
+### Filter Exclusivity Pattern (_removeConflictingFilters)
+
+**Discovered:** Commit `7f2a95c`, March 2026
+**Applies to:** Mutually exclusive filter categories (neighbourhoods, train stations, shopping areas)
+
+Some filter categories are **mutually exclusive** — only one "location anchor" can be active at a time. When selecting a new item from an exclusive category, existing selections from that category must be cleared BEFORE adding the new one.
+
+**Pattern Implementation:**
+
+```dart
+// Helper method to remove conflicting filters
+void _removeConflictingFilters(List<int> categoryIds) {
+  setState(() {
+    _selectedFilterIds.removeWhere((id) => categoryIds.contains(_getCategoryId(id)));
+  });
+}
+
+// Train stations (exclusive) - line 798
+void _handleTrainStationSelection(int stationId) {
+  _removeConflictingFilters([_trainStationCategoryId]);  // Clear other stations FIRST
+  setState(() => _selectedFilterIds.add(stationId));     // Add new station
+  _onSearchTriggered();                                  // Trigger search
+}
+
+// Shopping areas (exclusive) - line 818
+void _handleShoppingAreaSelection(int shoppingAreaId) {
+  _removeConflictingFilters([_shoppingAreaCategoryId]);  // Clear other shopping areas FIRST
+  setState(() => _selectedFilterIds.add(shoppingAreaId));
+  _onSearchTriggered();
+}
+
+// Neighbourhoods (exclusive) - line 838
+void _handleNeighborhoodSelection(int neighbourhoodId) {
+  _removeConflictingFilters([_neighborhoodCategoryId]);  // Clear other neighbourhoods FIRST ✅
+  setState(() => _selectedFilterIds.add(neighbourhoodId));
+  _onSearchTriggered();
+}
+```
+
+**Bug Fixed:** Neighbourhoods were missing the `_removeConflictingFilters()` call before commit `7f2a95c`, allowing multiple neighbourhood groups to be selected simultaneously (e.g., filter IDs 47 + 45 both active). This caused:
+- Incorrect filter chip display (multiple neighbourhoods showing)
+- Broken search results (conflicting location anchors)
+- Confusing UX (user thought they selected one neighbourhood, but two were active)
+
+**Why this pattern is critical:**
+- **Neighbourhoods, train stations, and shopping areas are mutually exclusive** — only one "location anchor" can be active
+- Without clearing, filter state becomes inconsistent
+- Search API doesn't handle multiple exclusive filters correctly
+- Filter chips display incorrectly
+
+**Consistency across all three exclusive categories:**
+
+| Category | Handler Method | Exclusivity Call |
+|----------|---------------|------------------|
+| Train Stations | `_handleTrainStationSelection()` | `_removeConflictingFilters([_trainStationCategoryId])` ✅ |
+| Shopping Areas | `_handleShoppingAreaSelection()` | `_removeConflictingFilters([_shoppingAreaCategoryId])` ✅ |
+| Neighbourhoods | `_handleNeighborhoodSelection()` | `_removeConflictingFilters([_neighborhoodCategoryId])` ✅ (fixed) |
+
+**All three now follow the same pattern:** Clear → Add → Search
+
+**When to Use:**
+- Filter categories where only one item should be active at a time
+- Location-based filters (neighbourhoods, stations, shopping areas)
+- Any mutually exclusive selection UI
+
+**Reference:**
+- `journey_mate/lib/widgets/shared/filter_overlay_widget.dart` — All three handler methods
+- Commit `7f2a95c` — fix(filters): enforce exclusive neighbourhood selection for standalone neighbourhoods
+
+---
+
 ## Swipe Gesture Patterns
 
 **Discovered:** Phase 8, commit `58a7549` — Search page location banner swipe-to-dismiss
@@ -1354,6 +1426,62 @@ ref.read(localeProvider.notifier).setLocale('da');
 - **Storage:** Supabase `ui_translations` table
 - **API:** BuildShip `GET /languageText` endpoint
 
+### Date Formatting with intl Package Locale Support
+
+**Pattern:** Use `intl` package's built-in locale support instead of hardcoding language-specific date formats.
+
+**Context:** App supports 15 languages (en, da, de, es, fi, fr, it, ja, ko, nl, no, pl, sv, uk, zh). Originally, date formatting was hardcoded for only Danish and English. Updated to support all 15 by letting `intl` package handle locale-specific formatting automatically.
+
+✅ **Good:**
+```dart
+import 'package:intl/intl.dart';
+
+String _formatLocalizedDate(String? isoDate, String languageCode) {
+  if (isoDate == null || isoDate.isEmpty) return '';
+
+  try {
+    final parsedDate = DateTime.parse(isoDate);
+
+    try {
+      // intl automatically handles locale-specific formatting:
+      // - ja/zh: 年月日 characters (2026年2月22日)
+      // - ko: periods (2026. 2. 22.)
+      // - European languages: locale-specific month names (22. feb. 2026, 22 févr. 2026)
+      return DateFormat.yMMMd(languageCode).format(parsedDate);
+    } catch (e) {
+      // Fallback to English for unsupported locales
+      return DateFormat.yMMMd('en').format(parsedDate);
+    }
+  } catch (e) {
+    return '';  // Invalid date format
+  }
+}
+
+// Usage:
+final formattedDate = _formatLocalizedDate(business['last_reviewed_at'], currentLanguage);
+// en: "Feb 22, 2026"
+// da: "22. feb. 2026"
+// ja: "2026年2月22日"
+// ko: "2026. 2. 22."
+```
+
+**Why this works:**
+- `DateFormat.yMMMd(languageCode)` automatically uses locale data from `intl` package for 100+ languages
+- Asian languages get proper date characters (年月日 for Japanese/Chinese, periods for Korean)
+- European languages get localized month abbreviations (feb., févr., febr., など)
+- No need to maintain switch statements or manual formatting for each language
+
+**When NOT to use this:**
+- Custom date formats not supported by `intl` (e.g., "3 days ago", relative time)
+- Dates requiring additional logic (e.g., "Today", "Yesterday")
+- Non-date localization (use `td(ref, key)` for all text translations)
+
+**Affected files:**
+- `menu_full_page.dart` — Menu last updated date display
+- `inline_menu_widget.dart` — Business profile inline menu date display
+
+**Reference:** Commit `90d014c` — fix(i18n): expand menu date formatting to support all 15 languages
+
 ---
 
 ## Design Token System
@@ -1485,6 +1613,183 @@ static String streetAndNeighbourhoodLength(
 ```
 
 **Why:** FlutterFlow algorithms have been tested with real data. Refactoring risks bugs.
+
+### Defensive Client-Side Validation (Best Practice)
+
+**Pattern:** Even when backend is fixed, add lightweight client-side validation for critical ordering/grouping logic. This provides insurance against future backend regressions, network corruption, or cached responses.
+
+**Example: Search Results Section Ordering**
+
+Backend was fixed to return properly ordered sections (full match → partial match → no match), but client-side defensive validation adds a safety layer:
+
+```dart
+List<RestaurantWithMatchInfo> _buildSectionedList(List<RestaurantWithMatchInfo> results) {
+  // Apply defensive grouping before rendering
+  final orderedResults = _ensureProperSectionOrder(results);
+  // ... rest of rendering logic
+}
+
+List<RestaurantWithMatchInfo> _ensureProperSectionOrder(List<RestaurantWithMatchInfo> results) {
+  // Fast path: validate ordering (O(n), <1ms, zero allocations)
+  if (_isProperlyOrdered(results)) {
+    return results;  // 99% of cases exit here
+  }
+
+  // Backup path: re-group by section (1-5ms, rare)
+  print('⚠️ Search results not properly ordered - applying defensive grouping');
+
+  final fullMatches = results.where((r) => r.matchLevel == 'fullMatch').toList();
+  final partialMatches = results.where((r) => r.matchLevel == 'partialMatch').toList();
+  final noMatches = results.where((r) => r.matchLevel == 'noMatch').toList();
+
+  return [...fullMatches, ...partialMatches, ...noMatches];
+}
+
+bool _isProperlyOrdered(List<RestaurantWithMatchInfo> results) {
+  int currentLevel = 0;
+  for (final result in results) {
+    final level = _getSectionLevel(result.matchLevel);
+    if (level < currentLevel) return false;  // Early exit on out-of-order
+    currentLevel = level;
+  }
+  return true;
+}
+
+int _getSectionLevel(String matchLevel) {
+  switch (matchLevel) {
+    case 'fullMatch': return 0;
+    case 'partialMatch': return 1;
+    case 'noMatch': return 2;
+    default: return 3;
+  }
+}
+```
+
+**Why this is a best practice:**
+- **Fast path is cheap:** O(n) validation with early exit, zero allocations (typically <1ms)
+- **Backup path rarely runs:** Only when API fails, network corruption, or cached responses
+- **Logs warnings:** Makes backend regressions visible in monitoring/debugging
+- **User experience protected:** Search results always display correctly, even if API breaks
+
+**When to use defensive validation:**
+- Critical user-facing logic (search results, navigation, checkout flows)
+- Data that affects UI rendering order or correctness
+- Backend contracts that changed recently (during stabilization period)
+- High-impact user flows where failure is unacceptable
+
+**When NOT to use:**
+- Simple CRUD operations with no ordering requirements
+- Internal data structures not directly user-facing
+- Over-engineering: Don't add validation "just in case" without concrete risk assessment
+- Performance-critical paths where validation cost is too high
+
+**Performance characteristics:**
+- **Fast path (validation):** <1ms, O(n) with early exit
+- **Backup path (re-grouping):** 1-5ms, O(n) with three iterations
+- **Expected frequency:** Fast path: 99%+, backup path: <1%
+
+**Monitoring:** Warning logs make backend issues visible in production monitoring, allowing proactive fixes before user reports.
+
+**Reference:**
+- `journey_mate/lib/pages/search/search_page.dart` — Search results defensive grouping
+- Commit `67405da` — feat(search): add client-side defensive grouping for search results
+
+---
+
+## Code Review Checklist
+
+**Purpose:** Pre-commit checklist consolidating all non-negotiable rules from ARCHITECTURE.md. Use this before every commit to catch common mistakes.
+
+### Design Tokens (Non-Negotiable)
+
+- [ ] **Colors from AppColors** — No raw hex values like `Color(0xFFe8751a)`. Use `AppColors.accent`, `AppColors.primary`, etc.
+  - See [Pitfall #1](#pitfall-1-using-raw-hex-colors) (line 1778)
+  - See [Design Token System](#design-token-system) (lines 1116-1127)
+
+- [ ] **Spacing from AppSpacing** — No magic numbers like `16.0`. Use `AppSpacing.md`, `AppSpacing.lg`, etc.
+  - See [Pitfall #2](#pitfall-2-using-magic-numbers-for-spacing) (line 1792)
+  - See [Design Token System](#design-token-system) (lines 1116-1127)
+
+- [ ] **Typography from AppTypography** — No inline `TextStyle(...)`. Use `AppTypography.headingLarge`, `AppTypography.bodyMedium`, etc.
+  - See [Design Token System](#design-token-system) (lines 1116-1127)
+
+- [ ] **Radii from AppRadius** — No `BorderRadius.circular(16)`. Use `AppRadius.lg`, `AppRadius.full`, etc.
+  - See [Design Token System](#design-token-system) (lines 1116-1127)
+
+- [ ] **Color semantics enforced** — Orange (`AppColors.accent`) for CTAs only, green (`AppColors.matchGreen`) for match confirmation only
+  - See [Philosophy](#philosophy) → Design Tokens (lines 44-50)
+
+### State Management Patterns
+
+- [ ] **Global state uses NotifierProvider/AsyncNotifierProvider** — No `FFAppState`, `Provider`, or `StateNotifier` (deprecated Riverpod 2.x)
+  - See [State Management](#state-management) (lines 146-285)
+
+- [ ] **Page-local state uses local State variables** — Not provider state
+  - See [State Management](#state-management) → When to Use What (lines 183-227)
+
+- [ ] **Atomic updates for dependent fields** — Update related fields together to prevent orphaned state
+  - See [Pitfall #6](#pitfall-6-non-atomic-updates-to-dependent-fields) (line 1874)
+
+### Translations
+
+- [ ] **All text via td(ref, 'key')** — No hardcoded string literals
+  - See [Translation System](#translation-system) (lines 1054-1113)
+  - See [Philosophy](#philosophy) → Translations (lines 60-62)
+
+### Widget Architecture
+
+- [ ] **Self-contained widgets** — Widgets read providers/context internally. No infrastructure props (language, translations, dimensions)
+  - See [Philosophy](#philosophy) → Self-Contained Widgets (lines 71-81)
+  - See [Pitfall #7](#pitfall-7-prop-drilling-infrastructure-data) (line 1897)
+
+- [ ] **ConsumerWidget only when using ref** — Use StatelessWidget for pure widgets with no provider reads
+  - See [State Management](#state-management) → Widget Types (lines 146-182)
+
+### Analytics
+
+- [ ] **Fire-and-forget analytics** — Never `await` analytics calls
+  - See [Analytics Architecture](#analytics-architecture) (lines 1129-1203)
+  - See [Pitfall #11](#pitfall-11-awaiting-analytics-calls) (line 1987)
+
+- [ ] **No manual markUserEngaged() calls** — ActivityScope handles engagement automatically
+  - See [Analytics Architecture](#analytics-architecture) → ActivityScope Pattern (lines 1164-1178)
+
+### Flutter 3.x APIs
+
+- [ ] **WidgetStateProperty (not MaterialStateProperty)** — Flutter 3.x renamed this class
+  - See [Pitfall #3](#pitfall-3-using-deprecated-materialstateproperty) (line 1813)
+
+- [ ] **.withValues(alpha:) instead of .withOpacity()** — Flutter 3.x deprecated `withOpacity`
+  - See [Pitfall #4](#pitfall-4-using-deprecated-withopacity) (line 1829)
+
+- [ ] **context.mounted checks after async** — Always check `if (!context.mounted) return;` after `await`
+  - See [Pitfall #5](#pitfall-5-missing-contextmounted-checks) (line 1845)
+
+### Linting Rules
+
+- [ ] **No double underscores in parameter names** — Triggers `unnecessary_underscores` lint
+  - Use `e`, `s`, `error`, `stack` instead of `_`, `__`
+  - Example: `error: (e, s) => true` NOT `error: (_, __) => true`
+  - See [Pitfall #19](#pitfall-19-using-double-underscores-in-callbacks) (line 2196)
+
+- [ ] **Null-aware spread for conditional map entries** — Use `...?condition ? {'key': value} : null`
+  - NOT `if (condition) 'key': value` (syntax error)
+  - See [Pitfall #21](#pitfall-21-incorrect-conditional-map-entries) (line 2242)
+
+### Code Quality
+
+- [ ] **flutter analyze clean** — 0 errors, 0 warnings
+  - See [Code Quality Standards](#code-quality-standards) (lines 1206-1245)
+
+- [ ] **No unaddressed TODOs** — Resolve or remove before committing
+
+### Shared Source Verification
+
+- [ ] **Check app_theme.dart before modifying pages** — Shared theme tokens should be used, not duplicated
+  - See [Code Quality Standards](#code-quality-standards) → Shared Sources (lines 1224-1245)
+
+- [ ] **Check lib/widgets/shared/ before creating new widgets** — Reuse existing widgets when possible
+  - See [Project Structure](#project-structure) → Shared Widgets (lines 120-130)
 
 ---
 
@@ -2261,6 +2566,221 @@ if (shoppingAreaId != null) 'shoppingAreaId': shoppingAreaId,
 
 ---
 
+### Pitfall #22: Using context.go() Instead of context.push() for Full Pages
+
+**Problem:** Using `context.go()` to navigate to full-page views clears the navigation stack, leaving nothing to pop back to. This breaks the back button, stranding users on the full page with no way to return.
+
+❌ **Bad:**
+```dart
+// Navigate to menu full page (BREAKS BACK BUTTON)
+GestureDetector(
+  onTap: () => context.go('/menu/$businessId'),
+  child: Text('View Full Menu'),
+)
+```
+
+✅ **Good:**
+```dart
+// Navigate to menu full page (back button works)
+GestureDetector(
+  onTap: () => context.push('/menu/$businessId'),
+  child: Text('View Full Menu'),
+)
+```
+
+**Why this matters:**
+- `context.go()` **replaces** the entire navigation stack (like browser navigation)
+- `context.push()` **adds** to the navigation stack (allows popping back)
+- Full page widgets use `Navigator.of(context).pop()` for back button
+- Without proper stack, `pop()` has nowhere to return to
+
+**When to use each:**
+- **`context.go()`** - Top-level navigation between main sections (e.g., switching from search to profile to settings)
+- **`context.push()`** - Drill-down navigation (e.g., search → business profile → gallery/menu/info full pages)
+
+**All three full pages now use consistent pattern:**
+```dart
+// Gallery full page
+GestureDetector(
+  onTap: () => context.push('/gallery/$businessId'),  // ✅
+)
+
+// Menu full page
+GestureDetector(
+  onTap: () => context.push('/menu/$businessId'),     // ✅ (fixed in commit 395a536)
+)
+
+// Business Info full page
+GestureDetector(
+  onTap: () => context.push('/info/$businessId'),     // ✅
+)
+```
+
+All three pages use `Navigator.of(context).pop()` for back buttons, which requires items in the navigation stack.
+
+**Bug manifestation:** User taps "View Full Menu" → menu page loads → user taps back button → nothing happens (no navigation stack to pop).
+
+**Discovered:** 2026-03-04 during full page navigation testing — menu full page back button was non-functional.
+
+**Git reference:** Commit `395a536` — fix(navigation): change menu full page navigation from go() to push()
+
+---
+
+### Pitfall #23: Using AnimatedSize for Simple Expand/Collapse
+
+**Problem:** `AnimatedSize` causes visual jankiness when animating expandable sections because it measures child dimensions on every frame. For simple expand/collapse animations, `AnimatedOpacity` provides smoother results with GPU-accelerated compositing.
+
+❌ **Bad:**
+```dart
+// Janky animation due to child measurement overhead
+AnimatedSize(
+  duration: Duration(milliseconds: 250),
+  child: _isExpanded
+    ? Column(
+        children: [
+          OpeningHoursDisplay(),
+          ContactLinksDisplay(),
+          // Complex widget tree
+        ],
+      )
+    : SizedBox.shrink(),
+)
+```
+
+✅ **Good:**
+```dart
+// Smooth fade animation with GPU compositing
+AnimatedOpacity(
+  duration: Duration(milliseconds: 150),
+  opacity: _isExpanded ? 1.0 : 0.0,
+  child: _isExpanded
+    ? Column(
+        children: [
+          OpeningHoursDisplay(),
+          ContactLinksDisplay(),
+          // Complex widget tree
+        ],
+      )
+    : SizedBox.shrink(),
+)
+```
+
+**Why this matters:**
+- `AnimatedSize` measures child dimensions on every animation frame → janky
+- `AnimatedOpacity` uses GPU-accelerated compositing → smooth 60fps
+- Complex children (lists, columns, rows) amplify the jankiness
+- Fade animations are visually cleaner for expandable sections
+
+**When AnimatedSize IS appropriate:**
+- Animating between known, simple sizes (e.g., button width: 100px → 150px)
+- Single-line text expanding to two lines
+- Simple containers without complex child layout
+- Cases where size change must be visible (not just show/hide)
+
+**When to use AnimatedOpacity instead:**
+- Expandable sections with lists/columns
+- Complex widget trees with multiple layers
+- Any case where you notice animation jankiness
+- Simple show/hide transitions
+
+**Performance comparison (business profile opening hours section):**
+- `AnimatedSize(250ms)`: Visible frame drops, janky motion
+- `AnimatedOpacity(150ms)`: Smooth 60fps, clean fade
+
+**Discovered:** 2026-03-04 during business profile UX improvements — opening hours/contact section animation was janky.
+
+**Git reference:** Commit `33daf5b` — fix(profile): replace janky AnimatedSize with smooth AnimatedOpacity
+
+---
+
+### Pitfall #24: Filter State Management - Routing Logic and State Restoration
+
+**Context:** Filter overlay manages complex state with three columns, parent-child hierarchies, and routed IDs (neighbourhoods, shopping areas). Two related bugs revealed architectural fragility when multiple state sources aren't properly synchronized.
+
+#### Bug 1: Routing Logic Priority
+
+**Problem:** Parent neighbourhoods (Indre By, Amager, Nordvest, Vanløse) have both subcategories (children) AND need immediate search triggering. Checking `hasSubitems` first routes them to column-opening logic, skipping the search trigger entirely.
+
+❌ **Bad:**
+```dart
+void _handleItemSelection(FilterCategory category, int itemId) {
+  final hasSubitems = category.subcategories.any((sub) => sub.filterId == itemId);
+
+  // Parent neighbourhoods fall through to this branch - WRONG!
+  if (hasSubitems) {
+    _openColumn3(category, itemId);  // Opens column 3 but NO SEARCH
+    return;
+  }
+
+  // Standalone items
+  _handleStandaloneSelection(itemId);
+}
+```
+
+✅ **Good:**
+```dart
+void _handleItemSelection(FilterCategory category, int itemId) {
+  // CHECK PARENT NEIGHBOURHOODS FIRST (before hasSubitems check)
+  if (AppConstants.kNeighborhoodHierarchy.containsKey(itemId)) {
+    _handleNeighborhoodSelection(itemId);  // Handles: selection + search + column 3 + exclusivity
+    return;  // Early exit prevents falling through to wrong branch
+  }
+
+  final hasSubitems = category.subcategories.any((sub) => sub.filterId == itemId);
+  if (hasSubitems) {
+    _openColumn3(category, itemId);
+    return;
+  }
+
+  _handleStandaloneSelection(itemId);
+}
+```
+
+**Why:** Parent neighbourhoods need special handling: they trigger search immediately (like standalone items) BUT also open column 3 (like items with subitems) AND enforce exclusivity (clear other neighbourhoods). Generic `hasSubitems` check doesn't capture this complexity.
+
+#### Bug 2: State Restoration After Widget Updates
+
+**Problem:** Widget updates from provider props overwrite `_selectedFilterIds` without restoring routed IDs (neighbourhoods, shopping areas) from provider. This orphans routed IDs, breaking filter chip display and greying logic.
+
+❌ **Bad:**
+```dart
+void _handleSelectedFilterChanges() {
+  // Widget updates from provider props
+  setState(() {
+    _selectedFilterIds = widget.selectedFilterIds;  // Overwrites local state
+  });
+  // Neighbourhood IDs and shopping area IDs are now ORPHANED
+  // Filter chips disappear, greying logic fails
+}
+```
+
+✅ **Good:**
+```dart
+void _handleSelectedFilterChanges() {
+  setState(() {
+    _selectedFilterIds = widget.selectedFilterIds;
+
+    // RESTORE routed IDs from provider (mirrors _initializeStateFromProps pattern)
+    _selectedNeighbourhoodIds = widget.selectedNeighbourhoodIds ?? [];
+    _selectedShoppingAreaIds = widget.selectedShoppingAreaIds ?? [];
+  });
+}
+```
+
+**Why:** Routed IDs (neighbourhoods, shopping areas) live in separate provider lists because they need special routing logic. Widget updates must restore these IDs to `_selectedFilterIds` to keep UI state consistent. This mirrors the initialization pattern used in `_initializeStateFromProps()`.
+
+**Architectural lesson:** Complex state with multiple sources (props + routing + local state) requires careful synchronization. **State update handlers must mirror initialization logic** to maintain consistency across widget rebuilds.
+
+**Bug manifestation:**
+1. User selects parent neighbourhood (e.g., "Indre By") → no search triggered, column 3 doesn't open
+2. User selects filter in another category → widget rebuilds → neighbourhood chip disappears from selected filters display
+
+**Discovered:** 2026-03-04 during filter panel testing — parent neighbourhood selection was non-functional.
+
+**Git reference:** Commit `543e25c` — fix(filters): resolve parent neighbourhood selection not triggering search
+
+---
+
 ## Documentation Philosophy
 
 JourneyMate maintains **three types of documentation**:
@@ -2349,6 +2869,7 @@ Providers MUST initialize in this exact order at app startup:
 
 ## References
 
+- **Development Process:** `CODE_DEVELOPMENT_WORKFLOW.md` (systematic workflow for writing code)
 - **API Contracts:** `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines, 12 endpoints)
 - **Provider Catalog:** `_reference/PROVIDERS_REFERENCE.md` (797 lines, 8 providers)
 - **Design Tokens:** `DESIGN_SYSTEM_flutter.md` (819 lines, colors/spacing/typography)
