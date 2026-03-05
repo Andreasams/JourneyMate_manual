@@ -2781,6 +2781,72 @@ void _handleSelectedFilterChanges() {
 
 ---
 
+### Pitfall #25: Passing Partial API Responses to Providers When Downstream Consumers Need Full Structure
+
+**Context:** When storing API responses in providers, it's tempting to extract and pass only the "main" data array (e.g., `menuData['menu_items']`). However, if ANY downstream consumer (widget, validation logic, processing function) needs OTHER keys from the response (e.g., `categories`, `availablePreferences`), passing partial data causes silent validation failures.
+
+**Root Cause:** MenuDishesListView._isValidNormalizedData() expects a Map with a 'categories' key. When only `menu_items` array is passed, validation fails silently, triggering `_clearDataStructures()` which results in an empty display.
+
+❌ **Bad:**
+```dart
+// business_profile_page_v2.dart
+final menuResponse = await ApiService.instance.getRestaurantMenu(businessId);
+
+// Extract only menu_items array
+final menuItems = menuResponse.jsonBody['menu_items'];
+
+// Pass partial data (missing categories, availablePreferences, availableRestrictions)
+ref.read(businessProvider.notifier).setMenuItems(menuItems);
+
+// Later, in MenuDishesListView (line 812):
+final categories = widget.normalizedMenuData['categories']; // ❌ NULL! Key doesn't exist
+// Validation fails → empty display
+```
+
+✅ **Good:**
+```dart
+// business_profile_page_v2.dart
+final menuResponse = await ApiService.instance.getRestaurantMenu(businessId);
+
+// Pass FULL response Map containing ALL keys
+ref.read(businessProvider.notifier).setMenuItems(menuResponse.jsonBody);
+// Now available: menu_items, categories, availablePreferences, availableRestrictions
+
+// Later, in MenuDishesListView (line 812):
+final categories = widget.normalizedMenuData['categories']; // ✅ Works! Full Map passed
+```
+
+**Why:**
+- Provider's `dynamic` type accepts any structure at runtime without compile-time errors
+- Silent validation failures (no error logs) make data structure mismatches extremely hard to debug
+- Downstream consumers may need multiple keys from API responses, not just the "main" array
+- Passing full Map is safer: consumers extract what they need, unused keys are harmless
+
+**When to pass full API response:**
+- ✅ Response contains multiple top-level keys (e.g., `{menu_items: [], categories: [], filters: []}`)
+- ✅ Multiple widgets/functions consume the data (can't predict all their needs)
+- ✅ Validation or processing logic expects specific Map structure
+
+**When partial extraction is safe:**
+- ✅ Only ONE consumer exists and you control its implementation
+- ✅ Consumer explicitly documents expected structure (e.g., `List<Map<String, dynamic>>`)
+- ✅ You've verified no validation logic depends on other keys
+
+**Reference:** Commit `5f4aeab` — "fix: menu items now display by passing full API response to provider"
+
+**Detection:**
+- Data displays empty despite successful API response
+- No error logs or exceptions thrown
+- Validation methods like `_isValidNormalizedData()` silently return false
+- Works in one widget but breaks in another that expects different keys
+
+**Prevention:**
+- When in doubt, pass full `response.jsonBody` to providers
+- Document expected structure in provider method comments
+- Add debug logging to validation methods to surface silent failures
+
+---
+
 ## Documentation Philosophy
 
 JourneyMate maintains **three types of documentation**:
