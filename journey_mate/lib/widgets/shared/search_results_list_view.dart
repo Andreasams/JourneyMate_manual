@@ -63,7 +63,8 @@ class _SearchResultsListViewState
   // Pre-loading state
   Timer? _scrollStopTimer;
   final Set<int> _visibleBusinessIds = {};
-  final Set<int> _preloadedBusinessIds = {};
+  final Set<int> _preloadedBusinessIds = {}; // For gallery images
+  final Set<int> _preloadedProfileIds = {}; // For API profile data
   dynamic _lastPreloadedResults;
 
   // ---------------------------------------------------------------------------
@@ -102,10 +103,17 @@ class _SearchResultsListViewState
     if (searchState.searchResults != _lastPreloadedResults) {
       _visibleBusinessIds.clear();
       _preloadedBusinessIds.clear();
+      _preloadedProfileIds.clear();
       _lastPreloadedResults = searchState.searchResults;
 
+      // Clear API cache on new search
+      ApiService.instance.clearCache();
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _preloadTop5Restaurants();
+        if (mounted) {
+          _preloadTop5Restaurants();
+          _preloadTop5Profiles();
+        }
       });
     }
   }
@@ -113,6 +121,7 @@ class _SearchResultsListViewState
   @override
   void dispose() {
     _scrollStopTimer?.cancel();
+    _preloadedProfileIds.clear();
     super.dispose();
   }
 
@@ -146,6 +155,35 @@ class _SearchResultsListViewState
     }
   }
 
+  void _preloadTop5Profiles() {
+    final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+    final languageCode = Localizations.localeOf(context).languageCode;
+
+    for (int i = 0; i < documents.length && i < 5; i++) {
+      final businessData = documents[i];
+      final businessId = _getBusinessId(businessData);
+      _preloadBusinessProfile(businessId, languageCode);
+    }
+  }
+
+  void _preloadBusinessProfile(int businessId, String languageCode) {
+    if (businessId <= 0 || _preloadedProfileIds.contains(businessId)) return;
+
+    _preloadedProfileIds.add(businessId);
+
+    // Fire-and-forget API call - caches in ApiService
+    unawaited(
+      ApiService.instance.getBusinessProfile(
+        businessId: businessId,
+        languageCode: languageCode,
+      ).catchError((error) {
+        debugPrint('⚠️ Pre-load failed for business $businessId: $error');
+        _preloadedProfileIds.remove(businessId); // Allow retry
+        return ApiCallResponse.failure(error.toString());
+      }),
+    );
+  }
+
   void _onScroll(ScrollNotification notification) {
     _scrollStopTimer?.cancel();
     _scrollStopTimer = Timer(const Duration(milliseconds: 300), () {
@@ -155,8 +193,30 @@ class _SearchResultsListViewState
 
   void _preloadVisibleCards() {
     final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+    final languageCode = Localizations.localeOf(context).languageCode;
 
-    for (final businessId in _visibleBusinessIds) {
+    // Get list of all business IDs in order for adjacency calculation
+    final businessIds = documents.map((doc) => _getBusinessId(doc)).toList();
+
+    // Build set of IDs to pre-load: visible + 1 above + 1 below each visible card
+    final idsToPreload = <int>{};
+    for (final visibleId in _visibleBusinessIds) {
+      idsToPreload.add(visibleId); // The visible card itself
+
+      final index = businessIds.indexOf(visibleId);
+      if (index != -1) {
+        if (index > 0) {
+          idsToPreload.add(businessIds[index - 1]); // 1 above
+        }
+        if (index < businessIds.length - 1) {
+          idsToPreload.add(businessIds[index + 1]); // 1 below
+        }
+      }
+    }
+
+    // Pre-load images and profiles for all target IDs
+    for (final businessId in idsToPreload) {
+      // Pre-load images (existing logic)
       if (!_preloadedBusinessIds.contains(businessId)) {
         final businessData = documents.firstWhere(
           (doc) => _getBusinessId(doc) == businessId,
@@ -165,6 +225,11 @@ class _SearchResultsListViewState
         if (businessData != null) {
           _preloadBusinessImages(businessId, businessData);
         }
+      }
+
+      // Pre-load profile API data (NEW)
+      if (!_preloadedProfileIds.contains(businessId)) {
+        _preloadBusinessProfile(businessId, languageCode);
       }
     }
   }

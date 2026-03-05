@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 /// API response wrapper
@@ -109,7 +110,9 @@ class ApiService {
 
   /// Clears all cached responses
   void clearCache() {
+    final count = _cache.length;
     _cache.clear();
+    debugPrint('🧹 API cache cleared ($count entries removed)');
   }
 
   // ============================================================
