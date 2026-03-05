@@ -306,6 +306,35 @@ git commit -m "docs: sync CLAUDE_MAIN.md with main worktree"
 git push origin docs
 ```
 
+### Documentation Placement Decision Matrix
+
+**Use this matrix to determine where new documentation belongs:**
+
+| Content Type | Primary Location | Why |
+|--------------|------------------|-----|
+| **Code patterns** (design tokens, state, widgets) | ARCHITECTURE.md | Implementation details |
+| **Common pitfalls** (bugs learned from) | ARCHITECTURE.md → Common Pitfalls | Pattern violations |
+| **API contracts** (endpoints, responses) | _reference/BUILDSHIP_API_REFERENCE.md | API reference |
+| **Provider catalog** (state, methods) | _reference/PROVIDERS_REFERENCE.md | State reference |
+| **Design tokens** (colors, spacing, typography) | DESIGN_SYSTEM_flutter.md | Design reference |
+| **Critical product decisions** (features, business logic) | CLAUDE_MAIN.md → Critical Decisions | Business rules |
+| **Pre-commit checklist** | ARCHITECTURE.md → Code Review Checklist | Developer workflow |
+| **Workflow instructions** (git, commits, navigation) | CLAUDE_MAIN.md | High-level guidance |
+
+**Key principle:**
+- **CLAUDE_MAIN.md** = Workflow + Product Decisions + Navigation (high-level)
+- **ARCHITECTURE.md** = Code Patterns + Pitfalls + Checklist (implementation)
+- **Reference docs** = API/Provider catalogs (lookup tables)
+- **Design docs** = Visual tokens + UI patterns (design reference)
+
+**How main worktree communicates documentation needs:**
+Main worktree NEVER modifies .md files. Instead, commits include:
+- **Inline code comments:** Explain complex logic directly in code
+- **Commit message "Discovered:" section:** Patterns/pitfalls found
+- **Commit message "See also:" section:** Flags which docs need updates
+
+Docs worktree reviews commits and places formal documentation in correct location.
+
 ---
 
 ## Tech Stack

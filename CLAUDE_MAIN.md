@@ -55,55 +55,12 @@ Read these documents IN ORDER at the start of every session:
 
 ---
 
-## Code Patterns (Non-Negotiable)
+## Architectural Patterns
 
-### Design Tokens
-- **All colors** from `AppColors` (NO raw hex: `Color(0xFF...)`)
-- **All spacing** from `AppSpacing` (NO magic numbers: `16.0`)
-- **All typography** from `AppTypography` (NO inline `TextStyle(...)`)
-- **All radii** from `AppRadius` (NO `BorderRadius.circular(16)`)
-
-### State Management
-- **Global/session state:** `NotifierProvider` or `AsyncNotifierProvider`
-- **Page-local UI state:** Local `State` variables in `ConsumerStatefulWidget`
-- **NO FFAppState, NO Provider, NO StateNotifier** (deprecated Riverpod 2.x pattern)
-- **See ARCHITECTURE.md** for "when to use what" decision matrix
-
-### Translations
-- **All text** via `td(ref, 'key')` function (NO hardcoded strings)
-- **100% dynamic** from Supabase `ui_translations` table via BuildShip
-- **355 app keys** + 142 legacy keys = 497 total
-
-### Analytics
-- **Fire-and-forget** (NEVER await analytics calls)
-- **ActivityScope** handles engagement tracking automatically
-- **NEVER call** `markUserEngaged()` manually (pattern removed from FlutterFlow)
-
-### Widget Patterns
-- **Self-contained widgets:** Read providers/context internally (NO infrastructure props)
-- **ConsumerWidget:** Pure display (no local state)
-- **ConsumerStatefulWidget:** Page/widget with local state + provider reads
-- **Bottom sheets:** `showModalBottomSheet` with `DraggableScrollableSheet`
-- **See ARCHITECTURE.md** for detailed patterns (navigation, animations, filters, etc.)
-
-### Linting Rules
-- **Parameter names:** Never use double underscores `__` (triggers `unnecessary_underscores` lint)
-- **Ignored parameters:** Use single underscore `_` or simple names like `e`, `s`, `error`, `stack`
-- **Example:** `error: (e, s) => true` NOT `error: (_, __) => true`
-- **Conditional map entries:** Use null-aware spread `...?condition ? {'key': value} : null` (NOT `if (condition) 'key': value`)
-- **See ARCHITECTURE.md → Pitfall #21** for null-aware elements pattern details
-
----
-
-## Code Review Checklist
-
-Before every commit:
-- [ ] Design tokens: All colors/spacing/typography from `App*` classes (no raw hex/numbers)
-- [ ] Color semantics: Orange for CTAs only, green for match confirmation only
-- [ ] State: No FFAppState, page-local state in widgets not providers, all text via `td(ref, key)`
-- [ ] Shared sources: Check theme (app_theme.dart) and shared widgets (lib/widgets/shared/) before modifying individual pages
-- [ ] Code patterns: Follow ARCHITECTURE.md patterns (navigation, animations, filters, etc.)
-- [ ] Quality: `flutter analyze` clean, no unaddressed TODOs
+**For all code patterns, see ARCHITECTURE.md:**
+- **Design tokens, state management, translations, analytics:** See ARCHITECTURE.md → Philosophy (lines 39-81)
+- **Widget patterns:** See ARCHITECTURE.md → Widget Patterns (lines 288-483)
+- **Pre-commit checklist:** See ARCHITECTURE.md → Code Review Checklist (lines 1698-1778)
 
 ---
 
@@ -155,6 +112,47 @@ These decisions have been confirmed and must not be re-debated:
 - ❌ No direct Supabase SDK | No FFAppState/Provider | No raw hex colors/magic numbers
 - ❌ No await on analytics | No manual `markUserEngaged()` calls
 - ❌ No infrastructure props to self-contained widgets | No features beyond requirements
+
+---
+
+## Documentation Workflow
+
+**CRITICAL:** This is the MAIN worktree. Documentation is handled by the DOCS worktree.
+
+### What Main Worktree Does:
+- ✅ Write inline code documentation (comments, docstrings)
+- ✅ Include "Discovered:" and "Decision:" sections in commit messages
+- ✅ Flag docs needing updates in "See also:" section of commits
+
+### What Main Worktree NEVER Does:
+- ❌ NEVER modify .md files (CLAUDE.md, ARCHITECTURE.md, etc.)
+- ❌ NEVER update reference documentation directly
+- ❌ NEVER create new documentation files
+
+**Rationale:** Single source of truth for documentation. Docs worktree maintains ALL .md files to prevent merge conflicts and ensure consistency.
+
+**When you discover something worth documenting:**
+1. Add inline code comment explaining the pattern/pitfall
+2. Include "Discovered:" section in commit message
+3. Flag in "See also:" section which docs need review
+4. Docs worktree will handle the formal documentation update
+
+**Example commit message:**
+```
+feat: implement filter greying for unavailable options
+
+Implementation details here...
+
+Discovered:
+- Parent neighbourhood state must be checked BEFORE hasSubitems
+- Widget updates must restore routed IDs to prevent orphaned state
+
+See also:
+- Needs update: ARCHITECTURE.md (add pitfall about filter state management)
+- Needs update: NAVIGATION_GUIDE.md (update scenario 9 with new warning)
+```
+
+The docs worktree will then review your commit and update the formal documentation.
 
 ---
 

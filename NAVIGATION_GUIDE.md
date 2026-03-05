@@ -97,10 +97,9 @@ Each scenario below provides:
 **Estimated reading time:** 10 minutes
 
 **Read these sections:**
-1. **ARCHITECTURE.md** → Translation System (lines 1297-1371)
-2. **CLAUDE.md** → Code Patterns → Translations (lines 67-70)
+1. **ARCHITECTURE.md** → Translation System (lines 1054-1113)
+2. **ARCHITECTURE.md** → Philosophy → Single Source of Truth for Translations (lines 60-62)
 3. **_reference/BUILDSHIP_API_REFERENCE.md** → GET /languageText (search for "languageText")
-4. **ARCHITECTURE.md** → Philosophy → Single Source of Truth for Translations (lines 42-48)
 
 **Critical warnings:**
 - ⚠️ All text via `td(ref, 'key')` function — NO hardcoded strings

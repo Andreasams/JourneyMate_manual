@@ -20,16 +20,17 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - [Analytics Architecture](#analytics-architecture) (lines 1129-1203) — Fire-and-forget, ActivityScope, 36 event types
 - [API Service Pattern](#api-service-pattern) (lines 834-890) — Singleton, cache, BuildShip integration
 - [Code Quality Standards](#code-quality-standards) (lines 1206-1245) — Flutter analyze, design tokens, algorithms
-- [Common Pitfalls](#common-pitfalls) (lines 1248-1768) — 16 anti-patterns with fixes (⚠️ read before first commit)
+- [Code Review Checklist](#code-review-checklist) (lines 1698-1778) — Pre-commit checklist (⚠️ use before every commit)
+- [Common Pitfalls](#common-pitfalls) (lines 1778-2780) — 24 anti-patterns with fixes (⚠️ read before first commit)
 - [Design Token System](#design-token-system) (lines 1116-1127) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 1771-1791) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 1821-1854) — CityID, favorites, filters, translations, engagement
+- [Documentation Philosophy](#documentation-philosophy) (lines 2783-2803) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 2833-2866) — CityID, favorites, filters, translations, engagement
 - [Location Permission Pattern](#location-permission-pattern) (lines 973-1051) — Three methods, when to use what, Settings fallback
 - [Philosophy](#philosophy) (lines 39-81) — Five core principles (design tokens, state, translations, analytics, widgets)
 - [Pre-Loading Architecture](#pre-loading-architecture) (lines 893-970) — Safe async pattern for instant page loads
 - [Project Structure](#project-structure) (lines 84-143) — File organization, 12 pages, 34 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 1794-1818) — Critical startup sequence in main.dart
-- [References](#references) (lines 1857-1871) — Links to other documentation files
+- [Provider Initialization Order](#provider-initialization-order) (lines 2806-2830) — Critical startup sequence in main.dart
+- [References](#references) (lines 2869-2883) — Links to other documentation files
 - [State Management](#state-management) (lines 146-285) — When to use what, provider catalog, Riverpod 3.x patterns
 - [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 486-831) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
 - [Translation System](#translation-system) (lines 1054-1113) — Dynamic td() function, 355 keys, 7 languages
@@ -1692,6 +1693,103 @@ int _getSectionLevel(String matchLevel) {
 **Reference:**
 - `journey_mate/lib/pages/search/search_page.dart` — Search results defensive grouping
 - Commit `67405da` — feat(search): add client-side defensive grouping for search results
+
+---
+
+## Code Review Checklist
+
+**Purpose:** Pre-commit checklist consolidating all non-negotiable rules from ARCHITECTURE.md. Use this before every commit to catch common mistakes.
+
+### Design Tokens (Non-Negotiable)
+
+- [ ] **Colors from AppColors** — No raw hex values like `Color(0xFFe8751a)`. Use `AppColors.accent`, `AppColors.primary`, etc.
+  - See [Pitfall #1](#pitfall-1-using-raw-hex-colors) (line 1778)
+  - See [Design Token System](#design-token-system) (lines 1116-1127)
+
+- [ ] **Spacing from AppSpacing** — No magic numbers like `16.0`. Use `AppSpacing.md`, `AppSpacing.lg`, etc.
+  - See [Pitfall #2](#pitfall-2-using-magic-numbers-for-spacing) (line 1792)
+  - See [Design Token System](#design-token-system) (lines 1116-1127)
+
+- [ ] **Typography from AppTypography** — No inline `TextStyle(...)`. Use `AppTypography.headingLarge`, `AppTypography.bodyMedium`, etc.
+  - See [Design Token System](#design-token-system) (lines 1116-1127)
+
+- [ ] **Radii from AppRadius** — No `BorderRadius.circular(16)`. Use `AppRadius.lg`, `AppRadius.full`, etc.
+  - See [Design Token System](#design-token-system) (lines 1116-1127)
+
+- [ ] **Color semantics enforced** — Orange (`AppColors.accent`) for CTAs only, green (`AppColors.matchGreen`) for match confirmation only
+  - See [Philosophy](#philosophy) → Design Tokens (lines 44-50)
+
+### State Management Patterns
+
+- [ ] **Global state uses NotifierProvider/AsyncNotifierProvider** — No `FFAppState`, `Provider`, or `StateNotifier` (deprecated Riverpod 2.x)
+  - See [State Management](#state-management) (lines 146-285)
+
+- [ ] **Page-local state uses local State variables** — Not provider state
+  - See [State Management](#state-management) → When to Use What (lines 183-227)
+
+- [ ] **Atomic updates for dependent fields** — Update related fields together to prevent orphaned state
+  - See [Pitfall #6](#pitfall-6-non-atomic-updates-to-dependent-fields) (line 1874)
+
+### Translations
+
+- [ ] **All text via td(ref, 'key')** — No hardcoded string literals
+  - See [Translation System](#translation-system) (lines 1054-1113)
+  - See [Philosophy](#philosophy) → Translations (lines 60-62)
+
+### Widget Architecture
+
+- [ ] **Self-contained widgets** — Widgets read providers/context internally. No infrastructure props (language, translations, dimensions)
+  - See [Philosophy](#philosophy) → Self-Contained Widgets (lines 71-81)
+  - See [Pitfall #7](#pitfall-7-prop-drilling-infrastructure-data) (line 1897)
+
+- [ ] **ConsumerWidget only when using ref** — Use StatelessWidget for pure widgets with no provider reads
+  - See [State Management](#state-management) → Widget Types (lines 146-182)
+
+### Analytics
+
+- [ ] **Fire-and-forget analytics** — Never `await` analytics calls
+  - See [Analytics Architecture](#analytics-architecture) (lines 1129-1203)
+  - See [Pitfall #11](#pitfall-11-awaiting-analytics-calls) (line 1987)
+
+- [ ] **No manual markUserEngaged() calls** — ActivityScope handles engagement automatically
+  - See [Analytics Architecture](#analytics-architecture) → ActivityScope Pattern (lines 1164-1178)
+
+### Flutter 3.x APIs
+
+- [ ] **WidgetStateProperty (not MaterialStateProperty)** — Flutter 3.x renamed this class
+  - See [Pitfall #3](#pitfall-3-using-deprecated-materialstateproperty) (line 1813)
+
+- [ ] **.withValues(alpha:) instead of .withOpacity()** — Flutter 3.x deprecated `withOpacity`
+  - See [Pitfall #4](#pitfall-4-using-deprecated-withopacity) (line 1829)
+
+- [ ] **context.mounted checks after async** — Always check `if (!context.mounted) return;` after `await`
+  - See [Pitfall #5](#pitfall-5-missing-contextmounted-checks) (line 1845)
+
+### Linting Rules
+
+- [ ] **No double underscores in parameter names** — Triggers `unnecessary_underscores` lint
+  - Use `e`, `s`, `error`, `stack` instead of `_`, `__`
+  - Example: `error: (e, s) => true` NOT `error: (_, __) => true`
+  - See [Pitfall #19](#pitfall-19-using-double-underscores-in-callbacks) (line 2196)
+
+- [ ] **Null-aware spread for conditional map entries** — Use `...?condition ? {'key': value} : null`
+  - NOT `if (condition) 'key': value` (syntax error)
+  - See [Pitfall #21](#pitfall-21-incorrect-conditional-map-entries) (line 2242)
+
+### Code Quality
+
+- [ ] **flutter analyze clean** — 0 errors, 0 warnings
+  - See [Code Quality Standards](#code-quality-standards) (lines 1206-1245)
+
+- [ ] **No unaddressed TODOs** — Resolve or remove before committing
+
+### Shared Source Verification
+
+- [ ] **Check app_theme.dart before modifying pages** — Shared theme tokens should be used, not duplicated
+  - See [Code Quality Standards](#code-quality-standards) → Shared Sources (lines 1224-1245)
+
+- [ ] **Check lib/widgets/shared/ before creating new widgets** — Reuse existing widgets when possible
+  - See [Project Structure](#project-structure) → Shared Widgets (lines 120-130)
 
 ---
 
