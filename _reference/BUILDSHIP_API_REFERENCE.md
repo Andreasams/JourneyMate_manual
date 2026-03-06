@@ -498,14 +498,14 @@ URL API Endpoint: https://wvb8ww.buildship.run/analytics
 **Inputs:**
 | Field | Type | Notes |
 |-------|------|-------|
-| `eventType` | `string` | Must be one of the 36 valid event types below |
+| `eventType` | `string` | Must be one of the 47 valid event types below |
 | `deviceId` | `string` | Persistent device identifier |
 | `sessionId` | `string` | Session UUID (from `AnalyticsService`) |
 | `userId` | `string` | User identifier |
 | `eventData` | `Map<String, dynamic>` | Event-specific data |
 | `timestamp` | `string` | ISO 8601 timestamp |
 
-**Valid event types (36):**
+**Valid event types (47):**
 ```
 session_start, session_end, session_heartbeat,
 filter_applied, filter_session_ended, filter_session_started,
@@ -514,14 +514,18 @@ menu_filter_applied, menu_filters_reset,
 menu_session_started, menu_session_ended,
 menu_item_clicked, menu_package_clicked,
 menu_filter_impact, menu_scroll_depth,
+menu_full_page_viewed,
 category_description_viewed, page_viewed,
 location_permission_changed, location_settings_opened, location_settings_error,
 allergen_filter_toggled, dietary_restriction_toggled, dietary_preference_toggled,
 image_gallery_opened, image_gallery_navigation, image_gallery_closed,
 filter_info_clicked, currency_changed, language_changed,
-gallery_tab_opened, gallery_tab_changed,
+gallery_tab_opened, gallery_tab_changed, gallery_image_tapped, gallery_view_all_tapped,
 expandable_text_toggled, social_link_clicked,
-share_button_clicked, business_contact_toggled
+share_button_clicked, business_contact_toggled,
+business_call_tapped, business_website_tapped, business_booking_tapped, business_map_tapped,
+match_card_expanded, match_card_collapsed,
+facility_info_opened, report_link_tapped
 ```
 
 **`page_viewed` event:** Use `event_data.pageName = 'welcomePage'` for the welcome page (not `'homepage'` or `'welcomepage'`).

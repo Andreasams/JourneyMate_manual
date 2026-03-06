@@ -80,6 +80,7 @@ Each scenario below provides:
 4. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1136-1215)
 5. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1625-1710)
 6. **ARCHITECTURE.md** → Common Pitfall #25 (lines 2785-2850)
+7. **ARCHITECTURE.md** → Common Pitfall #27 (unsafe JSON numeric casting)
 
 **Critical warnings:**
 - ⚠️ All backend calls through `ApiService.instance` singleton — NO direct Supabase SDK
@@ -87,6 +88,7 @@ Each scenario below provides:
 - ⚠️ Save notifier with `ref.read()` BEFORE any `await` to prevent ref-after-unmount bugs
 - ⚠️ Use `ApiCallResponse` wrapper for all responses
 - ⚠️ Pass full API response Maps to providers if downstream consumers need multiple keys (Pitfall #25)
+- ⚠️ **JSON numeric casting:** Use `(as num?)?.toDouble()` not `as double?` — Dart JSON decoder returns `int` for whole numbers, causing TypeError (Pitfall #27)
 
 **Reference files:**
 - `journey_mate/lib/services/api_service.dart` — All 13 BuildShip endpoints
@@ -273,8 +275,8 @@ Each scenario below provides:
 3. **_reference/PROVIDERS_REFERENCE.md** → businessProvider (search for "businessProvider")
 4. **ARCHITECTURE.md** → API Service Pattern (lines 1069-1135)
 5. **ARCHITECTURE.md** → State Management → NotifierProvider (lines 149-174)
-6. **ARCHITECTURE.md** → Common Pitfall #22, #23, #25 (lines 2471-2530, 2531-2597, 2785-2850)
-7. **_reference/PROFILE_V2_GAP_ANALYSIS.md** → Actual API response structure (source of truth)
+6. **ARCHITECTURE.md** → Common Pitfall #22, #23, #25, #26, #27 (lines 2471-2530, 2531-2597, 2785-2850, plus new pitfalls)
+7. **_reference/PROFILE_V2_GAP_ANALYSIS.md** → Actual API response structure + audit results (source of truth)
 
 **Critical warnings:**
 - ⚠️ **v2 is live** — Router serves `BusinessProfilePageV2` (Decision #15 in CLAUDE.md)
@@ -282,7 +284,9 @@ Each scenario below provides:
 - ⚠️ Client-side field enrichment: `status_open`, `closing_time`, `price_range` computed from `openWindows` data before storing to provider
 - ⚠️ Menu items have dietary filters (vegan, vegetarian, gluten-free, lactose-free)
 - ⚠️ Opening hours are pre-computed `openWindows` arrays from BuildShip
-- ⚠️ Image gallery is categorized: `{ interior: [], food: [], outdoor: [], menu: [] }`
+- ⚠️ **businessHours day keys:** `"0"`=Monday through `"6"`=Sunday. Convert with `weekday - 1`, NOT `weekday % 7` (Pitfall #26)
+- ⚠️ **JSON numeric casting:** Use `(as num?)?.toDouble()` for lat/lng and other numeric API fields — `as double?` throws on whole numbers (Pitfall #27)
+- ⚠️ Image gallery is categorized: `{ interior: [], food: [], outdoor: [], menu: [] }`. Note: API ref says objects with `image_url`, but code may treat as strings — verify at runtime
 - ⚠️ **Navigation to full pages (gallery/menu/info): use `context.push()` (NOT `context.go()`)** — go() breaks back button (Pitfall #22)
 - ⚠️ **Expandable sections: use `AnimatedOpacity` (NOT `AnimatedSize`)** — AnimatedSize causes jankiness (Pitfall #23)
 - ⚠️ **Pass full API response Maps to providers** (NOT partial arrays) if downstream consumers need multiple keys — see Pitfall #25
@@ -308,7 +312,8 @@ Each scenario below provides:
 - ⚠️ ActivityScope handles engagement automatically — NEVER call `markUserEngaged()` manually
 - ⚠️ Analytics service initializes in `main.dart` before provider container
 - ⚠️ User experience is NEVER blocked by analytics (data loss acceptable, UX responsiveness is not)
-- ⚠️ 36 event types tracked to Supabase via BuildShip
+- ⚠️ 47 event types tracked to Supabase via BuildShip (updated from 36 — commit `6804d38` added 11 widget-level events)
+- ⚠️ **Verify event names against allowlist** before adding new analytics — BuildShip silently rejects unknown event types with "Invalid event type" error (no crash, no log)
 
 **Reference files:**
 - `journey_mate/lib/services/analytics_service.dart` — AnalyticsService + EngagementTracker (469 lines)
@@ -344,6 +349,7 @@ Each scenario below provides:
 
 ## Navigation Guide Changelog
 
+**2026-03-06:** Added Pitfalls #26 (businessHours day key indexing) and #27 (unsafe JSON numeric casting) from commits 6804d38/172a66e. Updated Scenario 3 (API: added Pitfall #27), Scenario 10 (business profile: added Pitfalls #26, #27, gallery format note), Scenario 11 (analytics: 36→47 events + allowlist warning). BUILDSHIP_API_REFERENCE.md updated with 11 new event types. PROVIDERS_REFERENCE.md flagged dead fields. PROFILE_V2_GAP_ANALYSIS.md marked original bugs resolved, added audit results. CLAUDE_MAIN.md added Decision #16 (Google Maps AppDelegate setup)
 **2026-03-05:** Added Common Pitfall #25 (provider data structure expectations) from commit 5f4aeab. Updated Scenario 3 (API integration) and Scenario 10 (business profile/menu) with new pitfall reference. PROVIDERS_REFERENCE.md businessProvider usage example corrected. Line shift: Pitfall #25 added at line 2785 (~65 lines), all subsequent line refs shifted
 **2026-03-03:** Updated neighbourhood filter docs to multi-select (`List<int>?`) pattern from commits bd1c12f/61a7cea. ARCHITECTURE.md Filter Coordination Pattern code example updated, PROVIDERS_REFERENCE.md SearchState fields and setFiltersWithRouting() method added. No line-number shifts in ARCHITECTURE.md
 **2026-03-03:** Updated all line references after 6-branch merge documentation (Pitfall #20, atomic state updates, submit button pattern, v2 business profile). Updated Scenario 5 with atomic state pattern, Scenario 10 with v2 profile info
