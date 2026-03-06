@@ -17,8 +17,28 @@ interface NodeScriptOptions {
   getBuildShipFile: any;
 }
 
+interface OpenWindow {
+  day: number;
+  open: number;
+  close: number;
+}
+
+interface BusinessFilter {
+  filter_id: number;
+  filter_category_id: number;
+  filter_name: string;             // Denormalized English name from business_x_filter
+  filter_name_translated: string;  // Localized name from FilterTranslation → Filter.name fallback
+   filter_description: string | null;
+  filter_type: string | null;
+  parent_id: number | null;
+  display_order: number | null;
+  has_no_subitems: boolean | null;
+  is_primary_category: boolean | null;
+}
+
 interface CombinedBusinessData {
   businessInfo: any;
+  filters: BusinessFilter[];
   gallery: {
     interior: string[];
     food: string[];
@@ -27,22 +47,26 @@ interface CombinedBusinessData {
   };
   menuCategories: any[];
   exchangeRate: any;
+  businessHours: Record<string, any> | null;
+  openWindows: OpenWindow[];
   error?: string;
 }
 
 /**
  * Fetches complete business information with numerical price ranges for localization.
  * Transforms nested Supabase response into flat structure with separate price range fields.
+ * Includes business_hours (keyed by day_of_week 0-6) and open_windows (minutes-since-midnight).
+ * Includes filters with localized names joined from Filter + FilterTranslation tables.
  * @param inputs - Required inputs including Supabase credentials, business ID, and language code.
  * @param options - Script options including logging utility.
- * @returns Combined business data with numerical price ranges for currency conversion.
+ * @returns Combined business data with numerical price ranges, opening hours, open windows, and filters.
  */
 export default async function getBusinessCompleteInfo(
   { supabaseUrl, supabaseKey, businessId, languageCode }: NodeInputs,
   { logging, env, getBuildShipFile }: NodeScriptOptions,
 ): Promise<CombinedBusinessData> {
 
-  logging.log("Starting getBusinessCompleteInfo with numerical price range support:", {
+  logging.log("Starting getBusinessCompleteInfo:", {
     supabaseUrl: supabaseUrl ? "[PROVIDED]" : "[MISSING]",
     supabaseKey: supabaseKey ? "[PROVIDED]" : "[MISSING]",
     businessId: businessId || "[MISSING]",
@@ -54,17 +78,14 @@ export default async function getBusinessCompleteInfo(
     logging.log('ERROR: Missing required input "supabaseUrl".');
     return { error: 'supabaseUrl is required' } as CombinedBusinessData;
   }
-  
   if (!supabaseKey) {
     logging.log('ERROR: Missing required input "supabaseKey".');
     return { error: 'supabaseKey is required' } as CombinedBusinessData;
   }
-  
   if (!businessId || typeof businessId !== 'number') {
     logging.log('ERROR: Missing or invalid required input "businessId".');
     return { error: 'businessId is required and must be a number' } as CombinedBusinessData;
   }
-  
   if (!languageCode) {
     logging.log('ERROR: Missing required input "languageCode".');
     return { error: 'languageCode is required' } as CombinedBusinessData;
@@ -73,9 +94,8 @@ export default async function getBusinessCompleteInfo(
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    // --- Supabase RPC Call ---
     logging.log(`Calling Supabase RPC 'get_business_complete_info' for business: ${businessId}, language: ${languageCode}`);
-    
+
     const { data: businessData, error } = await supabase
       .rpc('get_business_complete_info', {
         p_business_id: businessId,
@@ -92,132 +112,121 @@ export default async function getBusinessCompleteInfo(
       return { error: businessData?.error || 'Invalid data returned' } as CombinedBusinessData;
     }
 
-    logging.log('INFO: Raw data retrieved, starting transformation with numerical price ranges.');
+    logging.log('INFO: Raw data retrieved, starting transformation.');
 
-    // --- Flatten Business Info (from nested business_profile) ---
+    // --- Flatten Business Info ---
     const businessProfile = businessData.business_profile || {};
     const businessInfo: any = {
-      // Core business fields
-      business_id: businessProfile.business_id,
-      business_name: businessProfile.business_name,
-      is_active: businessProfile.is_active,
-      business_type: businessProfile.business_type,
-      tags: businessProfile.tags,
-      typesense_id: businessProfile.typesense_id,
-      description: businessProfile.description,
-      last_reviewed_at: businessProfile.last_reviewed_at,
-      
-      // Numerical price range fields 
-      price_range_min: businessProfile.price_range_min,
-      price_range_max: businessProfile.price_range_max,
-      price_range_currency_code: businessProfile.price_range_currency_code,
-      
-      // Flatten address fields
-      address_id: businessProfile.address?.address_id,
-      street: businessProfile.address?.street,
-      postal_code: businessProfile.address?.postal_code,
-      city_id: businessProfile.address?.city_id,
-      city_name: businessProfile.address?.city_name,
-      postal_city: businessProfile.address?.postal_city,
-      neighbourhood_name: businessProfile.address?.neighbourhood_name,
-      latitude: businessProfile.address?.latitude,
-      longitude: businessProfile.address?.longitude,
-      location: businessProfile.address?.location,
-      google_maps_url: businessProfile.address?.google_maps_url,
-      
-      // Flatten profile picture fields
-      business_profile_picture_id: businessProfile.profile_picture?.business_profile_picture_id,
-      profile_picture_url: businessProfile.profile_picture?.url,
-      profile_picture_name: businessProfile.profile_picture?.name,
-      profile_picture_alt_text: businessProfile.profile_picture?.alt_text,
-      profile_picture_created_at: businessProfile.profile_picture?.created_at,
-      profile_picture_updated_at: businessProfile.profile_picture?.updated_at,
-      
-      // Flatten contact fields
-      website_url: businessProfile.contact?.website_url,
-      facebook_url: businessProfile.contact?.facebook_url,
-      instagram_url: businessProfile.contact?.instagram_url,
-      reservation_url: businessProfile.contact?.reservation_url,
-      general_phone: businessProfile.contact?.general_phone,
-      reservation_phone: businessProfile.contact?.reservation_phone,
-      general_email: businessProfile.contact?.general_email,
-      reservation_email: businessProfile.contact?.reservation_email,
-      
-      // Flatten brand/company fields
-      brand_id: businessProfile.brand?.brand_id,
-      brand_name: businessProfile.brand?.brand_name,
-      company_id: businessProfile.company?.company_id,
-      company_name: businessProfile.company?.company_name
+      // Core fields
+      business_id:                  businessProfile.business_id,
+      business_name:                businessProfile.business_name,
+      is_active:                    businessProfile.is_active,
+      business_type:                businessProfile.business_type,
+      tags:                         businessProfile.tags,
+      typesense_id:                 businessProfile.typesense_id,
+      description:                  businessProfile.description,
+      last_reviewed_at:             businessProfile.last_reviewed_at,
+      // Price range
+      price_range_min:              businessProfile.price_range_min,
+      price_range_max:              businessProfile.price_range_max,
+      price_range_currency_code:    businessProfile.price_range_currency_code,
+      // Address
+      address_id:                   businessProfile.address?.address_id,
+      street:                       businessProfile.address?.street,
+      postal_code:                  businessProfile.address?.postal_code,
+      city_id:                      businessProfile.address?.city_id,
+      city_name:                    businessProfile.address?.city_name,
+      postal_city:                  businessProfile.address?.postal_city,
+      neighbourhood_name:           businessProfile.address?.neighbourhood_name,
+      latitude:                     businessProfile.address?.latitude,
+      longitude:                    businessProfile.address?.longitude,
+      location:                     businessProfile.address?.location,
+      google_maps_url:              businessProfile.address?.google_maps_url,
+      // Profile picture
+      business_profile_picture_id:  businessProfile.profile_picture?.business_profile_picture_id,
+      profile_picture_url:          businessProfile.profile_picture?.url,
+      profile_picture_name:         businessProfile.profile_picture?.name,
+      profile_picture_alt_text:     businessProfile.profile_picture?.alt_text,
+      profile_picture_created_at:   businessProfile.profile_picture?.created_at,
+      profile_picture_updated_at:   businessProfile.profile_picture?.updated_at,
+      // Contact
+      website_url:                  businessProfile.contact?.website_url,
+      facebook_url:                 businessProfile.contact?.facebook_url,
+      instagram_url:                businessProfile.contact?.instagram_url,
+      reservation_url:              businessProfile.contact?.reservation_url,
+      general_phone:                businessProfile.contact?.general_phone,
+      reservation_phone:            businessProfile.contact?.reservation_phone,
+      general_email:                businessProfile.contact?.general_email,
+      reservation_email:            businessProfile.contact?.reservation_email,
+      // Brand / Company
+      brand_id:                     businessProfile.brand?.brand_id,
+      brand_name:                   businessProfile.brand?.brand_name,
+      company_id:                   businessProfile.company?.company_id,
+      company_name:                 businessProfile.company?.company_name,
     };
 
-    // --- Transform Gallery Data ---
+    // --- Extract Filters ---
+    // Each filter includes: filter_id, filter_category_id, filter_name (English fallback),
+    // filter_name_translated (localized via FilterTranslation), filter_type, parent_id,
+    // display_order, has_no_subitems, is_primary_category
+    const filters: BusinessFilter[] = businessProfile.filters || [];
+
+    // --- Transform Gallery ---
     const galleryData = businessData.gallery || [];
-    const galleries = {
-      interior: galleryData
-        .filter((img: any) => img.category_name === 'Interior')
-        .map((img: any) => img.image_url),
-      food: galleryData
-        .filter((img: any) => img.category_name === 'Food')
-        .map((img: any) => img.image_url),
-      outdoor: galleryData
-        .filter((img: any) => img.category_name === 'Outdoor')
-        .map((img: any) => img.image_url),
-      menu: galleryData
-        .filter((img: any) => img.category_name === 'Menu')
-        .map((img: any) => img.image_url)
+    const gallery = {
+      interior: galleryData.filter((img: any) => img.category_name === 'Interior').map((img: any) => img.image_url),
+      food:     galleryData.filter((img: any) => img.category_name === 'Food').map((img: any) => img.image_url),
+      outdoor:  galleryData.filter((img: any) => img.category_name === 'Outdoor').map((img: any) => img.image_url),
+      menu:     galleryData.filter((img: any) => img.category_name === 'Menu').map((img: any) => img.image_url),
     };
 
-    // --- Transform Menu Categories ---
-    const menuCategories = businessData.menu_structure || [];
-
-    // --- Extract Exchange Rate Data ---
-    const exchangeRate = businessData.exchange_rate || null;
+    // --- Menu / Exchange Rate / Hours ---
+    const menuCategories  = businessData.menu_structure || [];
+    const exchangeRate    = businessData.exchange_rate || null;
+    const businessHours   = businessData.business_hours || null;
+    const openWindows: OpenWindow[] = businessData.open_windows || [];
 
     // --- Build Final Response ---
     const result: CombinedBusinessData = {
       businessInfo,
-      gallery: galleries,
-      menuCategories: menuCategories,
-      exchangeRate: exchangeRate
+      filters,
+      gallery,
+      menuCategories,
+      exchangeRate,
+      businessHours,
+      openWindows,
     };
 
-    // Log transformation summary with price range info
-    logging.log('INFO: Successfully transformed data with numerical price ranges.', {
-      businessId: businessInfo.business_id,
-      businessName: businessInfo.business_name,
-      priceRange: {
-        min: businessInfo.price_range_min,
-        max: businessInfo.price_range_max,
-        currency: businessInfo.price_range_currency_code
-      },
-      hasAddress: !!businessInfo.street,
-      hasProfilePicture: !!businessInfo.profile_picture_url,
+    logging.log('INFO: Successfully transformed data.', {
+      businessId:         businessInfo.business_id,
+      businessName:       businessInfo.business_name,
+      filtersCount:       filters.length,
+      filterNames:        filters.map(f => `[${f.filter_id}] ${f.filter_name_translated}`),
+      hasAddress:         !!businessInfo.street,
+      hasProfilePicture:  !!businessInfo.profile_picture_url,
       galleryImageCounts: {
-        interior: galleries.interior.length,
-        food: galleries.food.length,
-        outdoor: galleries.outdoor.length,
-        menu: galleries.menu.length
+        interior: gallery.interior.length,
+        food:     gallery.food.length,
+        outdoor:  gallery.outdoor.length,
+        menu:     gallery.menu.length,
       },
       menuCategoriesCount: menuCategories.length,
-      exchangeRateInfo: exchangeRate ? {
-        fromCurrency: exchangeRate.from_currency,
-        toCurrency: exchangeRate.to_currency,
-        rate: exchangeRate.rate,
-        languageCode: exchangeRate.language_code
-      } : null,
-      businessInfoFieldCount: Object.keys(businessInfo).length
+      exchangeRateInfo:    exchangeRate
+        ? { fromCurrency: exchangeRate.from_currency, toCurrency: exchangeRate.to_currency, rate: exchangeRate.rate }
+        : null,
+      hasBusinessHours:   !!businessHours,
+      openWindowsCount:   openWindows.length,
     });
 
     return result;
 
   } catch (error: any) {
-    logging.log('ERROR: Business information retrieval and transformation failed.', { 
-      error: error.message, 
-      stack: error.stack,
-      businessId: businessId,
-      languageCode: languageCode
+    logging.log('ERROR: Business information retrieval and transformation failed.', {
+      error:      error.message,
+      stack:      error.stack,
+      businessId,
+      languageCode,
     });
-    
     return { error: `Processing error: ${error.message}` } as CombinedBusinessData;
   }
 }

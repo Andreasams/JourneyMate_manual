@@ -6,8 +6,8 @@ import { createClient } from '@supabase/supabase-js';
 interface NodeInputs {
   supabaseUrl: string;
   supabaseKey: string;
-  language_code: string;
-  city_id: string;
+  languageCode: string;
+  cityId: number;
 }
 
 interface NodeScriptOptions {
@@ -19,15 +19,19 @@ interface NodeScriptOptions {
 interface FilterItem {
   id: number;
   name: string;
-  type: string;
+  // 'title' = section header, 'category' = grouping node,
+  // 'item' = leaf node (incl. train stations offset +10000, shopping areas offset +20000),
+  // 'sub_item' = food/drink leaf node (composite ID = parent_id * 1000 + food_drink_id)
+  type: 'title' | 'category' | 'item' | 'sub_item';
   parent_id: number | null;
   is_neighborhood: boolean;
   city_id: number | null;
   has_subitems: boolean;
   children: FilterItem[];
   display_order: number | null;
-  neighbourhood_id_1?: number | null;
-  neighbourhood_id_2?: number | null;
+  // Only populated for train stations and shopping areas; null for everything else
+  neighbourhood_id_1: number | null;
+  neighbourhood_id_2: number | null;
 }
 
 interface FoodDrinkItem {
@@ -52,41 +56,43 @@ interface NodeOutput {
 }
 
 export default async function getOptimizedFilters(
-  { supabaseUrl, supabaseKey, language_code, city_id }: NodeInputs,
+  { supabaseUrl, supabaseKey, languageCode, cityId }: NodeInputs,
   { logging, env, getBuildShipFile }: NodeScriptOptions,
 ): Promise<NodeOutput> {
 
-  logging.log("Starting getOptimizedFilters with new combined function:", {
+  logging.log("Starting getOptimizedFilters:", {
     supabaseUrl: supabaseUrl ? "[PROVIDED]" : "[MISSING]",
     supabaseKey: supabaseKey ? "[PROVIDED]" : "[MISSING]",
-    language_code: language_code || "[MISSING]",
-    city_id: city_id || "[MISSING]"
+    languageCode: languageCode || "[MISSING]",
+    cityId: cityId ?? "[MISSING]"
   });
 
   if (!supabaseUrl) {
     logging.log('ERROR: Missing required input "supabaseUrl".');
     return { filters: [], foodDrinkTypes: [], success: false, error: 'supabaseUrl is required', filterCount: 0, foodDrinkCount: 0 };
   }
-
   if (!supabaseKey) {
     logging.log('ERROR: Missing required input "supabaseKey".');
     return { filters: [], foodDrinkTypes: [], success: false, error: 'supabaseKey is required', filterCount: 0, foodDrinkCount: 0 };
   }
-
-  if (!language_code) {
-    logging.log('ERROR: Missing required input "language_code".');
-    return { filters: [], foodDrinkTypes: [], success: false, error: 'language_code is required', filterCount: 0, foodDrinkCount: 0 };
+  if (!languageCode) {
+    logging.log('ERROR: Missing required input "languageCode".');
+    return { filters: [], foodDrinkTypes: [], success: false, error: 'languageCode is required', filterCount: 0, foodDrinkCount: 0 };
+  }
+  if (cityId === undefined || cityId === null) {
+    logging.log('ERROR: Missing required input "cityId".');
+    return { filters: [], foodDrinkTypes: [], success: false, error: 'cityId is required', filterCount: 0, foodDrinkCount: 0 };
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    logging.log(`Calling NEW Supabase RPC 'get_filters_and_food_types_with_translations' for language: ${language_code}, city: ${city_id}`);
+    logging.log(`Calling Supabase RPC 'get_filters_and_food_types_with_translations' for language: ${languageCode}, cityId: ${cityId}`);
 
     const { data, error } = await supabase
       .rpc('get_filters_and_food_types_with_translations', {
-        p_language_code: language_code,
-        p_city_id: city_id
+        p_language_code: languageCode,
+        p_city_id: cityId
       });
 
     if (error) {
@@ -113,19 +119,18 @@ export default async function getOptimizedFilters(
       };
     }
 
-    // Extract filter_data and food_drink_data from the first row
     const result = data[0];
     const filters = result.filter_data || [];
     const foodDrinkTypes = result.food_drink_data || [];
 
-    logging.log('INFO: Data successfully retrieved from database.', { 
+    logging.log('INFO: Data successfully retrieved from database.', {
       filterCount: filters.length,
       foodDrinkCount: foodDrinkTypes.length
     });
 
-    // Build hierarchical structure for filters (same as before)
+    // Build hierarchical structure
     const filterMap = new Map();
-    
+
     filters.forEach(filter => {
       filterMap.set(filter.id, { ...filter, children: [] });
     });
@@ -146,7 +151,6 @@ export default async function getOptimizedFilters(
           if (filter.id === 7) {
             return a.name.localeCompare(b.name);
           }
-          
           if (filter.id === 6) {
             if (a.display_order !== null && b.display_order !== null) {
               if (a.display_order !== b.display_order) {
@@ -155,7 +159,6 @@ export default async function getOptimizedFilters(
             }
             return a.name.localeCompare(b.name);
           }
-          
           if (a.display_order === null && b.display_order === null) {
             return a.id - b.id;
           }
@@ -173,11 +176,11 @@ export default async function getOptimizedFilters(
       .filter(filter => filter.parent_id === null)
       .sort((a, b) => a.id - b.id);
 
-    logging.log('INFO: Successfully built hierarchical filter structure.', { 
+    logging.log('INFO: Successfully built hierarchical filter structure.', {
       topLevelCount: topLevelFilters.length,
       foodDrinkCount: foodDrinkTypes.length
     });
-    
+
     return {
       filters: topLevelFilters,
       foodDrinkTypes: foodDrinkTypes,
