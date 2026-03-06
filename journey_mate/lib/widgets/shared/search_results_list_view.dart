@@ -1014,7 +1014,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   String? _getDistanceText() {
-    // Read user location from provider
     final userLocation = ref.read(locationProvider).currentPosition;
 
     if (userLocation == null ||
@@ -1023,23 +1022,18 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       return null;
     }
 
-    // Get current language
     final languageCode = Localizations.localeOf(context).languageCode;
 
-    // Determine effective distance unit
-    // Non-English: ALWAYS metric (ignore stored preference)
-    // English: Use stored preference (imperial or metric)
+    // Non-English: ALWAYS metric. English: use stored preference.
     final distanceUnit = languageCode == 'en'
         ? ref.read(localizationProvider).distanceUnit
-        : 'metric'; // Force metric for non-English
+        : 'metric';
 
-    // Create LatLng from user position
     final userLatLng = LatLng(
       userLocation.latitude,
       userLocation.longitude,
     );
 
-    // Use returnDistance function from distance_calculator.dart
     final distance = returnDistance(
       userLatLng,
       _latitude!,
@@ -1047,29 +1041,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       distanceUnit,
     );
 
-    // Imperial: Use feet only for very short distances (< 0.1 mi)
-    // Metric: Use meters for distances < 1 km
-    if (distanceUnit == 'imperial') {
-      if (distance < 0.1) {
-        // Convert miles to feet (1 mile = 5280 feet), round to nearest 10
-        final feet = (distance * 5280).round();
-        final roundedFeet = ((feet / 10).round() * 10);
-        return '$roundedFeet ft.';
-      } else {
-        // Use miles with 1 decimal (e.g., "0.2 mi.", "0.5 mi.", "1.3 mi.")
-        return '$distance mi.';
-      }
-    } else {
-      if (distance < 1.0) {
-        // Convert km to meters (1 km = 1000 m), round to nearest 10
-        final meters = (distance * 1000).round();
-        final roundedMeters = ((meters / 10).round() * 10);
-        return '$roundedMeters m.';
-      } else {
-        // Use km with 1 decimal (e.g., "1.2 km.", "2.5 km.")
-        return '$distance km.';
-      }
-    }
+    return formatDistanceText(distance, distanceUnit);
   }
 
   // Address removed from collapsed state - now only in expanded state via _buildFullAddress()

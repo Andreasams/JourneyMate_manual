@@ -355,17 +355,22 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
               // 4. Opening Hours & Contact
               const OpeningHoursContactWidget(),
-              SizedBox(height: AppSpacing.xxl),
             ]),
           ),
         ),
+
+        // ── Section dividers (full-width grey bars) ──
+        // Divider(height:24, thickness:16) = 4px gap + 16px bar + 4px gap
+        // matches FlutterFlow pattern, preserves 24px total inter-section spacing.
+
+        _sectionDivider,
 
         // 6. Gallery — self-contained widget with own 24 px horizontal padding.
         // Must be a separate SliverToBoxAdapter (not inside the SliverPadding
         // above) to avoid 48 px double-padding. Matches v1 pattern (page.dart:536).
         const SliverToBoxAdapter(child: InlineGalleryWidget()),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
+        _sectionDivider,
 
         // 7. Menu (category chips + inline filter panel + items list)
         SliverToBoxAdapter(
@@ -374,22 +379,23 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
           ),
         ),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
+        _sectionDivider,
 
         // 8. Facilities & Services
         SliverToBoxAdapter(child: _buildFacilitiesSection()),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
+        _sectionDivider,
 
         // 9. Payment Options
         SliverToBoxAdapter(child: _buildPaymentsSection()),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
-
-        // 10. About (collapsible)
-        SliverToBoxAdapter(child: _buildAboutSection()),
-
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
+        // 10. About (collapsible) — dividers conditional on description existing
+        if (_hasAboutContent) ...[
+          _sectionDivider,
+          SliverToBoxAdapter(child: _buildAboutSection()),
+          _sectionDivider,
+        ] else
+          _sectionDivider,
 
         // 11. Report link
         SliverToBoxAdapter(child: _buildReportLink()),
@@ -397,6 +403,19 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         SliverToBoxAdapter(child: SizedBox(height: AppSpacing.huge)),
       ],
     );
+  }
+
+  /// Full-width grey bar separating major content sections.
+  /// height 24 = 4px gap + 16px bar + 4px gap (matches FlutterFlow divider pattern).
+  SliverToBoxAdapter get _sectionDivider => const SliverToBoxAdapter(
+        child: Divider(height: 24, thickness: 16, color: AppColors.divider),
+      );
+
+  /// Whether the About section has content to display.
+  bool get _hasAboutContent {
+    final business = ref.read(businessProvider).currentBusiness;
+    final description = business?['description'] as String?;
+    return description != null && description.isNotEmpty;
   }
 
   /// Error state display
