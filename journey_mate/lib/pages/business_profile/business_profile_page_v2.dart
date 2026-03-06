@@ -182,7 +182,14 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
         // Store menu data
         if (menuData != null) {
-          ref.read(businessProvider.notifier).setMenuItems(menuData['menu_items']);
+          // Pass full menuData Map (includes menu_items AND categories)
+          // MenuDishesListView expects Map structure, not just items array
+          ref.read(businessProvider.notifier).setMenuItems(menuData);
+
+          // Debug: Verify structure is correct
+          debugPrint('✅ Menu data stored: ${menuData.keys}');
+          debugPrint('✅ Categories count: ${(menuData['categories'] as List?)?.length}');
+          debugPrint('✅ Items count: ${(menuData['menu_items'] as List?)?.length}');
 
           final preferences = List<int>.from(menuData['availablePreferences'] ?? []);
           final restrictions = List<int>.from(menuData['availableRestrictions'] ?? []);
