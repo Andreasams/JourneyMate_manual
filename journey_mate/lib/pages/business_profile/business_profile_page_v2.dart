@@ -343,19 +343,19 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             delegate: SliverChildListDelegate([
               // 1. Hero Section (logo, name, cuisine, status, address)
               const HeroSectionWidget(),
-              SizedBox(height: AppSpacing.mlg),
+              SizedBox(height: AppSpacing.xxl),
 
               // 2. Quick Actions Pills (Call, Website, Booking, Map)
               const QuickActionsPillsWidget(),
-              SizedBox(height: AppSpacing.lg),
+              SizedBox(height: AppSpacing.xxl),
 
               // 3. Match Card (if search filters are active)
               const MatchCardWidget(),
-              SizedBox(height: AppSpacing.lg),
+              SizedBox(height: AppSpacing.xxl),
 
               // 4. Opening Hours & Contact
               const OpeningHoursContactWidget(),
-              SizedBox(height: AppSpacing.lg),
+              SizedBox(height: AppSpacing.xxl),
             ]),
           ),
         ),
@@ -365,7 +365,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // above) to avoid 48 px double-padding. Matches v1 pattern (page.dart:536).
         const SliverToBoxAdapter(child: InlineGalleryWidget()),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
 
         // 7. Menu (category chips + inline filter panel + items list)
         SliverToBoxAdapter(
@@ -374,22 +374,22 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
           ),
         ),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
 
         // 8. Facilities & Services
         SliverToBoxAdapter(child: _buildFacilitiesSection()),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
 
         // 9. Payment Options
         SliverToBoxAdapter(child: _buildPaymentsSection()),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
 
         // 10. About (collapsible)
         SliverToBoxAdapter(child: _buildAboutSection()),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
 
         // 11. Report link
         SliverToBoxAdapter(child: _buildReportLink()),
