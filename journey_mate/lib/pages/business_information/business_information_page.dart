@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/filter_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/translation_service.dart';
-import '../../services/custom_actions/determine_status_and_color.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
-import '../../theme/app_radius.dart';
 import '../../widgets/shared/expandable_text_widget.dart';
 import '../../widgets/shared/business_feature_buttons.dart';
 import '../../widgets/shared/payment_options_widget.dart';
-import '../../widgets/shared/contact_details_widget.dart';
 import '../../widgets/shared/erroneous_info_form_widget.dart';
-import '../../widgets/shared/filter_description_sheet.dart';
+import '../../widgets/business_profile/hero_section_widget.dart';
+import '../../widgets/business_profile/opening_hours_contact_widget.dart';
+import '../../widgets/business_profile/facilities_info_sheet.dart';
 
 /// Business Information Page - Dedicated full-screen business detail view
 ///
@@ -44,14 +41,10 @@ class _BusinessInformationPageState
   // LOCAL STATE (NOT providers)
   // ============================================================================
 
+  static const double _mapHeight = 200.0;
+
   /// Page start time for analytics duration tracking
   DateTime? _pageStartTime;
-
-  /// Status color for indicator dot (set by determineStatusAndColor callback)
-  Color? _statusColor;
-
-  /// Status text (e.g., "Åbner kl. 17:30", "Lukker kl. 22:00")
-  String? _statusText;
 
   // ============================================================================
   // LIFECYCLE
@@ -61,32 +54,6 @@ class _BusinessInformationPageState
   void initState() {
     super.initState();
     _pageStartTime = DateTime.now();
-
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-
-      // Calculate status
-      final business = ref.read(businessProvider).currentBusiness;
-      final openingHours = business?['opening_hours'];
-
-      if (openingHours != null) {
-        final statusText = await determineStatusAndColor(
-          (color) async {
-            if (mounted) {
-              setState(() => _statusColor = color);
-            }
-          },
-          openingHours,
-          DateTime.now(),
-          Localizations.localeOf(context).languageCode,
-          ref.read(translationsCacheProvider),
-        );
-
-        if (mounted) {
-          setState(() => _statusText = statusText);
-        }
-      }
-    });
   }
 
   @override
@@ -146,18 +113,14 @@ class _BusinessInformationPageState
       ),
       title: Text(
         businessName,
-        style: AppTypography.bodyRegular.copyWith(
-          fontWeight: FontWeight.w500,
-          fontSize: 16,
-          color: AppColors.textPrimary,
-        ),
+        style: AppTypography.bodyMedium,
       ),
       centerTitle: true,
     );
   }
 
   // ============================================================================
-  // BODY (STACK LAYOUT)
+  // BODY
   // ============================================================================
 
   Widget _buildBody(Map<String, dynamic>? business) {
@@ -172,17 +135,46 @@ class _BusinessInformationPageState
       );
     }
 
-    return Stack(
-      children: [
-        // Layer 1: Scrollable Content (starts at 250px from top)
-        _buildScrollableContent(business),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Full-width map
+          _buildMapSection(business),
 
-        // Layer 2: Google Map (positioned at top)
-        _buildMapSection(business),
+          // Padded content below map
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: AppSpacing.lg),
 
-        // Layer 3: Status Overlay (positioned over map bottom)
-        _buildStatusOverlay(business),
-      ],
+                // Hero: business name, status, timing, price, address
+                const HeroSectionWidget(),
+                SizedBox(height: AppSpacing.lg),
+
+                // Description (conditional — returns SizedBox.shrink if empty)
+                _buildDescriptionSection(business),
+
+                // Opening hours table + contact links (self-contained with heading)
+                const OpeningHoursContactWidget(),
+                SizedBox(height: AppSpacing.lg),
+
+                // Features, services & amenities
+                _buildFeaturesSection(business),
+
+                // Payment options
+                _buildPaymentOptionsSection(),
+
+                // Report incorrect info
+                _buildReportButton(),
+                SizedBox(height: AppSpacing.xxl),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -196,11 +188,8 @@ class _BusinessInformationPageState
 
     if (lat == null || lng == null) {
       // Fallback: Grey placeholder
-      return Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 200,
+      return SizedBox(
+        height: _mapHeight,
         child: Container(
           color: AppColors.bgInput,
           child: Center(
@@ -217,11 +206,8 @@ class _BusinessInformationPageState
 
     final location = LatLng(lat, lng);
 
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 200,
+    return SizedBox(
+      height: _mapHeight,
       child: GoogleMap(
         initialCameraPosition: CameraPosition(
           target: location,
@@ -238,106 +224,6 @@ class _BusinessInformationPageState
         zoomControlsEnabled: false,
         mapToolbarEnabled: false,
         trafficEnabled: false,
-      ),
-    );
-  }
-
-  // ============================================================================
-  // STATUS OVERLAY
-  // ============================================================================
-
-  Widget _buildStatusOverlay(Map<String, dynamic> business) {
-    final businessName = business['business_name'] ?? 'Restaurant';
-
-    return Positioned(
-      top: 168, // 200px map height - 32px overlay height
-      left: AppSpacing.xl,
-      right: AppSpacing.xl,
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.card),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Business Name
-              Text(
-                businessName,
-                style: AppTypography.sectionHeading.copyWith(fontSize: 24),
-              ),
-              SizedBox(height: AppSpacing.xs),
-
-              // Status Row (dot + text)
-              if (_statusText != null)
-                Row(
-                  children: [
-                    // Colored dot
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: _statusColor ?? AppColors.error,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-
-                    // Status text
-                    Expanded(
-                      child: Text(
-                        _statusText!,
-                        style: AppTypography.bodyRegular.copyWith(
-                          fontWeight: FontWeight.w300,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ============================================================================
-  // SCROLLABLE CONTENT
-  // ============================================================================
-
-  Widget _buildScrollableContent(Map<String, dynamic> business) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        top: 250, // Map 200px + overlay 32px + gap 18px
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        bottom: AppSpacing.xxl,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Section 1: Business Description (Conditional)
-          _buildDescriptionSection(business),
-
-          // Section 2: Features, Services & Amenities
-          _buildFeaturesSection(business),
-
-          // Section 3: Payment Options
-          _buildPaymentOptionsSection(),
-
-          // Section 4: Contact Details
-          _buildContactDetailsSection(),
-
-          // Section 5: Report Incorrect Info Button
-          _buildReportButton(),
-        ],
       ),
     );
   }
@@ -366,7 +252,7 @@ class _BusinessInformationPageState
           text: description,
           businessId: int.tryParse(widget.businessId),
         ),
-        SizedBox(height: AppSpacing.xl),
+        SizedBox(height: AppSpacing.lg),
       ],
     );
   }
@@ -386,35 +272,37 @@ class _BusinessInformationPageState
         SizedBox(height: AppSpacing.sm),
         BusinessFeatureButtons(
           containerWidth:
-              MediaQuery.of(context).size.width - (AppSpacing.lg * 2),
+              MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
           onInitialCount: (int count) async {
             debugPrint('Feature buttons count: $count');
           },
-          onFilterTap: _showFilterDescriptionSheet,
+          onFilterTap: _showFacilitiesInfoSheet,
           onHeightCalculated: (double height) async {
             debugPrint('Feature buttons height: $height');
           },
         ),
-        SizedBox(height: AppSpacing.xl),
+        SizedBox(height: AppSpacing.lg),
       ],
     );
   }
 
-  /// Show filter description bottom sheet
-  Future<void> _showFilterDescriptionSheet(
+  /// Show facilities info bottom sheet (matches profile page)
+  Future<void> _showFacilitiesInfoSheet(
     int filterId,
     String filterName,
     String? filterDescription,
   ) async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => FilterDescriptionSheet(
-        filterName: filterName,
-        filterDescription: filterDescription ?? '',
-      ),
-    );
+    if (context.mounted) {
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => FacilitiesInfoSheet(
+          filterName: filterName,
+          filterDescription: filterDescription,
+        ),
+      );
+    }
   }
 
   // ============================================================================
@@ -432,7 +320,7 @@ class _BusinessInformationPageState
         SizedBox(height: AppSpacing.sm),
         PaymentOptionsWidget(
           containerWidth:
-              MediaQuery.of(context).size.width - (AppSpacing.lg * 2),
+              MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
           filters: ref.watch(filterProvider).value?.filtersForLanguage ?? [],
           filtersUsedForSearch:
               ref.watch(searchStateProvider).filtersUsedForSearch,
@@ -444,26 +332,7 @@ class _BusinessInformationPageState
             debugPrint('Payment widget height: $height');
           },
         ),
-        SizedBox(height: AppSpacing.xl),
-      ],
-    );
-  }
-
-  // ============================================================================
-  // CONTACT DETAILS SECTION
-  // ============================================================================
-
-  Widget _buildContactDetailsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          td(ref, 'c9r4q0c8'), // "Hours & contact"
-          style: AppTypography.sectionHeading,
-        ),
-        SizedBox(height: AppSpacing.sm),
-        const ContactDetailsWidget(),
-        SizedBox(height: AppSpacing.xl),
+        SizedBox(height: AppSpacing.lg),
       ],
     );
   }
