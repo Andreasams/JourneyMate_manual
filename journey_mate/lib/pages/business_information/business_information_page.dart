@@ -191,8 +191,8 @@ class _BusinessInformationPageState
   // ============================================================================
 
   Widget _buildMapSection(Map<String, dynamic> business) {
-    final lat = business['latitude'] as double?;
-    final lng = business['longitude'] as double?;
+    final lat = (business['latitude'] as num?)?.toDouble();
+    final lng = (business['longitude'] as num?)?.toDouble();
 
     if (lat == null || lng == null) {
       // Fallback: Grey placeholder
