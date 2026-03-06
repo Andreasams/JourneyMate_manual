@@ -148,18 +148,18 @@ class _BusinessInformationPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: AppSpacing.lg),
+                SizedBox(height: AppSpacing.xxl),
 
                 // Hero: business name, status, timing, price, address
                 const HeroSectionWidget(),
-                SizedBox(height: AppSpacing.lg),
+                SizedBox(height: AppSpacing.xxl),
 
                 // Description (conditional — returns SizedBox.shrink if empty)
                 _buildDescriptionSection(business),
 
                 // Opening hours table + contact links (self-contained with heading)
                 const OpeningHoursContactWidget(),
-                SizedBox(height: AppSpacing.lg),
+                SizedBox(height: AppSpacing.xxl),
 
                 // Features, services & amenities
                 _buildFeaturesSection(business),
@@ -252,7 +252,7 @@ class _BusinessInformationPageState
           text: description,
           businessId: int.tryParse(widget.businessId),
         ),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: AppSpacing.xxl),
       ],
     );
   }
@@ -281,7 +281,7 @@ class _BusinessInformationPageState
             debugPrint('Feature buttons height: $height');
           },
         ),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: AppSpacing.xxl),
       ],
     );
   }
@@ -332,7 +332,7 @@ class _BusinessInformationPageState
             debugPrint('Payment widget height: $height');
           },
         ),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: AppSpacing.xxl),
       ],
     );
   }
