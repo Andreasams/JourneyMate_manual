@@ -1,5 +1,4 @@
 URL: https://wvb8ww.buildship.run/menuItem
-
 ---
 
 import { createClient } from '@supabase/supabase-js';

@@ -1,5 +1,4 @@
 URL: https://wvb8ww.buildship.run/DishesAndDrinks
-
 ---
 
 import { createClient } from '@supabase/supabase-js';
