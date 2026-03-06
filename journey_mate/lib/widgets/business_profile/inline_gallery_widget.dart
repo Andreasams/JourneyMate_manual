@@ -45,6 +45,7 @@ class InlineGalleryWidget extends ConsumerStatefulWidget {
 class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
   late PageController _pageController;
   int _currentTabIndex = 0;
+  List<Map<String, dynamic>> _activeCategories = [];
 
   // Tab configuration: matches JSX tab order and API keys
   static const _tabs = [
@@ -106,6 +107,9 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
     if (galleryCategories.isEmpty) {
       return const SizedBox.shrink();
     }
+
+    // Store for analytics (so _trackTabChange uses correct keys)
+    _activeCategories = galleryCategories;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
@@ -422,7 +426,8 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
 
   /// Track analytics for tab change
   void _trackTabChange(int tabIndex) {
-    final tabKey = _tabs[tabIndex]['key'] as String;
+    if (tabIndex >= _activeCategories.length) return;
+    final tabKey = _activeCategories[tabIndex]['key'] as String;
 
     final analytics = AnalyticsService.instance;
     ApiService.instance
