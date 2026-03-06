@@ -320,6 +320,10 @@ class BusinessState {
 }
 ```
 
+**Field notes (v2 audit — commit `6804d38`):**
+- `filterDescriptions` — exists in notifier via `setFilterDescriptions()` method, not yet consumed by v2 widgets. Reserved for upcoming services chip feature (filter description bottom sheet). Keep.
+- `matchedCount` / `totalCount` — dead code. Set alongside `filterDescriptions` but never read; `MatchCardWidget` computes matches internally from raw filters. Do not use in new code.
+
 ### Persistence
 
 - **No persistence** (session-only state)

@@ -17,11 +17,11 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - **Need a specific section?** Use alphabetical index below for direct access
 
 **Section Index (Alphabetical):**
-- [Analytics Architecture](#analytics-architecture) (lines 1129-1203) — Fire-and-forget, ActivityScope, 36 event types
+- [Analytics Architecture](#analytics-architecture) (lines 1129-1203) — Fire-and-forget, ActivityScope, 47 event types
 - [API Service Pattern](#api-service-pattern) (lines 834-890) — Singleton, cache, BuildShip integration
 - [Code Quality Standards](#code-quality-standards) (lines 1206-1245) — Flutter analyze, design tokens, algorithms
 - [Code Review Checklist](#code-review-checklist) (lines 1698-1778) — Pre-commit checklist (⚠️ use before every commit)
-- [Common Pitfalls](#common-pitfalls) (lines 1778-2780) — 24 anti-patterns with fixes (⚠️ read before first commit)
+- [Common Pitfalls](#common-pitfalls) (lines 1778-2780) — 27 anti-patterns with fixes (⚠️ read before first commit)
 - [Design Token System](#design-token-system) (lines 1116-1127) — Quick lookup tables for colors, spacing, typography
 - [Documentation Philosophy](#documentation-philosophy) (lines 2783-2803) — Three types of docs, when to update
 - [Key Architectural Decisions](#key-architectural-decisions) (lines 2833-2866) — CityID, favorites, filters, translations, engagement
@@ -70,7 +70,7 @@ JourneyMate was migrated from FlutterFlow to production Flutter with five core a
 - **AnalyticsService** singleton manages all tracking
 - **ActivityScope** wraps app for automatic engagement detection
 - **Never await** analytics calls — fire-and-forget with `.catchError()`
-- **36 event types** tracked to Supabase via BuildShip
+- **47 event types** tracked to Supabase via BuildShip
 
 **Why:** User experience is never blocked by analytics. Data loss acceptable, UX responsiveness is not.
 
@@ -1562,7 +1562,7 @@ ApiService.instance.postAnalytics(
 
 **Why:** User experience is never blocked by analytics. Data loss is acceptable, UX responsiveness is not.
 
-### Event Types (36 total)
+### Event Types (47 total)
 
 See `_reference/BUILDSHIP_API_REFERENCE.md` for full list. Common events:
 - `page_viewed` — Page visit with duration
@@ -2844,6 +2844,58 @@ final categories = widget.normalizedMenuData['categories']; // ✅ Works! Full M
 - When in doubt, pass full `response.jsonBody` to providers
 - Document expected structure in provider method comments
 - Add debug logging to validation methods to surface silent failures
+
+### Pitfall #26: businessHours Day Keys Use 0=Monday (Not 0=Sunday)
+
+**Context:** The BuildShip API's `businessHours` object uses string keys `"0"` (Monday) through `"6"` (Sunday). Dart's `DateTime.weekday` returns 1=Monday through 7=Sunday. The conversion must use `weekday - 1`, NOT `weekday % 7`.
+
+❌ **Bad:**
+```dart
+// OpeningHoursContactWidget — get today's hours
+final todayKey = '${DateTime.now().weekday % 7}';
+final todayHours = businessHours[todayKey];
+// Monday(1)%7=1 → shows Tuesday's hours (off by one)
+// Sunday(7)%7=0 → shows Monday's hours (off by six)
+```
+
+✅ **Good:**
+```dart
+final todayKey = '${DateTime.now().weekday - 1}';
+final todayHours = businessHours[todayKey];
+// Monday(1)-1=0 → correct
+// Sunday(7)-1=6 → correct
+```
+
+**Why:** `weekday % 7` shifts every day by +1 because `DateTime.weekday` starts at 1 (Monday), not 0. The modulo wraps Sunday(7) to 0, which is Monday in the API — making it wrong for every day of the week.
+
+**Also:** Inline code comments may incorrectly state "0=Sunday" when the API actually uses 0=Monday. Always verify against `BUILDSHIP_API_REFERENCE.md` §2 `business_hours` object.
+
+**Reference:** Commit `6804d38` — Bug 1 in business profile API audit
+
+---
+
+### Pitfall #27: Unsafe `as double?` on Decoded JSON Numeric Fields
+
+**Context:** Dart's JSON decoder returns `int` for whole numbers (e.g., `55` → `int`, `55.6` → `double`). Casting with `as double?` throws a `TypeError` at runtime when the value is actually an `int`.
+
+❌ **Bad:**
+```dart
+// business_information_page.dart — read coordinates
+final lat = business['latitude'] as double?;  // TypeError if value is int (e.g., 55)
+final lng = business['longitude'] as double?;
+```
+
+✅ **Good:**
+```dart
+final lat = (business['latitude'] as num?)?.toDouble();  // Safe: int→double, double→double
+final lng = (business['longitude'] as num?)?.toDouble();
+```
+
+**Why:** API responses may return whole numbers (55 vs 55.0) depending on database column precision and JSON serialization. The `as num?` cast accepts both `int` and `double`, then `.toDouble()` normalizes to `double`.
+
+**Audit scope:** All pages reading numeric fields from decoded JSON API responses — coordinates (lat/lng), prices, counts, match scores.
+
+**Reference:** Commit `172a66e` — business information page crash from unsafe coordinate casting
 
 ---
 

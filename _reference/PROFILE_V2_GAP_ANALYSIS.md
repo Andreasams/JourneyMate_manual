@@ -134,7 +134,8 @@ This fix also restores working filter matching — a bonus v1 never had.
 **Conclusion:**
 - `_computeFilterMatchData()` is redundant — the widget recomputes the same data itself. Do not port it to v2.
 - If the API parsing fix above is applied (filters merged into business object), `MatchCardWidget` will work correctly in v2 with no additional changes.
-- `setFilterDescriptions()` stores data nothing reads. It is dead code and can be omitted.
+- `setFilterDescriptions()` is not consumed by current v2 widgets, but is **reserved for the upcoming services chip feature** (filter description bottom sheet). Keep the method and field.
+- `matchedCount` / `totalCount` — dead code. Set alongside `filterDescriptions` but never read by v2. `MatchCardWidget` computes matches internally. Can be removed in future cleanup.
 
 ---
 
@@ -345,41 +346,45 @@ ApiService.instance.postAnalytics(
 
 ## What the Next Session Must Fix (Priority Order)
 
-### Bug 1 — Wrong API keys (BLOCKING — page shows nothing)
+> **Status: All original bugs RESOLVED.** Bugs 1-3 and Addition 1 were fixed in earlier sessions. See audit results below for new findings.
 
-In `business_profile_page_v2.dart`, `_loadBusinessData()`:
-- Change `businessData['business_data']` → `businessData['businessInfo']`
-- Change `businessData['filter_ids']` → top-level `businessData['filters']` (parse to IDs)
-- Change `businessData['business_data']?['business_hours']` → `businessData['businessHours']`
+### ~~Bug 1 — Wrong API keys~~ ✅ RESOLVED
+### ~~Bug 2 — HeroSectionWidget field mismatches~~ ✅ RESOLVED
+### ~~Bug 3 — Wrong analytics event names~~ ✅ RESOLVED
+### ~~Addition 1 — Menu session tracking~~ ✅ RESOLVED
 
-### Bug 2 — HeroSectionWidget field mismatches (VISUAL — hero shows empty)
-
-Before calling `setCurrentBusiness()`, compute and inject the expected fields into the business map:
-- `cuisine_type` ← `business_type`
-- `price_range` ← format from `price_range_min`, `price_range_max`, `price_range_currency_code`
-- `status_open` ← compute from `openWindows` and current time
-- `closing_time` ← compute from `openWindows` today's close time
-- `address.address_line` ← `street`
-
-### Bug 3 — Wrong analytics event names (SILENT FAILURE — events rejected by BuildShip)
-
-| Replace | With |
-|---|---|
-| `page_viewed` + pageName | `business_profile_viewed` |
-| `business_profile_shared` | `share_button_clicked` |
-| `business_profile_session_end` | `menu_session_ended` |
-| `about_expanded`/`about_collapsed` | `expandable_text_toggled` + `action` field |
-
-### Addition 1 — Menu session tracking (NEW — never worked in v1)
-
-Add `menu_session_started` fire-and-forget call after data loads.
-Add `menu_session_ended` call in `dispose()` with `session_duration_seconds`.
-
-### Cleanup — Dead code not worth porting
+### Cleanup — Dead code assessment (updated)
 
 - `_computeFilterMatchData()` — do not port; MatchCardWidget computes the same data internally
-- `setFilterDescriptions()` — nothing reads this; omit from v2
-- `startMenuSession()`/`endMenuSession()` provider calls — replace with analytics API calls above
+- `setFilterDescriptions()` — **keep**: reserved for upcoming services chip feature (filter description bottom sheet)
+- `matchedCount` / `totalCount` — dead code; never read by v2 widgets. Can be removed.
+- `startMenuSession()`/`endMenuSession()` provider calls — replaced with analytics API calls
+
+---
+
+## API Audit Results (commit `6804d38`)
+
+Full audit of every widget on BusinessProfilePageV2 against BuildShip API contracts. Three new bugs found and fixed:
+
+### Bug 4 — OpeningHoursContactWidget today preview shows wrong day ✅ FIXED
+- **Root cause:** `weekday % 7` maps Monday→1 but API businessHours keys use "0"=Monday. Every day showed next day's hours.
+- **Fix:** Changed to `weekday - 1`. See ARCHITECTURE.md Pitfall #26.
+
+### Bug 5 — OpeningHoursContactWidget analytics events not in allowlist ✅ FIXED
+- **Root cause:** `opening_hours_toggled` and `contact_link_tapped` not in BuildShip 36-event allowlist.
+- **Fix:** Changed to `business_contact_toggled` and `social_link_clicked`.
+
+### Bug 6 — InlineGalleryWidget _trackTabChange reports wrong tab key ✅ FIXED
+- **Root cause:** Tab index from filtered visible categories misaligned with static 4-item list.
+- **Fix:** Added `_activeCategories` field synced each build; `_trackTabChange` reads from it with bounds check.
+
+### Audit pass (all other widgets verified correct)
+- HeroSectionWidget (6 fields), QuickActionsPillsWidget (7 fields), MatchCardWidget (4 fields), InlineMenuWidget (4 fields), TagsRowWidget (1 field), FacilitiesInfoSheet (props from parent), Page-level data loading (6 API keys)
+
+### Open item — Gallery image format verification
+- API reference (BUILDSHIP_API_REFERENCE.md §2) documents gallery images as **objects** with `image_id`, `image_url`, `image_name`, etc.
+- `InlineGalleryWidget` treats gallery images as **strings** (URLs directly).
+- App is live on TestFlight, so actual API format may differ from reference doc. **Needs runtime verification** to determine if API returns objects or strings, and update either the code or the reference doc accordingly.
 
 ---
 

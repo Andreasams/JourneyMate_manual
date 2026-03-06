@@ -122,6 +122,8 @@ These decisions have been confirmed and must not be re-debated:
 
 15. **Business Profile v2 is the active route** — Router serves `BusinessProfilePageV2` (not v1). The v2 page reads from a flat `businessInfo` API response, merges top-level `filters` into the business map, and computes `status_open`/`closing_time`/`price_range` client-side from `openWindows` data. Analytics events use v2 naming: `business_profile_viewed`, `share_button_clicked`, `menu_session_started`, `menu_session_ended`. See `_reference/PROFILE_V2_GAP_ANALYSIS.md` for full API structure.
 
+16. **Google Maps API key configured in AppDelegate.swift** — `google_maps_flutter` plugin does NOT auto-initialize the iOS SDK. `AppDelegate.swift` must include `import GoogleMaps` and `GMSServices.provideAPIKey()` in `didFinishLaunchingWithOptions`. Codemagic runs `pod install` automatically during builds. Only one page uses Google Maps: business information page (`/business/:id/information`). Commit `172a66e`.
+
 ---
 
 ## What NOT to Do
