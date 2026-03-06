@@ -179,7 +179,7 @@ class _OpeningHoursContactWidgetState
   // DATA HELPERS
   // ============================================================================
 
-  /// Get day hours data for a specific day index (0 = Sunday, 6 = Saturday)
+  /// Get day hours data for a specific day index (0 = Monday, 6 = Sunday)
   Map<String, dynamic> _getDayHours(int dayIndex, Map<String, dynamic> openingHours) {
     return Map<String, dynamic>.from(openingHours[dayIndex.toString()] ?? {});
   }
@@ -232,8 +232,8 @@ class _OpeningHoursContactWidgetState
     final now = DateTime.now();
     final weekday = now.weekday;
 
-    // Convert to 0-indexed (Sunday=0): (weekday % 7)
-    final todayIndex = weekday % 7;
+    // Convert to 0-indexed matching API keys: "0"=Monday, "6"=Sunday
+    final todayIndex = weekday - 1;
 
     final dayHours = _getDayHours(todayIndex, openingHours);
 
@@ -379,7 +379,7 @@ class _OpeningHoursContactWidgetState
     final analytics = AnalyticsService.instance;
     ApiService.instance
         .postAnalytics(
-      eventType: 'opening_hours_toggled',
+      eventType: 'business_contact_toggled',
       deviceId: analytics.deviceId ?? '',
       sessionId: analytics.currentSessionId ?? '',
       userId: analytics.userId ?? '',
@@ -401,7 +401,7 @@ class _OpeningHoursContactWidgetState
 
     ApiService.instance
         .postAnalytics(
-      eventType: 'contact_link_tapped',
+      eventType: 'social_link_clicked',
       deviceId: analytics.deviceId ?? '',
       sessionId: analytics.currentSessionId ?? '',
       userId: analytics.userId ?? '',
