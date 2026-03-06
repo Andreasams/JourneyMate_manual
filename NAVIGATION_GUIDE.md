@@ -79,12 +79,14 @@ Each scenario below provides:
 3. **ARCHITECTURE.md** → State Management → AsyncNotifierProvider (lines 176-214)
 4. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1136-1215)
 5. **ARCHITECTURE.md** → Common Pitfall #11 (lines 1625-1710)
+6. **ARCHITECTURE.md** → Common Pitfall #25 (lines 2785-2850)
 
 **Critical warnings:**
 - ⚠️ All backend calls through `ApiService.instance` singleton — NO direct Supabase SDK
 - ⚠️ Check `response.succeeded` and `response.jsonBody != null` before accessing data
 - ⚠️ Save notifier with `ref.read()` BEFORE any `await` to prevent ref-after-unmount bugs
 - ⚠️ Use `ApiCallResponse` wrapper for all responses
+- ⚠️ Pass full API response Maps to providers if downstream consumers need multiple keys (Pitfall #25)
 
 **Reference files:**
 - `journey_mate/lib/services/api_service.dart` — All 13 BuildShip endpoints
@@ -271,7 +273,7 @@ Each scenario below provides:
 3. **_reference/PROVIDERS_REFERENCE.md** → businessProvider (search for "businessProvider")
 4. **ARCHITECTURE.md** → API Service Pattern (lines 1069-1135)
 5. **ARCHITECTURE.md** → State Management → NotifierProvider (lines 149-174)
-6. **ARCHITECTURE.md** → Common Pitfall #22, #23 (lines 2471-2530, 2531-2597)
+6. **ARCHITECTURE.md** → Common Pitfall #22, #23, #25 (lines 2471-2530, 2531-2597, 2785-2850)
 7. **_reference/PROFILE_V2_GAP_ANALYSIS.md** → Actual API response structure (source of truth)
 
 **Critical warnings:**
@@ -283,6 +285,7 @@ Each scenario below provides:
 - ⚠️ Image gallery is categorized: `{ interior: [], food: [], outdoor: [], menu: [] }`
 - ⚠️ **Navigation to full pages (gallery/menu/info): use `context.push()` (NOT `context.go()`)** — go() breaks back button (Pitfall #22)
 - ⚠️ **Expandable sections: use `AnimatedOpacity` (NOT `AnimatedSize`)** — AnimatedSize causes jankiness (Pitfall #23)
+- ⚠️ **Pass full API response Maps to providers** (NOT partial arrays) if downstream consumers need multiple keys — see Pitfall #25
 
 **Reference files:**
 - `journey_mate/lib/pages/business_profile/business_profile_page_v2.dart` — Business data display (v2, active)
@@ -341,6 +344,7 @@ Each scenario below provides:
 
 ## Navigation Guide Changelog
 
+**2026-03-05:** Added Common Pitfall #25 (provider data structure expectations) from commit 5f4aeab. Updated Scenario 3 (API integration) and Scenario 10 (business profile/menu) with new pitfall reference. PROVIDERS_REFERENCE.md businessProvider usage example corrected. Line shift: Pitfall #25 added at line 2785 (~65 lines), all subsequent line refs shifted
 **2026-03-03:** Updated neighbourhood filter docs to multi-select (`List<int>?`) pattern from commits bd1c12f/61a7cea. ARCHITECTURE.md Filter Coordination Pattern code example updated, PROVIDERS_REFERENCE.md SearchState fields and setFiltersWithRouting() method added. No line-number shifts in ARCHITECTURE.md
 **2026-03-03:** Updated all line references after 6-branch merge documentation (Pitfall #20, atomic state updates, submit button pattern, v2 business profile). Updated Scenario 5 with atomic state pattern, Scenario 10 with v2 profile info
 **2026-03-03:** Added Parent-Child Filter Pattern (lines 571-691) and Pitfall #18 to Scenario 9. Updated all line references across 12 scenarios due to 121-line insertion in ARCHITECTURE.md from commit a917eee

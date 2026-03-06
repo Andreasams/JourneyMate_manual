@@ -369,7 +369,8 @@ ref.read(businessProvider.notifier).setCurrentBusiness(
 
 // On menu load
 final menuResponse = await ApiService.instance.getRestaurantMenu(businessId);
-ref.read(businessProvider.notifier).setMenuItems(menuResponse.jsonBody['menu_items']);
+// Pass FULL response Map (contains menu_items, categories, availablePreferences, availableRestrictions)
+ref.read(businessProvider.notifier).setMenuItems(menuResponse.jsonBody);
 ```
 
 ---
