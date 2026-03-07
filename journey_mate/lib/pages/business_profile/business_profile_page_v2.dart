@@ -64,6 +64,8 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   bool _isLoading = false;
   String? _errorMessage;
   bool _aboutExpanded = false; // JSX: collapsed by default (aboutOpen = false)
+  bool _menuLoadFailed = false;
+  bool _menuSessionStarted = false;
 
   // ============================================================================
   // LIFECYCLE METHODS
@@ -76,6 +78,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
     // Schedule both cache preview and API data load after frame renders
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      _trackMenuSessionStart();
       _loadCachedPreview();
       _loadBusinessData();
     });
@@ -109,6 +112,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _menuLoadFailed = false;
     });
 
     final businessIdInt = int.tryParse(widget.businessId);
@@ -197,11 +201,12 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
                 preferences: preferences,
                 restrictions: restrictions,
               );
+        } else {
+          setState(() => _menuLoadFailed = true);
         }
 
-        // Track page view and menu session start
+        // Track page view
         _trackPageView();
-        _trackMenuSessionStart();
       }
 
       setState(() {
@@ -240,10 +245,12 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     }
   }
 
-  /// Track menu session start (fire-and-forget)
+  /// Track menu session start (fire-and-forget).
+  /// Called immediately on page open so session duration is accurate.
   void _trackMenuSessionStart() {
     final businessIdInt = int.tryParse(widget.businessId);
     if (businessIdInt == null) return;
+    _menuSessionStarted = true;
     final analyticsState = ref.read(analyticsProvider);
     ApiService.instance.postAnalytics(
       eventType: 'menu_session_started',
@@ -257,7 +264,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
   @override
   void dispose() {
-    if (_pageStartTime != null) {
+    if (_pageStartTime != null && _menuSessionStarted) {
       final duration = DateTime.now().difference(_pageStartTime!);
       final analyticsState = ref.read(analyticsProvider);
       final businessIdInt = int.tryParse(widget.businessId);
@@ -370,9 +377,11 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
         // 7. Menu (category chips + inline filter panel + items list)
         SliverToBoxAdapter(
-          child: InlineMenuWidget(
-            businessId: int.parse(widget.businessId),
-          ),
+          child: _menuLoadFailed
+              ? _buildMenuErrorWidget()
+              : InlineMenuWidget(
+                  businessId: int.parse(widget.businessId),
+                ),
         ),
 
         _sectionDivider,
@@ -411,6 +420,41 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     final business = ref.watch(businessProvider).currentBusiness;
     final description = business?['description'] as String?;
     return description != null && description.isNotEmpty;
+  }
+
+  /// Inline error widget shown in place of the menu section when the menu
+  /// API call fails. Keeps the rest of the business profile visible.
+  Widget _buildMenuErrorWidget() {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.xxl,
+        vertical: AppSpacing.lg,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            td(ref, 'menu_heading'),
+            style: AppTypography.sectionHeading,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          Text(
+            td(ref, 'menu_load_error'),
+            style: AppTypography.bodyRegular,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          GestureDetector(
+            onTap: _loadBusinessData,
+            child: Text(
+              td(ref, 'retry'),
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.accent,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Error state display
