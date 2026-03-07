@@ -1425,6 +1425,15 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure this widget stays reactive to menu data and filter changes
+    // regardless of whether the parent widget watches businessProvider.
+    ref.listen(businessProvider, (_, _) {
+      if (mounted) {
+        _processData();
+        setState(() {});
+      }
+    });
+
     _fullList = _buildFullList();
 
     // Check if we need to scroll to a new category (detected via provider)

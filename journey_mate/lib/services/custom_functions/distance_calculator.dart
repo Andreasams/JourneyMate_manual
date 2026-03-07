@@ -58,3 +58,33 @@ double returnDistance(
   // Round to one decimal place and return
   return double.parse(result.toStringAsFixed(1));
 }
+
+/// Formats a calculated distance into a human-readable string with units.
+///
+/// Uses feet/meters for short distances, miles/km for longer ones.
+/// Imperial: feet for < 0.1 mi, miles otherwise.
+/// Metric: meters for < 1 km, km otherwise.
+///
+/// Args:
+///   distance: Numeric distance from [returnDistance] (already in correct unit)
+///   distanceUnit: 'imperial' or 'metric'
+///
+/// Returns:
+///   Formatted string like "0.5 km.", "340 m.", "1.2 mi.", "250 ft."
+String formatDistanceText(double distance, String distanceUnit) {
+  if (distanceUnit == 'imperial') {
+    if (distance < 0.1) {
+      final feet = (distance * 5280).round();
+      final roundedFeet = ((feet / 10).round() * 10);
+      return '$roundedFeet ft.';
+    }
+    return '$distance mi.';
+  } else {
+    if (distance < 1.0) {
+      final meters = (distance * 1000).round();
+      final roundedMeters = ((meters / 10).round() * 10);
+      return '$roundedMeters m.';
+    }
+    return '$distance km.';
+  }
+}

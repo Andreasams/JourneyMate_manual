@@ -126,10 +126,9 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   static const double _buttonFontSize = 14.0;
   static const double _buttonSpacing = AppSpacing.sm;
 
-  static final Color _containerColor =
-      AppColors.bgSurface.withValues(alpha: 0.1);
+  static const Color _containerColor = Color(0x1957636C);
   static const double _containerBorderRadius = AppRadius.button;
-  static const EdgeInsets _containerPadding = EdgeInsets.all(AppSpacing.lg);
+  static const EdgeInsets _containerPadding = EdgeInsets.symmetric(vertical: 18);
 
   static const String _fontFamily = 'Roboto';
   static const double _headerFontSize = 18.0;
@@ -150,7 +149,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
 
   late final ScrollController _restrictionScrollController;
   late final ScrollController _preferenceScrollController;
-  late final ScrollController _allergyScrollController;
 
   bool _isInitializing = true;
 
@@ -180,7 +178,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
 
     _restrictionScrollController = ScrollController();
     _preferenceScrollController = ScrollController();
-    _allergyScrollController = ScrollController();
 
     // Extract and cache menu data
     _extractMenuData();
@@ -210,7 +207,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   void dispose() {
     _restrictionScrollController.dispose();
     _preferenceScrollController.dispose();
-    _allergyScrollController.dispose();
     super.dispose();
   }
 
@@ -1060,23 +1056,16 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         ),
         Padding(
           padding: const EdgeInsets.only(top: _widgetTopPadding),
-          child: SizedBox(
-            height: _widgetHeight,
-            child: ListView.separated(
-              controller: _allergyScrollController,
-              scrollDirection: Axis.horizontal,
-              itemCount: allergens.length,
-              separatorBuilder: (context, index) =>
-                  const SizedBox(width: _buttonSpacing),
-              itemBuilder: (_, index) {
-                final allergen = allergens[index];
-                return _buildAllergenButton(
-                  text: allergen.value,
-                  isVisible: _isAllergenVisible(allergen.key),
-                  onPressed: () => _handleAllergenTap(allergen.key),
-                );
-              },
-            ),
+          child: Wrap(
+            spacing: _buttonSpacing,
+            runSpacing: _buttonSpacing,
+            children: allergens
+                .map((allergen) => _buildAllergenButton(
+                      text: allergen.value,
+                      isVisible: _isAllergenVisible(allergen.key),
+                      onPressed: () => _handleAllergenTap(allergen.key),
+                    ))
+                .toList(),
           ),
         ),
       ],
@@ -1094,7 +1083,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
 
     return Container(
       width: widget.width,
-      height: widget.height,
       decoration: BoxDecoration(
         color: _containerColor,
         borderRadius: BorderRadius.circular(_containerBorderRadius),

@@ -2,10 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../models/lat_lng.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/settings_providers.dart';
+import '../../services/custom_functions/address_formatter.dart';
 import '../../services/custom_functions/business_status.dart';
+import '../../services/custom_functions/distance_calculator.dart';
 import '../../services/custom_functions/hours_formatter.dart';
 import '../../services/custom_functions/price_formatter.dart';
 import '../../theme/app_colors.dart';
@@ -15,13 +18,13 @@ import '../../theme/app_typography.dart';
 
 /// Hero Section Widget - Business logo, name, and key details
 ///
-/// Displays:
+/// Displays (matching FlutterFlow ProfileTopBusinessBlockWidget):
 /// - Business logo (64x64 circle with colored background + initial)
 /// - Business name (large heading)
-/// - Status row: Open/Closed + timing + price range (dot-separated)
-/// - Address
+/// - Row 1: Open/Closed status + timing (e.g. "Åben • til 18:00")
+/// - Row 2: Business type + price range + distance (e.g. "Restaurant • 140-230 kr. • 1.2 km.")
+/// - Row 3: Address with neighbourhood (via streetAndNeighbourhoodLength)
 ///
-/// Design matches JSX lines 161-176
 /// Self-contained: reads from businessProvider internally
 /// Status/timing computed via shared utilities (same as search cards)
 class HeroSectionWidget extends ConsumerWidget {
@@ -39,6 +42,10 @@ class HeroSectionWidget extends ConsumerWidget {
     // --- Data extraction (real API fields) ---
     final businessName = business['business_name'] as String? ?? '';
     final street = business['street'] as String? ?? '';
+    final neighbourhoodName = business['neighbourhood_name'] as String? ?? '';
+    final businessType = business['business_type'] as String? ?? '';
+    final latitude = business['latitude'] as double?;
+    final longitude = business['longitude'] as double?;
 
     // --- Logo / Profile picture ---
     final profilePictureUrl = business['profile_picture_url'] as String?;
@@ -76,8 +83,9 @@ class HeroSectionWidget extends ConsumerWidget {
     // --- Price range (same utility as search cards) ---
     final priceRangeMin = business['price_range_min'] as num?;
     final priceRangeMax = business['price_range_max'] as num?;
-    final exchangeRate = ref.watch(localizationProvider).exchangeRate;
-    final userCurrencyCode = ref.watch(localizationProvider).currencyCode;
+    final localization = ref.watch(localizationProvider);
+    final exchangeRate = localization.exchangeRate;
+    final userCurrencyCode = localization.currencyCode;
 
     String? priceRangeText;
     if (priceRangeMin != null && priceRangeMax != null) {
@@ -91,6 +99,24 @@ class HeroSectionWidget extends ConsumerWidget {
       );
     }
 
+    // --- Distance (same logic as search cards) ---
+    final distanceText = _getDistanceText(
+      ref: ref,
+      languageCode: languageCode,
+      latitude: latitude,
+      longitude: longitude,
+    );
+
+    // --- Address with neighbourhood (same as FlutterFlow) ---
+    final addressText = (street.isNotEmpty && neighbourhoodName.isNotEmpty)
+        ? streetAndNeighbourhoodLength(neighbourhoodName, street)
+        : street;
+
+    // Whether Row 2 has any content (to avoid empty row + spacing)
+    final hasRow2 = businessType.isNotEmpty ||
+        (priceRangeText != null && priceRangeText.isNotEmpty) ||
+        distanceText != null;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -98,7 +124,7 @@ class HeroSectionWidget extends ConsumerWidget {
         _buildProfileImage(profilePictureUrl, logoColor, logoInitial),
         SizedBox(width: AppSpacing.lg),
 
-        // Business details (name, status, address)
+        // Business details (name, 3 info rows)
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,10 +139,9 @@ class HeroSectionWidget extends ConsumerWidget {
               ),
               SizedBox(height: AppSpacing.xs),
 
-              // Status row: Open/Closed + dot + timing + dot + price range
+              // Row 1: Open/Closed status + timing
               Row(
                 children: [
-                  // Status (Open/Closed) — from determineStatusAndColor
                   if (statusText != null && statusText.isNotEmpty)
                     Text(
                       statusText,
@@ -125,8 +150,6 @@ class HeroSectionWidget extends ConsumerWidget {
                         color: statusColor ?? AppColors.green,
                       ),
                     ),
-
-                  // Timing text (e.g. "til 18:00") — from openClosesAt
                   if (timingText != null && timingText.isNotEmpty) ...[
                     SizedBox(width: AppSpacing.xsm),
                     _buildDot(),
@@ -143,28 +166,65 @@ class HeroSectionWidget extends ConsumerWidget {
                       ),
                     ),
                   ],
-
-                  // Price range — from convertAndFormatPriceRange
-                  if (priceRangeText != null && priceRangeText.isNotEmpty) ...[
-                    SizedBox(width: AppSpacing.xsm),
-                    _buildDot(),
-                    SizedBox(width: AppSpacing.xsm),
-                    Text(
-                      priceRangeText,
-                      style: AppTypography.viewToggle.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
                 ],
               ),
+              // Row 2: Business type + price range + distance
+              if (hasRow2) ...[
+                SizedBox(height: 3),
+                Row(
+                  children: [
+                    if (businessType.isNotEmpty)
+                      Flexible(
+                        child: Text(
+                          businessType,
+                          style: AppTypography.viewToggle.copyWith(
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textMuted,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    if (priceRangeText != null &&
+                        priceRangeText.isNotEmpty) ...[
+                      if (businessType.isNotEmpty) ...[
+                        SizedBox(width: AppSpacing.xsm),
+                        _buildDot(),
+                        SizedBox(width: AppSpacing.xsm),
+                      ],
+                      Text(
+                        priceRangeText,
+                        style: AppTypography.viewToggle.copyWith(
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                    if (distanceText != null) ...[
+                      if (businessType.isNotEmpty ||
+                          (priceRangeText != null &&
+                              priceRangeText.isNotEmpty)) ...[
+                        SizedBox(width: AppSpacing.xsm),
+                        _buildDot(),
+                        SizedBox(width: AppSpacing.xsm),
+                      ],
+                      Text(
+                        distanceText,
+                        style: AppTypography.viewToggle.copyWith(
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
               SizedBox(height: 3),
 
-              // Address
-              if (street.isNotEmpty)
+              // Row 3: Address with neighbourhood
+              if (addressText.isNotEmpty)
                 Text(
-                  street,
+                  addressText,
                   style: AppTypography.viewToggle.copyWith(
                     fontWeight: FontWeight.w400,
                     color: AppColors.textPlaceholder,
@@ -238,6 +298,41 @@ class HeroSectionWidget extends ConsumerWidget {
       }
     }
     return AppColors.accent;
+  }
+
+  /// Get distance text from user location to business.
+  /// Uses shared formatDistanceText from distance_calculator.dart.
+  /// Same logic as search cards: imperial only for English, metric for all others.
+  String? _getDistanceText({
+    required WidgetRef ref,
+    required String languageCode,
+    required double? latitude,
+    required double? longitude,
+  }) {
+    final userLocation = ref.read(locationProvider).currentPosition;
+
+    if (userLocation == null || latitude == null || longitude == null) {
+      return null;
+    }
+
+    // Non-English: ALWAYS metric. English: use stored preference.
+    final distanceUnit = languageCode == 'en'
+        ? ref.read(localizationProvider).distanceUnit
+        : 'metric';
+
+    final userLatLng = LatLng(
+      userLocation.latitude,
+      userLocation.longitude,
+    );
+
+    final distance = returnDistance(
+      userLatLng,
+      latitude,
+      longitude,
+      distanceUnit,
+    );
+
+    return formatDistanceText(distance, distanceUnit);
   }
 
   /// Build a dot separator (3x3 circle, light gray)

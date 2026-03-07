@@ -35,6 +35,9 @@ config/*
 secrets/
 credentials/
 
+# iOS build secrets (xcconfig with API keys)
+journey_mate/ios/Secrets.xcconfig
+
 # API keys and tokens
 **/api_keys.dart
 **/secrets.dart

@@ -6,6 +6,8 @@ workflows:
     integrations:
       app_store_connect: Codemagic
     environment:
+      groups:
+        - secrets
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -23,6 +25,9 @@ workflows:
         script: |
           cd journey_mate
           flutter pub get
+      - name: Generate iOS secrets
+        script: |
+          echo "GOOGLE_MAPS_API_KEY = $google_maps_api_key" > journey_mate/ios/Secrets.xcconfig
       - name: Generate iOS configuration
         script: |
           cd journey_mate

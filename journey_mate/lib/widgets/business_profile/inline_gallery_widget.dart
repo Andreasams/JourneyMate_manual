@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
-import '../../theme/app_radius.dart';
+
 import '../../providers/business_providers.dart';
 import '../../services/translation_service.dart';
 import '../../services/analytics_service.dart';
@@ -17,23 +17,22 @@ import '../shared/image_gallery_widget.dart';
 ///
 /// Features:
 /// - 4 tabs: "Mad" (food), "Inde" (interior), "Ude" (outdoor), "Menu" (menu PDFs)
-/// - Horizontal tab chips (selected = orange bg, unselected = white)
+/// - Underline-style tab bar (text + 2px orange indicator, matching GalleryTabWidget)
 /// - Swipeable PageView content area
-/// - Visual indicator dots below content (current tab highlighted)
 /// - Tab selection syncs with swipe gestures
-/// - 4-column × 2-row grid (8 images) with 3px gap within each tab
-/// - Variable border radii (10/12/14px alternating) for visual interest
+/// - 4-column × 2-row grid (8 images) with 4px gap within each tab
+/// - Uniform 4px border radius on images
 /// - Taps open ImageGalleryWidget modal (full-screen gallery)
 /// - Self-contained (reads from businessProvider internally)
 ///
 /// Design:
-/// - Tab chips: 8px gap, selected = orange bg + white text
-/// - Grid spacing: 3px (custom, not from AppSpacing)
-/// - Border radii: 10px, 12px, 14px alternating pattern
-/// - Indicator dots: 6px diameter, 4px gap, orange = active
+/// - Tab bar: underline style with 2px orange indicator for selected tab
+/// - Tab font: 18px, w400 selected / w300 unselected
+/// - Tab colors: accent for selected, textPrimary for unselected
+/// - Grid spacing: 4px (AppSpacing.xs)
+/// - Border radii: uniform 4px
 /// - Section heading: AppTypography.sectionHeading
 /// - 24px horizontal padding (AppSpacing.xxl)
-/// - Matches JSX lines 318-377 in business_profile.jsx
 class InlineGalleryWidget extends ConsumerStatefulWidget {
   const InlineGalleryWidget({super.key});
 
@@ -46,6 +45,20 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
   late PageController _pageController;
   int _currentTabIndex = 0;
   List<Map<String, dynamic>> _activeCategories = [];
+
+  // Tab bar styling constants (matching GalleryTabWidget)
+  static const double _tabBarBottomMargin = AppSpacing.md;
+  static const double _tabBarBorderWidth = 2.0;
+  static const double _tabPaddingTop = AppSpacing.md;
+  static const double _tabIndicatorHeight = 2.0;
+  static const double _tabIndicatorSpacing = 6.0;
+  static const double _tabIndicatorWidthPerChar = 10.0;
+  static const double _tabWidth = 0.25; // 25% of parent width
+  static const double _selectedTabFontSize = 18.0;
+  static const FontWeight _selectedTabFontWeight = FontWeight.w400;
+  static const FontWeight _unselectedTabFontWeight = FontWeight.w300;
+  static const double _gridSpacing = AppSpacing.xs; // 4px
+  static const double _imageBorderRadius = 4.0;
 
   // Tab configuration: matches JSX tab order and API keys
   static const _tabs = [
@@ -123,16 +136,11 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
           ),
           SizedBox(height: AppSpacing.sm),
 
-          // Tab chips
-          _buildTabChips(galleryCategories),
-          SizedBox(height: AppSpacing.md),
+          // Underline tab bar (matching GalleryTabWidget style)
+          _buildFixedTabBar(galleryCategories),
 
           // Swipeable content area with calculated height for 4x2 grid
           _buildGalleryPageView(galleryCategories),
-          SizedBox(height: AppSpacing.sm),
-
-          // Visual indicator dots
-          _buildIndicatorDots(galleryCategories.length),
           SizedBox(height: AppSpacing.md),
 
           // "Se alle billeder →" link to full gallery page
@@ -148,15 +156,14 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
     // Container width minus horizontal padding (24px on each side)
     final screenWidth = MediaQuery.of(context).size.width;
     final containerWidth = screenWidth - (AppSpacing.xxl * 2);
-    final gridSpacing = 3.0;
-    final columns = 4;
-    final rows = 2;
+    const columns = 4;
+    const rows = 2;
 
     // Calculate image width: (container width - spacing between columns) / number of columns
-    final imageWidth = (containerWidth - (gridSpacing * (columns - 1))) / columns;
+    final imageWidth = (containerWidth - (_gridSpacing * (columns - 1))) / columns;
 
     // Calculate total height: (image height × rows) + spacing between rows
-    final totalHeight = (imageWidth * rows) + (gridSpacing * (rows - 1));
+    final totalHeight = (imageWidth * rows) + (_gridSpacing * (rows - 1));
 
     return SizedBox(
       height: totalHeight,
@@ -173,44 +180,68 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
     );
   }
 
-  /// Build horizontal tab chips
-  Widget _buildTabChips(List<Map<String, dynamic>> categories) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: List.generate(categories.length, (index) {
-          final category = categories[index];
-          final labelKey = category['labelKey'] as String;
-          final isSelected = _currentTabIndex == index;
-
-          return Padding(
-            padding: EdgeInsets.only(right: AppSpacing.sm),
-            child: GestureDetector(
-              onTap: () => _onTabTapped(index),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.accent : Colors.white,
-                  border: Border.all(
-                    color: isSelected ? AppColors.accent : AppColors.border,
-                    width: 1.5,
-                  ),
-                  borderRadius: BorderRadius.circular(AppRadius.button),
-                ),
-                child: Text(
-                  td(ref, labelKey),
-                  style: AppTypography.bodySmall.copyWith(
-                    color: isSelected ? Colors.white : AppColors.textSecondary,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                ),
+  /// Build underline-style tab bar (matching GalleryTabWidget)
+  Widget _buildFixedTabBar(List<Map<String, dynamic>> categories) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: _tabBarBottomMargin),
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: AppColors.border,
+                width: _tabBarBorderWidth,
               ),
             ),
-          );
-        }),
+          ),
+          child: Row(
+            children: categories.asMap().entries.map((entry) {
+              final index = entry.key;
+              final category = entry.value;
+              final label = td(ref, category['labelKey'] as String);
+              return SizedBox(
+                width: constraints.maxWidth * _tabWidth,
+                child: _buildTabItem(label, index),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Build a single tab item with label and underline indicator
+  Widget _buildTabItem(String label, int index) {
+    final isSelected = _currentTabIndex == index;
+
+    return GestureDetector(
+      onTap: () => _onTabTapped(index),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.only(top: _tabPaddingTop),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: _selectedTabFontSize,
+                fontWeight: isSelected
+                    ? _selectedTabFontWeight
+                    : _unselectedTabFontWeight,
+                color: isSelected ? AppColors.accent : AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: _tabIndicatorSpacing),
+            if (isSelected)
+              Container(
+                height: _tabIndicatorHeight,
+                width: label.length * _tabIndicatorWidthPerChar,
+                color: AppColors.accent,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -225,8 +256,8 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        crossAxisSpacing: 3.0,
-        mainAxisSpacing: 3.0,
+        crossAxisSpacing: _gridSpacing,
+        mainAxisSpacing: _gridSpacing,
         childAspectRatio: 1.0, // Square images
       ),
       itemCount: displayedImages.length,
@@ -241,21 +272,17 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
     );
   }
 
-  /// Build individual gallery image with variable border radius
+  /// Build individual gallery image with uniform border radius
   Widget _buildGalleryImage(
     String imageUrl,
     int index,
     List<String> allImages,
     String categoryKey,
   ) {
-    // Variable border radii pattern: 10, 12, 14, 10, 12, 14, ...
-    final radii = [10.0, 12.0, 14.0];
-    final borderRadius = radii[index % 3];
-
     return GestureDetector(
       onTap: () => _handleImageTap(index, allImages, categoryKey),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(_imageBorderRadius),
         child: CachedNetworkImage(
           imageUrl: imageUrl,
           fit: BoxFit.cover,
@@ -282,26 +309,7 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
     );
   }
 
-  /// Build visual indicator dots
-  Widget _buildIndicatorDots(int totalTabs) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(totalTabs, (index) {
-        final isActive = _currentTabIndex == index;
-        return Container(
-          margin: EdgeInsets.symmetric(horizontal: 2.0),
-          width: 6.0,
-          height: 6.0,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isActive ? AppColors.accent : AppColors.border,
-          ),
-        );
-      }),
-    );
-  }
-
-  /// Handle tab chip tap - jump to page
+  /// Handle tab tap - jump to page
   void _onTabTapped(int index) {
     setState(() {
       _currentTabIndex = index;

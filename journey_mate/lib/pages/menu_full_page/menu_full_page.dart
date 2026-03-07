@@ -140,8 +140,33 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
     final menuItems = ref.watch(businessProvider).menuItems;
     final business = ref.watch(businessProvider).currentBusiness;
 
-    // Loading state
+    // Loading / error state
     if (menuItems == null) {
+      // Business loaded but menu missing — fetch failed, don't spin forever
+      if (business != null) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                td(ref, 'menu_load_error'),
+                style: AppTypography.bodyRegular,
+              ),
+              SizedBox(height: AppSpacing.sm),
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Text(
+                  td(ref, 'back'),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.accent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      // Business also not loaded yet — genuinely still loading
       return Center(
         child: Text(
           td(ref, 'menu_loading'),
@@ -152,8 +177,9 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
       );
     }
 
-    // Extract last reviewed date
+    // Extract last reviewed date and menu categories
     final lastReviewedAt = business?['last_reviewed_at']?.toString() ?? '';
+    final menuCategories = business?['menuCategories'];
     final language = Localizations.localeOf(context).languageCode;
 
     // Data available - build 3-widget stack
@@ -223,7 +249,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
           height: 40.0, // Fixed height (single row)
           child: MenuCategoriesRows(
             businessID: int.parse(widget.businessId),
-            apiResult: menuItems,
+            apiResult: menuCategories,
             onCategoryChanged: (int categoryId, int menuId) async {
               // User tapped category chip → update state → MenuDishesListView scrolls
               setState(() {

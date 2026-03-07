@@ -138,6 +138,7 @@ class ApiService {
     int pageSize = 20,
     List<int>? neighbourhoodId,
     int? shoppingAreaId,
+    String? geoBounds,
   }) {
     return _makeGetRequest('/search', {
       'filters': filters.join(','),
@@ -156,6 +157,7 @@ class ApiService {
           ? {'neighbourhoodId': json.encode(neighbourhoodId)}
           : null,
       ...?shoppingAreaId != null ? {'shoppingAreaId': shoppingAreaId} : null,
+      ...?geoBounds != null ? {'geoBounds': geoBounds} : null,
     });
   }
 

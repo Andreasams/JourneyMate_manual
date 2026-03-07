@@ -21,6 +21,7 @@ import '../../services/translation_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
 import '../../services/business_cache.dart';
+import '../../utils/search_result_helpers.dart';
 import 'restaurant_list_shimmer_widget.dart';
 import 'image_gallery_widget.dart';
 
@@ -130,10 +131,10 @@ class _SearchResultsListViewState
   // ---------------------------------------------------------------------------
 
   void _preloadTop5Restaurants() {
-    final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+    final documents = extractDocuments(ref.read(searchStateProvider).searchResults);
     for (int i = 0; i < documents.length && i < 5; i++) {
       final businessData = documents[i];
-      final businessId = _getBusinessId(businessData);
+      final businessId = getBusinessId(businessData);
       _preloadBusinessImages(businessId, businessData);
     }
   }
@@ -156,12 +157,12 @@ class _SearchResultsListViewState
   }
 
   void _preloadTop5Profiles() {
-    final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+    final documents = extractDocuments(ref.read(searchStateProvider).searchResults);
     final languageCode = Localizations.localeOf(context).languageCode;
 
     for (int i = 0; i < documents.length && i < 5; i++) {
       final businessData = documents[i];
-      final businessId = _getBusinessId(businessData);
+      final businessId = getBusinessId(businessData);
       _preloadBusinessProfile(businessId, languageCode);
     }
   }
@@ -192,11 +193,11 @@ class _SearchResultsListViewState
   }
 
   void _preloadVisibleCards() {
-    final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+    final documents = extractDocuments(ref.read(searchStateProvider).searchResults);
     final languageCode = Localizations.localeOf(context).languageCode;
 
     // Get list of all business IDs in order for adjacency calculation
-    final businessIds = documents.map((doc) => _getBusinessId(doc)).toList();
+    final businessIds = documents.map((doc) => getBusinessId(doc)).toList();
 
     // Build set of IDs to pre-load: visible + 1 above + 1 below each visible card
     final idsToPreload = <int>{};
@@ -219,7 +220,7 @@ class _SearchResultsListViewState
       // Pre-load images (existing logic)
       if (!_preloadedBusinessIds.contains(businessId)) {
         final businessData = documents.firstWhere(
-          (doc) => _getBusinessId(doc) == businessId,
+          (doc) => getBusinessId(doc) == businessId,
           orElse: () => null,
         );
         if (businessData != null) {
@@ -264,7 +265,7 @@ class _SearchResultsListViewState
     }
 
     // Extract documents
-    final documents = _extractDocuments(searchResults);
+    final documents = extractDocuments(searchResults);
 
     // Empty state
     if (documents.isEmpty) {
@@ -295,7 +296,7 @@ class _SearchResultsListViewState
         separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
         itemBuilder: (context, index) {
           final businessData = documents[index];
-          final businessId = _getBusinessId(businessData);
+          final businessId = getBusinessId(businessData);
 
           return VisibilityDetector(
             key: Key('business_${businessId}_visibility'),
@@ -337,7 +338,7 @@ class _SearchResultsListViewState
     int totalActiveFilters,
     int itemIndex,
   ) {
-    final businessId = _getBusinessId(businessData);
+    final businessId = getBusinessId(businessData);
     return VisibilityDetector(
       key: Key('business_${businessId}_visibility'),
       onVisibilityChanged: (info) {
@@ -566,33 +567,6 @@ class _SearchResultsListViewState
         children: items,
       ),
     );
-  }
-
-  List<dynamic> _extractDocuments(dynamic searchResults) {
-    // After updateSearchResults() normalization, searchResults is already a List
-    if (searchResults is List) {
-      return searchResults;
-    }
-
-    // Fallback: handle Map format (for backwards compatibility)
-    if (searchResults is Map && searchResults.containsKey('documents')) {
-      final docs = searchResults['documents'];
-      if (docs is List) {
-        return docs;
-      }
-    }
-
-    return [];
-  }
-
-  int _getBusinessId(dynamic businessData) {
-    if (businessData is Map) {
-      // API returns 'business_id' (not 'id')
-      final value = businessData['business_id'];
-      if (value is int) return value;
-      if (value is num) return value.toInt();
-    }
-    return 0;
   }
 
   Widget _buildEmptyState() {
@@ -1014,7 +988,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   String? _getDistanceText() {
-    // Read user location from provider
     final userLocation = ref.read(locationProvider).currentPosition;
 
     if (userLocation == null ||
@@ -1023,23 +996,18 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       return null;
     }
 
-    // Get current language
     final languageCode = Localizations.localeOf(context).languageCode;
 
-    // Determine effective distance unit
-    // Non-English: ALWAYS metric (ignore stored preference)
-    // English: Use stored preference (imperial or metric)
+    // Non-English: ALWAYS metric. English: use stored preference.
     final distanceUnit = languageCode == 'en'
         ? ref.read(localizationProvider).distanceUnit
-        : 'metric'; // Force metric for non-English
+        : 'metric';
 
-    // Create LatLng from user position
     final userLatLng = LatLng(
       userLocation.latitude,
       userLocation.longitude,
     );
 
-    // Use returnDistance function from distance_calculator.dart
     final distance = returnDistance(
       userLatLng,
       _latitude!,
@@ -1047,29 +1015,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       distanceUnit,
     );
 
-    // Imperial: Use feet only for very short distances (< 0.1 mi)
-    // Metric: Use meters for distances < 1 km
-    if (distanceUnit == 'imperial') {
-      if (distance < 0.1) {
-        // Convert miles to feet (1 mile = 5280 feet), round to nearest 10
-        final feet = (distance * 5280).round();
-        final roundedFeet = ((feet / 10).round() * 10);
-        return '$roundedFeet ft.';
-      } else {
-        // Use miles with 1 decimal (e.g., "0.2 mi.", "0.5 mi.", "1.3 mi.")
-        return '$distance mi.';
-      }
-    } else {
-      if (distance < 1.0) {
-        // Convert km to meters (1 km = 1000 m), round to nearest 10
-        final meters = (distance * 1000).round();
-        final roundedMeters = ((meters / 10).round() * 10);
-        return '$roundedMeters m.';
-      } else {
-        // Use km with 1 decimal (e.g., "1.2 km.", "2.5 km.")
-        return '$distance km.';
-      }
-    }
+    return formatDistanceText(distance, distanceUnit);
   }
 
   // Address removed from collapsed state - now only in expanded state via _buildFullAddress()

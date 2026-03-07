@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -160,13 +161,23 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
   /// IMAGE PRELOADING
   /// =========================================================================
 
-  /// Preloads first 8 images of each category for smooth display
+  /// Preloads images for the first tab only on mount.
+  /// Other tabs are preloaded on-demand when navigated to.
   void _preloadImages() {
-    for (final category in _categories) {
-      final imagesToPreload = category.images.take(_maxImagesToPreload);
-      for (final imageUrl in imagesToPreload) {
-        precacheImage(NetworkImage(imageUrl), context);
-      }
+    if (_categories.isNotEmpty) {
+      _preloadCategoryImages(_categories[0]);
+    }
+  }
+
+  /// Preloads images for a single category using CachedNetworkImageProvider,
+  /// which shares the same cache layer as CachedNetworkImage display widgets.
+  /// Redundant calls (revisited tabs) return from cache instantly.
+  void _preloadCategoryImages(_GalleryCategory category) {
+    if (!mounted || category.images.isEmpty) return;
+
+    final imagesToPreload = category.images.take(_maxImagesToPreload);
+    for (final imageUrl in imagesToPreload) {
+      precacheImage(CachedNetworkImageProvider(imageUrl), context);
     }
   }
 
@@ -287,6 +298,9 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
       _tabController.index = index;
     });
 
+    // Preload images for the new tab
+    _preloadCategoryImages(_categories[index]);
+
     // Track tab navigation via swipe
     _trackTabChange(previousIndex, index, 'swipe');
   }
@@ -303,6 +317,9 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
       duration: _pageTransitionDuration,
       curve: _pageTransitionCurve,
     );
+
+    // Preload images for the new tab
+    _preloadCategoryImages(_categories[index]);
 
     // Track tab navigation via tap
     _trackTabChange(previousIndex, index, 'tap');
@@ -522,20 +539,32 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
   /// UI BUILDERS - GALLERY GRID
   /// =========================================================================
 
-  /// Builds the gallery grid for a category
+  /// Builds the gallery grid for a category.
+  ///
+  /// In inline mode (limitToEightImages), grid is fixed to 2 rows with no scrolling.
+  /// In full-page mode, grid fills available space with vertical scrolling enabled,
+  /// and GridView.builder lazily builds only visible tiles.
   Widget _buildGalleryGrid(_GalleryCategory category) {
     if (category.images.isEmpty) {
       return _buildEmptyState();
     }
 
-    final gridHeight = _calculateGridHeight();
+    if (widget.limitToEightImages) {
+      // Inline profile mode: fixed 2-row height, no scrolling
+      final gridHeight = _calculateGridHeight();
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: _gridHorizontalPadding),
+        child: SizedBox(
+          height: gridHeight,
+          child: _buildImageGrid(category, scrollable: false),
+        ),
+      );
+    }
 
+    // Full page mode: fill available space, vertical scrolling enabled
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: _gridHorizontalPadding),
-      child: SizedBox(
-        height: gridHeight,
-        child: _buildImageGrid(category),
-      ),
+      child: _buildImageGrid(category, scrollable: true),
     );
   }
 
@@ -548,11 +577,16 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
     return (imageWidth * _gridRowCount) + _gridSpacing;
   }
 
-  /// Builds the image grid view
-  Widget _buildImageGrid(_GalleryCategory category) {
+  /// Builds the image grid view.
+  ///
+  /// When [scrollable] is true, uses AlwaysScrollableScrollPhysics for vertical
+  /// scrolling and GridView.builder lazily builds only visible tiles.
+  Widget _buildImageGrid(_GalleryCategory category, {required bool scrollable}) {
     return GridView.builder(
       padding: EdgeInsets.zero,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: scrollable
+          ? const ClampingScrollPhysics()
+          : const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: _gridColumnCount,
         crossAxisSpacing: _gridSpacing,
@@ -572,16 +606,31 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
     );
   }
 
-  /// Builds a rounded image with error and loading states
+  /// Builds a rounded image with disk caching, placeholder and error states.
+  /// memCacheWidth: 400 limits decoded size for thumbnails (matches inline gallery).
   Widget _buildRoundedImage(String imageUrl) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(_imageBorderRadius),
-      child: Image.network(
-        imageUrl,
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _buildImageErrorState(),
-        loadingBuilder: (context, child, loadingProgress) =>
-            _buildImageLoadingState(child, loadingProgress),
+        memCacheWidth: 400,
+        placeholder: (context, url) => _buildImagePlaceholder(),
+        errorWidget: (context, url, error) => _buildImageErrorState(),
+      ),
+    );
+  }
+
+  /// Builds the image placeholder shown while loading.
+  /// Matches inline gallery pattern (CachedNetworkImage placeholder).
+  Widget _buildImagePlaceholder() {
+    return Container(
+      color: AppColors.bgSurface,
+      child: const Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 2.0,
+          color: AppColors.accent,
+        ),
       ),
     );
   }
@@ -589,36 +638,12 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
   /// Builds the image error state
   Widget _buildImageErrorState() {
     return Container(
-      color: AppColors.bgInput,
+      color: AppColors.bgSurface,
       child: const Icon(
         Icons.broken_image,
         color: AppColors.textTertiary,
       ),
     );
-  }
-
-  /// Builds the image loading state with progress indicator
-  Widget _buildImageLoadingState(
-      Widget child, ImageChunkEvent? loadingProgress) {
-    if (loadingProgress == null) return child;
-
-    return Container(
-      color: AppColors.bgSurface,
-      child: Center(
-        child: CircularProgressIndicator(
-          value: _calculateLoadingProgress(loadingProgress),
-          strokeWidth: 1.0,
-          color: AppColors.accent,
-        ),
-      ),
-    );
-  }
-
-  /// Calculates loading progress value
-  double? _calculateLoadingProgress(ImageChunkEvent loadingProgress) {
-    final expectedTotal = loadingProgress.expectedTotalBytes;
-    if (expectedTotal == null) return null;
-    return loadingProgress.cumulativeBytesLoaded / expectedTotal;
   }
 
   /// Builds the empty state when no images are available
