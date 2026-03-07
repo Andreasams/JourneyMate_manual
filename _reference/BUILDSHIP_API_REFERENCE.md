@@ -3,12 +3,13 @@
 **Working on a specific task?** See **CLAUDE.md → Task-Based Navigation Guide** (Scenario 3: Integrating with BuildShip API) for targeted reading. Otherwise, browse the complete API contracts below.
 
 Source: `_reference/_buildship/` — actual BuildShip node scripts
+**Full search endpoint reference:** `_reference/_buildship/SEARCH_NODE_v9.2.ts` (920 lines — complete v9.2 implementation with geo bounds, scoring, and section tagging)
 All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 **No direct Supabase SDK calls from Flutter.**
 
 ---
 
-## 1. SEARCH (`SEARCH_SCRIPT_GENERATOR`) — v9.1
+## 1. SEARCH (`SEARCH_SCRIPT_GENERATOR`) — v9.2
 
 **Purpose:** Full-text + filter search of restaurants via Typesense. Returns scored, paginated results where full dietary matches rank above partial matches. Backend-driven section tagging eliminates client-side sorting.
 
@@ -28,6 +29,9 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 | `pageSize` | `number` | Results per page. Recommended: `20`. Default: `20`. |
 | `neighbourhood_id` | `number` \| `number[]` \| `null` | Filter by neighbourhood(s). Handles: number, array, string ("47"), JSON array ("[47]"), 0 (ignored). Zero values filtered out. |
 | `shopping_area_id` | `number` \| `null` | Filter by shopping area. Zero values ignored. |
+| `geoBounds` | `string` \| `null` | JSON viewport bounds for map search. Format: `{"ne_lat":55.72,"ne_lng":12.62,"sw_lat":55.65,"sw_lng":12.50}`. Parsed into a Typesense geo polygon filter on `location` field. Sent only when user is in map view after pan/zoom. Absent/invalid values silently ignored (backward compatible). |
+
+**Page size note:** Map view uses `pageSize=200` for full viewport coverage; list view uses `pageSize=20` (default). The `geoBounds` geo filter is ANDed with all other filters but does NOT affect sort order — `sortBy=nearest` still uses `userLocation` (GPS), not the map center.
 
 > BuildShip injects `host`, `apiKey`, `supabaseUrl`, `supabaseKey` from environment — Flutter never sends these.
 
@@ -41,7 +45,7 @@ All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 
 **Note:** Unrecognized `sortBy` values fall through to alphabetical (`business_name:asc`).
 
-**Scoring System (Typesense `_eval()`) — v9.1 section-safe:**
+**Scoring System (Typesense `_eval()`) — v9.2 section-safe:**
 
 Each matched filter contributes: **SECTION_MULTIPLIER (100,000) + priority points (200–5,000)**.
 
@@ -160,7 +164,7 @@ After annotating documents with section tags, a final `enforceSectionOrder` func
 |-------|------|-------|
 | `business_id` | int | e.g. `4130` |
 | `business_name` | string | e.g. `"Ø.12"` |
-| `business_type` | string | e.g. `"Restaurant"`, `"Bakery"` |
+| `business_type` | string | e.g. `"Restaurant"`, `"Bakery"` — **returned pre-localized** (no `_{lang}` suffix needed, unlike Typesense search docs which store `business_type_{lang}`) |
 | `description` | string | Business description |
 | `is_active` | bool | |
 | `last_reviewed_at` | string | ISO 8601 date when menu/data was last reviewed, e.g. `"2026-02-22T00:00:00Z"` |
@@ -612,7 +616,7 @@ Non-200 → error state shown with retry.
 
 | # | Endpoint | Flutter inputs | Key output fields |
 |---|----------|---------------|-------------------|
-| 1 | SEARCH (v9.1) | filters, city_id, search_input, userLocation, language_code, sortBy, selectedStation, onlyOpen, page, pageSize, neighbourhood_id, shopping_area_id | documents (with matchCount/matchedFilters/missedFilters/section), activeids (full-match scoped), scoringFilterIds, resultCount, fullMatchCount, pagination |
+| 1 | SEARCH (v9.2) | filters, city_id, search_input, userLocation, language_code, sortBy, selectedStation, onlyOpen, page, pageSize, neighbourhood_id, shopping_area_id, geoBounds | documents (with matchCount/matchedFilters/missedFilters/section), activeids (full-match scoped), scoringFilterIds, resultCount, fullMatchCount, pagination |
 | 2 | GET_BUSINESS_PROFILE | businessId, language_code | businessInfo (flat), filters (top-level array), gallery (categorized), menuCategories, exchangeRate, businessHours, openWindows |
 | 3 | GET_RESTAURANT_MENU | businessId, languageCode | menu_items, categories, availableRestrictions/Preferences |
 | 4 | GET_FILTERS | languageCode, cityId | filters (tree), foodDrinkTypes |

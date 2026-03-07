@@ -17,24 +17,24 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - **Need a specific section?** Use alphabetical index below for direct access
 
 **Section Index (Alphabetical):**
-- [Analytics Architecture](#analytics-architecture) (lines 1129-1203) — Fire-and-forget, ActivityScope, 47 event types
-- [API Service Pattern](#api-service-pattern) (lines 834-890) — Singleton, cache, BuildShip integration
-- [Code Quality Standards](#code-quality-standards) (lines 1206-1245) — Flutter analyze, design tokens, algorithms
-- [Code Review Checklist](#code-review-checklist) (lines 1698-1778) — Pre-commit checklist (⚠️ use before every commit)
-- [Common Pitfalls](#common-pitfalls) (lines 1778-2780) — 27 anti-patterns with fixes (⚠️ read before first commit)
-- [Design Token System](#design-token-system) (lines 1116-1127) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 2783-2803) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 2833-2866) — CityID, favorites, filters, translations, engagement
-- [Location Permission Pattern](#location-permission-pattern) (lines 973-1051) — Three methods, when to use what, Settings fallback
+- [Analytics Architecture](#analytics-architecture) (lines 1617-1691) — Fire-and-forget, ActivityScope, 47 event types
+- [API Service Pattern](#api-service-pattern) (lines 1219-1322) — Singleton, cache, BuildShip integration, graceful degradation
+- [Code Quality Standards](#code-quality-standards) (lines 1694-1734) — Flutter analyze, design tokens, algorithms
+- [Code Review Checklist](#code-review-checklist) (lines 1816-1910) — Pre-commit checklist (⚠️ use before every commit)
+- [Common Pitfalls](#common-pitfalls) (lines 1913-3178) — 32 anti-patterns with fixes (⚠️ read before first commit)
+- [Design Token System](#design-token-system) (lines 1604-1615) — Quick lookup tables for colors, spacing, typography
+- [Documentation Philosophy](#documentation-philosophy) (lines 3182-3201) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 3232-3265) — CityID, favorites, filters, translations, engagement
+- [Location Permission Pattern](#location-permission-pattern) (lines 1405-1483) — Three methods, when to use what, Settings fallback
 - [Philosophy](#philosophy) (lines 39-81) — Five core principles (design tokens, state, translations, analytics, widgets)
-- [Pre-Loading Architecture](#pre-loading-architecture) (lines 893-970) — Safe async pattern for instant page loads
-- [Project Structure](#project-structure) (lines 84-143) — File organization, 12 pages, 34 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 2806-2830) — Critical startup sequence in main.dart
-- [References](#references) (lines 2869-2883) — Links to other documentation files
-- [State Management](#state-management) (lines 146-285) — When to use what, provider catalog, Riverpod 3.x patterns
-- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 486-831) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
-- [Translation System](#translation-system) (lines 1054-1113) — Dynamic td() function, 355 keys, 7 languages
-- [Widget Patterns](#widget-patterns) (lines 288-483) — Self-contained widgets, page wrappers, bottom sheets
+- [Pre-Loading Architecture](#pre-loading-architecture) (lines 1325-1402) — Safe async pattern for instant page loads
+- [Project Structure](#project-structure) (lines 86-151) — File organization, 12 pages, 34 widgets, 8 providers
+- [Provider Initialization Order](#provider-initialization-order) (lines 3205-3229) — Critical startup sequence in main.dart
+- [References](#references) (lines 3268-3282) — Links to other documentation files
+- [State Management](#state-management) (lines 154-351) — When to use what, provider catalog, Riverpod 3.x patterns, ref.listen
+- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 871-1216) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
+- [Translation System](#translation-system) (lines 1486-1601) — Dynamic td() function, 355 keys, 7 languages
+- [Widget Patterns](#widget-patterns) (lines 354-870) — Self-contained widgets, page wrappers, bottom sheets, cross-page reuse, map view
 
 ---
 
@@ -97,10 +97,16 @@ journey_mate/
 │   │   ├── filter_providers.dart      # Filter hierarchy (AsyncNotifier)
 │   │   ├── settings_providers.dart    # Localization, location permission
 │   │   └── provider_state_classes.dart # All state classes (467 lines)
-│   ├── services/                      # Singletons for cross-cutting concerns
+│   ├── services/                      # Singletons + shared utilities
 │   │   ├── api_service.dart           # BuildShip REST API client (352 lines)
 │   │   ├── analytics_service.dart     # Analytics + EngagementTracker (469 lines)
-│   │   └── translation_service.dart   # td(ref, key) helper function
+│   │   ├── translation_service.dart   # td(ref, key) helper function
+│   │   └── custom_functions/          # Shared formatting utilities (ported from FlutterFlow)
+│   │       ├── address_formatter.dart # streetAndNeighbourhoodLength()
+│   │       ├── business_status.dart   # determineStatusAndColor()
+│   │       ├── distance_calculator.dart # returnDistance() + formatDistanceText()
+│   │       ├── hours_formatter.dart   # openClosesAt(), daysDayOpeningHour()
+│   │       └── price_formatter.dart   # convertAndFormatPriceRange()
 │   ├── models/                        # Data classes
 │   │   ├── latlng.dart                # Location coordinates
 │   │   └── api_call_response.dart     # API response wrapper
@@ -314,6 +320,35 @@ void updateSearchResults({
 
 **Git reference:** Commits `e48e0cf`, `5eba0e4` — fix: use full-match count for Open Now badge
 
+### ref.listen for Async Data Reactivity
+
+When a widget mounts before its provider has data (e.g., menu page opens before menu API responds), use `ref.listen()` to react to state transitions:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  // ref.watch handles display — shows loading/data/error
+  final businessState = ref.watch(businessProvider);
+
+  // ref.listen handles side effects on data arrival
+  ref.listen(businessProvider, (previous, next) {
+    if (previous?.menuItems == null && next.menuItems != null) {
+      // Menu data just arrived — trigger dependent operations
+      _onMenuDataLoaded(next.menuItems);
+    }
+  });
+
+  return _buildContent(businessState);
+}
+```
+
+**When to use which:**
+- `ref.watch()` — Reactive display (rebuilds widget when state changes)
+- `ref.listen()` — Side effects on state transitions (one-time actions when data arrives)
+- `ref.read()` — Fire-and-forget actions (button taps, analytics, never in `build()`)
+
+**Reference:** Commit `5eae0ca` — MenuDishesListView reacts to menu data arriving after mount
+
 ---
 
 ## Widget Patterns
@@ -464,6 +499,49 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget> {
   }
 }
 ```
+
+### Cross-Page Widget Reuse Pattern
+
+When two pages display the same business data section, extract it to a shared widget rather than duplicating computation logic.
+
+**Example:** Business information page and business profile page both show hero section, opening hours, and contact info. Rather than duplicating status computation (open/closed, hours formatting) in both pages:
+
+```dart
+// SHARED: lib/widgets/shared/business_profile/hero_section_widget.dart
+class HeroSectionWidget extends ConsumerWidget {
+  final Map<String, dynamic> businessData;
+  const HeroSectionWidget({required this.businessData, super.key});
+  // Self-contained — computes status, reads translations internally
+}
+
+// Used in business_profile_page_v2.dart AND business_information_page.dart
+HeroSectionWidget(businessData: businessInfo)
+```
+
+**Rule:** If two pages display the same business data section, extract to shared widget. Don't duplicate status computation logic across pages.
+
+**Reference:** Commit `9e75f0f` — business information page restructured to reuse profile widgets (removed ~130 lines of duplicated logic)
+
+### Map View with Viewport-Based Geo-Filtering Pattern
+
+Search page supports list/map toggle via page-local `_ViewMode` enum. Each mode uses different parameters:
+
+| | List Mode | Map Mode |
+|--|-----------|----------|
+| **Page size** | 20 | 200 |
+| **Display** | Paginated card list | Google Maps markers |
+| **Geo-filtering** | None | Viewport bounds (`geoBoundsJson`) |
+| **On interaction** | Load next page | Re-query on pan/zoom |
+
+**Key files:**
+- `search_results_map_view.dart` — Google Maps widget with markers
+- `map_business_preview_card.dart` — Bottom card shown on marker tap
+- `map_marker_helper.dart` — Marker icon generation utilities
+- `search_result_helpers.dart` — Shared lat/lng extraction from result documents
+
+**API integration:** Map mode sends `geoBoundsJson` parameter (format: `{"ne_lat":55.72,"ne_lng":12.62,"sw_lat":55.65,"sw_lng":12.50}`) which BuildShip converts to a Typesense geo polygon filter. This is ANDed with all other filters but does NOT affect sort order.
+
+**Reference:** Commit `c545543` — search map view implementation
 
 ### Bottom Sheet Pattern
 
@@ -1201,7 +1279,46 @@ final response2 = await ApiService.instance.getBusinessProfile(
 ApiService.instance.clearCache(); // Clears all cached responses
 ```
 
-**Full API contracts:** See `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines)
+**Full API contracts:** See `_reference/BUILDSHIP_API_REFERENCE.md`
+
+### Graceful Degradation on Secondary API Failure
+
+When a page calls multiple APIs (e.g., business profile + menu), a failure in one should NOT break the entire page. Use page-local error flags to degrade gracefully:
+
+```dart
+class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
+  bool _menuLoadFailed = false;
+
+  Future<void> _loadMenu() async {
+    try {
+      final response = await ApiService.instance.getRestaurantMenu(businessId);
+      if (response.statusCode == 200) {
+        ref.read(businessProvider.notifier).setMenuItems(response.jsonBody);
+      } else {
+        setState(() => _menuLoadFailed = true);
+      }
+    } catch (e) {
+      setState(() => _menuLoadFailed = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      _buildHeroSection(),      // Always visible
+      _buildOpeningHours(),     // Always visible
+      if (_menuLoadFailed)
+        _buildMenuErrorWidget() // Error widget in menu section only
+      else
+        _buildMenuSection(),    // Normal menu display
+    ]);
+  }
+}
+```
+
+**Rule:** Primary content (business profile) remains fully visible when secondary content (menu) fails. Track failures with page-local bools, show error widgets in the failing section only.
+
+**Reference:** Commit `5eae0ca` — menu API failure shows error widget without hiding business profile
 
 ---
 
@@ -2896,6 +3013,169 @@ final lng = (business['longitude'] as num?)?.toDouble();
 **Audit scope:** All pages reading numeric fields from decoded JSON API responses — coordinates (lat/lng), prices, counts, match scores.
 
 **Reference:** Commit `172a66e` — business information page crash from unsafe coordinate casting
+
+---
+
+### Pitfall #28: Nested Scroll Physics Conflicts
+
+**Context:** A `GridView` with `AlwaysScrollableScrollPhysics` inside a `PageView` (horizontal swipe) fights the parent for gestures. The child scroll physics intercepts vertical drags, preventing the parent `PageView` from detecting horizontal swipes.
+
+❌ **Bad:**
+```dart
+// Full-page gallery tab — GridView inside horizontal PageView
+GridView.builder(
+  physics: const AlwaysScrollableScrollPhysics(),  // Fights parent PageView
+  // ...
+)
+```
+
+✅ **Good:**
+```dart
+// Full-page gallery: remove fixed height constraint + ClampingScrollPhysics
+GridView.builder(
+  physics: const ClampingScrollPhysics(),  // Cooperates with parent PageView
+  shrinkWrap: true,  // Sizes to content, not viewport
+  // ...
+)
+
+// Inline gallery (fixed 2-row height): NeverScrollableScrollPhysics
+GridView.builder(
+  physics: const NeverScrollableScrollPhysics(),  // Parent handles all scrolling
+  // ...
+)
+```
+
+**Rule of thumb:**
+- **Full-page nested scroll:** `ClampingScrollPhysics` — allows scrolling but doesn't steal gestures
+- **Fixed-height nested grid (inline):** `NeverScrollableScrollPhysics` — parent handles everything
+
+**Reference:** Commit `b419988` — gallery full page gesture conflict fix
+
+---
+
+### Pitfall #29: Cache Provider Must Match Display Widget
+
+**Context:** Using `precacheImage(NetworkImage(url))` populates Flutter's HTTP image cache, but `CachedNetworkImage` uses its own disk cache (`flutter_cache_manager`). The precached image is never found by the display widget.
+
+❌ **Bad:**
+```dart
+// Precache with Flutter's ImageProvider...
+await precacheImage(NetworkImage(imageUrl), context);
+
+// ...but display with CachedNetworkImage — DIFFERENT CACHE!
+CachedNetworkImage(imageUrl: imageUrl)  // Cache miss, loads from network again
+```
+
+✅ **Good:**
+```dart
+// Precache with CachedNetworkImageProvider (same cache layer as display widget)
+await precacheImage(CachedNetworkImageProvider(imageUrl), context);
+
+// Display with CachedNetworkImage — SAME CACHE
+CachedNetworkImage(imageUrl: imageUrl)  // Cache hit!
+```
+
+**Principle:** Always match the image provider to the display widget's cache layer. `CachedNetworkImage` → `CachedNetworkImageProvider`. `Image.network` → `NetworkImage`.
+
+**Reference:** Commit `b419988` — gallery precache was populating wrong cache layer
+
+---
+
+### Pitfall #30: menuCategories vs menuItems — Different Data Structures
+
+**Context:** `MenuCategoriesRows` (the category chips widget on the menu page) expects `menuCategories` from the business profile API response. Using `menuItems` from the menu API endpoint passes the wrong data structure — similar field names but different shapes.
+
+❌ **Bad:**
+```dart
+// menu_full_page.dart — using menu API response
+final menuData = ref.watch(businessProvider).menuItems;
+MenuCategoriesRows(categories: menuData['menu_items'])  // WRONG structure
+```
+
+✅ **Good:**
+```dart
+// menu_full_page.dart — extract from BUSINESS PROFILE data
+final business = ref.watch(businessProvider).currentBusiness;
+final menuCategories = business['menuCategories'];  // From GET_BUSINESS_PROFILE
+MenuCategoriesRows(categories: menuCategories)  // Correct structure
+```
+
+**Why:** The business profile API returns `menuCategories` (category names with display order for chips). The menu API returns `menu_items` (full dish details with prices, descriptions, dietary info). They serve different purposes and have different schemas.
+
+**Reference:** Commits `5eae0ca`, `c9e9eff` — menu category chips showed wrong data
+
+---
+
+### Pitfall #31: ref.read() in Computed Getters Causes Stale Data
+
+**Context:** Using `ref.read()` in build-time getters (like `_hasAboutContent` or `_buildAboutSection`) returns a one-time snapshot. The widget never rebuilds when the underlying state changes, showing stale data.
+
+❌ **Bad:**
+```dart
+class _BusinessProfileState extends ConsumerState<BusinessProfilePage> {
+  // Computed getter using ref.read — reads once, never updates
+  bool get _hasAboutContent {
+    final business = ref.read(businessProvider).currentBusiness;  // Stale!
+    return business?['description'] != null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasAboutContent) { ... }  // May show stale value
+  }
+}
+```
+
+✅ **Good:**
+```dart
+@override
+Widget build(BuildContext context) {
+  // ref.watch in build() — reactive, rebuilds on state changes
+  final business = ref.watch(businessProvider).currentBusiness;
+  final hasAboutContent = business?['description'] != null;
+
+  if (hasAboutContent) { ... }  // Always current
+}
+```
+
+**Rule:** `ref.read()` = fire-and-forget actions (button taps, analytics). `ref.watch()` = reactive display (anything in `build()` or called from `build()`).
+
+**Reference:** Commits `2cb5e50`, `c9e9eff` — business profile showed stale "About" section
+
+---
+
+### Pitfall #32: Analytics Session Timing — Fire on Page Open, Not After API Response
+
+**Context:** Menu session analytics (`_trackMenuSessionStart`) should fire in `initState()` (page open) to capture accurate session duration. Firing after the API response arrives means slow or failed API calls produce inaccurate (or missing) timing data.
+
+❌ **Bad:**
+```dart
+void _onMenuDataLoaded(dynamic menuData) {
+  _trackMenuSessionStart();  // Late — session start time is after API delay
+}
+```
+
+✅ **Good:**
+```dart
+@override
+void initState() {
+  super.initState();
+  _trackMenuSessionStart();  // Immediate — session starts when page opens
+  _menuSessionStarted = true;  // Guard for dispose()
+}
+
+@override
+void dispose() {
+  if (_menuSessionStarted) {  // Only end sessions that actually started
+    _trackMenuSessionEnd();
+  }
+  super.dispose();
+}
+```
+
+**Why:** Session duration = `dispose time - start time`. If start time is delayed by API latency, the duration is artificially shortened. If the API fails entirely, no session is tracked at all. Guard `dispose()` with `_menuSessionStarted` to prevent tracking sessions that never started.
+
+**Reference:** Commits `5eae0ca`, `c9e9eff` — menu session timing accuracy fix
 
 ---
 

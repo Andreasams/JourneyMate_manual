@@ -1,6 +1,6 @@
 # JourneyMate — Directory Structure
 
-**Last Updated:** February 24, 2026
+**Last Updated:** March 7, 2026
 
 This document describes the organization of the JourneyMate project directory.
 
@@ -49,7 +49,7 @@ lib/pages/
 ```
 lib/pages/
 ├── search/
-│   └── search_page.dart
+│   └── search_page.dart              ← List + map view toggle
 ├── business_profile/
 │   ├── business_profile_page.dart
 │   └── business_profile_page_v2.dart  ← Page variants in same folder
@@ -105,6 +105,12 @@ lib/pages/settings/
 - `LanguageSelectorButton` — Used on Welcome page + Localization page
 - `CurrencySelectorButton` — Used on Welcome page + Localization page
 - `NavBarWidget` — Used on Settings page + Search page
+- `search_results_map_view.dart` — Google Maps map view for search results (commit `c545543`)
+- `map_business_preview_card.dart` — Preview card shown on map marker tap (commit `c545543`)
+
+**Utility files in `lib/utils/`:**
+- `map_marker_helper.dart` — Marker icon generation for Google Maps (commit `c545543`)
+- `search_result_helpers.dart` — Shared lat/lng extraction from search result documents (commit `c545543`)
 
 **Pattern established March 2, 2026 (commit 6d5b8d4):** Page-specific widgets live near their pages, not in shared/ directory.
 
@@ -122,6 +128,7 @@ _reference/
 ├── PROVIDERS_REFERENCE.md              # Riverpod provider catalog
 ├── PAGE_CONSISTENCY_ANALYSIS.md        # Analysis of page patterns (Feb 2026)
 ├── _buildship/                         # Individual BuildShip endpoint specs
+│   └── SEARCH_NODE_v9.2.ts            # Full search endpoint reference (920 lines, v9.2 with geo bounds)
 ├── _supabase/                          # Supabase table schema references
 ├── archive/                            # Historical reference files
 │   ├── IMPLEMENTATION_PLAN.txt         # Original migration plan
