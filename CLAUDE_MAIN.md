@@ -67,8 +67,8 @@ See **CODE_DEVELOPMENT_WORKFLOW.md** for complete development process including:
 **Quick reference:**
 1. Before coding → NAVIGATION_GUIDE.md (find your scenario)
 2. During coding → Follow ARCHITECTURE.md patterns
-3. Before commit → ARCHITECTURE.md → Code Review Checklist (lines 1698-1778)
-4. Validate against → ARCHITECTURE.md → Common Pitfalls (lines 1778-2780)
+3. Before commit → ARCHITECTURE.md → Code Review Checklist (lines 1816-1910)
+4. Validate against → ARCHITECTURE.md → Common Pitfalls (lines 1913-3178)
 
 ---
 
@@ -76,8 +76,8 @@ See **CODE_DEVELOPMENT_WORKFLOW.md** for complete development process including:
 
 **For all code patterns, see ARCHITECTURE.md:**
 - **Design tokens, state management, translations, analytics:** See ARCHITECTURE.md → Philosophy (lines 39-81)
-- **Widget patterns:** See ARCHITECTURE.md → Widget Patterns (lines 288-483)
-- **Pre-commit checklist:** See ARCHITECTURE.md → Code Review Checklist (lines 1698-1778)
+- **Widget patterns:** See ARCHITECTURE.md → Widget Patterns (lines 354-870)
+- **Pre-commit checklist:** See ARCHITECTURE.md → Code Review Checklist (lines 1816-1910)
 
 ---
 
@@ -122,7 +122,7 @@ These decisions have been confirmed and must not be re-debated:
 
 15. **Business Profile v2 is the active route** — Router serves `BusinessProfilePageV2` (not v1). The v2 page reads from a flat `businessInfo` API response, merges top-level `filters` into the business map, and computes `status_open`/`closing_time`/`price_range` client-side from `openWindows` data. Analytics events use v2 naming: `business_profile_viewed`, `share_button_clicked`, `menu_session_started`, `menu_session_ended`. See `_reference/PROFILE_V2_GAP_ANALYSIS.md` for full API structure.
 
-16. **Google Maps API key configured in AppDelegate.swift** — `google_maps_flutter` plugin does NOT auto-initialize the iOS SDK. `AppDelegate.swift` must include `import GoogleMaps` and `GMSServices.provideAPIKey()` in `didFinishLaunchingWithOptions`. Codemagic runs `pod install` automatically during builds. Only one page uses Google Maps: business information page (`/business/:id/information`). Commit `172a66e`.
+16. **Google Maps API key via xcconfig build-time injection** — API key is read from `Info.plist` at runtime, populated from `Secrets.xcconfig` at build time. Codemagic generates `Secrets.xcconfig` from encrypted environment variables (never committed to git). `AppDelegate.swift` reads key with `Bundle.main.infoDictionary` and calls `GMSServices.provideAPIKey()`. Fresh clones: xcconfig `#include` produces a warning (not error) if file missing — safe for local dev without key. Two pages use Google Maps: business information page (`/business/:id/information`) and search map view (list/map toggle on search page). Commits `172a66e`, `e35de89`, `c545543`.
 
 ---
 
