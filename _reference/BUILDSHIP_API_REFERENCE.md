@@ -160,7 +160,7 @@ After annotating documents with section tags, a final `enforceSectionOrder` func
 |-------|------|-------|
 | `business_id` | int | e.g. `4130` |
 | `business_name` | string | e.g. `"Ø.12"` |
-| `business_type` | string | e.g. `"Restaurant"`, `"Bakery"` |
+| `business_type` | string | e.g. `"Restaurant"`, `"Bakery"` — **returned pre-localized** (no `_{lang}` suffix needed, unlike Typesense search docs which store `business_type_{lang}`) |
 | `description` | string | Business description |
 | `is_active` | bool | |
 | `last_reviewed_at` | string | ISO 8601 date when menu/data was last reviewed, e.g. `"2026-02-22T00:00:00Z"` |

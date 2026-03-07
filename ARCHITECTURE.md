@@ -97,10 +97,16 @@ journey_mate/
 │   │   ├── filter_providers.dart      # Filter hierarchy (AsyncNotifier)
 │   │   ├── settings_providers.dart    # Localization, location permission
 │   │   └── provider_state_classes.dart # All state classes (467 lines)
-│   ├── services/                      # Singletons for cross-cutting concerns
+│   ├── services/                      # Singletons + shared utilities
 │   │   ├── api_service.dart           # BuildShip REST API client (352 lines)
 │   │   ├── analytics_service.dart     # Analytics + EngagementTracker (469 lines)
-│   │   └── translation_service.dart   # td(ref, key) helper function
+│   │   ├── translation_service.dart   # td(ref, key) helper function
+│   │   └── custom_functions/          # Shared formatting utilities (ported from FlutterFlow)
+│   │       ├── address_formatter.dart # streetAndNeighbourhoodLength()
+│   │       ├── business_status.dart   # determineStatusAndColor()
+│   │       ├── distance_calculator.dart # returnDistance() + formatDistanceText()
+│   │       ├── hours_formatter.dart   # openClosesAt(), daysDayOpeningHour()
+│   │       └── price_formatter.dart   # convertAndFormatPriceRange()
 │   ├── models/                        # Data classes
 │   │   ├── latlng.dart                # Location coordinates
 │   │   └── api_call_response.dart     # API response wrapper
