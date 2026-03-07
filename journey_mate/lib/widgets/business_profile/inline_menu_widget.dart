@@ -49,7 +49,6 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
   dynamic _visibleSelection; // JSON for MenuCategoriesRows bidirectional sync
 
   // ─── Height constants (match FlutterFlow) ─────────────────────────────────
-  static const double _filterWidgetHeight = 350.0;
   static const double _categoryRowsHeightSingle = 42.0;
   static const double _categoryRowsHeightDouble = 72.0;
   static const double _menuListMaxHeight = 337.0;
@@ -97,6 +96,7 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
                       fontWeight: FontWeight.w300,
                     ),
                   ),
+                  const SizedBox(width: AppSpacing.xs),
                   Text(
                     _formatLocalizedDate(lastReviewedAt, language),
                     style: AppTypography.bodySmall.copyWith(
@@ -144,16 +144,11 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
               if (_showFilters)
                 Padding(
                   padding: EdgeInsets.only(top: 6, bottom: 12),
-                  child: SizedBox(
+                  child: UnifiedFiltersWidget(
+                    businessId: widget.businessId,
                     width: double.infinity,
-                    height: _filterWidgetHeight,
-                    child: UnifiedFiltersWidget(
-                      businessId: widget.businessId,
-                      width: double.infinity,
-                      height: _filterWidgetHeight,
-                      onFiltersChanged: () async { setState(() {}); },
-                      onVisibleItemCountChanged: (count) async { setState(() => _visibleItemCount = count); },
-                    ),
+                    onFiltersChanged: () async { setState(() {}); },
+                    onVisibleItemCountChanged: (count) async { setState(() => _visibleItemCount = count); },
                   ),
                 ),
             ],
@@ -162,8 +157,8 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
           // ── (3) MenuCategoriesRows ─────────────────────────────────────────
           Padding(
             padding: EdgeInsets.only(
-              top: AppSpacing.md,
-              bottom: AppSpacing.lg,
+              top: AppSpacing.sm,
+              bottom: AppSpacing.md,
             ),
             child: SizedBox(
               width: double.infinity,

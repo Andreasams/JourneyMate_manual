@@ -5,6 +5,7 @@ import '../../providers/business_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_constants.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
@@ -100,12 +101,10 @@ class _ErroneousInfoFormWidgetState
 
     try {
       final currentBusiness = ref.read(businessProvider);
-      final businessId = currentBusiness.currentBusiness?['businessInfo']
-              ?['business_id'] as int? ??
-          0;
-      final businessName = currentBusiness.currentBusiness?['businessInfo']
-              ?['business_name'] as String? ??
-          '';
+      final businessId =
+          currentBusiness.currentBusiness?['business_id'] as int? ?? 0;
+      final businessName =
+          currentBusiness.currentBusiness?['business_name'] as String? ?? '';
       final languageCode = Localizations.localeOf(context).languageCode;
 
       final response = await ApiService.instance.postErroneousInfo(
@@ -144,10 +143,10 @@ class _ErroneousInfoFormWidgetState
   @override
   Widget build(BuildContext context) {
     final currentBusiness = ref.watch(businessProvider).currentBusiness;
-    final businessName = currentBusiness?['businessInfo']?['business_name'] as String? ?? '';
-    final street = currentBusiness?['businessInfo']?['street'] as String? ?? '';
-    final postalCode = currentBusiness?['businessInfo']?['postal_code'] as String? ?? '';
-    final city = currentBusiness?['businessInfo']?['postal_city'] as String? ?? '';
+    final businessName = currentBusiness?['business_name'] as String? ?? '';
+    final street = currentBusiness?['street'] as String? ?? '';
+    final postalCode = currentBusiness?['postal_code'] as String? ?? '';
+    final city = currentBusiness?['postal_city'] as String? ?? '';
     final address = '$street, $postalCode $city';
 
     return Container(
@@ -164,21 +163,24 @@ class _ErroneousInfoFormWidgetState
         children: [
           _buildHeader(),
           Expanded(
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xxxl - 4, // 28px
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildBusinessInfoSection(businessName, address),
-                  const SizedBox(height: AppSpacing.xl + 4), // 20px
-                  _buildMessageSection(),
-                  const SizedBox(height: AppSpacing.xl + 4), // 20px
-                  _buildSubmitArea(),
-                  const SizedBox(height: AppSpacing.xl + 4), // 20px
-                ],
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xxxl - 4, // 28px
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildBusinessInfoSection(businessName, address),
+                    const SizedBox(height: AppSpacing.xl + 4), // 20px
+                    _buildMessageSection(),
+                    const SizedBox(height: AppSpacing.xl + 4), // 20px
+                    _buildSubmitArea(),
+                    const SizedBox(height: AppSpacing.xl + 4), // 20px
+                  ],
+                ),
               ),
             ),
           ),
@@ -192,7 +194,7 @@ class _ErroneousInfoFormWidgetState
   // ─────────────────────────────────────────────────────────────────────────────
   Widget _buildHeader() {
     return SizedBox(
-      height: 56,
+      height: 72,
       child: Stack(
         children: [
           // Swipe bar
@@ -216,7 +218,7 @@ class _ErroneousInfoFormWidgetState
           ),
           // Close button
           Positioned(
-            top: 12,
+            top: AppSpacing.xxl,
             left: 12,
             child: Container(
               width: 40,
@@ -325,14 +327,10 @@ class _ErroneousInfoFormWidgetState
         ),
         const SizedBox(height: AppSpacing.sm),
 
-        // Text field with constrained height
-        ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: 120,
-            maxHeight: 180,
-          ),
-          child: TextField(
+        // Text area with minimum 5 visible lines
+        TextField(
             controller: _messageController,
+            minLines: 5,
             maxLines: null,
             textAlignVertical: TextAlignVertical.top,
             style: AppTypography.bodyRegular,
@@ -367,7 +365,6 @@ class _ErroneousInfoFormWidgetState
               }
             },
           ),
-        ),
 
         // Error text
         if (_messageError != null)
@@ -475,14 +472,14 @@ class _ErroneousInfoFormWidgetState
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
-      height: 44,
+      height: AppConstants.buttonHeight,
       child: ElevatedButton(
         onPressed: _isSubmitting ? null : _handleSubmit,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accent,
           disabledBackgroundColor: AppColors.accent.withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.chip),
+            borderRadius: BorderRadius.circular(AppRadius.button),
           ),
           elevation: 0,
         ),

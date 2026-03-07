@@ -309,7 +309,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       actions: [
         // Share button
         IconButton(
-          icon: const Icon(Icons.share_outlined, color: AppColors.textPrimary),
+          icon: const Icon(Icons.ios_share, color: AppColors.textPrimary),
           iconSize: 20,
           padding: const EdgeInsets.all(4),
           onPressed: _handleShareTap,
@@ -359,10 +359,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
           ),
         ),
 
-        // ── Section dividers (full-width grey bars) ──
-        // Divider(height:24, thickness:16) = 4px gap + 16px bar + 4px gap
-        // matches FlutterFlow pattern, preserves 24px total inter-section spacing.
-
         _sectionDivider,
 
         // 6. Gallery — self-contained widget with own 24 px horizontal padding.
@@ -405,15 +401,14 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     );
   }
 
-  /// Full-width grey bar separating major content sections.
-  /// height 24 = 4px gap + 16px bar + 4px gap (matches FlutterFlow divider pattern).
+  /// Pure white spacing between major content sections (24px).
   SliverToBoxAdapter get _sectionDivider => const SliverToBoxAdapter(
-        child: Divider(height: 24, thickness: 16, color: AppColors.divider),
+        child: SizedBox(height: AppSpacing.xxl),
       );
 
   /// Whether the About section has content to display.
   bool get _hasAboutContent {
-    final business = ref.read(businessProvider).currentBusiness;
+    final business = ref.watch(businessProvider).currentBusiness;
     final description = business?['description'] as String?;
     return description != null && description.isNotEmpty;
   }
@@ -459,7 +454,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 501-537
   Widget _buildFacilitiesSection() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -496,7 +491,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 542-550
   Widget _buildPaymentsSection() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -524,7 +519,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// Build about section (collapsible description)
   /// JSX reference: business_profile.jsx lines 554-563 (aboutOpen = false by default)
   Widget _buildAboutSection() {
-    final business = ref.read(businessProvider).currentBusiness;
+    final business = ref.watch(businessProvider).currentBusiness;
     final description = business?['description'] as String?;
 
     if (description == null || description.isEmpty) {
@@ -532,7 +527,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       child: GestureDetector(
         onTap: _toggleAboutExpanded,
         child: Column(
@@ -603,7 +598,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 567-572
   Widget _buildReportLink() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       child: Center(
         child: TextButton.icon(
           onPressed: () async {
