@@ -280,6 +280,18 @@ bool isActive = ref.read(searchStateProvider.notifier).isFilterActive(10);
 int count = ref.read(searchStateProvider.notifier).getActiveFilterCount();
 ```
 
+### Page-Local State (search_page.dart — Not in Provider)
+
+The search page manages additional state locally that does NOT belong in `searchStateProvider`:
+
+| Local Variable | Type | Purpose |
+|---------------|------|---------|
+| `_ViewMode` enum | `list` / `map` | Current view mode (list or map toggle) |
+| `_mapViewportBounds` | `LatLngBounds?` | Map viewport bounds, sent as `geoBoundsJson` to API |
+| `_mapPageSize` | `int` (200) | Page size for map view (vs `_listPageSize` = 20 for list view) |
+
+**Why page-local:** These are UI concerns specific to the search page's presentation mode. The search provider manages what results to fetch; the page manages how to display them.
+
 ### Usage Example
 
 ```dart
@@ -323,6 +335,17 @@ class BusinessState {
 **Field notes (v2 audit — commit `6804d38`):**
 - `filterDescriptions` — exists in notifier via `setFilterDescriptions()` method, not yet consumed by v2 widgets. Reserved for upcoming services chip feature (filter description bottom sheet). Keep.
 - `matchedCount` / `totalCount` — dead code. Set alongside `filterDescriptions` but never read; `MatchCardWidget` computes matches internally from raw filters. Do not use in new code.
+
+### Page-Local State (business_profile_page_v2.dart — Not in Provider)
+
+Some business-related state lives locally in the profile page, not in `businessProvider`:
+
+| Local Variable | Type | Purpose |
+|---------------|------|---------|
+| `_menuLoadFailed` | `bool` | Tracks whether the menu API call failed (shows error widget in menu section only) |
+| `_menuSessionStarted` | `bool` | Guards `dispose()` session tracking — prevents ending a session that never started |
+
+**Why page-local:** These track per-page-visit error state and analytics guards. They reset on each page visit and don't need to be shared across pages.
 
 ### Persistence
 
