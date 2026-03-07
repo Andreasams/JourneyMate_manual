@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/filter_providers.dart';
@@ -12,12 +14,14 @@ import '../../services/api_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/translation_service.dart';
 import '../../utils/filter_count_helper.dart';
+import '../../utils/search_result_helpers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_constants.dart';
 import '../../widgets/shared/search_results_list_view.dart';
+import '../../widgets/shared/search_results_map_view.dart';
 import '../../widgets/shared/selected_filters_btns.dart';
 import '../../widgets/shared/filter_overlay_widget.dart';
 import '../../widgets/shared/filter_titles_row.dart';
@@ -35,6 +39,9 @@ class SearchPage extends ConsumerStatefulWidget {
   ConsumerState<SearchPage> createState() => _SearchPageState();
 }
 
+/// Search results display mode.
+enum _ViewMode { list, map }
+
 class _SearchPageState extends ConsumerState<SearchPage> {
   // Local state
   final TextEditingController _searchController = TextEditingController();
@@ -48,7 +55,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   String _currentSort = 'nearest';
   bool _onlyOpen = false;
   int? _selectedStation;
-  String _viewMode = 'liste'; // 'liste' or 'kort'
+  _ViewMode _viewMode = _ViewMode.list;
+  /// Tracks the pageSize used for the most recent search.
+  /// Map view needs all results (200); list view uses default (20).
+  int _lastSearchPageSize = 20;
+  static const int _listPageSize = 20;
+  static const int _mapPageSize = 200;
+
+  /// Current map viewport bounds for geo-filtered search.
+  /// Only set when in map view after user manually pans/zooms.
+  /// Cleared when switching back to list view.
+  LatLngBounds? _mapViewportBounds;
 
   // Filter overlay state
   int _activeFilterTab = 0;
@@ -145,7 +162,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     });
   }
 
-  Future<void> _executeSearch(String query) async {
+  Future<void> _executeSearch(String query, {int? pageSize, LatLngBounds? geoBounds}) async {
+    final effectivePageSize = pageSize ??
+        (_viewMode == _ViewMode.map ? _mapPageSize : _listPageSize);
     final currentRequestId = ++_requestId;
 
     setState(() {
@@ -162,6 +181,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final languageCode = Localizations.localeOf(context).languageCode;
 
     try {
+      // Encode geo bounds as JSON for viewport-filtered map search.
+      // Uses the geoBounds parameter if explicitly passed, otherwise falls
+      // back to the stored _mapViewportBounds (set by map pan/zoom).
+      final effectiveBounds = geoBounds ?? _mapViewportBounds;
+      final geoBoundsJson = (_viewMode == _ViewMode.map && effectiveBounds != null)
+          ? json.encode({
+              'ne_lat': effectiveBounds.northeast.latitude,
+              'ne_lng': effectiveBounds.northeast.longitude,
+              'sw_lat': effectiveBounds.southwest.latitude,
+              'sw_lng': effectiveBounds.southwest.longitude,
+            })
+          : null;
+
       final response = await ApiService.instance.search(
         filters: searchState.filtersUsedForSearch,
         cityId: AppConstants.kDefaultCityId.toString(),
@@ -174,8 +206,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         sortOrder: 'desc',
         selectedStation: _selectedStation,
         onlyOpen: _onlyOpen,
+        pageSize: effectivePageSize,
         neighbourhoodId: searchState.selectedNeighbourhoodId,
         shoppingAreaId: searchState.selectedShoppingAreaId,
+        geoBounds: geoBoundsJson,
       );
 
       // Ignore if newer request already started
@@ -199,6 +233,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           fullMatchCount,
           scoringFilterIds,
         );
+
+        _lastSearchPageSize = effectivePageSize;
 
         // Store API's active filter IDs
         ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
@@ -714,17 +750,38 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
+  /// Switches between list and map view modes.
+  ///
+  /// Map view needs all results (pageSize 200) to populate markers.
+  /// List view uses the default 20. Re-fetches when the current results
+  /// were fetched with the wrong pageSize for the new mode.
+  void _switchViewMode(_ViewMode newMode) {
+    if (_viewMode == newMode) return;
+    setState(() => _viewMode = newMode);
+
+    // Clear viewport bounds when leaving map view — list search is unbounded
+    if (newMode == _ViewMode.list) {
+      _mapViewportBounds = null;
+    }
+
+    final neededPageSize = newMode == _ViewMode.map ? _mapPageSize : _listPageSize;
+    if (_lastSearchPageSize != neededPageSize) {
+      final query = ref.read(searchStateProvider).currentSearchText;
+      _executeSearch(query, pageSize: neededPageSize);
+    }
+  }
+
   Widget _buildViewToggle() {
     return Row(
       children: [
         // Liste button (left)
         Expanded(
           child: GestureDetector(
-            onTap: () => setState(() => _viewMode = 'liste'),
+            onTap: () => _switchViewMode(_ViewMode.list),
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: _viewMode == 'liste' ? AppColors.bgInput : Colors.white,
+                color: _viewMode == _ViewMode.list ? AppColors.bgInput : Colors.white,
                 border: Border.all(color: AppColors.border, width: 1.5),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(8),
@@ -735,8 +792,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 td(ref, 'view_toggle_list'), // Use translation key
                 textAlign: TextAlign.center,
                 style: AppTypography.viewToggle.copyWith(
-                  fontWeight: _viewMode == 'liste' ? FontWeight.w600 : FontWeight.w500,
-                  color: _viewMode == 'liste' ? AppColors.textPrimary : AppColors.textMuted,
+                  fontWeight: _viewMode == _ViewMode.list ? FontWeight.w600 : FontWeight.w500,
+                  color: _viewMode == _ViewMode.list ? AppColors.textPrimary : AppColors.textMuted,
                 ),
               ),
             ),
@@ -747,11 +804,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           child: Transform.translate(
             offset: Offset(-1.5, 0), // Overlap left border
             child: GestureDetector(
-              onTap: () => setState(() => _viewMode = 'kort'),
+              onTap: () => _switchViewMode(_ViewMode.map),
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: _viewMode == 'kort' ? AppColors.bgInput : Colors.white,
+                  color: _viewMode == _ViewMode.map ? AppColors.bgInput : Colors.white,
                   border: Border.all(color: AppColors.border, width: 1.5),
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(8),
@@ -762,8 +819,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   td(ref, 'view_toggle_map'), // Use translation key
                   textAlign: TextAlign.center,
                   style: AppTypography.viewToggle.copyWith(
-                    fontWeight: _viewMode == 'kort' ? FontWeight.w600 : FontWeight.w500,
-                    color: _viewMode == 'kort' ? AppColors.textPrimary : AppColors.textMuted,
+                    fontWeight: _viewMode == _ViewMode.map ? FontWeight.w600 : FontWeight.w500,
+                    color: _viewMode == _ViewMode.map ? AppColors.textPrimary : AppColors.textMuted,
                   ),
                 ),
               ),
@@ -1080,10 +1137,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     // Empty state
     final searchResults = searchState.searchResults;
     final bool isEmpty = searchResults == null ||
-        (searchResults is List && searchResults.isEmpty) ||
-        (searchResults is Map &&
-         searchResults['documents'] is List &&
-         (searchResults['documents'] as List).isEmpty);
+        extractDocuments(searchResults).isEmpty;
 
     if (isEmpty) {
       return Center(
@@ -1111,27 +1165,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       );
     }
 
-    // Map view placeholder (JSX: "Kortvisning - Kommer snart")
-    if (_viewMode == 'kort') {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.map_outlined,
-              size: 64,
-              color: AppColors.textTertiary,
-            ),
-            SizedBox(height: AppSpacing.lg),
-            Text(
-              td(ref, 'map_coming_soon'), // Use translation key
-              style: AppTypography.bodyRegular.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+    // Map view — Google Map with dot markers for each search result
+    if (_viewMode == _ViewMode.map) {
+      return SearchResultsMapView(
+        onBusinessTap: (businessId) {
+          context.push('/business/$businessId');
+        },
+        onViewportChanged: (bounds) {
+          _mapViewportBounds = bounds;
+          final query = ref.read(searchStateProvider).currentSearchText;
+          _executeSearch(query, geoBounds: bounds);
+        },
       );
     }
 

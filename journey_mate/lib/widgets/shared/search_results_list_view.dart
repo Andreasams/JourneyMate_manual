@@ -21,6 +21,7 @@ import '../../services/translation_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
 import '../../services/business_cache.dart';
+import '../../utils/search_result_helpers.dart';
 import 'restaurant_list_shimmer_widget.dart';
 import 'image_gallery_widget.dart';
 
@@ -130,10 +131,10 @@ class _SearchResultsListViewState
   // ---------------------------------------------------------------------------
 
   void _preloadTop5Restaurants() {
-    final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+    final documents = extractDocuments(ref.read(searchStateProvider).searchResults);
     for (int i = 0; i < documents.length && i < 5; i++) {
       final businessData = documents[i];
-      final businessId = _getBusinessId(businessData);
+      final businessId = getBusinessId(businessData);
       _preloadBusinessImages(businessId, businessData);
     }
   }
@@ -156,12 +157,12 @@ class _SearchResultsListViewState
   }
 
   void _preloadTop5Profiles() {
-    final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+    final documents = extractDocuments(ref.read(searchStateProvider).searchResults);
     final languageCode = Localizations.localeOf(context).languageCode;
 
     for (int i = 0; i < documents.length && i < 5; i++) {
       final businessData = documents[i];
-      final businessId = _getBusinessId(businessData);
+      final businessId = getBusinessId(businessData);
       _preloadBusinessProfile(businessId, languageCode);
     }
   }
@@ -192,11 +193,11 @@ class _SearchResultsListViewState
   }
 
   void _preloadVisibleCards() {
-    final documents = _extractDocuments(ref.read(searchStateProvider).searchResults);
+    final documents = extractDocuments(ref.read(searchStateProvider).searchResults);
     final languageCode = Localizations.localeOf(context).languageCode;
 
     // Get list of all business IDs in order for adjacency calculation
-    final businessIds = documents.map((doc) => _getBusinessId(doc)).toList();
+    final businessIds = documents.map((doc) => getBusinessId(doc)).toList();
 
     // Build set of IDs to pre-load: visible + 1 above + 1 below each visible card
     final idsToPreload = <int>{};
@@ -219,7 +220,7 @@ class _SearchResultsListViewState
       // Pre-load images (existing logic)
       if (!_preloadedBusinessIds.contains(businessId)) {
         final businessData = documents.firstWhere(
-          (doc) => _getBusinessId(doc) == businessId,
+          (doc) => getBusinessId(doc) == businessId,
           orElse: () => null,
         );
         if (businessData != null) {
@@ -264,7 +265,7 @@ class _SearchResultsListViewState
     }
 
     // Extract documents
-    final documents = _extractDocuments(searchResults);
+    final documents = extractDocuments(searchResults);
 
     // Empty state
     if (documents.isEmpty) {
@@ -295,7 +296,7 @@ class _SearchResultsListViewState
         separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
         itemBuilder: (context, index) {
           final businessData = documents[index];
-          final businessId = _getBusinessId(businessData);
+          final businessId = getBusinessId(businessData);
 
           return VisibilityDetector(
             key: Key('business_${businessId}_visibility'),
@@ -337,7 +338,7 @@ class _SearchResultsListViewState
     int totalActiveFilters,
     int itemIndex,
   ) {
-    final businessId = _getBusinessId(businessData);
+    final businessId = getBusinessId(businessData);
     return VisibilityDetector(
       key: Key('business_${businessId}_visibility'),
       onVisibilityChanged: (info) {
@@ -566,33 +567,6 @@ class _SearchResultsListViewState
         children: items,
       ),
     );
-  }
-
-  List<dynamic> _extractDocuments(dynamic searchResults) {
-    // After updateSearchResults() normalization, searchResults is already a List
-    if (searchResults is List) {
-      return searchResults;
-    }
-
-    // Fallback: handle Map format (for backwards compatibility)
-    if (searchResults is Map && searchResults.containsKey('documents')) {
-      final docs = searchResults['documents'];
-      if (docs is List) {
-        return docs;
-      }
-    }
-
-    return [];
-  }
-
-  int _getBusinessId(dynamic businessData) {
-    if (businessData is Map) {
-      // API returns 'business_id' (not 'id')
-      final value = businessData['business_id'];
-      if (value is int) return value;
-      if (value is num) return value.toInt();
-    }
-    return 0;
   }
 
   Widget _buildEmptyState() {
