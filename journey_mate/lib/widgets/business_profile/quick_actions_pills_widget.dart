@@ -86,7 +86,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
           ref,
           latitude,
           longitude,
-          businessName ?? 'Restaurant',
+          businessName ?? td(ref, 'business_type_default'),
         ),
       ),
     ];

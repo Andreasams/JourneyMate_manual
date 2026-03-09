@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/app_providers.dart';
 import '../providers/locale_provider.dart';
 import '../constants/welcome_fallback_translations.dart';
+import '../constants/business_profile_fallback_translations.dart';
 
 // ============================================================
 // TRANSLATION SERVICE (Phase 8 — 100% Dynamic Translations)
@@ -37,12 +38,18 @@ String td(WidgetRef ref, String key) {
     return text;
   }
 
-  // Fallback to welcome page translations (used on first launch before API loads)
+  // Fallback chain: welcome page → business profile
   final locale = ref.watch(localeProvider);
-  final fallback = kWelcomeFallbackTranslations[locale.languageCode]?[key];
+  final lang = locale.languageCode;
 
-  if (fallback != null) {
-    return fallback;
+  final welcomeFallback = kWelcomeFallbackTranslations[lang]?[key];
+  if (welcomeFallback != null) {
+    return welcomeFallback;
+  }
+
+  final businessFallback = kBusinessProfileFallbackTranslations[lang]?[key];
+  if (businessFallback != null) {
+    return businessFallback;
   }
 
   // Last resort: return the key itself

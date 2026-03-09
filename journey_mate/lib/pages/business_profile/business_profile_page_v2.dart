@@ -694,9 +694,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     final analyticsState = ref.read(analyticsProvider);
 
     // Share business profile
-    SharePlus.instance.share(ShareParams(
-      text: 'Check out $businessName on JourneyMate!',
-    ));
+    final shareText = td(ref, 'share_business_text')
+        .replaceAll('{name}', businessName);
+    SharePlus.instance.share(ShareParams(text: shareText));
 
     // Track share event
     ApiService.instance.postAnalytics(
