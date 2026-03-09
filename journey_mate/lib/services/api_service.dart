@@ -184,8 +184,8 @@ class ApiService {
     required String languageCode,
   }) {
     return _makeGetRequest('/DishesAndDrinks', {
-      'businessId': businessId,
-      'languageCode': languageCode,
+      'business_id': businessId,
+      'language_code': languageCode,
     });
   }
 
