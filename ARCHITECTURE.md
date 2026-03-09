@@ -1320,6 +1320,37 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
 
 **Reference:** Commit `5eae0ca` — menu API failure shows error widget without hiding business profile
 
+### BusinessCache — In-Memory LRU Preview Cache
+
+**File:** `journey_mate/lib/services/business_cache.dart`
+
+Standalone singleton cache (NOT a Riverpod provider) that stores business preview data from search results for instant display when navigating to business profile pages.
+
+**Key properties:**
+- **50-entry max** with LRU eviction via `LinkedHashMap` insertion order
+- **Singleton access:** `BusinessCache.instance` (no Riverpod dependency)
+- **LRU promotion:** `getBusinessPreview()` removes and re-inserts entry at end
+- **Eviction:** When cache exceeds `_maxEntries`, oldest entry (first key) is removed
+
+**API:**
+```dart
+// Cache preview data when displaying search results
+BusinessCache.instance.cacheBusinessPreview(searchResultMap);
+
+// Retrieve cached preview for instant page load
+final preview = BusinessCache.instance.getBusinessPreview(businessId);
+
+// Clear all cached data (e.g., on logout)
+BusinessCache.instance.clear();
+```
+
+**Why standalone singleton, not a Riverpod provider?**
+- Cache is a simple key-value store with no reactive subscribers
+- Used by both search results list and business profile page (no widget tree dependency)
+- Avoids unnecessary Riverpod overhead for a pure data cache
+
+**Reference:** Commit `ae9ad82` — in-memory LRU cache for business preview data
+
 ---
 
 ## Pre-Loading Architecture
