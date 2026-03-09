@@ -89,6 +89,9 @@ class AppColors {
   /// Divider - Separator lines
   static const Color divider = Color(0xFFF2F2F2);
 
+  /// Dot separator - Small decorative dots between inline items (e.g. hero row)
+  static const Color dotSeparator = Color(0xFFD0D0D0);
+
   // ============================================================
   // SEMANTIC COLORS (Aliases for clarity)
   // ============================================================
