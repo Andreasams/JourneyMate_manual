@@ -33,7 +33,7 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - [References](#references) (lines 3268-3282) — Links to other documentation files
 - [State Management](#state-management) (lines 154-351) — When to use what, provider catalog, Riverpod 3.x patterns, ref.listen
 - [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 871-1216) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
-- [Translation System](#translation-system) (lines 1486-1601) — Dynamic td() function, 355 keys, 7 languages
+- [Translation System](#translation-system) (lines 1486-1629) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages
 - [Widget Patterns](#widget-patterns) (lines 354-870) — Self-contained widgets, page wrappers, bottom sheets, cross-page reuse, map view
 
 ---
@@ -60,8 +60,8 @@ JourneyMate was migrated from FlutterFlow to production Flutter with five core a
 
 ### 3. Single Source of Truth for Translations (Maintainability)
 - **100% dynamic** from Supabase `ui_translations` table via BuildShip API
-- **355 app keys** + 142 legacy keys = 497 total
-- **7 languages:** en, da, de, fr, it, no, sv
+- **344 app keys** in Supabase (0 legacy keys remaining)
+- **15 languages** in Supabase, **7 fallback languages** hardcoded in app (en, da, de, fr, it, no, sv)
 - **Zero hardcoded strings** in production code
 
 **Why:** Translations update without app releases. Content team controls all text.
@@ -1623,16 +1623,42 @@ TextField(
 
 ```dart
 String td(WidgetRef ref, String key) {
+  // 1. Supabase API cache (primary source)
   final cache = ref.watch(translationsCacheProvider);
   final text = cache[key];
 
-  if (text == null) {
-    debugPrint('⚠️ td: Missing dynamic key "$key"');
-    return key; // Fallback to key name
+  if (text != null && text.isNotEmpty) {
+    return text;
   }
-  return text;
+
+  // 2. Welcome page fallbacks (hardcoded for offline/first launch)
+  final locale = ref.watch(localeProvider);
+  final lang = locale.languageCode;
+
+  final welcomeFallback = kWelcomeFallbackTranslations[lang]?[key];
+  if (welcomeFallback != null) {
+    return welcomeFallback;
+  }
+
+  // 3. Business profile fallbacks (hardcoded for offline/first launch)
+  final businessFallback = kBusinessProfileFallbackTranslations[lang]?[key];
+  if (businessFallback != null) {
+    return businessFallback;
+  }
+
+  // 4. Key name as last resort
+  debugPrint('⚠️ td: Missing translation key "$key"');
+  return key;
 }
 ```
+
+> **Fallback chain (4 steps):** The `td()` function resolves translations in order:
+> 1. Supabase API cache (`translationsCacheProvider`) — primary, always preferred
+> 2. Welcome page fallbacks (`kWelcomeFallbackTranslations`) — hardcoded for offline/first launch
+> 3. Business profile fallbacks (`kBusinessProfileFallbackTranslations`) — hardcoded for offline/first launch
+> 4. Key name as last resort (logs warning)
+>
+> **Reference:** Commits `03a5073`, `9f7a6bb` — added business profile fallback layer and cleaned up legacy keys
 
 ### Loading Translations
 
@@ -1656,9 +1682,11 @@ ref.read(localeProvider.notifier).setLocale('da');
 
 ### Translation Stats
 
-- **355 app keys** (search, business profile, menu, settings, etc.)
-- **142 legacy keys** (from FlutterFlow migration, will be retired)
-- **7 languages:** en (English), da (Danish), de (German), fr (French), it (Italian), no (Norwegian), sv (Swedish)
+- **344 app keys** (search, business profile, menu, settings, etc.)
+- **0 legacy keys** (all FlutterFlow migration keys cleaned up — commit `9f7a6bb`)
+- **15 languages in Supabase:** en, da, de, es, fi, fr, it, ja, ko, nl, no, pl, sv, uk, zh
+- **7 fallback languages in app:** en, da, de, fr, it, no, sv (hardcoded in `kWelcomeFallbackTranslations` and `kBusinessProfileFallbackTranslations`)
+- **~5,160 translation rows** in Supabase (344 keys x 15 languages)
 - **Storage:** Supabase `ui_translations` table
 - **API:** BuildShip `GET /languageText` endpoint
 
