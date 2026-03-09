@@ -404,7 +404,7 @@ Use these patterns to:
 ### Translations
 - **All text** via `td(ref, 'key')` function (NO hardcoded strings)
 - **100% dynamic** from Supabase `ui_translations` table via BuildShip
-- **355 app keys** + 142 legacy keys = 497 total
+- **344 app keys** (0 legacy keys remaining)
 
 ### Analytics
 - **Fire-and-forget** (NEVER await analytics calls)
