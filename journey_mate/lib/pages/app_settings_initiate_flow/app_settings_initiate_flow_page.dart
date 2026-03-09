@@ -279,7 +279,7 @@ class _AppSettingsInitiateFlowPageState
         automaticallyImplyLeading: false, // NO back button
         centerTitle: true,
         title: Text(
-          td(ref, 'opycnrvy'), // "App setup"
+          td(ref, 'feedback_page_settings'), // "App setup"
           style: AppTypography.categoryHeading,
         ),
       ),
@@ -291,7 +291,7 @@ class _AppSettingsInitiateFlowPageState
             children: [
               // Main page title
               Text(
-                td(ref, '0aq8qo7g'), // "Localization"
+                td(ref, 'settings_localization_title'), // "Localization"
                 style: GoogleFonts.roboto(
                   fontSize: 20,
                   fontWeight: FontWeight.w500,
@@ -302,7 +302,7 @@ class _AppSettingsInitiateFlowPageState
 
               // Main subtitle
               Text(
-                td(ref, 'lup5v7ii'), // "Select your preferred language..."
+                td(ref, 'onboarding_language_currency_desc'), // "Select your preferred language..."
                 style: GoogleFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w300,
@@ -313,7 +313,7 @@ class _AppSettingsInitiateFlowPageState
 
               // Language Section Title
               Text(
-                td(ref, 's3movlvc'), // "Language"
+                td(ref, 'settings_language_label'), // "Language"
                 style: AppTypography.label.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -328,7 +328,7 @@ class _AppSettingsInitiateFlowPageState
 
               // Currency Section Title
               Text(
-                td(ref, 'elv468gp'), // "Currency"
+                td(ref, 'onboarding_currency_label'), // "Currency"
                 style: AppTypography.label.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -343,7 +343,7 @@ class _AppSettingsInitiateFlowPageState
               // Exchange Rate Note
               Text(
                 td(ref,
-                    '6kxja9sp'), // "Exchange rates are updated once per 24 hours"
+                    'currency_exchange_rate_disclaimer'), // "Exchange rates are updated once per 24 hours"
                 style: AppTypography.helper.copyWith(
                   color: AppColors.textTertiary,
                 ),
@@ -363,7 +363,7 @@ class _AppSettingsInitiateFlowPageState
                     ),
                   ),
                   child: Text(
-                    td(ref, '9nldb2d7'), // "Complete setup"
+                    td(ref, 'onboarding_complete_setup'), // "Complete setup"
                     style: AppTypography.button.copyWith(
                       color: Colors.white,
                     ),
