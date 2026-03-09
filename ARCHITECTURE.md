@@ -33,7 +33,7 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - [References](#references) (lines 3268-3282) — Links to other documentation files
 - [State Management](#state-management) (lines 154-351) — When to use what, provider catalog, Riverpod 3.x patterns, ref.listen
 - [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 871-1216) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
-- [Translation System](#translation-system) (lines 1486-1601) — Dynamic td() function, 355 keys, 7 languages
+- [Translation System](#translation-system) (lines 1486-1629) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages
 - [Widget Patterns](#widget-patterns) (lines 354-870) — Self-contained widgets, page wrappers, bottom sheets, cross-page reuse, map view
 
 ---
@@ -60,8 +60,8 @@ JourneyMate was migrated from FlutterFlow to production Flutter with five core a
 
 ### 3. Single Source of Truth for Translations (Maintainability)
 - **100% dynamic** from Supabase `ui_translations` table via BuildShip API
-- **355 app keys** + 142 legacy keys = 497 total
-- **7 languages:** en, da, de, fr, it, no, sv
+- **344 app keys** in Supabase (0 legacy keys remaining)
+- **15 languages** in Supabase, **7 fallback languages** hardcoded in app (en, da, de, fr, it, no, sv)
 - **Zero hardcoded strings** in production code
 
 **Why:** Translations update without app releases. Content team controls all text.
@@ -522,6 +522,35 @@ HeroSectionWidget(businessData: businessInfo)
 
 **Reference:** Commit `9e75f0f` — business information page restructured to reuse profile widgets (removed ~130 lines of duplicated logic)
 
+### Shared Utility Functions Pattern
+
+When multiple widgets need the same formatting or validation logic, extract to a shared utility file rather than duplicating across widgets.
+
+**File:** `journey_mate/lib/services/custom_functions/contact_utils.dart`
+
+```dart
+/// Formats a phone number for dialing by stripping non-digits and prepending +45.
+/// "33 11 68 68" → "+4533116868"
+/// "+45 33 11 68 68" → "+4533116868" (no double prefix)
+String formatPhoneForDial(String phone) {
+  final digits = phone.replaceAll(RegExp(r'[^\d]'), '');
+  if (digits.startsWith('45') && digits.length > 8) {
+    return '+$digits';
+  }
+  return '+45$digits';
+}
+
+/// Ensures a URL has an https:// protocol prefix.
+String ensureHttpsUrl(String url) {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return 'https://$url';
+}
+```
+
+**Used by:** `quick_actions_pills_widget.dart`, `opening_hours_contact_widget.dart`, `contact_details_widget.dart`
+
+**Reference:** Commit `932e351` — extracted shared contact utilities from duplicated widget logic
+
 ### Map View with Viewport-Based Geo-Filtering Pattern
 
 Search page supports list/map toggle via page-local `_ViewMode` enum. Each mode uses different parameters:
@@ -580,15 +609,74 @@ Future<void> _openFilterSheet() async {
 Widget _buildSheetHandle() {
   return Container(
     margin: EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.sm),
-    width: 40,
+    width: 80,
     height: 4,
     decoration: BoxDecoration(
-      color: AppColors.border,
-      borderRadius: BorderRadius.circular(2),
+      color: AppColors.textPrimary,
+      borderRadius: BorderRadius.circular(20),
     ),
   );
 }
 ```
+
+### BottomSheetHeader — Shared Bottom Sheet Widget
+
+**File:** `journey_mate/lib/widgets/shared/bottom_sheet_header.dart`
+
+All JourneyMate bottom sheets use a shared `BottomSheetHeader` widget for consistent styling. It renders a swipe bar indicator and optional left/right action buttons, with support for an image background.
+
+**BottomSheetAction data class:**
+```dart
+class BottomSheetAction {
+  const BottomSheetAction({required this.icon, required this.onPressed});
+  final IconData icon;
+  final VoidCallback onPressed;
+}
+```
+
+**Usage — standard close button:**
+```dart
+BottomSheetHeader(
+  rightAction: BottomSheetAction(
+    icon: Icons.close,
+    onPressed: () => Navigator.of(context).pop(),
+  ),
+)
+```
+
+**Usage — image header with back + close:**
+```dart
+BottomSheetHeader(
+  image: CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover),
+  imageHeight: 200.0,
+  leftAction: BottomSheetAction(icon: Icons.arrow_back, onPressed: onBack),
+  rightAction: BottomSheetAction(icon: Icons.close, onPressed: onClose),
+)
+```
+
+**Constants (reusable by consuming widgets):**
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `swipeBarWidth` | 80.0 | Width of the swipe indicator bar |
+| `swipeBarHeight` | 4.0 | Height of the swipe indicator bar |
+| `swipeBarTopPadding` | 8.0 | Top padding above swipe bar |
+| `actionButtonSize` | 40.0 | Size of action buttons (close, back) |
+| `actionButtonPosition` | 12.0 | Offset from edges for action buttons |
+| `actionIconSize` | 24.0 | Icon size within action buttons |
+| `actionButtonBorderRadius` | 20.0 | Corner radius of action buttons |
+| `swipeBarBorderRadius` | 20.0 | Corner radius of swipe indicator |
+
+**Static helper — `sheetDecoration()`:**
+```dart
+// Canonical container decoration for bottom sheets
+Container(
+  decoration: BottomSheetHeader.sheetDecoration(),
+  child: Column(children: [BottomSheetHeader(...), ...]),
+)
+```
+
+**Reference:** Commit `80ae4b6` — extracted shared BottomSheetHeader from duplicated bottom sheet boilerplate
 
 ### Filter Coordination Pattern (Parent Callbacks)
 
@@ -1320,6 +1408,37 @@ class _BusinessProfilePageState extends ConsumerState<BusinessProfilePage> {
 
 **Reference:** Commit `5eae0ca` — menu API failure shows error widget without hiding business profile
 
+### BusinessCache — In-Memory LRU Preview Cache
+
+**File:** `journey_mate/lib/services/business_cache.dart`
+
+Standalone singleton cache (NOT a Riverpod provider) that stores business preview data from search results for instant display when navigating to business profile pages.
+
+**Key properties:**
+- **50-entry max** with LRU eviction via `LinkedHashMap` insertion order
+- **Singleton access:** `BusinessCache.instance` (no Riverpod dependency)
+- **LRU promotion:** `getBusinessPreview()` removes and re-inserts entry at end
+- **Eviction:** When cache exceeds `_maxEntries`, oldest entry (first key) is removed
+
+**API:**
+```dart
+// Cache preview data when displaying search results
+BusinessCache.instance.cacheBusinessPreview(searchResultMap);
+
+// Retrieve cached preview for instant page load
+final preview = BusinessCache.instance.getBusinessPreview(businessId);
+
+// Clear all cached data (e.g., on logout)
+BusinessCache.instance.clear();
+```
+
+**Why standalone singleton, not a Riverpod provider?**
+- Cache is a simple key-value store with no reactive subscribers
+- Used by both search results list and business profile page (no widget tree dependency)
+- Avoids unnecessary Riverpod overhead for a pure data cache
+
+**Reference:** Commit `ae9ad82` — in-memory LRU cache for business preview data
+
 ---
 
 ## Pre-Loading Architecture
@@ -1504,16 +1623,42 @@ TextField(
 
 ```dart
 String td(WidgetRef ref, String key) {
+  // 1. Supabase API cache (primary source)
   final cache = ref.watch(translationsCacheProvider);
   final text = cache[key];
 
-  if (text == null) {
-    debugPrint('⚠️ td: Missing dynamic key "$key"');
-    return key; // Fallback to key name
+  if (text != null && text.isNotEmpty) {
+    return text;
   }
-  return text;
+
+  // 2. Welcome page fallbacks (hardcoded for offline/first launch)
+  final locale = ref.watch(localeProvider);
+  final lang = locale.languageCode;
+
+  final welcomeFallback = kWelcomeFallbackTranslations[lang]?[key];
+  if (welcomeFallback != null) {
+    return welcomeFallback;
+  }
+
+  // 3. Business profile fallbacks (hardcoded for offline/first launch)
+  final businessFallback = kBusinessProfileFallbackTranslations[lang]?[key];
+  if (businessFallback != null) {
+    return businessFallback;
+  }
+
+  // 4. Key name as last resort
+  debugPrint('⚠️ td: Missing translation key "$key"');
+  return key;
 }
 ```
+
+> **Fallback chain (4 steps):** The `td()` function resolves translations in order:
+> 1. Supabase API cache (`translationsCacheProvider`) — primary, always preferred
+> 2. Welcome page fallbacks (`kWelcomeFallbackTranslations`) — hardcoded for offline/first launch
+> 3. Business profile fallbacks (`kBusinessProfileFallbackTranslations`) — hardcoded for offline/first launch
+> 4. Key name as last resort (logs warning)
+>
+> **Reference:** Commits `03a5073`, `9f7a6bb` — added business profile fallback layer and cleaned up legacy keys
 
 ### Loading Translations
 
@@ -1537,9 +1682,11 @@ ref.read(localeProvider.notifier).setLocale('da');
 
 ### Translation Stats
 
-- **355 app keys** (search, business profile, menu, settings, etc.)
-- **142 legacy keys** (from FlutterFlow migration, will be retired)
-- **7 languages:** en (English), da (Danish), de (German), fr (French), it (Italian), no (Norwegian), sv (Swedish)
+- **344 app keys** (search, business profile, menu, settings, etc.)
+- **0 legacy keys** (all FlutterFlow migration keys cleaned up — commit `9f7a6bb`)
+- **15 languages in Supabase:** en, da, de, es, fi, fr, it, ja, ko, nl, no, pl, sv, uk, zh
+- **7 fallback languages in app:** en, da, de, fr, it, no, sv (hardcoded in `kWelcomeFallbackTranslations` and `kBusinessProfileFallbackTranslations`)
+- **~5,160 translation rows** in Supabase (344 keys x 15 languages)
 - **Storage:** Supabase `ui_translations` table
 - **API:** BuildShip `GET /languageText` endpoint
 

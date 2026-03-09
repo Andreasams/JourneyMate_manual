@@ -231,18 +231,19 @@ Each scenario below provides:
 
 **Read these sections:**
 1. **_reference/BUILDSHIP_API_REFERENCE.md** → SEARCH endpoint v9.2 (lines 11-131)
-2. **ARCHITECTURE.md** → API Service Pattern (lines 1219-1322)
+2. **ARCHITECTURE.md** → API Service Pattern (lines 1307-1410)
 3. **_reference/PROVIDERS_REFERENCE.md** → searchStateProvider (search for "searchStateProvider")
 4. **_reference/PROVIDERS_REFERENCE.md** → filterProvider (search for "filterProvider")
-5. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 546-592)
-6. **ARCHITECTURE.md** → Widget Patterns → Filter Coordination Pattern (lines 593-678)
-7. **ARCHITECTURE.md** → Widget Patterns → Parent-Child Filter Pattern (lines 679-799)
-8. **ARCHITECTURE.md** → Widget Patterns → Filter Exclusivity Pattern (lines 800-870)
-9. **ARCHITECTURE.md** → Widget Patterns → Map View with Viewport-Based Geo-Filtering Pattern (lines 525-545)
-10. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1325-1402)
-11. **ARCHITECTURE.md** → Common Pitfall #11, #13, #14, #18, #24 (lines 2047-2131, 2247-2302, 2303-2342, 2482-2537, 2813-2900)
-12. **ARCHITECTURE.md** → Location Permission Pattern (lines 1405-1483) — for search banner location UI
-13. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 871-1216) — for dismissible location banner
+5. **ARCHITECTURE.md** → Widget Patterns → Map View with Viewport-Based Geo-Filtering Pattern (lines 554-573)
+6. **ARCHITECTURE.md** → Widget Patterns → Bottom Sheet Pattern (lines 575-620)
+7. **ARCHITECTURE.md** → Widget Patterns → BottomSheetHeader — Shared Bottom Sheet Widget (lines 622-679)
+8. **ARCHITECTURE.md** → Widget Patterns → Filter Coordination Pattern (lines 681-763)
+9. **ARCHITECTURE.md** → Widget Patterns → Parent-Child Filter Pattern (lines 767-884)
+10. **ARCHITECTURE.md** → Widget Patterns → Filter Exclusivity Pattern (lines 888-955)
+11. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 959-1303) — for dismissible location banner
+12. **ARCHITECTURE.md** → Pre-Loading Architecture (lines 1413-1489)
+13. **ARCHITECTURE.md** → Location Permission Pattern (lines 1493-1571) — for search banner location UI
+14. **ARCHITECTURE.md** → Common Pitfall #11, #13, #14, #18, #24 (lines 2135-2218, 2335-2389, 2391-2429, 2570-2624, 2901-2987)
 
 **Critical warnings:**
 - ⚠️ **SEARCH API v9.2 LIVE:** NO `filtersUsedForSearch` parameter (use `filters` only), NO `category` parameter (always returns all with `section` field), access new `fullMatchCount` output field
@@ -348,7 +349,7 @@ Each scenario below provides:
 
 **Critical warnings:**
 - ⚠️ All text via `td(ref, 'key')` function — NO hardcoded strings
-- ⚠️ 7 languages supported: en, da, de, fr, it, no, sv (355 app keys + 142 legacy keys)
+- ⚠️ 15 languages in Supabase, 7 fallback languages in app (344 app keys, 0 legacy)
 - ⚠️ Language change triggers full app rebuild via `localeProvider` + MaterialApp
 - ⚠️ Currency preference stored separately in `localizationProvider`
 - ⚠️ Exchange rates fetched from external API, cached in provider state
