@@ -25,7 +25,8 @@ import '../../widgets/shared/restaurant_shimmer_widget.dart';
 import '../../widgets/shared/description_sheet.dart';
 import '../../widgets/shared/expandable_text_widget.dart';
 import '../../widgets/business_profile/hero_section_widget.dart';
-import '../../widgets/business_profile/inline_gallery_widget.dart';
+import '../../widgets/shared/tabbed_gallery_widget.dart';
+import '../../widgets/shared/image_gallery_widget.dart';
 import '../../widgets/business_profile/inline_menu_widget.dart';
 import '../../widgets/business_profile/match_card_widget.dart';
 import '../../widgets/business_profile/opening_hours_contact_widget.dart';
@@ -383,10 +384,8 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
         _sectionDivider,
 
-        // 6. Gallery — self-contained widget with own 24 px horizontal padding.
-        // Must be a separate SliverToBoxAdapter (not inside the SliverPadding
-        // above) to avoid 48 px double-padding. Matches v1 pattern (page.dart:536).
-        const SliverToBoxAdapter(child: InlineGalleryWidget()),
+        // 6. Gallery — prop-based widget with caller-provided padding.
+        SliverToBoxAdapter(child: _buildGallerySection()),
 
         _sectionDivider,
 
@@ -505,6 +504,54 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Build gallery section with tabbed image grid
+  /// Follows _buildFacilitiesSection() pattern: reads provider, wraps in padding
+  Widget _buildGallerySection() {
+    final business = ref.watch(businessProvider).currentBusiness;
+    final galleryData = business?['gallery'] as Map<String, dynamic>?;
+    final businessId = business?['business_id'] as int?;
+
+    if (galleryData == null || galleryData.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            td(ref, 'tab_gallery'),
+            style: AppTypography.sectionHeading,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          TabbedGalleryWidget(
+            galleryData: galleryData,
+            limitToEightImages: true,
+            pageName: 'businessProfile',
+            onImageTap: (imageUrls, index, categoryKey) {
+              if (context.mounted) {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => ImageGalleryWidget(
+                    currentIndex: index,
+                    imageUrls: imageUrls,
+                    categoryName: td(ref, 'tab_gallery'),
+                  ),
+                );
+              }
+            },
+            onViewAllTap: businessId != null
+                ? () => context.push('/business/$businessId/gallery')
+                : null,
+          ),
+        ],
       ),
     );
   }

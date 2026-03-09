@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
 import '../../services/api_service.dart';
-import '../../services/analytics_service.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
-import '../../widgets/shared/gallery_tab_widget.dart';
+import '../../widgets/shared/tabbed_gallery_widget.dart';
 import '../../widgets/shared/image_gallery_overlay_swipable_widget.dart';
 
 /// Gallery Full Page - Dedicated full-screen photo gallery browsing
@@ -36,6 +36,10 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
   /// Page start time for analytics duration tracking
   DateTime? _pageStartTime;
 
+  // Cached for safe use in dispose() — ref is invalid after unmount
+  String _cachedDeviceId = '';
+  String _cachedSessionId = '';
+
   // ============================================================================
   // LIFECYCLE
   // ============================================================================
@@ -45,9 +49,15 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
     super.initState();
     _pageStartTime = DateTime.now();
 
-    // Check data availability after first frame
+    // Check data availability and cache analytics state after first frame
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+
+      // Cache analytics state for safe use in dispose() (ref is invalid after unmount)
+      final analyticsState = ref.read(analyticsProvider);
+      _cachedDeviceId = analyticsState.deviceId;
+      _cachedSessionId = analyticsState.sessionId ?? '';
+
       final gallery = ref.read(businessProvider).currentBusiness?['gallery'];
       if (gallery == null) {
         debugPrint('GalleryFullPage: No gallery data available');
@@ -60,24 +70,19 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
     // Track page view with duration
     if (_pageStartTime != null) {
       final duration = DateTime.now().difference(_pageStartTime!);
-      final analytics = AnalyticsService.instance;
 
-      ApiService.instance
-          .postAnalytics(
+      // Use cached values — ref is unsafe during dispose()
+      ApiService.instance.postAnalytics(
         eventType: 'page_viewed',
-        deviceId: analytics.deviceId ?? '',
-        sessionId: analytics.currentSessionId ?? '',
-        userId: analytics.userId ?? '',
+        deviceId: _cachedDeviceId,
+        sessionId: _cachedSessionId,
+        userId: '',
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
-          'pageName': 'galleryFullPage', // ← CRITICAL: Not 'viewFullGallery'!
+          'pageName': 'galleryFullPage',
           'durationSeconds': duration.inSeconds,
         },
-      )
-          .catchError((_) {
-        // Fire-and-forget, ignore errors
-        return ApiCallResponse.failure('Analytics failed');
-      });
+      );
     }
     super.dispose();
   }
@@ -116,7 +121,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
   // BODY LAYOUT
   // ============================================================================
 
-  /// Build body with "Gallery" label + GalleryTabWidget
+  /// Build body with "Gallery" label + TabbedGalleryWidget
   ///
   /// Much simpler than Menu Full Page - no filters, no categories, just the gallery widget
   Widget _buildBody() {
@@ -148,7 +153,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
             ),
           ),
           SizedBox(height: AppSpacing.md),
-          // GalleryTabWidget takes remaining space
+          // TabbedGalleryWidget takes remaining space
           Expanded(
             child: _buildGalleryTabWidget(gallery),
           ),
@@ -161,17 +166,18 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
   // GALLERY TAB WIDGET WITH CALLBACK
   // ============================================================================
 
-  /// Build GalleryTabWidget with image tap callback wired
+  /// Build TabbedGalleryWidget with image tap callback wired
   ///
   /// Key decisions:
   /// - limitToEightImages = false (show all images in full page view)
   /// - onImageTap callback opens full-screen overlay with ImageGalleryOverlaySwipableWidget
   Widget _buildGalleryTabWidget(dynamic gallery) {
-    return GalleryTabWidget(
-      galleryData: gallery,
-      limitToEightImages: false, // Show all images (not limited to 8)
-      onImageTap: (imageUrls, index, categoryKey) async {
-        await _showImageGalleryOverlay(imageUrls, index, categoryKey);
+    return TabbedGalleryWidget(
+      galleryData: gallery as Map<String, dynamic>,
+      limitToEightImages: false,
+      pageName: 'galleryFullPage',
+      onImageTap: (imageUrls, index, categoryKey) {
+        _showImageGalleryOverlay(imageUrls, index, categoryKey);
       },
     );
   }
