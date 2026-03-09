@@ -3193,13 +3193,6 @@ JourneyMate maintains **three types of documentation**:
 **Files:** `_reference/BUILDSHIP_API_REFERENCE.md`, `_reference/PROVIDERS_REFERENCE.md`
 **Update when:** API contracts change, providers added/modified
 
-### 3. Historical Documents (Reference-only)
-**Purpose:** Understand "why was this built this way?"
-**Files:** `_reference/flutterflow_migration/pages/*/BUNDLE.md`, `_reference/flutterflow_migration/shared/*/MASTER_README_*.md` (207 files)
-**Update when:** NEVER (read-only reference from migration phase)
-
-**Key Rule:** If you need to understand why a page works a certain way, read the BUNDLE.md in `_reference/flutterflow_migration/`. If you need to build something new, read ARCHITECTURE.md and PROVIDERS_REFERENCE.md.
-
 ---
 
 ## Provider Initialization Order (Critical)
@@ -3273,8 +3266,6 @@ Providers MUST initialize in this exact order at app startup:
 - **Design Tokens:** `DESIGN_SYSTEM_flutter.md` (819 lines, colors/spacing/typography)
 - **Quick Start:** `CLAUDE.md` (streamlined session primer)
 - **Developer Onboarding:** `CONTRIBUTING.md` (workflow and standards)
-- **Migration History:** `_reference/archive/MIGRATION_STATUS.md` (Phase 1-7 archived)
-- **Pattern Discovery:** `_reference/archive/PHASE7_PATTERNS.md` (Session logs archived)
 
 ---
 

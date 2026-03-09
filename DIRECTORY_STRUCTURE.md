@@ -117,7 +117,7 @@ lib/pages/settings/
 ---
 
 ### `/_reference/` — Documentation & References
-All reference documentation, API specs, and historical artifacts.
+API contracts, provider references, and endpoint specifications.
 
 **Path:** `_reference/`
 
@@ -126,35 +126,14 @@ All reference documentation, API specs, and historical artifacts.
 _reference/
 ├── BUILDSHIP_API_REFERENCE.md          # API contracts for 12 BuildShip endpoints
 ├── PROVIDERS_REFERENCE.md              # Riverpod provider catalog
-├── PAGE_CONSISTENCY_ANALYSIS.md        # Analysis of page patterns (Feb 2026)
 ├── _buildship/                         # Individual BuildShip endpoint specs
 │   └── SEARCH_NODE_v9.2.ts            # Full search endpoint reference (920 lines, v9.2 with geo bounds)
-├── _supabase/                          # Supabase table schema references
-├── archive/                            # Historical reference files
-│   ├── IMPLEMENTATION_PLAN.txt         # Original migration plan
-│   ├── INFO.plist.txt                  # iOS Info.plist reference
-│   ├── MAIN.dart.txt                   # Original main.dart reference
-│   ├── MIGRATION_STATUS.md             # Phase 7 migration status
-│   └── PHASE7_PATTERNS.md              # Phase 7 pattern discoveries
-└── flutterflow_migration/              # FlutterFlow → Flutter migration artifacts
-    ├── pages/                          # Page-specific migration docs
-    │   ├── 01_search/
-    │   ├── 02_business_profile/
-    │   ├── 03_menu_full_page/
-    │   ├── 04_gallery_full_page/
-    │   ├── 05_business_information/
-    │   ├── 06_welcome_onboarding/
-    │   └── 07_settings/
-    └── shared/                         # Shared component migration docs
-        ├── actions/
-        ├── functions/
-        └── widgets/
+└── _supabase/                          # Supabase table schema references
 ```
 
 **Purpose:**
 - API contracts and provider references for active development
-- Historical migration artifacts for understanding design decisions
-- FlutterFlow export documentation for tracing original implementations
+- BuildShip endpoint specs and Supabase schema for API work
 
 ---
 
@@ -202,15 +181,6 @@ Claude Code settings, skills, and hooks.
 
 ---
 
-### `/_flutterflow_export/` — FlutterFlow Export (Historical)
-Original FlutterFlow export. Kept locally for reference but removed from git (Feb 22, 2026).
-
-**Path:** `_flutterflow_export/`
-**Status:** Local reference only, not in version control
-**Note:** See CLAUDE.md Critical Decision #8
-
----
-
 ## Quick Reference Table
 
 | File/Folder | Purpose | Used By |
@@ -221,27 +191,8 @@ Original FlutterFlow export. Kept locally for reference but removed from git (Fe
 | `NAVIGATION_GUIDE.md` | Task-based docs | Claude Code (task-specific) |
 | `_reference/BUILDSHIP_API_REFERENCE.md` | API contracts | Claude Code (API work) |
 | `_reference/PROVIDERS_REFERENCE.md` | Provider catalog | Claude Code (state work) |
-| `_reference/flutterflow_migration/` | Migration docs | Understanding legacy decisions |
 | `journey_mate/` | Production code | Flutter build, runtime |
 | `config/AuthKey_NXG563P998.p8` | Apple API key | CI/CD (codemagic.yaml) |
-
----
-
-## Path Changes (February 24, 2026)
-
-The following files were reorganized:
-
-| Old Path | New Path | Reason |
-|----------|----------|--------|
-| `pages/` | `_reference/flutterflow_migration/pages/` | Consolidate migration docs |
-| `shared/` | `_reference/flutterflow_migration/shared/` | Consolidate migration docs |
-| `IMPLEMENTATION_PLAN.txt` | `_reference/archive/IMPLEMENTATION_PLAN.txt` | Historical reference |
-| `INFO.plist.txt` | `_reference/archive/INFO.plist.txt` | Historical reference |
-| `MAIN.dart.txt` | `_reference/archive/MAIN.dart.txt` | Historical reference |
-| `PAGE_CONSISTENCY_ANALYSIS.md` | `_reference/PAGE_CONSISTENCY_ANALYSIS.md` | Reference document |
-| `journeymate_mascot.png` | `assets/journeymate_mascot.png` | Static asset |
-| `placefindr_launcher_icon_transparent_warm_beige.png` | `assets/placefindr_launcher_icon_transparent_warm_beige.png` | Static asset |
-| `AuthKey_NXG563P998.p8` | `config/AuthKey_NXG563P998.p8` (local only, not in git) | Sensitive configuration |
 
 ---
 
@@ -257,8 +208,6 @@ The following files were reorganized:
 **Task-specific:** See `NAVIGATION_GUIDE.md` for targeted reading lists (10-30 minutes)
 
 **Reference when needed:**
-- FlutterFlow migration: `_reference/flutterflow_migration/`
-- Historical plans: `_reference/archive/`
 - API specs: `_reference/_buildship/` and `_reference/_supabase/`
 
 ---

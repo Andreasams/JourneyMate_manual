@@ -241,7 +241,7 @@ Example:
 
 Raw rows from `business_x_filter` joined with Filter + FilterTranslation tables. No server-side exclusions. Each client widget applies its own display/exclusion logic independently. **Payment options and facilities are encoded here** — payment types are filter_category_id 21 (Accepts MobilePay, cash, payment card) and 423 (VISA, MasterCard, Dankort).
 
-**Client-side field enrichment:** `business_profile_page_v2.dart` merges top-level `filters` into the `businessInfo` map and computes `status_open`, `closing_time`, and `price_range` from `openWindows` data before storing to provider. See `_reference/PROFILE_V2_GAP_ANALYSIS.md` for details.
+**Client-side field enrichment:** `business_profile_page_v2.dart` merges top-level `filters` into the `businessInfo` map and computes `status_open`, `closing_time`, and `price_range` from `openWindows` data before storing to provider. See GET /businessProfile response structure above for field details.
 
 **`business_hours` object:** Keyed by day-of-week string `"0"` (Monday) through `"6"` (Sunday). Each day:
 ```json
