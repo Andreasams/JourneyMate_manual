@@ -66,6 +66,7 @@ class MenuSectionWidget extends ConsumerStatefulWidget {
 }
 
 class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
+  late final MenuScrollController _menuScrollController;
   bool _showFilters = false;
   int _visibleItemCount = 0;
   int _numberOfCategoryRows = 1;
@@ -75,6 +76,18 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
   static const double _categoryRowsHeightSingle = 42.0;
   static const double _categoryRowsHeightDouble = 72.0;
   static const double _menuListMaxHeight = 337.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _menuScrollController = MenuScrollController();
+  }
+
+  @override
+  void dispose() {
+    _menuScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -248,9 +261,9 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
           businessID: business['business_id'] ?? widget.businessId,
           apiResult: menuCategories,
           visibleSelection: _visibleSelection,
+          // Scroll the dishes list to the tapped category
           onCategoryChanged: (categoryId, menuId) async {
-            // No additional local state needed — MenuDishesListView
-            // listens to its own provider state for scroll-to-category.
+            _menuScrollController.scrollToCategory(categoryId);
           },
           onNumberOfRows: (rows) async =>
               setState(() => _numberOfCategoryRows = rows),
@@ -272,6 +285,7 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
       height: widget.isFullPage ? null : _menuListMaxHeight,
       originalCurrencyCode: originalCurrencyCode,
       isDynamicHeight: false,
+      scrollController: _menuScrollController,
       onItemTap: (itemData, isBeverage, dietaryTypeIds, allergyIds,
           formattedPrice, hasVariations, formattedVariationPrice) async {
         final localization = ref.read(localizationProvider);

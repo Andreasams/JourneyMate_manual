@@ -32,6 +32,27 @@ import '../../services/custom_functions/price_formatter.dart';
 /// - Tracks package clicks
 /// - Tracks scroll depth through categories
 /// - Updates analyticsProvider for session-level metrics
+
+/// Controller for programmatic scrolling to menu categories.
+///
+/// Lightweight ChangeNotifier for MenuSectionWidget → MenuDishesListView
+/// communication. Fires on every call (re-tapping same category re-scrolls).
+class MenuScrollController extends ChangeNotifier {
+  int? _targetCategoryId;
+
+  /// Read by [_MenuDishesListViewState._onScrollControllerChanged] only.
+  int? get targetCategoryId => _targetCategoryId;
+
+  void scrollToCategory(int categoryId) {
+    _targetCategoryId = categoryId;
+    notifyListeners();
+  }
+
+  void clearTarget() {
+    _targetCategoryId = null;
+  }
+}
+
 class MenuDishesListView extends ConsumerStatefulWidget {
   const MenuDishesListView({
     super.key,
@@ -43,6 +64,7 @@ class MenuDishesListView extends ConsumerStatefulWidget {
     this.onPackageTap,
     this.onVisibleCategoryChanged,
     this.onCategoryDescriptionTap,
+    this.scrollController,
   });
 
   final double? width;
@@ -61,6 +83,7 @@ class MenuDishesListView extends ConsumerStatefulWidget {
   final Future<void> Function(dynamic packageData)? onPackageTap;
   final Future<void> Function(dynamic selectionData)? onVisibleCategoryChanged;
   final Future<void> Function(dynamic categoryData)? onCategoryDescriptionTap;
+  final MenuScrollController? scrollController;
 
   @override
   ConsumerState<MenuDishesListView> createState() => _MenuDishesListViewState();
@@ -132,9 +155,6 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   /// Flag to indicate if a programmatic scroll is in progress
   bool _isScrolling = false;
 
-  /// Last category ID we scrolled to (for detecting changes from provider)
-  int? _lastScrolledToCategoryId;
-
   /// =========================================================================
   /// STATE - DATA MANAGEMENT (4 variables)
   /// =========================================================================
@@ -186,17 +206,17 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
 
     _itemPositionsListener.itemPositions.addListener(_onItemPositionsChanged);
 
-    // Initialize last scrolled category
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _lastScrolledToCategoryId = _getSelectedCategoryId();
-      }
-    });
+    widget.scrollController?.addListener(_onScrollControllerChanged);
   }
 
   @override
   void didUpdateWidget(covariant MenuDishesListView oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    if (widget.scrollController != oldWidget.scrollController) {
+      oldWidget.scrollController?.removeListener(_onScrollControllerChanged);
+      widget.scrollController?.addListener(_onScrollControllerChanged);
+    }
 
     // Always re-process data since filters come from provider
     _processData();
@@ -204,6 +224,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
 
   @override
   void dispose() {
+    widget.scrollController?.removeListener(_onScrollControllerChanged);
     _itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
     super.dispose();
   }
@@ -236,19 +257,6 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   /// Gets excluded allergy IDs from businessProvider
   List<int> _getSelectedAllergies() {
     return ref.read(businessProvider).excludedAllergyIds;
-  }
-
-  /// Gets selected category ID for auto-scroll detection.
-  ///
-  /// Returns 0 (all categories) by default, indicating no external category
-  /// selection. Category scrolling is managed via external scroll commands
-  /// (through method calls from parent), not by polling provider state.
-  ///
-  /// Design: This widget reports visible categories via onVisibleCategoryChanged
-  /// callback but does not receive category selection as input. This prevents
-  /// circular dependencies and keeps category selection logic in parent widgets.
-  int _getSelectedCategoryId() {
-    return 0; // Intentional: no external category selection
   }
 
   /// Gets user's chosen currency code from localizationProvider
@@ -542,6 +550,15 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
 
     // Check bottom zone (headers exiting when scrolling up)
     _handleBottomZoneHeaders(positions);
+  }
+
+  /// Handles scroll-to-category commands from the MenuScrollController.
+  void _onScrollControllerChanged() {
+    final categoryId = widget.scrollController?.targetCategoryId;
+    if (categoryId != null) {
+      _scrollToCategory(categoryId);
+      widget.scrollController?.clearTarget();
+    }
   }
 
   /// Updates the deepest category index reached during manual scrolling
@@ -1435,18 +1452,6 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
     });
 
     _fullList = _buildFullList();
-
-    // Check if we need to scroll to a new category (detected via provider)
-    final currentCategoryId = _getSelectedCategoryId();
-    if (currentCategoryId != _lastScrolledToCategoryId) {
-      _lastScrolledToCategoryId = currentCategoryId;
-      // Schedule scroll after build completes
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _scrollToCategory(currentCategoryId);
-        }
-      });
-    }
 
     return SizedBox(
       width: widget.width,
