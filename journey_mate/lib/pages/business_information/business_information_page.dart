@@ -243,11 +243,7 @@ class _BusinessInformationPageState
     final businessName = business['business_name'] ?? '';
     final openingHours = ref.watch(businessProvider).openingHours;
     final languageCode = Localizations.localeOf(context).languageCode;
-    // Merge fallback translations so pure functions resolve all keys correctly
-    final translationsCache = buildMergedTranslationsCache(
-      ref.watch(translationsCacheProvider),
-      languageCode,
-    );
+    final translationsCache = ref.watch(mergedTranslationsCacheProvider);
     final now = DateTime.now(); // Single timestamp for color/text consistency
 
     final statusResult = determineStatusAndColor(

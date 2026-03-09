@@ -331,7 +331,8 @@ class _OpeningHoursContactWidgetState
   /// Collapsible header (always visible)
   Widget _buildHeader(Map<String, dynamic> openingHours) {
     final todayPreview = _getTodayPreview(openingHours);
-    final isClosed = todayPreview.contains(td(ref, 'closed'));
+    final todayIndex = DateTime.now().weekday - 1;
+    final isClosed = _isDayClosed(_getDayHours(todayIndex, openingHours));
 
     return GestureDetector(
       onTap: _handleToggle,
@@ -452,7 +453,6 @@ class _OpeningHoursContactWidgetState
             child: Text(
               _getDayName(dayIndex),
               style: AppTypography.bodyTiny.copyWith(
-                fontSize: 13.5,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
               ),
@@ -472,7 +472,6 @@ class _OpeningHoursContactWidgetState
       return Text(
         td(ref, 'closed'),
         style: AppTypography.bodyTiny.copyWith(
-          fontSize: 13.5,
           fontWeight: FontWeight.w600,
           color: AppColors.red,
         ),
@@ -504,7 +503,6 @@ class _OpeningHoursContactWidgetState
       return Text(
         td(ref, 'closed'),
         style: AppTypography.bodyTiny.copyWith(
-          fontSize: 13.5,
           fontWeight: FontWeight.w600,
           color: AppColors.red,
         ),
@@ -529,8 +527,7 @@ class _OpeningHoursContactWidgetState
       return Text(
         hoursText,
         style: AppTypography.bodyTiny.copyWith(
-          fontSize: 13.5,
-          color: const Color(0xFF444444),
+          color: AppColors.textSecondary,
         ),
       );
     }
@@ -548,7 +545,6 @@ class _OpeningHoursContactWidgetState
         Text(
           hoursText,
           style: AppTypography.bodyTiny.copyWith(
-            fontSize: 13.5,
             color: AppColors.textSecondary,
           ),
         ),

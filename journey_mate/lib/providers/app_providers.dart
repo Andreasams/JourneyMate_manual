@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'provider_state_classes.dart';
+import 'locale_provider.dart';
 import '../services/api_service.dart';
+import '../services/translation_service.dart';
 import '../constants/welcome_fallback_translations.dart';
 
 // ============================================================
@@ -237,6 +239,16 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
 final translationsCacheProvider =
     NotifierProvider<TranslationsCacheNotifier, Map<String, String>>(() {
   return TranslationsCacheNotifier();
+});
+
+/// Merged translations cache — combines fallback translations with dynamic API
+/// cache. Recomputes only when locale or dynamic cache changes (not on every
+/// widget rebuild). Use this when passing translations to pure functions that
+/// lack WidgetRef access (e.g. determineStatusAndColor, daysDayOpeningHour).
+final mergedTranslationsCacheProvider = Provider<Map<String, dynamic>>((ref) {
+  final dynamicCache = ref.watch(translationsCacheProvider);
+  final locale = ref.watch(localeProvider);
+  return buildMergedTranslationsCache(dynamicCache, locale.languageCode);
 });
 
 class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
