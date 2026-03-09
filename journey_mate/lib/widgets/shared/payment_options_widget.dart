@@ -92,12 +92,12 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
 
   static const double _selectedFontSize = 14.0;
   static const FontWeight _selectedFontWeight = FontWeight.w300;
-  static const FontWeight _unselectedFontWeight = FontWeight.w200;
+  static const FontWeight _unselectedFontWeight = FontWeight.w300;
 
   /// Text measurement style
   static const TextStyle _buttonTextStyle = TextStyle(
     fontSize: 14,
-    fontWeight: FontWeight.w200,
+    fontWeight: FontWeight.w300,
     fontFamily: 'Roboto',
     letterSpacing: 0,
   );
