@@ -157,7 +157,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       child: Text(
                         timingText,
                         style: AppTypography.subtitle.copyWith(
-                          color: AppColors.textMuted,
+                          color: AppColors.textSecondary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -176,7 +176,7 @@ class HeroSectionWidget extends ConsumerWidget {
                         child: Text(
                           businessType,
                           style: AppTypography.subtitle.copyWith(
-                            color: AppColors.textMuted,
+                            color: AppColors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -192,7 +192,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       Text(
                         priceRangeText,
                         style: AppTypography.subtitle.copyWith(
-                          color: AppColors.textMuted,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -207,7 +207,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       Text(
                         distanceText,
                         style: AppTypography.subtitle.copyWith(
-                          color: AppColors.textMuted,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -221,7 +221,7 @@ class HeroSectionWidget extends ConsumerWidget {
                 Text(
                   addressText,
                   style: AppTypography.subtitle.copyWith(
-                    color: AppColors.textPlaceholder,
+                    color: AppColors.textSecondary,
                   ),
                 ),
             ],

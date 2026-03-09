@@ -139,14 +139,14 @@ class QuickActionsPillsWidget extends ConsumerWidget {
             children: [
               Icon(
                 icon,
-                size: 14,
+                size: 16,
                 color: AppColors.textSecondary,
               ),
               SizedBox(width: AppSpacing.xsm),
               Text(
                 label,
                 style: AppTypography.chip.copyWith(
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
                 ),
@@ -308,9 +308,9 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     final businessId = business?['business_id'] as int?;
 
     try {
-      // Apple Maps URL — iOS routes maps.apple.com to the user's default maps app
+      // maps: scheme opens Apple Maps natively on iOS (no browser redirect)
       final uri = Uri.parse(
-        'https://maps.apple.com/?q=${Uri.encodeComponent(businessName)}&ll=$latitude,$longitude',
+        'maps:?q=${Uri.encodeComponent(businessName)}&ll=$latitude,$longitude',
       );
 
       if (await canLaunchUrl(uri)) {
