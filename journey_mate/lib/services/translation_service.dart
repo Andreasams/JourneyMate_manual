@@ -20,6 +20,39 @@ import '../constants/business_profile_fallback_translations.dart';
 //
 // ============================================================
 
+/// Builds a merged translations cache with language-specific fallback
+/// translations as a base, overlaid with the dynamic API cache.
+///
+/// Used when passing translations to pure functions (e.g. determineStatusAndColor,
+/// daysDayOpeningHour) that don't have WidgetRef access for the td() fallback chain.
+///
+/// Layering order (later entries win):
+///   1. kBusinessProfileFallbackTranslations[lang]
+///   2. kWelcomeFallbackTranslations[lang]
+///   3. Dynamic translations cache (from API)
+Map<String, dynamic> buildMergedTranslationsCache(
+  Map<String, dynamic>? dynamicCache,
+  String languageCode,
+) {
+  final merged = <String, dynamic>{};
+
+  final businessFallback = kBusinessProfileFallbackTranslations[languageCode];
+  if (businessFallback != null) {
+    merged.addAll(businessFallback);
+  }
+
+  final welcomeFallback = kWelcomeFallbackTranslations[languageCode];
+  if (welcomeFallback != null) {
+    merged.addAll(welcomeFallback);
+  }
+
+  if (dynamicCache != null) {
+    merged.addAll(dynamicCache);
+  }
+
+  return merged;
+}
+
 /// Dynamic translation lookup (td = "translation dynamic")
 ///
 /// Fetches translations from BuildShip API cache (stored in translationsCacheProvider).

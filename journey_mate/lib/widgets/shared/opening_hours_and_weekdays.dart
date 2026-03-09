@@ -266,24 +266,28 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
       );
     }
 
+    // Build time slots and check if any valid ones exist
+    final timeSlots = _buildTimeSlotWidgets(context, dayHours);
+
+    // If no valid slots produced (e.g. zero-duration 00:00–00:00), show "Closed"
+    if (timeSlots.isEmpty) {
+      return Text(
+        _getUIText(ref, _closedTranslationKey),
+        style: AppTypography.bodyRegular,
+      );
+    }
+
     return Expanded(
       child: Container(
         padding: EdgeInsets.only(
           bottom: _hasMultipleTimeSlots(dayHours) ? _multiSlotBottomPadding : 0,
         ),
-        child: _buildTimeSlotsList(context, dayHours),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: timeSlots,
+        ),
       ),
-    );
-  }
-
-  Widget _buildTimeSlotsList(
-      BuildContext context, Map<String, dynamic> dayHours) {
-    final timeSlots = _buildTimeSlotWidgets(context, dayHours);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: timeSlots,
     );
   }
 
@@ -292,7 +296,13 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
     final timeSlots = <Widget>[];
 
     for (int slotNumber = 1; slotNumber <= _maxTimeSlotsPerDay; slotNumber++) {
-      if (dayHours['opening_time_$slotNumber'] != null) {
+      final openingTime = dayHours['opening_time_$slotNumber'] as String?;
+      final closingTime = dayHours['closing_time_$slotNumber'] as String?;
+
+      if (openingTime != null && closingTime != null) {
+        // Skip zero-duration slots (e.g. 00:00–00:00 on effectively closed days)
+        if (_formatTime(openingTime) == _formatTime(closingTime)) continue;
+
         if (timeSlots.isNotEmpty) {
           timeSlots.add(const SizedBox(height: _timeSlotSpacing));
         }
@@ -301,8 +311,8 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
 
         timeSlots.add(_buildTimeSlotWidget(
           context,
-          dayHours['opening_time_$slotNumber'] as String?,
-          dayHours['closing_time_$slotNumber'] as String?,
+          openingTime,
+          closingTime,
           cutoffs,
         ));
       }

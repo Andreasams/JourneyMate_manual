@@ -64,10 +64,10 @@ class _BusinessFeatureButtonsState
   static const double _borderRadius = AppRadius.facility;
   static const double _textMeasurementSafetyMargin = 4.0;
 
-  // Text style for measurement (use unselected w300 for more conservative calculation)
+  // Text style for measurement (use unselected w200 for more conservative calculation)
   static const TextStyle _buttonTextStyleUnselected = TextStyle(
     fontSize: _fontSize,
-    fontWeight: FontWeight.w300,
+    fontWeight: FontWeight.w200,
     fontFamily: 'Roboto',
     letterSpacing: 0,
   );
@@ -807,7 +807,7 @@ class _BusinessFeatureButtonsState
       // Use AppColors.accent for design system compliance
       color: isSelected ? AppColors.accent : AppColors.textPrimary,
       fontSize: _fontSize,
-      fontWeight: isSelected ? FontWeight.w400 : FontWeight.w300,
+      fontWeight: isSelected ? FontWeight.w300 : FontWeight.w200,
     );
   }
 

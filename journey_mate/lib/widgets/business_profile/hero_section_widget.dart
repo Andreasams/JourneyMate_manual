@@ -11,6 +11,7 @@ import '../../services/custom_functions/business_status.dart';
 import '../../services/custom_functions/distance_calculator.dart';
 import '../../services/custom_functions/hours_formatter.dart';
 import '../../services/custom_functions/price_formatter.dart';
+import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
@@ -55,7 +56,12 @@ class HeroSectionWidget extends ConsumerWidget {
     // --- Status & timing (same utilities as search cards) ---
     final openingHours = businessState.openingHours;
     final languageCode = Localizations.localeOf(context).languageCode;
-    final translationsCache = ref.watch(translationsCacheProvider);
+    // Merge fallback translations into the cache so pure functions
+    // (determineStatusAndColor, openClosesAt) resolve all keys correctly.
+    final translationsCache = buildMergedTranslationsCache(
+      ref.watch(translationsCacheProvider),
+      languageCode,
+    );
 
     String? statusText;
     Color? statusColor;

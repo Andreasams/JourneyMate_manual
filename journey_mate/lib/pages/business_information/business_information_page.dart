@@ -117,7 +117,7 @@ class _BusinessInformationPageState
       ),
       title: Text(
         businessName,
-        style: AppTypography.bodyMedium,
+        style: AppTypography.categoryHeading,
       ),
       centerTitle: true,
     );
@@ -243,7 +243,11 @@ class _BusinessInformationPageState
     final businessName = business['business_name'] ?? '';
     final openingHours = ref.watch(businessProvider).openingHours;
     final languageCode = Localizations.localeOf(context).languageCode;
-    final translationsCache = ref.watch(translationsCacheProvider);
+    // Merge fallback translations so pure functions resolve all keys correctly
+    final translationsCache = buildMergedTranslationsCache(
+      ref.watch(translationsCacheProvider),
+      languageCode,
+    );
     final now = DateTime.now(); // Single timestamp for color/text consistency
 
     final statusResult = determineStatusAndColor(

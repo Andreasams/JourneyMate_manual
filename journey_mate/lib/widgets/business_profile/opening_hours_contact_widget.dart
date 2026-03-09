@@ -347,13 +347,15 @@ class _OpeningHoursContactWidgetState
                   td(ref, 'opening_hours_and_contact'),
                   style: AppTypography.sectionHeading,
                 ),
-                if (!_isExpanded)
+                // Show today's preview only when collapsed AND business is open
+                // (when closed, hero section already shows status — no value repeating it)
+                if (!_isExpanded && !isClosed)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       todayPreview,
                       style: AppTypography.subtitle.copyWith(
-                        color: isClosed ? AppColors.red : AppColors.textTertiary,
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ),
@@ -484,6 +486,9 @@ class _OpeningHoursContactWidgetState
       final closingTime = dayHours['closing_time_$slot'] as String?;
 
       if (openingTime != null && closingTime != null) {
+        // Skip zero-duration slots (e.g. 00:00–00:00 on effectively closed days)
+        if (_formatTime(openingTime) == _formatTime(closingTime)) continue;
+
         final cutoffs = _getSlotCutoffs(dayHours, slot);
 
         if (slots.isNotEmpty) {
@@ -492,6 +497,18 @@ class _OpeningHoursContactWidgetState
 
         slots.add(_buildTimeSlot(openingTime, closingTime, cutoffs));
       }
+    }
+
+    // If no valid slots produced, show "Closed"
+    if (slots.isEmpty) {
+      return Text(
+        td(ref, 'closed'),
+        style: AppTypography.bodyTiny.copyWith(
+          fontSize: 13.5,
+          fontWeight: FontWeight.w600,
+          color: AppColors.red,
+        ),
+      );
     }
 
     return Column(
