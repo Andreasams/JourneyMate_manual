@@ -126,20 +126,6 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
   // MENU SESSION TRACKING (11 fields)
   // ============================================================
 
-  /// Start a new menu session
-  void startMenuSession(int businessId) {
-    final sessionId = const Uuid().v4();
-    state = state.copyWith(
-      menuSessionData: MenuSessionData.initial(sessionId),
-    );
-  }
-
-  /// End the menu session and send analytics
-  /// Note: Actual analytics sending is handled by AnalyticsService
-  void endMenuSession(int businessId) {
-    state = state.copyWithNullable(clearMenuSession: true);
-  }
-
   /// Increment item click count
   void incrementItemClick() {
     final currentData = state.menuSessionData;
