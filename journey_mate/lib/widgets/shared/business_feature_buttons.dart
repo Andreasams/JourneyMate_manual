@@ -60,8 +60,8 @@ class _BusinessFeatureButtonsState
   static const double _iconSize = 16.0;
   static const double _iconSpacing = 6.0;
   static const double _fontSize = 14.0;
-  // FlutterFlow uses 15px, AppRadius.card is 16px (close match)
-  static const double _borderRadius = AppRadius.card;
+  // AppRadius.facility (9px) — unified with payment_options_widget
+  static const double _borderRadius = AppRadius.facility;
   static const double _textMeasurementSafetyMargin = 4.0;
 
   // Text style for measurement (use unselected w300 for more conservative calculation)
@@ -794,7 +794,7 @@ class _BusinessFeatureButtonsState
         ),
       ),
       backgroundColor: WidgetStateProperty.resolveWith<Color>(
-        (states) => isSelected ? AppColors.orangeBg : AppColors.bgInput,
+        (states) => isSelected ? AppColors.orangeBg : AppColors.bgSurface,
       ),
       elevation: WidgetStateProperty.all(0),
       overlayColor: WidgetStateProperty.all(Colors.transparent),
