@@ -9,6 +9,7 @@ import '../../theme/app_constants.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
+import 'bottom_sheet_header.dart';
 
 /// A bottom sheet form for reporting incorrect or missing business information.
 ///
@@ -76,7 +77,7 @@ class _ErroneousInfoFormWidgetState
 
     if (message.length < 10) {
       setState(() {
-        _messageError = td(ref, 'erroneous_info_error_message_too_short');
+        _messageError = td(ref, 'contact_form_error_message_too_short');
       });
       return false;
     }
@@ -152,16 +153,16 @@ class _ErroneousInfoFormWidgetState
     return Container(
       width: widget.width,
       height: widget.height,
-      decoration: BoxDecoration(
-        color: AppColors.bgPage,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.bottomSheet),
-        ),
-      ),
+      decoration: BottomSheetHeader.sheetDecoration(color: AppColors.bgPage),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildHeader(),
+          BottomSheetHeader(
+            leftAction: BottomSheetAction(
+              icon: Icons.close,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
           Expanded(
             child: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
@@ -190,60 +191,6 @@ class _ErroneousInfoFormWidgetState
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Build: Header
-  // ─────────────────────────────────────────────────────────────────────────────
-  Widget _buildHeader() {
-    return SizedBox(
-      height: 72,
-      child: Stack(
-        children: [
-          // Swipe bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: Center(
-                child: Container(
-                  width: 80,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.textPrimary,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Close button
-          Positioned(
-            top: AppSpacing.xxl,
-            left: 12,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.bgSurface,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                icon: const Icon(
-                  Icons.close,
-                  color: AppColors.textPrimary,
-                  size: 30,
-                ),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────────
   // Build: Business Info Section
   // ─────────────────────────────────────────────────────────────────────────────
   Widget _buildBusinessInfoSection(String businessName, String address) {
@@ -252,7 +199,7 @@ class _ErroneousInfoFormWidgetState
       children: [
         // Main title
         Text(
-          td(ref, 'erroneous_info_title_main'),
+          td(ref, 'about_report_incorrect_info'),
           style: AppTypography.pageTitle.copyWith(
             fontSize: 22,
             fontWeight: FontWeight.w600,
@@ -427,7 +374,7 @@ class _ErroneousInfoFormWidgetState
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            td(ref, 'erroneous_info_success_navigate_away'),
+            td(ref, 'contact_form_success_navigate_away'),
             textAlign: TextAlign.center,
             style: AppTypography.bodyRegular.copyWith(
               fontWeight: FontWeight.w300,

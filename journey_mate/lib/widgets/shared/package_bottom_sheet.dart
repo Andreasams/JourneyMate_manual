@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
-import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
 import '../../providers/app_providers.dart';
 import '../../services/translation_service.dart';
 import '../../services/custom_functions/price_formatter.dart';
 import '../../services/custom_functions/dietary_formatter.dart';
 import '../../services/custom_functions/allergen_formatter.dart';
+import 'bottom_sheet_header.dart';
 import 'package_courses_display.dart';
 
 /// A bottom sheet with nested navigation for viewing package details and menu items.
@@ -63,7 +63,6 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
 
   /// Sheet dimensions
   static const double _defaultSheetHeightFactor = 0.90;
-  static const double _sheetBorderRadius = AppRadius.bottomSheet;
 
   /// Navigation constants
   static const String _itemRoute = '/item';
@@ -303,11 +302,7 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
 
   /// Gets sheet decoration with rounded top corners
   BoxDecoration _getSheetDecoration() {
-    return const BoxDecoration(
-      color: AppColors.bgPage,
-      borderRadius:
-          BorderRadius.vertical(top: Radius.circular(_sheetBorderRadius)),
-    );
+    return BottomSheetHeader.sheetDecoration(color: AppColors.bgPage);
   }
 }
 
@@ -339,16 +334,6 @@ class _PackageViewPage extends ConsumerWidget {
 
   /// Visual constants
   static const double _imageHeight = 200.0;
-  static const double _noImageHeaderHeight = 64.0;
-  static const double _swipeBarWidth = 80.0;
-  static const double _swipeBarHeight = 4.0;
-  static const double _swipeBarTopPadding = 8.0;
-  static const double _swipeBarBottomPadding = 12.0;
-  static const double _swipeBarBorderRadius = AppRadius.bottomSheet;
-  static const double _closeButtonSize = 40.0;
-  static const double _closeButtonPosition = 12.0;
-  static const double _closeButtonBorderRadius = AppRadius.bottomSheet;
-  static const double _closeIconSize = 30.0;
   static const double _contentHorizontalPadding = AppSpacing.xxl + 4;
   static const double _contentTopSpacing = AppSpacing.md;
   static const double _coursesTopSpacing = AppSpacing.md;
@@ -368,7 +353,13 @@ class _PackageViewPage extends ConsumerWidget {
 
     return Column(
       children: [
-        _buildHeaderSection(hasImage),
+        BottomSheetHeader(
+          leftAction: BottomSheetAction(
+            icon: Icons.close,
+            onPressed: onClose,
+          ),
+          image: hasImage ? _buildPackageImage() : null,
+        ),
         _buildContentSection(context),
       ],
     );
@@ -378,20 +369,6 @@ class _PackageViewPage extends ConsumerWidget {
   bool _hasPackageImage() {
     final imageUrl = packageData['package_image_url'] as String?;
     return imageUrl != null && imageUrl.isNotEmpty;
-  }
-
-  /// Builds the header section with image/swipe bar/close button
-  Widget _buildHeaderSection(bool hasImage) {
-    return SizedBox(
-      height: hasImage ? _imageHeight : _noImageHeaderHeight,
-      child: Stack(
-        children: [
-          if (hasImage) _buildPackageImage(),
-          _buildSwipeBar(),
-          _buildCloseButton(),
-        ],
-      ),
-    );
   }
 
   /// Builds the package image
@@ -414,53 +391,6 @@ class _PackageViewPage extends ConsumerWidget {
       color: AppColors.bgInput,
       child: const Center(
         child: Icon(Icons.image, size: 50, color: AppColors.textTertiary),
-      ),
-    );
-  }
-
-  /// Builds the swipe bar indicator
-  Widget _buildSwipeBar() {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.only(
-          top: _swipeBarTopPadding,
-          bottom: _swipeBarBottomPadding,
-        ),
-        child: Center(
-          child: Container(
-            width: _swipeBarWidth,
-            height: _swipeBarHeight,
-            decoration: BoxDecoration(
-              color: AppColors.textPrimary,
-              borderRadius: BorderRadius.circular(_swipeBarBorderRadius),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Builds the close button
-  Widget _buildCloseButton() {
-    return Positioned(
-      top: _closeButtonPosition,
-      left: _closeButtonPosition,
-      child: Container(
-        width: _closeButtonSize,
-        height: _closeButtonSize,
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface,
-          borderRadius: BorderRadius.circular(_closeButtonBorderRadius),
-        ),
-        child: IconButton(
-          padding: EdgeInsets.zero,
-          icon: const Icon(Icons.close,
-              color: AppColors.textPrimary, size: _closeIconSize),
-          onPressed: onClose,
-        ),
       ),
     );
   }
@@ -585,18 +515,8 @@ class _ItemDetailPage extends ConsumerWidget {
   final String businessName;
   final VoidCallback onBack;
 
-  /// Visual constants (reusing from package view where applicable)
+  /// Visual constants
   static const double _imageHeight = 200.0;
-  static const double _noImageHeaderHeight = 64.0;
-  static const double _swipeBarWidth = 80.0;
-  static const double _swipeBarHeight = 4.0;
-  static const double _swipeBarTopPadding = 8.0;
-  static const double _swipeBarBottomPadding = 12.0;
-  static const double _swipeBarBorderRadius = AppRadius.bottomSheet;
-  static const double _backButtonSize = 40.0;
-  static const double _backButtonPosition = 12.0;
-  static const double _backButtonBorderRadius = AppRadius.bottomSheet;
-  static const double _backIconSize = 30.0;
   static const double _contentHorizontalPadding = AppSpacing.xxl + 4;
   static const double _contentTopSpacing = AppSpacing.md;
   static const double _titleToPriceSpacing = 2.0;
@@ -648,14 +568,16 @@ class _ItemDetailPage extends ConsumerWidget {
     final hasImage = _hasItemImage();
 
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.bgPage,
-        borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppRadius.bottomSheet)),
-      ),
+      decoration: BottomSheetHeader.sheetDecoration(color: AppColors.bgPage),
       child: Column(
         children: [
-          _buildHeaderSection(hasImage),
+          BottomSheetHeader(
+            leftAction: BottomSheetAction(
+              icon: Icons.arrow_back,
+              onPressed: onBack,
+            ),
+            image: hasImage ? _buildItemImage() : null,
+          ),
           _buildScrollableContent(context, ref),
         ],
       ),
@@ -666,20 +588,6 @@ class _ItemDetailPage extends ConsumerWidget {
   bool _hasItemImage() {
     final imageUrl = itemData['item_image_url'] as String?;
     return imageUrl != null && imageUrl.isNotEmpty;
-  }
-
-  /// Builds the header section
-  Widget _buildHeaderSection(bool hasImage) {
-    return SizedBox(
-      height: hasImage ? _imageHeight : _noImageHeaderHeight,
-      child: Stack(
-        children: [
-          if (hasImage) _buildItemImage(),
-          _buildSwipeBar(),
-          _buildBackButton(),
-        ],
-      ),
-    );
   }
 
   /// Builds the item image
@@ -702,53 +610,6 @@ class _ItemDetailPage extends ConsumerWidget {
       color: AppColors.bgInput,
       child: const Center(
         child: Icon(Icons.image, size: 50, color: AppColors.textTertiary),
-      ),
-    );
-  }
-
-  /// Builds the swipe bar indicator
-  Widget _buildSwipeBar() {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.only(
-          top: _swipeBarTopPadding,
-          bottom: _swipeBarBottomPadding,
-        ),
-        child: Center(
-          child: Container(
-            width: _swipeBarWidth,
-            height: _swipeBarHeight,
-            decoration: BoxDecoration(
-              color: AppColors.textPrimary,
-              borderRadius: BorderRadius.circular(_swipeBarBorderRadius),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Builds the back button
-  Widget _buildBackButton() {
-    return Positioned(
-      top: _backButtonPosition,
-      left: _backButtonPosition,
-      child: Container(
-        width: _backButtonSize,
-        height: _backButtonSize,
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface,
-          borderRadius: BorderRadius.circular(_backButtonBorderRadius),
-        ),
-        child: IconButton(
-          padding: EdgeInsets.zero,
-          icon: const Icon(Icons.arrow_back,
-              color: AppColors.textPrimary, size: _backIconSize),
-          onPressed: onBack,
-        ),
       ),
     );
   }
