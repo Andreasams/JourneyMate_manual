@@ -67,6 +67,10 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   bool _menuLoadFailed = false;
   bool _menuSessionStarted = false;
 
+  // Cached for safe use in dispose() — ref is invalid after unmount
+  String _cachedDeviceId = '';
+  String _cachedSessionId = '';
+
   // ============================================================================
   // LIFECYCLE METHODS
   // ============================================================================
@@ -78,6 +82,12 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
     // Schedule both cache preview and API data load after frame renders
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Cache analytics state for safe use in dispose() (ref is invalid after unmount)
+      final analyticsState = ref.read(analyticsProvider);
+      _cachedDeviceId = analyticsState.deviceId;
+      _cachedSessionId = analyticsState.sessionId ?? '';
+
       _trackMenuSessionStart();
       _loadCachedPreview();
       _loadBusinessData();
@@ -266,13 +276,13 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   void dispose() {
     if (_pageStartTime != null && _menuSessionStarted) {
       final duration = DateTime.now().difference(_pageStartTime!);
-      final analyticsState = ref.read(analyticsProvider);
       final businessIdInt = int.tryParse(widget.businessId);
 
+      // Use cached values — ref is unsafe during dispose()
       ApiService.instance.postAnalytics(
         eventType: 'menu_session_ended',
-        deviceId: analyticsState.deviceId,
-        sessionId: analyticsState.sessionId ?? '',
+        deviceId: _cachedDeviceId,
+        sessionId: _cachedSessionId,
         userId: '',
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
