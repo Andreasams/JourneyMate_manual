@@ -139,14 +139,13 @@ class QuickActionsPillsWidget extends ConsumerWidget {
             children: [
               Icon(
                 icon,
-                size: 16,
+                size: AppTypography.bodyRegular.fontSize,
                 color: AppColors.textSecondary,
               ),
               SizedBox(width: AppSpacing.xsm),
               Text(
                 label,
-                style: AppTypography.chip.copyWith(
-                  fontSize: 14,
+                style: AppTypography.bodyTiny.copyWith(
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
                 ),
