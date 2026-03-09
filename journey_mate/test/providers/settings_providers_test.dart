@@ -43,20 +43,20 @@ void main() {
       expect(prefs.getString('user_currency_code'), 'EUR');
     });
 
-    test('setExchangeRate() updates rate only (not persisted)', () async {
+    test('setExchangeRate() updates rate in state', () async {
       await container.read(localizationProvider.notifier).setCurrency('EUR', 7.5);
-      container.read(localizationProvider.notifier).setExchangeRate(8.0);
+      await container.read(localizationProvider.notifier).setExchangeRate(8.0);
 
       final state = container.read(localizationProvider);
       expect(state.exchangeRate, 8.0);
       expect(state.currencyCode, 'EUR');
 
-      // Verify rate not persisted
+      // loadFromPreferences() only restores currencyCode, not exchangeRate
       container.dispose();
       container = ProviderContainer();
       await container.read(localizationProvider.notifier).loadFromPreferences();
       final newState = container.read(localizationProvider);
-      expect(newState.exchangeRate, 1.0); // Default, not 8.0
+      expect(newState.exchangeRate, 1.0); // Default — rate loaded separately at startup
     });
 
     test('resetToDefault() sets DKK with rate 1.0', () async {
