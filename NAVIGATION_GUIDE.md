@@ -348,7 +348,7 @@ Each scenario below provides:
 
 **Critical warnings:**
 - ⚠️ All text via `td(ref, 'key')` function — NO hardcoded strings
-- ⚠️ 7 languages supported: en, da, de, fr, it, no, sv (355 app keys + 142 legacy keys)
+- ⚠️ 15 languages in Supabase, 7 fallback languages in app (344 app keys, 0 legacy)
 - ⚠️ Language change triggers full app rebuild via `localeProvider` + MaterialApp
 - ⚠️ Currency preference stored separately in `localizationProvider`
 - ⚠️ Exchange rates fetched from external API, cached in provider state
