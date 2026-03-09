@@ -1,12 +1,17 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/filter_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/analytics_service.dart';
+import '../../services/custom_functions/business_status.dart';
+import '../../services/custom_functions/days_day_opening_hour.dart';
 import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -15,7 +20,6 @@ import '../../widgets/shared/expandable_text_widget.dart';
 import '../../widgets/shared/business_feature_buttons.dart';
 import '../../widgets/shared/payment_options_widget.dart';
 import '../../widgets/shared/erroneous_info_form_widget.dart';
-import '../../widgets/business_profile/hero_section_widget.dart';
 import '../../widgets/business_profile/opening_hours_contact_widget.dart';
 import '../../widgets/business_profile/facilities_info_sheet.dart';
 
@@ -150,8 +154,8 @@ class _BusinessInformationPageState
               children: [
                 SizedBox(height: AppSpacing.xxl),
 
-                // Hero: business name, status, timing, price, address
-                const HeroSectionWidget(),
+                // Business name + open/closed status with opening hours
+                _buildTitleAndStatus(business),
                 SizedBox(height: AppSpacing.xxl),
 
                 // Description (conditional — returns SizedBox.shrink if empty)
@@ -219,12 +223,65 @@ class _BusinessInformationPageState
             position: location,
           ),
         },
+        gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+          Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
+        },
         myLocationEnabled: true,
         myLocationButtonEnabled: false,
         zoomControlsEnabled: false,
         mapToolbarEnabled: false,
         trafficEnabled: false,
       ),
+    );
+  }
+
+  // ============================================================================
+  // TITLE + STATUS SECTION
+  // ============================================================================
+
+  Widget _buildTitleAndStatus(Map<String, dynamic> business) {
+    final businessName = business['business_name'] ?? '';
+    final openingHours = ref.watch(businessProvider).openingHours;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final translationsCache = ref.watch(translationsCacheProvider);
+    final now = DateTime.now(); // Single timestamp for color/text consistency
+
+    final statusResult = determineStatusAndColor(
+      openingHours,
+      now,
+      languageCode,
+      translationsCache,
+    );
+    final statusColor = statusResult['color'] as Color;
+
+    final openingHoursText = daysDayOpeningHour(
+      now,
+      openingHours,
+      languageCode,
+      translationsCache,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          businessName,
+          style: AppTypography.sectionHeading,
+        ),
+        SizedBox(height: AppSpacing.xs),
+        Row(
+          children: [
+            Icon(Icons.circle_rounded, size: 12, color: statusColor),
+            SizedBox(width: AppSpacing.xs),
+            Flexible(
+              child: Text(
+                openingHoursText,
+                style: AppTypography.subtitle,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -266,7 +323,7 @@ class _BusinessInformationPageState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          td(ref, '7pk0thnp'), // "Features, services & amenities"
+          td(ref, 'about_features_amenities_label'), // "Features, services & amenities"
           style: AppTypography.sectionHeading,
         ),
         SizedBox(height: AppSpacing.sm),

@@ -28,7 +28,7 @@ Map<String, dynamic> determineStatusAndColor(
 ) {
   const soonThresholdMinutes = 30;
   const openColor = Color(0xFF1a9456); // AppColors.success
-  const closedColor = Color(0xFFFF5963); // AppColors.error
+  const closedColor = Color(0xFFC9403A); // AppColors.red
 
   // Helper: Get localized message from translation cache
   String getLocalizedMessage(String key, String defaultValue) {

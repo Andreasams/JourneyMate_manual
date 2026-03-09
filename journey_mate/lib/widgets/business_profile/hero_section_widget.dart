@@ -170,7 +170,7 @@ class HeroSectionWidget extends ConsumerWidget {
               ),
               // Row 2: Business type + price range + distance
               if (hasRow2) ...[
-                SizedBox(height: 3),
+                SizedBox(height: AppSpacing.xxs),
                 Row(
                   children: [
                     if (businessType.isNotEmpty)
@@ -219,7 +219,7 @@ class HeroSectionWidget extends ConsumerWidget {
                   ],
                 ),
               ],
-              SizedBox(height: 3),
+              SizedBox(height: AppSpacing.xxs),
 
               // Row 3: Address with neighbourhood
               if (addressText.isNotEmpty)
@@ -341,7 +341,7 @@ class HeroSectionWidget extends ConsumerWidget {
       width: 3,
       height: 3,
       decoration: BoxDecoration(
-        color: const Color(0xFFD0D0D0),
+        color: AppColors.dotSeparator,
         borderRadius: BorderRadius.circular(1.5),
       ),
     );

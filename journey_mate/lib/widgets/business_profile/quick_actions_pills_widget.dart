@@ -8,6 +8,7 @@ import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/app_providers.dart';
+import '../../services/custom_functions/contact_utils.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
 
@@ -85,7 +86,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
           ref,
           latitude,
           longitude,
-          businessName ?? 'Restaurant',
+          businessName ?? td(ref, 'business_type_default'),
         ),
       ),
     ];
@@ -169,7 +170,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     final businessId = business?['business_id'] as int?;
 
     try {
-      final uri = Uri.parse('tel:$phoneNumber');
+      final uri = Uri.parse('tel:${formatPhoneForDial(phoneNumber)}');
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
 
@@ -211,13 +212,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     final businessId = business?['business_id'] as int?;
 
     try {
-      // Ensure URL has protocol
-      String url = websiteUrl;
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://$url';
-      }
-
-      final uri = Uri.parse(url);
+      final uri = Uri.parse(ensureHttpsUrl(websiteUrl));
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
 
@@ -259,13 +254,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     final businessId = business?['business_id'] as int?;
 
     try {
-      // Ensure URL has protocol
-      String url = bookingUrl;
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://$url';
-      }
-
-      final uri = Uri.parse(url);
+      final uri = Uri.parse(ensureHttpsUrl(bookingUrl));
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
 

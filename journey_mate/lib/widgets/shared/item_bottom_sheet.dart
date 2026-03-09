@@ -13,6 +13,7 @@ import '../../services/custom_functions/price_formatter.dart';
 import '../../services/custom_functions/allergen_formatter.dart';
 import '../../services/custom_functions/dietary_formatter.dart';
 import '../../services/custom_functions/currency_name_formatter.dart';
+import 'bottom_sheet_header.dart';
 
 /// A comprehensive modal bottom sheet that displays detailed information about
 /// a single menu item from a restaurant's menu.
@@ -69,15 +70,6 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   static const double _defaultSheetHeightFactor = 0.90;
 
   static const double _imageHeight = 200.0;
-  static const double _noImageHeaderHeight = 64.0;
-  static const double _swipeBarWidth = 80.0;
-  static const double _swipeBarHeight = 4.0;
-  static const double _swipeBarTopPadding = 8.0;
-  static const double _swipeBarBottomPadding = 12.0;
-  static const double _closeButtonSize = 40.0;
-  static const double _closeButtonPosition = 12.0;
-  static const double _menuButtonSize = 40.0;
-  static const double _menuButtonPosition = 12.0;
 
   static const double _menuItemFontSize = 15.0;
   static const FontWeight _menuItemFontWeight = FontWeight.w400;
@@ -731,7 +723,17 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
         children: [
           Column(
             children: [
-              _buildHeaderSection(hasImage),
+              BottomSheetHeader(
+                leftAction: BottomSheetAction(
+                  icon: Icons.close,
+                  onPressed: _handleClose,
+                ),
+                rightAction: BottomSheetAction(
+                  icon: Icons.more_horiz,
+                  onPressed: _showActionMenu,
+                ),
+                image: hasImage ? _buildItemImage() : null,
+              ),
               Expanded(child: _buildScrollableContent()),
             ],
           ),
@@ -764,30 +766,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
 
   /// Gets sheet decoration with rounded top corners
   BoxDecoration _getSheetDecoration() {
-    return BoxDecoration(
-      color: Colors.white,
-      borderRadius:
-          BorderRadius.vertical(top: Radius.circular(AppRadius.bottomSheet)),
-    );
-  }
-
-  /// =========================================================================
-  /// UI BUILDERS - HEADER SECTION
-  /// =========================================================================
-
-  /// Builds the header section with image/swipe bar/close button/menu button
-  Widget _buildHeaderSection(bool hasImage) {
-    return SizedBox(
-      height: hasImage ? _imageHeight : _noImageHeaderHeight,
-      child: Stack(
-        children: [
-          if (hasImage) _buildItemImage(),
-          _buildSwipeBar(),
-          _buildCloseButton(),
-          _buildMenuButton(),
-        ],
-      ),
-    );
+    return BottomSheetHeader.sheetDecoration();
   }
 
   /// Builds the item image
@@ -813,77 +792,6 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
           Icons.broken_image_outlined,
           size: 48.0,
           color: AppColors.textSecondary.withValues(alpha: 0.3),
-        ),
-      ),
-    );
-  }
-
-  /// Builds the swipe bar indicator
-  Widget _buildSwipeBar() {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: EdgeInsets.only(
-          top: _swipeBarTopPadding,
-          bottom: _swipeBarBottomPadding,
-        ),
-        child: Center(
-          child: Container(
-            width: _swipeBarWidth,
-            height: _swipeBarHeight,
-            decoration: BoxDecoration(
-              color: AppColors.textPrimary,
-              borderRadius: BorderRadius.circular(AppRadius.bottomSheet),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Builds the close button
-  Widget _buildCloseButton() {
-    return Positioned(
-      top: _closeButtonPosition,
-      left: _closeButtonPosition,
-      child: Container(
-        width: _closeButtonSize,
-        height: _closeButtonSize,
-        decoration: BoxDecoration(
-          color: AppColors.bgInput,
-          borderRadius: BorderRadius.circular(AppRadius.bottomSheet),
-        ),
-        child: IconButton(
-          padding: EdgeInsets.zero,
-          icon: Icon(Icons.close, color: AppColors.textPrimary, size: 30.0),
-          onPressed: _handleClose,
-        ),
-      ),
-    );
-  }
-
-  /// Builds the three-dot menu button (horizontal dots)
-  Widget _buildMenuButton() {
-    return Positioned(
-      top: _menuButtonPosition,
-      right: _menuButtonPosition,
-      child: Container(
-        width: _menuButtonSize,
-        height: _menuButtonSize,
-        decoration: BoxDecoration(
-          color: AppColors.bgInput,
-          borderRadius: BorderRadius.circular(AppRadius.bottomSheet),
-        ),
-        child: IconButton(
-          padding: EdgeInsets.zero,
-          icon: Icon(
-            Icons.more_horiz,
-            color: AppColors.textPrimary,
-            size: 28.0,
-          ),
-          onPressed: _showActionMenu,
         ),
       ),
     );
@@ -1318,7 +1226,7 @@ class _ModifierGroupDisplay extends ConsumerWidget {
     }
 
     if (constraints.isRequired && min > 0 && max > min) {
-      return '${_getUIText(ref, 'modifier_required')} • ${_getUIText(ref, 'modifier_choose_between')} $min-$max';
+      return '${_getUIText(ref, 'modifier_required')} • ${_getUIText(ref, 'modifier_choose_exactly')} $min-$max';
     }
 
     if (constraints.isRequired && min > 0) {
@@ -1330,7 +1238,7 @@ class _ModifierGroupDisplay extends ConsumerWidget {
     }
 
     if (!constraints.isRequired && min > 0 && max > min) {
-      return '${_getUIText(ref, 'modifier_optional')} • ${_getUIText(ref, 'modifier_choose_between')} $min-$max';
+      return '${_getUIText(ref, 'modifier_optional')} • ${_getUIText(ref, 'modifier_choose_exactly')} $min-$max';
     }
 
     if (!constraints.isRequired) {

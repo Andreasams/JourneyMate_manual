@@ -22,7 +22,7 @@ import '../../widgets/shared/business_feature_buttons.dart';
 import '../../widgets/shared/erroneous_info_form_widget.dart';
 import '../../widgets/shared/payment_options_widget.dart';
 import '../../widgets/shared/restaurant_shimmer_widget.dart';
-import '../../widgets/business_profile/facilities_info_sheet.dart';
+import '../../widgets/shared/description_sheet.dart';
 import '../../widgets/business_profile/hero_section_widget.dart';
 import '../../widgets/business_profile/inline_gallery_widget.dart';
 import '../../widgets/business_profile/inline_menu_widget.dart';
@@ -277,7 +277,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
           'session_duration_seconds': duration.inSeconds,
-          ...?businessIdInt != null ? {'business_id': businessIdInt} : null,
+          ?'business_id': businessIdInt,
         },
       );
     }
@@ -350,15 +350,15 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             delegate: SliverChildListDelegate([
               // 1. Hero Section (logo, name, cuisine, status, address)
               const HeroSectionWidget(),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
 
               // 2. Quick Actions Pills (Call, Website, Booking, Map)
               const QuickActionsPillsWidget(),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
 
               // 3. Match Card (if search filters are active)
               const MatchCardWidget(),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
 
               // 4. Opening Hours & Contact
               const OpeningHoursContactWidget(),
@@ -405,7 +405,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // 11. Report link
         SliverToBoxAdapter(child: _buildReportLink()),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.huge)),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.huge)),
       ],
     );
   }
@@ -434,7 +434,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            td(ref, 'menu_heading'),
+            td(ref, 'tab_menu'),
             style: AppTypography.sectionHeading,
           ),
           SizedBox(height: AppSpacing.sm),
@@ -514,13 +514,22 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             onFilterTap: (int filterId, String filterName,
                 String? filterDescription) async {
               if (context.mounted) {
+                _trackFacilityInfoOpened(filterName, filterDescription);
                 await showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (context) => FacilitiesInfoSheet(
-                    filterName: filterName,
-                    filterDescription: filterDescription,
+                  builder: (context) => DraggableScrollableSheet(
+                    initialChildSize: 0.4,
+                    maxChildSize: 0.9,
+                    minChildSize: 0.25,
+                    builder: (context, scrollController) => DescriptionSheet(
+                      title: filterName,
+                      description: filterDescription,
+                      scrollController: scrollController,
+                      fallbackDescription:
+                          td(ref, 'no_description_available'),
+                    ),
                   ),
                 );
               }
@@ -629,7 +638,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       eventData: {
         'action': _aboutExpanded ? 'expanded' : 'collapsed',
         'text_id': 'about',
-        ...?businessIdInt != null ? {'business_id': businessIdInt} : null,
+        ?'business_id': businessIdInt,
       },
     )
         .catchError((e) {
@@ -685,6 +694,31 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   // EVENT HANDLERS
   // ============================================================================
 
+  /// Track facility info sheet opened (fire-and-forget).
+  /// Extracted from FacilitiesInfoSheet.initState for call-site control.
+  void _trackFacilityInfoOpened(
+      String filterName, String? filterDescription) {
+    final analytics = AnalyticsService.instance;
+    ApiService.instance
+        .postAnalytics(
+      eventType: 'facility_info_opened',
+      deviceId: analytics.deviceId ?? '',
+      sessionId: analytics.currentSessionId ?? '',
+      userId: analytics.userId ?? '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {
+        'pageName': 'businessProfile',
+        'facilityName': filterName,
+        'hasDescription':
+            filterDescription != null && filterDescription.isNotEmpty,
+      },
+    )
+        .catchError((e) {
+      debugPrint('Analytics error: $e');
+      return ApiCallResponse.failure('Analytics failed');
+    });
+  }
+
   void _handleShareTap() {
     final business = ref.read(businessProvider).currentBusiness;
     if (business == null) return;
@@ -694,9 +728,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     final analyticsState = ref.read(analyticsProvider);
 
     // Share business profile
-    SharePlus.instance.share(ShareParams(
-      text: 'Check out $businessName on JourneyMate!',
-    ));
+    final shareText = td(ref, 'share_business_text')
+        .replaceAll('{name}', businessName);
+    SharePlus.instance.share(ShareParams(text: shareText));
 
     // Track share event
     ApiService.instance.postAnalytics(

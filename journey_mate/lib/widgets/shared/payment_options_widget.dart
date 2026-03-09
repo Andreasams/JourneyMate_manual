@@ -88,7 +88,7 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
   static const Color _selectedBackgroundColor = AppColors.orangeBg;
   static const Color _unselectedBackgroundColor = AppColors.bgSurface;
   static const Color _selectedTextColor = AppColors.accent;
-  static const Color _unselectedTextColor = AppColors.textSecondary;
+  static const Color _unselectedTextColor = AppColors.textPrimary;
 
   static const double _selectedFontSize = 14.0;
   static const FontWeight _selectedFontWeight = FontWeight.w400;

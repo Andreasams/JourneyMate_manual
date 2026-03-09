@@ -147,6 +147,8 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
                   child: UnifiedFiltersWidget(
                     businessId: widget.businessId,
                     width: double.infinity,
+                    // Intentional empty setState — triggers rebuild so filter
+                    // summary text and menu list reflect the new filter state.
                     onFiltersChanged: () async { setState(() {}); },
                     onVisibleItemCountChanged: (count) async { setState(() => _visibleItemCount = count); },
                   ),

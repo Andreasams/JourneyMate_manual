@@ -149,7 +149,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          _getUIText(context, 'fvn7c52j'), // address
+          _getUIText(context, 'address_label'), // address
           style: AppTypography.sectionHeading,
         ),
         Text(
@@ -177,7 +177,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           hoverColor: Colors.transparent,
           highlightColor: Colors.transparent,
           child: Text(
-            _getUIText(context, 'wemfo75s'), // view on map
+            _getUIText(context, 'view_on_map_action'), // view on map
             style: AppTypography.bodyRegular.copyWith(
               color: AppColors.accent,
             ),
@@ -198,7 +198,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          _getUIText(context, 'v1z4dvep'), // opening hours
+          _getUIText(context, 'opening_hours_label'), // opening hours
           style: AppTypography.sectionHeading,
         ),
         OpeningHoursAndWeekdays(
@@ -223,7 +223,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
             bottom: _contactInfoBottomPadding,
           ),
           child: Text(
-            _getUIText(context, 's0a1ukr7'), // contact information
+            _getUIText(context, 'feedback_form_title_contact_info'), // contact information
             style: AppTypography.sectionHeading,
           ),
         ),
@@ -280,7 +280,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              _getUIText(context, 'nd4d9n42'), // phone number
+              _getUIText(context, 'phone_number_label'), // phone number
               style: AppTypography.bodyRegular,
             ),
             InkWell(
@@ -314,7 +314,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              _getUIText(context, 'z32g0m7g'), // email
+              _getUIText(context, 'email_label'), // email
               style: AppTypography.bodyRegular,
             ),
             InkWell(
@@ -325,7 +325,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               child: Text(
-                _getUIText(context, '4p3u9ngw'), // send email
+                _getUIText(context, 'send_email_action'), // send email
                 style: AppTypography.bodyRegular.copyWith(
                   color: AppColors.accent,
                 ),
@@ -348,7 +348,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              _getUIText(context, '8pvvg34m'), // website
+              _getUIText(context, 'website'), // website
               style: AppTypography.bodyRegular,
             ),
             InkWell(
@@ -358,7 +358,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               child: Text(
-                _getUIText(context, '9hmbepnd'), // visit website
+                _getUIText(context, 'visit_website_action'), // visit website
                 style: AppTypography.bodyRegular.copyWith(
                   color: AppColors.accent,
                 ),
@@ -381,7 +381,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              _getUIText(context, 'zaws00rk'), // reservation
+              _getUIText(context, 'booking'), // reservation
               style: AppTypography.bodyRegular,
             ),
             InkWell(
@@ -391,7 +391,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               child: Text(
-                _getUIText(context, 'g6jqo5n0'), // make reservation
+                _getUIText(context, 'make_reservation_action'), // make reservation
                 style: AppTypography.bodyRegular.copyWith(
                   color: AppColors.accent,
                 ),
@@ -414,7 +414,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              _getUIText(context, '35r2ixsz'), // instagram
+              _getUIText(context, 'instagram'), // instagram
               style: AppTypography.bodyRegular,
             ),
             InkWell(
@@ -424,7 +424,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               child: Text(
-                _getUIText(context, 'i39eb4yz'), // view on Instagram
+                _getUIText(context, 'view_instagram_action'), // view on Instagram
                 style: AppTypography.bodyRegular.copyWith(
                   color: AppColors.accent,
                 ),
@@ -447,7 +447,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              _getUIText(context, 'ehwtf95b'), // facebook
+              _getUIText(context, 'facebook_label'), // facebook
               style: AppTypography.bodyRegular,
             ),
             InkWell(
@@ -457,7 +457,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               child: Text(
-                _getUIText(context, 'nhhhl06z'), // view on Facebook
+                _getUIText(context, 'view_facebook_action'), // view on Facebook
                 style: AppTypography.bodyRegular.copyWith(
                   color: AppColors.accent,
                 ),

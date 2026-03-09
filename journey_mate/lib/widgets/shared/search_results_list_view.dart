@@ -1108,7 +1108,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final todayStr = _getTodayHoursRange();
 
     return Text(
-      '${td(ref, 'expandable_today_label')} $todayStr', // Space between label and time
+      '${td(ref, 'today_prefix')} $todayStr', // Space between label and time
       style: AppTypography.bodyRegular.copyWith(
         fontSize: 12.5,
         color: AppColors.textSecondary,
@@ -1128,7 +1128,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     final dayHours = businessHoursMap[dayKey];
 
     if (dayHours == null || dayHours is! Map) {
-      return td(ref, 'hours_closed');
+      return td(ref, 'closed');
     }
 
     final dayHoursMap = Map<String, dynamic>.from(dayHours);
@@ -1140,7 +1140,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         dayHoursMap['by_appointment_only'] == 'true';
 
     if (closed) {
-      return td(ref, 'hours_closed');
+      return td(ref, 'closed');
     }
 
     // Get first time slot (most common case)
