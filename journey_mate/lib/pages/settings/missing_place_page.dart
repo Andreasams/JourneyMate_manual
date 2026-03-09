@@ -79,7 +79,7 @@ class _MissingPlacePageState extends ConsumerState<MissingPlacePage> {
           },
         ),
         title: Text(
-          td(ref, 'f5zshdrf'), // "Are we missing a place?"
+          td(ref, 'missing_place_prompt'), // "Are we missing a place?"
           style: AppTypography.categoryHeading,
         ),
       ),

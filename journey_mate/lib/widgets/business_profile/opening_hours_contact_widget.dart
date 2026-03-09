@@ -132,7 +132,7 @@ class _OpeningHoursContactWidgetState
     final dayHours = _getDayHours(todayIndex, openingHours);
 
     if (_isDayClosed(dayHours)) {
-      return '${td(ref, 'today_prefix')}${td(ref, 'closed')}';
+      return '${td(ref, 'today_prefix').trimRight()} ${td(ref, 'closed')}';
     }
 
     // Build time slots string
@@ -146,7 +146,7 @@ class _OpeningHoursContactWidgetState
       }
     }
 
-    return '${td(ref, 'today_prefix')}${slots.join(', ')}';
+    return '${td(ref, 'today_prefix').trimRight()} ${slots.join(', ')}';
   }
 
   /// Get all cutoffs for a specific slot
@@ -352,8 +352,7 @@ class _OpeningHoursContactWidgetState
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       todayPreview,
-                      style: AppTypography.chip.copyWith(
-                        fontWeight: FontWeight.w400,
+                      style: AppTypography.subtitle.copyWith(
                         color: isClosed ? AppColors.red : AppColors.textTertiary,
                       ),
                     ),

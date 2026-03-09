@@ -15,7 +15,7 @@ import '../shared/menu_categories_rows.dart';
 import '../shared/menu_dishes_list_view.dart';
 import '../shared/item_bottom_sheet.dart';
 import '../shared/package_bottom_sheet.dart';
-import '../shared/category_description_sheet.dart';
+import '../shared/description_sheet.dart';
 
 /// Inline menu section on the business profile page.
 ///
@@ -28,7 +28,7 @@ import '../shared/category_description_sheet.dart';
 /// (4) Container(maxHeight: 337) → MenuDishesListView
 ///     onItemTap → ItemBottomSheet
 ///     onPackageTap → PackageBottomSheet
-///     onCategoryDescriptionTap → CategoryDescriptionSheet
+///     onCategoryDescriptionTap → DescriptionSheet
 /// (5) Row: "View on full page" + arrow
 class InlineMenuWidget extends ConsumerStatefulWidget {
   final int businessId;
@@ -85,7 +85,7 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                td(ref, 'menu_heading'),
+                td(ref, 'tab_menu'),
                 style: AppTypography.sectionHeading,
               ),
               Row(
@@ -285,9 +285,9 @@ class _InlineMenuWidgetState extends ConsumerState<InlineMenuWidget> {
                       maxChildSize: 0.9,
                       minChildSize: 0.25,
                       builder: (sheetContext, scrollController) =>
-                          CategoryDescriptionSheet(
-                        categoryName: catName,
-                        categoryDescription: catDescription,
+                          DescriptionSheet(
+                        title: catName,
+                        description: catDescription,
                         scrollController: scrollController,
                         width: double.infinity,
                       ),

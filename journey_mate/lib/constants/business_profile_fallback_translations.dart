@@ -6,7 +6,7 @@
 /// Categories:
 /// - match_card: Filter match card widget
 /// - quick_actions: Quick action pills (Call, Website, Booking, Map)
-/// - gallery: Inline gallery widget (keys use gallery_* not gallery_tab_*)
+/// - gallery: Inline gallery widget (heading=tab_gallery, tabs=tab_menu/gallery_*)
 /// - menu: Inline menu widget
 /// - opening_hours: Opening hours & contact widget
 /// - section_headings: Section titles
@@ -26,7 +26,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
 
     // Quick Actions
     'action_call': 'Call',
-    'action_website': 'Website',
     'action_booking': 'Book',
     'action_map': 'Map',
     'choose_map_app': 'Choose map app',
@@ -40,22 +39,21 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'error_cannot_open_map': 'Unable to open map',
 
     // Gallery (keys match code: gallery_food, not gallery_tab_food)
-    'gallery_heading': 'Gallery',
+    'tab_gallery': 'Gallery',
     'gallery_view_all': 'View all images',
     'gallery_food': 'Food',
-    'gallery_menu': 'Menu',
+    'tab_menu': 'Menu',
     'gallery_interior': 'Interior',
     'gallery_outdoor': 'Outdoor',
     'gallery_no_images': 'No images available',
 
     // Menu
-    'menu_heading': 'Menu',
     'menu_category_all': 'All',
     'menu_filters_active': '{count} filters active',
     'menu_filters_none': 'No filters active',
     'menu_filters_edit': 'Edit',
     'menu_show_all': 'Show all {count} items',
-    'menu_show_less': 'Show less',
+    'expandable_show_less': 'Show less',
     'menu_view_full_page': 'View full menu',
     'menu_load_error': 'Could not load the menu. Please try again.',
     'menu_last_updated_prefix': 'Last brought up to date on',
@@ -87,7 +85,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'copied_to_clipboard': 'Copied to clipboard',
 
     // Section Headings
-    'opening_hours_heading': 'Opening Hours',
     'facilities_heading': 'Facilities',
 
     // Page-level
@@ -113,7 +110,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
 
     // Quick Actions
     'action_call': 'Ring',
-    'action_website': 'Hjemmeside',
     'action_booking': 'Book',
     'action_map': 'Kort',
     'choose_map_app': 'V\u00e6lg kortapp',
@@ -127,22 +123,21 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'error_cannot_open_map': 'Kan ikke \u00e5bne kort',
 
     // Gallery
-    'gallery_heading': 'Galleri',
+    'tab_gallery': 'Galleri',
     'gallery_view_all': 'Se alle {count} billeder',
     'gallery_food': 'Mad',
-    'gallery_menu': 'Menu',
+    'tab_menu': 'Menu',
     'gallery_interior': 'Inde',
     'gallery_outdoor': 'Ude',
     'gallery_no_images': 'Ingen billeder tilg\u00e6ngelige',
 
     // Menu
-    'menu_heading': 'Menu',
     'menu_category_all': 'Alle',
     'menu_filters_active': '{count} filtre aktive',
     'menu_filters_none': 'Ingen filtre aktive',
     'menu_filters_edit': 'Rediger',
     'menu_show_all': 'Vis alle {count} retter',
-    'menu_show_less': 'Vis mindre',
+    'expandable_show_less': 'Vis mindre',
     'menu_view_full_page': 'Vis p\u00e5 hel side',
     'menu_load_error': 'Kunne ikke indl\u00e6se menuen. Pr\u00f8v igen.',
     'menu_last_updated_prefix': 'Sidst opdateret',
@@ -174,7 +169,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'copied_to_clipboard': 'Kopieret til udklipsholder',
 
     // Section Headings
-    'opening_hours_heading': '\u00c5bningstider',
     'facilities_heading': 'Faciliteter',
 
     // Page-level
@@ -200,7 +194,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
 
     // Quick Actions
     'action_call': 'Anrufen',
-    'action_website': 'Webseite',
     'action_booking': 'Buchen',
     'action_map': 'Karte',
     'choose_map_app': 'Karten-App w\u00e4hlen',
@@ -214,22 +207,21 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'error_cannot_open_map': 'Karte kann nicht ge\u00f6ffnet werden',
 
     // Gallery
-    'gallery_heading': 'Galerie',
+    'tab_gallery': 'Galerie',
     'gallery_view_all': 'Alle {count} Fotos anzeigen',
     'gallery_food': 'Essen',
-    'gallery_menu': 'Men\u00fc',
+    'tab_menu': 'Men\u00fc',
     'gallery_interior': 'Innenraum',
     'gallery_outdoor': 'Au\u00dfenbereich',
     'gallery_no_images': 'Keine Bilder verf\u00fcgbar',
 
     // Menu
-    'menu_heading': 'Speisekarte',
     'menu_category_all': 'Alle',
     'menu_filters_active': '{count} Filter aktiv',
     'menu_filters_none': 'Keine Filter aktiv',
     'menu_filters_edit': 'Bearbeiten',
     'menu_show_all': 'Alle {count} Gerichte anzeigen',
-    'menu_show_less': 'Weniger anzeigen',
+    'expandable_show_less': 'Weniger anzeigen',
     'menu_view_full_page': 'Vollst\u00e4ndige Speisekarte anzeigen',
     'menu_load_error': 'Men\u00fc konnte nicht geladen werden. Bitte versuchen Sie es erneut.',
     'menu_last_updated_prefix': 'Zuletzt aktualisiert',
@@ -261,7 +253,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'copied_to_clipboard': 'In die Zwischenablage kopiert',
 
     // Section Headings
-    'opening_hours_heading': '\u00d6ffnungszeiten',
     'facilities_heading': 'Ausstattung',
 
     // Page-level
@@ -287,7 +278,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
 
     // Quick Actions
     'action_call': 'Appeler',
-    'action_website': 'Site web',
     'action_booking': 'R\u00e9server',
     'action_map': 'Carte',
     'choose_map_app': "Choisir l'app de carte",
@@ -301,22 +291,21 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'error_cannot_open_map': "Impossible d'ouvrir la carte",
 
     // Gallery
-    'gallery_heading': 'Galerie',
+    'tab_gallery': 'Galerie',
     'gallery_view_all': 'Voir les {count} photos',
     'gallery_food': 'Nourriture',
-    'gallery_menu': 'Menu',
+    'tab_menu': 'Menu',
     'gallery_interior': 'Int\u00e9rieur',
     'gallery_outdoor': 'Ext\u00e9rieur',
     'gallery_no_images': 'Aucune image disponible',
 
     // Menu
-    'menu_heading': 'Menu',
     'menu_category_all': 'Tous',
     'menu_filters_active': '{count} filtres actifs',
     'menu_filters_none': 'Aucun filtre actif',
     'menu_filters_edit': 'Modifier',
     'menu_show_all': 'Afficher tous les {count} plats',
-    'menu_show_less': 'Afficher moins',
+    'expandable_show_less': 'Afficher moins',
     'menu_view_full_page': 'Voir le menu complet',
     'menu_load_error': 'Impossible de charger le menu. Veuillez r\u00e9essayer.',
     'menu_last_updated_prefix': 'Derni\u00e8re mise \u00e0 jour',
@@ -348,7 +337,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'copied_to_clipboard': 'Copi\u00e9 dans le presse-papiers',
 
     // Section Headings
-    'opening_hours_heading': 'Horaires',
     'facilities_heading': '\u00c9quipements',
 
     // Page-level
@@ -374,7 +362,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
 
     // Quick Actions
     'action_call': 'Chiama',
-    'action_website': 'Sito web',
     'action_booking': 'Prenota',
     'action_map': 'Mappa',
     'choose_map_app': 'Scegli app mappe',
@@ -388,22 +375,21 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'error_cannot_open_map': 'Impossibile aprire la mappa',
 
     // Gallery
-    'gallery_heading': 'Galleria',
+    'tab_gallery': 'Galleria',
     'gallery_view_all': 'Vedi tutte le {count} foto',
     'gallery_food': 'Cibo',
-    'gallery_menu': 'Menu',
+    'tab_menu': 'Menu',
     'gallery_interior': 'Interno',
     'gallery_outdoor': 'Esterno',
     'gallery_no_images': 'Nessuna immagine disponibile',
 
     // Menu
-    'menu_heading': 'Menu',
     'menu_category_all': 'Tutti',
     'menu_filters_active': '{count} filtri attivi',
     'menu_filters_none': 'Nessun filtro attivo',
     'menu_filters_edit': 'Modifica',
     'menu_show_all': 'Mostra tutti i {count} piatti',
-    'menu_show_less': 'Mostra meno',
+    'expandable_show_less': 'Mostra meno',
     'menu_view_full_page': 'Vedi menu completo',
     'menu_load_error': 'Impossibile caricare il menu. Riprova.',
     'menu_last_updated_prefix': 'Ultimo aggiornamento',
@@ -435,7 +421,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'copied_to_clipboard': 'Copiato negli appunti',
 
     // Section Headings
-    'opening_hours_heading': 'Orari',
     'facilities_heading': 'Servizi',
 
     // Page-level
@@ -461,7 +446,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
 
     // Quick Actions
     'action_call': 'Ring',
-    'action_website': 'Nettsted',
     'action_booking': 'Bestill',
     'action_map': 'Kart',
     'choose_map_app': 'Velg kartapp',
@@ -475,22 +459,21 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'error_cannot_open_map': 'Kan ikke \u00e5pne kartet',
 
     // Gallery
-    'gallery_heading': 'Galleri',
+    'tab_gallery': 'Galleri',
     'gallery_view_all': 'Se alle {count} bilder',
     'gallery_food': 'Mat',
-    'gallery_menu': 'Meny',
+    'tab_menu': 'Meny',
     'gallery_interior': 'Interi\u00f8r',
     'gallery_outdoor': 'Utend\u00f8rs',
     'gallery_no_images': 'Ingen bilder tilgjengelig',
 
     // Menu
-    'menu_heading': 'Meny',
     'menu_category_all': 'Alle',
     'menu_filters_active': '{count} filtre aktive',
     'menu_filters_none': 'Ingen filtre aktive',
     'menu_filters_edit': 'Rediger',
     'menu_show_all': 'Vis alle {count} retter',
-    'menu_show_less': 'Vis mindre',
+    'expandable_show_less': 'Vis mindre',
     'menu_view_full_page': 'Vis hele menyen',
     'menu_load_error': 'Kunne ikke laste menyen. Pr\u00f8v igjen.',
     'menu_last_updated_prefix': 'Sist oppdatert',
@@ -522,7 +505,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'copied_to_clipboard': 'Kopiert til utklippstavlen',
 
     // Section Headings
-    'opening_hours_heading': '\u00c5pningstider',
     'facilities_heading': 'Fasiliteter',
 
     // Page-level
@@ -548,7 +530,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
 
     // Quick Actions
     'action_call': 'Ring',
-    'action_website': 'Webbplats',
     'action_booking': 'Boka',
     'action_map': 'Karta',
     'choose_map_app': 'V\u00e4lj kartapp',
@@ -562,22 +543,21 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'error_cannot_open_map': 'Kan inte \u00f6ppna kartan',
 
     // Gallery
-    'gallery_heading': 'Galleri',
+    'tab_gallery': 'Galleri',
     'gallery_view_all': 'Se alla {count} bilder',
     'gallery_food': 'Mat',
-    'gallery_menu': 'Meny',
+    'tab_menu': 'Meny',
     'gallery_interior': 'Interi\u00f6r',
     'gallery_outdoor': 'Utomhus',
     'gallery_no_images': 'Inga bilder tillg\u00e4ngliga',
 
     // Menu
-    'menu_heading': 'Meny',
     'menu_category_all': 'Alla',
     'menu_filters_active': '{count} filter aktiva',
     'menu_filters_none': 'Inga filter aktiva',
     'menu_filters_edit': 'Redigera',
     'menu_show_all': 'Visa alla {count} r\u00e4tter',
-    'menu_show_less': 'Visa mindre',
+    'expandable_show_less': 'Visa mindre',
     'menu_view_full_page': 'Visa hela menyn',
     'menu_load_error': 'Kunde inte ladda menyn. F\u00f6rs\u00f6k igen.',
     'menu_last_updated_prefix': 'Senast uppdaterad',
@@ -609,7 +589,6 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'copied_to_clipboard': 'Kopierat till urklipp',
 
     // Section Headings
-    'opening_hours_heading': '\u00d6ppettider',
     'facilities_heading': 'Faciliteter',
 
     // Page-level

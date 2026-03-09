@@ -49,7 +49,7 @@ Map<String, dynamic> determineStatusAndColor(
   // Guard: Validate inputs
   if (businessHoursInput == null || businessHoursInput is! Map) {
     return {
-      'text': getLocalizedMessage('status_closed', 'Closed'),
+      'text': getLocalizedMessage('closed', 'Closed'),
       'color': closedColor,
     };
   }
@@ -68,7 +68,7 @@ Map<String, dynamic> determineStatusAndColor(
     );
   } catch (e) {
     return {
-      'text': getLocalizedMessage('status_closed', 'Closed'),
+      'text': getLocalizedMessage('closed', 'Closed'),
       'color': closedColor,
     };
   }
@@ -104,7 +104,7 @@ Map<String, dynamic> determineStatusAndColor(
 
   return {
     'text': getLocalizedMessage(
-        isOpeningSoon ? 'status_opening_soon' : 'status_closed',
+        isOpeningSoon ? 'status_opening_soon' : 'closed',
         isOpeningSoon ? 'Opening soon' : 'Closed'),
     'color': closedColor,
   };

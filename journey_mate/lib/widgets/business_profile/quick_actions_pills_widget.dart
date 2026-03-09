@@ -64,7 +64,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
           context: context,
           ref: ref,
           icon: Icons.language,
-          label: td(ref, 'action_website'),
+          label: td(ref, 'website'),
           onTap: () => _handleWebsiteTap(context, ref, website),
         ),
       if (bookingUrl != null && bookingUrl.isNotEmpty)

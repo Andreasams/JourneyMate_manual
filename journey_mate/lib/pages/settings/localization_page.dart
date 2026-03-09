@@ -120,7 +120,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
           },
         ),
         title: Text(
-          td(ref, 'rct7k6pr'), // "Settings"
+          td(ref, 'settings_language_currency_title'), // "Settings"
           style: AppTypography.categoryHeading,
         ),
       ),
@@ -145,12 +145,12 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
 
             // Language Section
             Text(
-              td(ref, 'phfch9og'), // "Language"
+              td(ref, 'settings_language_description'), // "Language"
               style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              td(ref, 'gl71ej9n'), // "Select your preferred language..."
+              td(ref, 'settings_current_language_info'), // "Select your preferred language..."
               style: AppTypography.subtitle,
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -168,12 +168,12 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
 
             // Currency Section
             Text(
-              td(ref, 'y0gzdnsp'), // "Currency"
+              td(ref, 'settings_currency_description'), // "Currency"
               style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              td(ref, 'n4pzujqg'), // "We can display prices..."
+              td(ref, 'currency_display_prefix'), // "We can display prices..."
               style: AppTypography.subtitle,
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -186,7 +186,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
 
             // Exchange rate note
             Text(
-              td(ref, '82y059ik'), // "Exchange rates are updated once per 24 hours..."
+              td(ref, 'currency_exchange_rate_disclaimer'), // "Exchange rates are updated once per 24 hours..."
               style: AppTypography.helper,
             ),
 
@@ -213,7 +213,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
 
             // Location Section
             Text(
-              td(ref, 'location_title_section'), // "Location"
+              td(ref, 'filter_location'), // "Location"
               style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -232,7 +232,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
             if (!ref.watch(locationProvider).hasPermission) ...[
               const SizedBox(height: AppSpacing.sm),
               Text(
-                td(ref, 'iucaz964'), // "Your location is exclusively u..."
+                td(ref, 'settings_location_privacy_info'), // "Your location is exclusively u..."
                 style: AppTypography.helper.copyWith(
                   color: AppColors.textTertiary,
                 ),

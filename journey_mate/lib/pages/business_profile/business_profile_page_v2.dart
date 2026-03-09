@@ -23,6 +23,7 @@ import '../../widgets/shared/erroneous_info_form_widget.dart';
 import '../../widgets/shared/payment_options_widget.dart';
 import '../../widgets/shared/restaurant_shimmer_widget.dart';
 import '../../widgets/shared/description_sheet.dart';
+import '../../widgets/shared/expandable_text_widget.dart';
 import '../../widgets/business_profile/hero_section_widget.dart';
 import '../../widgets/business_profile/inline_gallery_widget.dart';
 import '../../widgets/business_profile/inline_menu_widget.dart';
@@ -63,7 +64,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   DateTime? _pageStartTime;
   bool _isLoading = false;
   String? _errorMessage;
-  bool _aboutExpanded = false; // JSX: collapsed by default (aboutOpen = false)
   bool _menuLoadFailed = false;
   bool _menuSessionStarted = false;
 
@@ -318,8 +318,8 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       backgroundColor: AppColors.bgPage,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-        iconSize: 22,
+        icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+        iconSize: 20,
         padding: const EdgeInsets.all(4),
         onPressed: () => context.pop(),
       ),
@@ -327,20 +327,25 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // Share button
         IconButton(
           icon: const Icon(Icons.ios_share, color: AppColors.textPrimary),
-          iconSize: 20,
-          padding: const EdgeInsets.all(4),
+          iconSize: 28,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(
+            minWidth: 48,
+            minHeight: 48,
+          ),
           onPressed: _handleShareTap,
         ),
-        SizedBox(width: AppSpacing.mlg),
         // Info button
         IconButton(
-          icon:
-              const Icon(Icons.info_outline, color: AppColors.textPrimary),
-          iconSize: 20,
-          padding: const EdgeInsets.all(4),
+          icon: const Icon(Icons.info_outline, color: AppColors.textPrimary),
+          iconSize: 28,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(
+            minWidth: 48,
+            minHeight: 48,
+          ),
           onPressed: _handleInfoTap,
         ),
-        SizedBox(width: AppSpacing.mlg),
       ],
     );
   }
@@ -579,8 +584,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     );
   }
 
-  /// Build about section (collapsible description)
-  /// JSX reference: business_profile.jsx lines 554-563 (aboutOpen = false by default)
+  /// Build about section with gradient "read more" expandable
   Widget _buildAboutSection() {
     final business = ref.watch(businessProvider).currentBusiness;
     final description = business?['description'] as String?;
@@ -589,72 +593,26 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       return const SizedBox.shrink();
     }
 
+    final businessIdInt = int.tryParse(widget.businessId);
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-      child: GestureDetector(
-        onTap: _toggleAboutExpanded,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    td(ref, 'about_description_label'),
-                    style: AppTypography.sectionHeading,
-                  ),
-                ),
-                AnimatedRotation(
-                  turns: _aboutExpanded ? 0.5 : 0.0,
-                  duration: const Duration(milliseconds: 250),
-                  child: Icon(
-                    Icons.keyboard_arrow_down,
-                    color: AppColors.textPrimary,
-                    size: 24,
-                  ),
-                ),
-              ],
-            ),
-            if (_aboutExpanded) ...[
-              SizedBox(height: AppSpacing.sm),
-              Text(
-                description,
-                style: AppTypography.bodyRegular.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            td(ref, 'about_description_label'),
+            style: AppTypography.sectionHeading,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          ExpandableTextWidget(
+            text: description,
+            businessId: businessIdInt,
+            textId: 'about',
+          ),
+        ],
       ),
     );
-  }
-
-  /// Toggle About expanded/collapsed and track analytics
-  void _toggleAboutExpanded() {
-    setState(() {
-      _aboutExpanded = !_aboutExpanded;
-    });
-    final analytics = AnalyticsService.instance;
-    final businessIdInt = int.tryParse(widget.businessId);
-    ApiService.instance
-        .postAnalytics(
-      eventType: 'expandable_text_toggled',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
-      timestamp: DateTime.now().toIso8601String(),
-      eventData: {
-        'action': _aboutExpanded ? 'expanded' : 'collapsed',
-        'text_id': 'about',
-        'business_id': businessIdInt,
-      },
-    )
-        .catchError((e) {
-      debugPrint('Analytics error: $e');
-      return ApiCallResponse.failure('Analytics failed');
-    });
   }
 
   /// Build report link button at bottom of page

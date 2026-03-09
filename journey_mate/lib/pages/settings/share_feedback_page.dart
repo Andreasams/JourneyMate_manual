@@ -77,7 +77,7 @@ class _ShareFeedbackPageState extends ConsumerState<ShareFeedbackPage> {
           },
         ),
         title: Text(
-          td(ref, 'hjszsd2y'), // "Share feedback"
+          td(ref, 'share_feedback_label'), // "Share feedback"
           style: AppTypography.categoryHeading,
         ),
       ),

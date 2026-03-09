@@ -22,10 +22,12 @@ class ExpandableTextWidget extends ConsumerStatefulWidget {
     super.key,
     required this.text,
     this.businessId,
+    this.textId = 'description',
   });
 
   final String text;
   final int? businessId;
+  final String textId;
 
   @override
   ConsumerState<ExpandableTextWidget> createState() =>
@@ -60,7 +62,8 @@ class _ExpandableTextWidgetState extends ConsumerState<ExpandableTextWidget> {
     height: _lineHeightMultiplier,
   );
 
-  static final TextStyle _buttonTextStyle = AppTypography.button.copyWith(
+  static final TextStyle _buttonTextStyle = AppTypography.bodyMedium.copyWith(
+    fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
   );
 
@@ -245,7 +248,7 @@ class _ExpandableTextWidgetState extends ConsumerState<ExpandableTextWidget> {
       userId: userId,
       eventData: {
         'action': action,
-        'text_id': 'description', // Identifies which text section
+        'text_id': widget.textId,
         'business_id': widget.businessId, // Track which business
         'language': languageCode,
       },

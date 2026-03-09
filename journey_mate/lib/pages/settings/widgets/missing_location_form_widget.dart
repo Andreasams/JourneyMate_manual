@@ -111,7 +111,7 @@ class _MissingLocationFormWidgetState
         _messageError = td(ref, 'missing_location_error_message_required');
         isValid = false;
       } else if (message.length < 10) {
-        _messageError = td(ref, 'missing_location_error_message_too_short');
+        _messageError = td(ref, 'contact_form_error_message_too_short');
         isValid = false;
       }
     });
@@ -275,11 +275,11 @@ class _MissingLocationFormWidgetState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildRequiredLabel(
-          td(ref, 'missing_location_title_message'),
+          td(ref, 'contact_form_title_message'),
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          td(ref, 'missing_location_subtitle_message'),
+          td(ref, 'contact_form_subtitle_message'),
           style: AppTypography.subtitle,
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -379,7 +379,7 @@ class _MissingLocationFormWidgetState
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              td(ref, 'missing_location_success_navigate_away'),
+              td(ref, 'contact_form_success_navigate_away'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.success.withValues(alpha:0.8),
@@ -415,7 +415,7 @@ class _MissingLocationFormWidgetState
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  td(ref, 'missing_location_error_submission'),
+                  td(ref, 'contact_form_error_submission'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.error,

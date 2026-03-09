@@ -138,7 +138,7 @@ String daysDayOpeningHour(
   // Guard: validate input
   // ---------------------------------------------------------------------------
   if (businessHoursInput == null || businessHoursInput is! Map) {
-    return getLocalizedMessage('hours_closed', 'Closed');
+    return getLocalizedMessage('closed', 'Closed');
   }
 
   final Map<String, dynamic> businessHours;
@@ -155,7 +155,7 @@ String daysDayOpeningHour(
       ),
     );
   } catch (e) {
-    return getLocalizedMessage('hours_closed', 'Closed');
+    return getLocalizedMessage('closed', 'Closed');
   }
 
   final currentDay = currentDateTime.weekday - 1; // Monday = 0
@@ -248,7 +248,7 @@ String daysDayOpeningHour(
   // ---------------------------------------------------------------------------
   // Closed: find next opening
   // ---------------------------------------------------------------------------
-  final closed = getLocalizedMessage('hours_closed', 'Closed');
+  final closed = getLocalizedMessage('closed', 'Closed');
 
   for (int dayOffset = 0; dayOffset < 7; dayOffset++) {
     final checkDay = (currentDay + dayOffset) % 7;

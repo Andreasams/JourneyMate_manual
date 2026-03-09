@@ -63,7 +63,7 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
   // Tab configuration: matches JSX tab order and API keys
   static const _tabs = [
     {'key': 'food', 'labelKey': 'gallery_food'}, // "Mad"
-    {'key': 'menu', 'labelKey': 'gallery_menu'}, // "Menu"
+    {'key': 'menu', 'labelKey': 'tab_menu'}, // "Menu"
     {'key': 'interior', 'labelKey': 'gallery_interior'}, // "Inde"
     {'key': 'outdoor', 'labelKey': 'gallery_outdoor'}, // "Ude"
   ];
@@ -131,7 +131,7 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
         children: [
           // Section heading
           Text(
-            td(ref, 'gallery_heading'),
+            td(ref, 'tab_gallery'),
             style: AppTypography.sectionHeading,
           ),
           SizedBox(height: AppSpacing.sm),
@@ -141,7 +141,6 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
 
           // Swipeable content area with calculated height for 4x2 grid
           _buildGalleryPageView(galleryCategories),
-          SizedBox(height: AppSpacing.md),
 
           // "Se alle billeder →" link to full gallery page
           _buildViewAllButton(business?['business_id'] as int?),
@@ -370,7 +369,7 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
         builder: (context) => ImageGalleryWidget(
           currentIndex: index,
           imageUrls: imageUrls,
-          categoryName: td(ref, 'gallery_heading'),
+          categoryName: td(ref, 'tab_gallery'),
         ),
       );
     }
@@ -381,27 +380,29 @@ class _InlineGalleryWidgetState extends ConsumerState<InlineGalleryWidget> {
   Widget _buildViewAllButton(int? businessId) {
     if (businessId == null) return const SizedBox.shrink();
 
-    return SizedBox(
-      width: double.infinity,
-      child: TextButton(
-        onPressed: () => _handleViewAllTap(businessId),
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
-        ),
+    return Padding(
+      padding: EdgeInsets.only(top: 12),
+      child: GestureDetector(
+        onTap: () => _handleViewAllTap(businessId),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              td(ref, 'gallery_view_all'),
-              style: AppTypography.viewToggle.copyWith(
-                fontWeight: FontWeight.w500,
+            Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Text(
+                td(ref, 'gallery_view_all'),
+                style: AppTypography.bodyMedium.copyWith(
+                  fontWeight: FontWeight.normal,
+                ),
               ),
             ),
-            SizedBox(width: AppSpacing.xs),
-            const Icon(
-              Icons.arrow_forward,
-              color: AppColors.textSecondary,
-              size: 14,
+            Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Icon(
+                Icons.keyboard_arrow_right_sharp,
+                color: AppColors.textPrimary,
+                size: 20,
+              ),
             ),
           ],
         ),

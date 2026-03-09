@@ -448,15 +448,26 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
   /// UI BUILDERS - TAB BAR
   /// =========================================================================
 
-  /// Builds the fixed tab bar with equal-width tabs
+  /// Builds the fixed tab bar with equal-width tabs and a sliding indicator
   Widget _buildFixedTabBar() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return Container(
-          decoration: _getTabBarDecoration(),
-          child: Row(
-            children: _buildTabItems(constraints.maxWidth),
-          ),
+        final maxWidth = constraints.maxWidth;
+        return Stack(
+          children: [
+            Container(
+              decoration: _getTabBarDecoration(),
+              child: Row(
+                children: _buildTabItems(maxWidth),
+              ),
+            ),
+            // Orange indicator overlaps the grey border and slides with page
+            Positioned(
+              bottom: 0,
+              left: 0,
+              child: _buildSlidingIndicator(maxWidth),
+            ),
+          ],
         );
       },
     );
@@ -471,6 +482,55 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
           width: _tabBarBorderWidth,
         ),
       ),
+    );
+  }
+
+  /// Returns the current fractional page position for smooth indicator
+  /// interpolation. Falls back to the tab index before PageController
+  /// has clients (first frame).
+  double _getCurrentPage() {
+    if (!_pageController.hasClients) {
+      return _tabController.index.toDouble();
+    }
+    return _pageController.page ?? _tabController.index.toDouble();
+  }
+
+  /// Builds the sliding orange indicator that tracks the page position.
+  ///
+  /// Listens to [_pageController] so the indicator interpolates smoothly
+  /// during both swipe gestures and programmatic [animateToPage] calls.
+  Widget _buildSlidingIndicator(double maxWidth) {
+    return AnimatedBuilder(
+      animation: _pageController,
+      builder: (context, _) {
+        final page = _getCurrentPage();
+        final tabWidth = maxWidth * _tabWidth;
+
+        final fromIdx = page.floor().clamp(0, _categories.length - 1);
+        final toIdx = page.ceil().clamp(0, _categories.length - 1);
+        final t = fromIdx == toIdx ? 0.0 : page - fromIdx;
+
+        // Interpolate indicator width between the two tab labels
+        final fromW =
+            _categories[fromIdx].label.length * _tabIndicatorWidthPerChar;
+        final toW =
+            _categories[toIdx].label.length * _tabIndicatorWidthPerChar;
+        final width = fromW + (toW - fromW) * t;
+
+        // Interpolate center position across tab slots
+        final fromCenter = (fromIdx + 0.5) * tabWidth;
+        final toCenter = (toIdx + 0.5) * tabWidth;
+        final left = (fromCenter + (toCenter - fromCenter) * t) - width / 2;
+
+        return Padding(
+          padding: EdgeInsets.only(left: left.clamp(0.0, maxWidth - width)),
+          child: Container(
+            height: _tabIndicatorHeight,
+            width: width,
+            color: AppColors.accent,
+          ),
+        );
+      },
     );
   }
 
@@ -491,7 +551,11 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
     );
   }
 
-  /// Builds the tab item content
+  /// Builds the tab item content.
+  ///
+  /// The orange indicator is no longer rendered here — it lives in the
+  /// [_buildSlidingIndicator] overlay. A fixed-height spacer keeps all
+  /// tabs the same height so the grey border stays aligned.
   Widget _buildTabItem(String label, int index) {
     final isSelected = _tabController.index == index;
 
@@ -504,8 +568,9 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildTabLabel(label, isSelected),
-            const SizedBox(height: _tabIndicatorSpacing),
-            if (isSelected) _buildTabIndicator(label),
+            // Spacer matches old layout: gap + indicator height
+            const SizedBox(
+                height: _tabIndicatorSpacing + _tabIndicatorHeight),
           ],
         ),
       ),
@@ -523,15 +588,6 @@ class _GalleryTabWidgetState extends ConsumerState<GalleryTabWidget>
             isSelected ? _selectedTabFontWeight : _unselectedTabFontWeight,
         color: isSelected ? AppColors.accent : AppColors.textPrimary,
       ),
-    );
-  }
-
-  /// Builds the tab selection indicator
-  Widget _buildTabIndicator(String label) {
-    return Container(
-      height: _tabIndicatorHeight,
-      width: label.length * _tabIndicatorWidthPerChar,
-      color: AppColors.accent,
     );
   }
 

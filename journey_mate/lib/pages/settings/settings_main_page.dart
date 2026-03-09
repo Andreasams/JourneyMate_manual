@@ -188,7 +188,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
               children: [
                 // Page title
                 Text(
-                  td(ref, 'cpiiq0im'), // "Settings & account"
+                  td(ref, 'settings_section_settings_account'), // "Settings & account"
                   style: AppTypography.pageTitle.copyWith(
                     color: AppColors.accent,
                   ),
@@ -198,11 +198,11 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                 // Section 1: My JourneyMate
                 _buildSection(
                   context,
-                  td(ref, '3tlbn2an'), // "My JourneyMate"
+                  td(ref, 'settings_section_my_journeymate'), // "My JourneyMate"
                   [
                     _buildSettingRow(
                       context,
-                      label: td(ref, '290fbi5g'), // "Localization"
+                      label: td(ref, 'feedback_page_settings'), // "Localization"
                       icon: Icons.language_outlined,
                       onTap: () {
                         context.push('/settings/localization');
@@ -216,11 +216,11 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                 // Section 2: Reach out
                 _buildSection(
                   context,
-                  td(ref, 'pb7qrt34'), // "Reach out"
+                  td(ref, 'contact_form_title_main'), // "Reach out"
                   [
                     _buildSettingRow(
                       context,
-                      label: td(ref, '297ogtn9'), // "Are we missing a place?"
+                      label: td(ref, 'missing_place_prompt'), // "Are we missing a place?"
                       icon: Icons.add_location_alt_outlined,
                       onTap: () {
                         context.push('/settings/missing-place');
@@ -229,7 +229,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                     ),
                     _buildSettingRow(
                       context,
-                      label: td(ref, 'uz83tnpj'), // "Share feedback"
+                      label: td(ref, 'share_feedback_label'), // "Share feedback"
                       icon: Icons.feedback_outlined,
                       onTap: () {
                         context.push('/settings/feedback');
@@ -237,7 +237,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                     ),
                     _buildSettingRow(
                       context,
-                      label: td(ref, 'dme8eg1t'), // "Contact us"
+                      label: td(ref, 'contact_form_title_main'), // "Contact us"
                       icon: Icons.mail_outline,
                       onTap: () {
                         context.push('/settings/contact');
@@ -251,11 +251,11 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                 // Section 3: Resources
                 _buildSection(
                   context,
-                  td(ref, 'd952v5y4'), // "Resources"
+                  td(ref, 'settings_section_resources'), // "Resources"
                   [
                     _buildSettingRow(
                       context,
-                      label: td(ref, '2v106a6z'), // "Terms of use"
+                      label: td(ref, 'settings_terms_of_use'), // "Terms of use"
                       icon: Icons.description_outlined,
                       onTap: () {
                         _launchURL(
@@ -265,7 +265,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                     ),
                     _buildSettingRow(
                       context,
-                      label: td(ref, 'gtmo283r'), // "Privacy policy"
+                      label: td(ref, 'settings_privacy_policy'), // "Privacy policy"
                       icon: Icons.privacy_tip_outlined,
                       onTap: () {
                         _launchURL(

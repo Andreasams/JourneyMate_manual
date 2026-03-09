@@ -446,7 +446,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 child: Column(
                   children: [
                     Text(
-                      td(ref, 'z6e1v2g7'), // "Go out, your way."
+                      td(ref, 'welcome_tagline'), // "Go out, your way."
                       textAlign: TextAlign.center,
                       style: AppTypography.sectionHeading.copyWith(
                         fontSize: 20,
@@ -455,7 +455,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      td(ref, '0eehrkgn'), // "Discover restaurants, cafés, and..."
+                      td(ref, 'welcome_subtitle'), // "Discover restaurants, cafés, and..."
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyRegular.copyWith(
                         fontSize: 16,
@@ -498,7 +498,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                       textStyle:
                           WidgetStateProperty.all(AppTypography.button),
                     ),
-                    child: Text(td(ref, 'd2mrwxr4')), // "Continue" / "Fortsæt"
+                    child: Text(td(ref, 'welcome_continue')), // "Continue" / "Fortsæt"
                   ),
                 ),
 
@@ -531,7 +531,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                             WidgetStateProperty.all(AppTypography.button),
                       ),
                       child: Text(
-                          td(ref, 'cuy6esxb')), // "Fortsæt på dansk"
+                          td(ref, 'welcome_continue_danish')), // "Fortsæt på dansk"
                     ),
                   ),
                 ],

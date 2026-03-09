@@ -17,7 +17,7 @@ import '../../widgets/shared/menu_categories_rows.dart';
 import '../../widgets/shared/menu_dishes_list_view.dart';
 import '../../widgets/shared/item_bottom_sheet.dart';
 import '../../widgets/shared/package_bottom_sheet.dart';
-import '../../widgets/shared/category_description_sheet.dart';
+import '../../widgets/shared/description_sheet.dart';
 
 /// Menu Full Page - Dedicated full-screen menu browsing experience
 ///
@@ -198,7 +198,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                td(ref, 'menu_heading'),
+                td(ref, 'tab_menu'),
                 style: AppTypography.sectionHeading,
               ),
               if (lastReviewedAt.isNotEmpty)
@@ -290,7 +290,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
   /// 1. onItemTap → ItemBottomSheet
   /// 2. onPackageTap → PackageBottomSheet
   /// 3. onVisibleCategoryChanged → Update highlighted category chip (with loop prevention!)
-  /// 4. onCategoryDescriptionTap → CategoryDescriptionSheet
+  /// 4. onCategoryDescriptionTap → DescriptionSheet
   /// 5. (No 5th callback - that's onFiltersChanged in UnifiedFiltersWidget above)
   Widget _buildMenuDishesListView(dynamic menuItems, dynamic business) {
     return MenuDishesListView(
@@ -377,10 +377,17 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
 
         await showModalBottomSheet(
           context: context,
-          builder: (context) => CategoryDescriptionSheet(
-            categoryName: categoryData['name'] ?? '',
-            categoryDescription: categoryData['description'] ?? '',
-            scrollController: ScrollController(),
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.4,
+            maxChildSize: 0.9,
+            minChildSize: 0.25,
+            builder: (context, scrollController) => DescriptionSheet(
+              title: categoryData['name'] ?? '',
+              description: categoryData['description'] ?? '',
+              scrollController: scrollController,
+            ),
           ),
         );
       },

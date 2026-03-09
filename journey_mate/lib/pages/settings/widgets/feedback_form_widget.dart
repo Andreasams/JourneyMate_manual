@@ -91,7 +91,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
       if (_messageController.text.trim().isEmpty) {
         _messageError = td(ref, 'feedback_form_error_message_required');
       } else if (_messageController.text.trim().length < 10) {
-        _messageError = td(ref, 'feedback_form_error_message_too_short');
+        _messageError = td(ref, 'contact_form_error_message_too_short');
       }
 
       // Conditional validation: if requireContact is true, name and contact are required
@@ -152,12 +152,12 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         });
       } else {
         setState(() {
-          _submissionError = td(ref, 'feedback_form_error_submission');
+          _submissionError = td(ref, 'contact_form_error_submission');
         });
       }
     } catch (e) {
       setState(() {
-        _submissionError = td(ref, 'feedback_form_error_submission');
+        _submissionError = td(ref, 'contact_form_error_submission');
       });
     } finally {
       setState(() => _isSubmitting = false);
@@ -683,7 +683,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           ),
           SizedBox(height: AppSpacing.sm),
           Text(
-            td(ref, 'feedback_form_success_navigate_away'),
+            td(ref, 'contact_form_success_navigate_away'),
             textAlign: TextAlign.center,
             style: AppTypography.helper.copyWith(color: AppColors.textSecondary),
           ),

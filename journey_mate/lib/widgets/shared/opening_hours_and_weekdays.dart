@@ -76,7 +76,7 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
     'day_sunday_cap',
   ];
 
-  static const String _closedTranslationKey = 'hours_closed';
+  static const String _closedTranslationKey = 'closed';
 
   /// Maps cutoff_type enum values to their translation keys
   static const Map<String, String> _cutoffTypeTranslationKeys = {

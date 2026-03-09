@@ -963,7 +963,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
           GestureDetector(
             onTap: _handleResetTap,
             child: Text(
-              _getUIText('menu_dishes_filter_reset'),
+              _getUIText('search_reset'),
               style: const TextStyle(
                 fontSize: _subHeaderFontSize,
                 fontWeight: _subHeaderFontWeight,
@@ -1037,7 +1037,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          _getUIText('menu_dishes_filter_allergens_title'),
+          _getUIText('info_header_allergens'),
           style: const TextStyle(
             fontSize: _subHeaderFontSize,
             fontWeight: _subHeaderFontWeight,

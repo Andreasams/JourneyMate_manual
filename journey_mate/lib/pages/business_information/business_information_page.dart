@@ -21,7 +21,7 @@ import '../../widgets/shared/business_feature_buttons.dart';
 import '../../widgets/shared/payment_options_widget.dart';
 import '../../widgets/shared/erroneous_info_form_widget.dart';
 import '../../widgets/business_profile/opening_hours_contact_widget.dart';
-import '../../widgets/business_profile/facilities_info_sheet.dart';
+import '../../widgets/shared/description_sheet.dart';
 
 /// Business Information Page - Dedicated full-screen business detail view
 ///
@@ -323,7 +323,7 @@ class _BusinessInformationPageState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          td(ref, 'about_features_amenities_label'), // "Features, services & amenities"
+          td(ref, 'facilities_heading'),
           style: AppTypography.sectionHeading,
         ),
         SizedBox(height: AppSpacing.sm),
@@ -350,16 +350,48 @@ class _BusinessInformationPageState
     String? filterDescription,
   ) async {
     if (context.mounted) {
+      _trackFacilityInfoOpened(filterName, filterDescription);
       await showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) => FacilitiesInfoSheet(
-          filterName: filterName,
-          filterDescription: filterDescription,
+        builder: (context) => DraggableScrollableSheet(
+          initialChildSize: 0.4,
+          maxChildSize: 0.9,
+          minChildSize: 0.25,
+          builder: (context, scrollController) => DescriptionSheet(
+            title: filterName,
+            description: filterDescription,
+            scrollController: scrollController,
+            fallbackDescription: td(ref, 'no_description_available'),
+          ),
         ),
       );
     }
+  }
+
+  /// Track facility info sheet opened (fire-and-forget).
+  void _trackFacilityInfoOpened(
+      String filterName, String? filterDescription) {
+    final analytics = AnalyticsService.instance;
+    ApiService.instance
+        .postAnalytics(
+      eventType: 'facility_info_opened',
+      deviceId: analytics.deviceId ?? '',
+      sessionId: analytics.currentSessionId ?? '',
+      userId: analytics.userId ?? '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {
+        'pageName': 'businessInformation',
+        'facilityName': filterName,
+        'hasDescription':
+            filterDescription != null && filterDescription.isNotEmpty,
+      },
+    )
+        .catchError((e) {
+      debugPrint('Analytics error: $e');
+      return ApiCallResponse.failure('Analytics failed');
+    });
   }
 
   // ============================================================================

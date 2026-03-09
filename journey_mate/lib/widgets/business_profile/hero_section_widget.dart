@@ -145,8 +145,7 @@ class HeroSectionWidget extends ConsumerWidget {
                   if (statusText != null && statusText.isNotEmpty)
                     Text(
                       statusText,
-                      style: AppTypography.chip.copyWith(
-                        fontSize: 13,
+                      style: AppTypography.subtitle.copyWith(
                         color: statusColor ?? AppColors.green,
                       ),
                     ),
@@ -157,8 +156,7 @@ class HeroSectionWidget extends ConsumerWidget {
                     Flexible(
                       child: Text(
                         timingText,
-                        style: AppTypography.viewToggle.copyWith(
-                          fontWeight: FontWeight.w400,
+                        style: AppTypography.subtitle.copyWith(
                           color: AppColors.textMuted,
                         ),
                         maxLines: 1,
@@ -177,8 +175,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       Flexible(
                         child: Text(
                           businessType,
-                          style: AppTypography.viewToggle.copyWith(
-                            fontWeight: FontWeight.w400,
+                          style: AppTypography.subtitle.copyWith(
                             color: AppColors.textMuted,
                           ),
                           maxLines: 1,
@@ -194,8 +191,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       ],
                       Text(
                         priceRangeText,
-                        style: AppTypography.viewToggle.copyWith(
-                          fontWeight: FontWeight.w400,
+                        style: AppTypography.subtitle.copyWith(
                           color: AppColors.textMuted,
                         ),
                       ),
@@ -210,8 +206,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       ],
                       Text(
                         distanceText,
-                        style: AppTypography.viewToggle.copyWith(
-                          fontWeight: FontWeight.w400,
+                        style: AppTypography.subtitle.copyWith(
                           color: AppColors.textMuted,
                         ),
                       ),
@@ -225,8 +220,7 @@ class HeroSectionWidget extends ConsumerWidget {
               if (addressText.isNotEmpty)
                 Text(
                   addressText,
-                  style: AppTypography.viewToggle.copyWith(
-                    fontWeight: FontWeight.w400,
+                  style: AppTypography.subtitle.copyWith(
                     color: AppColors.textPlaceholder,
                   ),
                 ),

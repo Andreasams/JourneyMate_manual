@@ -625,7 +625,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
         SizedBox(width: AppSpacing.xs),
         Text(
-          td(ref, '05aeogb1'), // FlutterFlow legacy key for Copenhagen
+          td(ref, 'city_copenhagen'), // FlutterFlow legacy key for Copenhagen
           style: AppTypography.bodyRegular.copyWith(
             fontSize: 15, // Increased from 13.5 to match JSX
             fontWeight: FontWeight.w600,
@@ -816,7 +816,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   ),
                 ),
                 child: Text(
-                  td(ref, 'view_toggle_map'), // Use translation key
+                  td(ref, 'action_map'), // Use translation key
                   textAlign: TextAlign.center,
                   style: AppTypography.viewToggle.copyWith(
                     fontWeight: _viewMode == _ViewMode.map ? FontWeight.w600 : FontWeight.w500,
