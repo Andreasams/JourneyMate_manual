@@ -107,10 +107,14 @@ lib/pages/settings/
 - `NavBarWidget` — Used on Settings page + Search page
 - `search_results_map_view.dart` — Google Maps map view for search results (commit `c545543`)
 - `map_business_preview_card.dart` — Preview card shown on map marker tap (commit `c545543`)
+- `bottom_sheet_header.dart` — Shared header with swipe bar + action buttons for all bottom sheets (commit `80ae4b6`)
 
 **Utility files in `lib/utils/`:**
 - `map_marker_helper.dart` — Marker icon generation for Google Maps (commit `c545543`)
 - `search_result_helpers.dart` — Shared lat/lng extraction from search result documents (commit `c545543`)
+
+**Utility files in `lib/services/custom_functions/`:**
+- `contact_utils.dart` — `formatPhoneForDial()`, `ensureHttpsUrl()` shared contact formatting (commit `932e351`)
 
 **Pattern established March 2, 2026 (commit 6d5b8d4):** Page-specific widgets live near their pages, not in shared/ directory.
 

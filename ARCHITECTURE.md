@@ -522,6 +522,35 @@ HeroSectionWidget(businessData: businessInfo)
 
 **Reference:** Commit `9e75f0f` — business information page restructured to reuse profile widgets (removed ~130 lines of duplicated logic)
 
+### Shared Utility Functions Pattern
+
+When multiple widgets need the same formatting or validation logic, extract to a shared utility file rather than duplicating across widgets.
+
+**File:** `journey_mate/lib/services/custom_functions/contact_utils.dart`
+
+```dart
+/// Formats a phone number for dialing by stripping non-digits and prepending +45.
+/// "33 11 68 68" → "+4533116868"
+/// "+45 33 11 68 68" → "+4533116868" (no double prefix)
+String formatPhoneForDial(String phone) {
+  final digits = phone.replaceAll(RegExp(r'[^\d]'), '');
+  if (digits.startsWith('45') && digits.length > 8) {
+    return '+$digits';
+  }
+  return '+45$digits';
+}
+
+/// Ensures a URL has an https:// protocol prefix.
+String ensureHttpsUrl(String url) {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return 'https://$url';
+}
+```
+
+**Used by:** `quick_actions_pills_widget.dart`, `opening_hours_contact_widget.dart`, `contact_details_widget.dart`
+
+**Reference:** Commit `932e351` — extracted shared contact utilities from duplicated widget logic
+
 ### Map View with Viewport-Based Geo-Filtering Pattern
 
 Search page supports list/map toggle via page-local `_ViewMode` enum. Each mode uses different parameters:
@@ -580,15 +609,74 @@ Future<void> _openFilterSheet() async {
 Widget _buildSheetHandle() {
   return Container(
     margin: EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.sm),
-    width: 40,
+    width: 80,
     height: 4,
     decoration: BoxDecoration(
-      color: AppColors.border,
-      borderRadius: BorderRadius.circular(2),
+      color: AppColors.textPrimary,
+      borderRadius: BorderRadius.circular(20),
     ),
   );
 }
 ```
+
+### BottomSheetHeader — Shared Bottom Sheet Widget
+
+**File:** `journey_mate/lib/widgets/shared/bottom_sheet_header.dart`
+
+All JourneyMate bottom sheets use a shared `BottomSheetHeader` widget for consistent styling. It renders a swipe bar indicator and optional left/right action buttons, with support for an image background.
+
+**BottomSheetAction data class:**
+```dart
+class BottomSheetAction {
+  const BottomSheetAction({required this.icon, required this.onPressed});
+  final IconData icon;
+  final VoidCallback onPressed;
+}
+```
+
+**Usage — standard close button:**
+```dart
+BottomSheetHeader(
+  rightAction: BottomSheetAction(
+    icon: Icons.close,
+    onPressed: () => Navigator.of(context).pop(),
+  ),
+)
+```
+
+**Usage — image header with back + close:**
+```dart
+BottomSheetHeader(
+  image: CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover),
+  imageHeight: 200.0,
+  leftAction: BottomSheetAction(icon: Icons.arrow_back, onPressed: onBack),
+  rightAction: BottomSheetAction(icon: Icons.close, onPressed: onClose),
+)
+```
+
+**Constants (reusable by consuming widgets):**
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `swipeBarWidth` | 80.0 | Width of the swipe indicator bar |
+| `swipeBarHeight` | 4.0 | Height of the swipe indicator bar |
+| `swipeBarTopPadding` | 8.0 | Top padding above swipe bar |
+| `actionButtonSize` | 40.0 | Size of action buttons (close, back) |
+| `actionButtonPosition` | 12.0 | Offset from edges for action buttons |
+| `actionIconSize` | 24.0 | Icon size within action buttons |
+| `actionButtonBorderRadius` | 20.0 | Corner radius of action buttons |
+| `swipeBarBorderRadius` | 20.0 | Corner radius of swipe indicator |
+
+**Static helper — `sheetDecoration()`:**
+```dart
+// Canonical container decoration for bottom sheets
+Container(
+  decoration: BottomSheetHeader.sheetDecoration(),
+  child: Column(children: [BottomSheetHeader(...), ...]),
+)
+```
+
+**Reference:** Commit `80ae4b6` — extracted shared BottomSheetHeader from duplicated bottom sheet boilerplate
 
 ### Filter Coordination Pattern (Parent Callbacks)
 
