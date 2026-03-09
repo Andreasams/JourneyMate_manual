@@ -75,6 +75,7 @@ ElevatedButton(style: AppButtonStyles.primary, ...)
 | `AppColors.border` | `#e8e8e8` | Default borders |
 | `AppColors.borderSubtle` | `#f0f0f0` | Very light borders |
 | `AppColors.divider` | `#f2f2f2` | Separator lines |
+| `AppColors.dotSeparator` | `#D0D0D0` | Decorative dot separators (hero row: status . price . distance) |
 
 ### Semantic Colors (Aliases)
 
