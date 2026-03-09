@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/locale_provider.dart';
@@ -523,10 +524,10 @@ class _OpeningHoursContactWidgetState
         Text(
           _t('opening_hours_label'),
           style: AppTypography.chip.copyWith(
-            color: const Color(0xFF666666), // Section label gray (not in AppColors)
+            color: AppColors.textSecondary,
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: AppSpacing.msm),
         // Days list
         Column(
           children: List.generate(7, (index) {
@@ -535,7 +536,7 @@ class _OpeningHoursContactWidgetState
               children: [
                 _buildDayRow(index, openingHours),
                 if (!isLastRow)
-                  const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)), // Lighter divider for row separation
+                  const Divider(height: 1, thickness: 1, color: AppColors.border),
               ],
             );
           }),
@@ -560,7 +561,7 @@ class _OpeningHoursContactWidgetState
               style: AppTypography.bodyTiny.copyWith(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF333333),
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -640,7 +641,7 @@ class _OpeningHoursContactWidgetState
           hoursText,
           style: AppTypography.bodyTiny.copyWith(
             fontSize: 13.5,
-            color: const Color(0xFF444444),
+            color: AppColors.textSecondary,
           ),
         ),
         Text(
@@ -746,10 +747,10 @@ class _OpeningHoursContactWidgetState
         Text(
           _t('contact_label'),
           style: AppTypography.chip.copyWith(
-            color: const Color(0xFF666666), // Section label gray (not in AppColors)
+            color: AppColors.textSecondary,
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: AppSpacing.msm),
         // Contact fields with dividers
         Column(
           children: List.generate(contactFields.length, (index) {
@@ -758,7 +759,7 @@ class _OpeningHoursContactWidgetState
               children: [
                 contactFields[index],
                 if (!isLastRow)
-                  const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)), // Lighter divider for row separation
+                  const Divider(height: 1, thickness: 1, color: AppColors.border),
               ],
             );
           }),
@@ -776,7 +777,7 @@ class _OpeningHoursContactWidgetState
     VoidCallback? onLongPress,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -784,7 +785,7 @@ class _OpeningHoursContactWidgetState
             label,
             style: AppTypography.bodyRegular.copyWith(
               fontSize: 14,
-              color: const Color(0xFF555555),
+              color: AppColors.textSecondary,
             ),
           ),
           GestureDetector(
