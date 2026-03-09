@@ -7,6 +7,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/locale_provider.dart';
+import '../../services/custom_functions/contact_utils.dart';
 import '../../services/translation_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
@@ -286,8 +287,7 @@ class _OpeningHoursContactWidgetState
   Future<void> _handlePhoneTap(String phone) async {
     _trackContactLinkTap('phone');
 
-    final cleanedPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
-    final uri = Uri(scheme: 'tel', path: '+45$cleanedPhone');
+    final uri = Uri(scheme: 'tel', path: formatPhoneForDial(phone));
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -304,7 +304,7 @@ class _OpeningHoursContactWidgetState
   }
 
   Future<void> _handlePhoneLongPress(String phone) async {
-    await Clipboard.setData(ClipboardData(text: '+45$phone'));
+    await Clipboard.setData(ClipboardData(text: formatPhoneForDial(phone)));
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -319,12 +319,7 @@ class _OpeningHoursContactWidgetState
   Future<void> _handleLinkTap(String type, String url) async {
     _trackContactLinkTap(type);
 
-    String fullUrl = url;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      fullUrl = 'https://$url';
-    }
-
-    final uri = Uri.parse(fullUrl);
+    final uri = Uri.parse(ensureHttpsUrl(url));
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
@@ -674,8 +669,7 @@ class _OpeningHoursContactWidgetState
     final contactFields = <Widget>[];
 
     if (phone != null && phone.isNotEmpty) {
-      // Format phone with +45 prefix and preserve spacing
-      final formattedPhone = '+45 ${phone.replaceAll(RegExp(r'\s+'), ' ')}';
+      final formattedPhone = formatPhoneForDial(phone);
       contactFields.add(_buildContactRow(
         label: _t('phone_number_label'),
         value: formattedPhone,
