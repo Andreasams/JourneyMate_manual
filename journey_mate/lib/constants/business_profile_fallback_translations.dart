@@ -41,7 +41,7 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
 
     // Gallery (keys match code: gallery_food, not gallery_tab_food)
     'gallery_heading': 'Gallery',
-    'gallery_view_all': 'View all {count} photos',
+    'gallery_view_all': 'View all images',
     'gallery_food': 'Food',
     'gallery_menu': 'Menu',
     'gallery_interior': 'Interior',
@@ -58,7 +58,7 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'menu_show_less': 'Show less',
     'menu_view_full_page': 'View full menu',
     'menu_load_error': 'Could not load the menu. Please try again.',
-    'menu_last_updated_prefix': 'Last updated',
+    'menu_last_updated_prefix': 'Last brought up to date on',
     'menu_hide_filters': 'Hide filters',
     'menu_show_filters': 'Show filters',
     'menu_filter_summary': 'Showing {count} items',
@@ -93,7 +93,7 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     // Page-level
     'error_loading_business': 'Could not load business profile',
     'about_payment_options_label': 'Payment Options',
-    'about_description_label': 'About',
+    'about_description_label': 'Description',
     'about_report_incorrect_info': 'Report incorrect information',
     'retry': 'Retry',
     'share_business_text': 'Check out {name} on JourneyMate!',
