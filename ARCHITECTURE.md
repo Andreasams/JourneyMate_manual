@@ -17,24 +17,24 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - **Need a specific section?** Use alphabetical index below for direct access
 
 **Section Index (Alphabetical):**
-- [Analytics Architecture](#analytics-architecture) (lines 1617-1691) — Fire-and-forget, ActivityScope, 47 event types
-- [API Service Pattern](#api-service-pattern) (lines 1219-1322) — Singleton, cache, BuildShip integration, graceful degradation
-- [Code Quality Standards](#code-quality-standards) (lines 1694-1734) — Flutter analyze, design tokens, algorithms
-- [Code Review Checklist](#code-review-checklist) (lines 1816-1910) — Pre-commit checklist (⚠️ use before every commit)
-- [Common Pitfalls](#common-pitfalls) (lines 1913-3178) — 32 anti-patterns with fixes (⚠️ read before first commit)
-- [Design Token System](#design-token-system) (lines 1604-1615) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 3182-3201) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 3232-3265) — CityID, favorites, filters, translations, engagement
-- [Location Permission Pattern](#location-permission-pattern) (lines 1405-1483) — Three methods, when to use what, Settings fallback
+- [Analytics Architecture](#analytics-architecture) (lines 1764-1838) — Fire-and-forget, ActivityScope, 47 event types
+- [API Service Pattern](#api-service-pattern) (lines 1307-1441) — Singleton, cache, BuildShip integration, graceful degradation, BusinessCache
+- [Code Quality Standards](#code-quality-standards) (lines 1841-1960) — Flutter analyze, design tokens, algorithms
+- [Code Review Checklist](#code-review-checklist) (lines 1963-2057) — Pre-commit checklist (⚠️ use before every commit)
+- [Common Pitfalls](#common-pitfalls) (lines 2060-3326) — 32 anti-patterns with fixes (⚠️ read before first commit)
+- [Design Token System](#design-token-system) (lines 1751-1761) — Quick lookup tables for colors, spacing, typography
+- [Documentation Philosophy](#documentation-philosophy) (lines 3329-3342) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 3372-3405) — CityID, favorites, filters, translations, engagement
+- [Location Permission Pattern](#location-permission-pattern) (lines 1524-1602) — Three methods, when to use what, Settings fallback
 - [Philosophy](#philosophy) (lines 39-81) — Five core principles (design tokens, state, translations, analytics, widgets)
-- [Pre-Loading Architecture](#pre-loading-architecture) (lines 1325-1402) — Safe async pattern for instant page loads
+- [Pre-Loading Architecture](#pre-loading-architecture) (lines 1444-1521) — Safe async pattern for instant page loads
 - [Project Structure](#project-structure) (lines 86-151) — File organization, 12 pages, 34 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 3205-3229) — Critical startup sequence in main.dart
-- [References](#references) (lines 3268-3282) — Links to other documentation files
+- [Provider Initialization Order](#provider-initialization-order) (lines 3345-3369) — Critical startup sequence in main.dart
+- [References](#references) (lines 3408-3416) — Links to other documentation files
 - [State Management](#state-management) (lines 154-351) — When to use what, provider catalog, Riverpod 3.x patterns, ref.listen
-- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 871-1216) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
-- [Translation System](#translation-system) (lines 1486-1629) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages
-- [Widget Patterns](#widget-patterns) (lines 354-870) — Self-contained widgets, page wrappers, bottom sheets, cross-page reuse, map view
+- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 959-1304) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
+- [Translation System](#translation-system) (lines 1605-1748) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages
+- [Widget Patterns](#widget-patterns) (lines 354-956) — Self-contained widgets, page wrappers, bottom sheets, BottomSheetHeader, contact utils, cross-page reuse, map view
 
 ---
 
