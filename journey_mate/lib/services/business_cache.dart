@@ -1,15 +1,25 @@
-/// Lightweight in-memory cache for business preview data
-/// Used to show instant preview when navigating from search results
+/// Lightweight in-memory LRU cache for business preview data.
+/// Used to show instant preview when navigating from search results.
+///
+/// Eviction: When the cache exceeds [_maxEntries], the oldest entry
+/// (by insertion order) is removed. Accessing an entry via
+/// [getBusinessPreview] promotes it to most-recent.
 class BusinessCache {
   static final BusinessCache instance = BusinessCache._internal();
   BusinessCache._internal();
 
+  static const int _maxEntries = 50;
+
+  /// LinkedHashMap preserves insertion order for LRU eviction.
   final Map<int, Map<String, dynamic>> _cache = {};
 
   /// Cache preview data from search results for instant display
   void cacheBusinessPreview(Map<String, dynamic> searchResult) {
     final id = searchResult['business_id'] as int?;
     if (id == null) return;
+
+    // Remove first so re-insert moves to end (most-recent)
+    _cache.remove(id);
 
     _cache[id] = {
       'business_id': id,
@@ -29,11 +39,21 @@ class BusinessCache {
       'tags': searchResult['tags'],
       'cached_at': DateTime.now().toIso8601String(),
     };
+
+    // Evict oldest entry if over limit
+    if (_cache.length > _maxEntries) {
+      _cache.remove(_cache.keys.first);
+    }
   }
 
-  /// Get cached preview data for a business
+  /// Get cached preview data for a business.
+  /// Promotes the entry to most-recent (LRU touch).
   Map<String, dynamic>? getBusinessPreview(int id) {
-    return _cache[id];
+    final entry = _cache.remove(id);
+    if (entry != null) {
+      _cache[id] = entry; // Re-insert at end
+    }
+    return entry;
   }
 
   /// Clear all cached preview data

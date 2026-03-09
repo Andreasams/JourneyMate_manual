@@ -350,15 +350,15 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             delegate: SliverChildListDelegate([
               // 1. Hero Section (logo, name, cuisine, status, address)
               const HeroSectionWidget(),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
 
               // 2. Quick Actions Pills (Call, Website, Booking, Map)
               const QuickActionsPillsWidget(),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
 
               // 3. Match Card (if search filters are active)
               const MatchCardWidget(),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
 
               // 4. Opening Hours & Contact
               const OpeningHoursContactWidget(),
@@ -405,7 +405,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // 11. Report link
         SliverToBoxAdapter(child: _buildReportLink()),
 
-        SliverToBoxAdapter(child: SizedBox(height: AppSpacing.huge)),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.huge)),
       ],
     );
   }
