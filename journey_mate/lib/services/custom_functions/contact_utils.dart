@@ -1,5 +1,5 @@
-/// Shared contact formatting utilities
-/// Used by quick_actions_pills_widget and opening_hours_contact_widget
+// Shared contact formatting utilities.
+// Used by quick_actions_pills_widget and opening_hours_contact_widget.
 
 /// Formats a phone number for dialing by stripping non-digits and prepending +45.
 ///

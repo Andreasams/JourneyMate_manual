@@ -1,7 +1,30 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'package:journey_mate/providers/app_providers.dart';
+import 'package:journey_mate/providers/provider_state_classes.dart';
+
+/// Helper: initialize a menu session on the analytics notifier.
+/// Replaces the deleted startMenuSession() for test setup.
+void _initMenuSession(ProviderContainer container) {
+  final sessionId = const Uuid().v4();
+  final notifier = container.read(analyticsProvider.notifier);
+  final current = container.read(analyticsProvider);
+  // Use copyWith to set menuSessionData directly
+  notifier.state = current.copyWith(
+    menuSessionData: MenuSessionData.initial(sessionId),
+  );
+}
+
+/// Helper: clear menu session on the analytics notifier.
+/// Replaces the deleted endMenuSession() for test setup.
+void _clearMenuSession(ProviderContainer container) {
+  final notifier = container.read(analyticsProvider.notifier);
+  notifier.state = container.read(analyticsProvider).copyWithNullable(
+    clearMenuSession: true,
+  );
+}
 
 void main() {
   group('AnalyticsProvider - Basic Analytics', () {
@@ -65,7 +88,7 @@ void main() {
     test('endSession() clears session data and menuSessionData', () async {
       await container.read(analyticsProvider.notifier).initialize();
       container.read(analyticsProvider.notifier).startSession();
-      container.read(analyticsProvider.notifier).startMenuSession(123);
+      _initMenuSession(container);
 
       // Verify session and menu session are active
       var state = container.read(analyticsProvider);
@@ -94,8 +117,8 @@ void main() {
       container.dispose();
     });
 
-    test('startMenuSession() creates MenuSessionData with initial values', () {
-      container.read(analyticsProvider.notifier).startMenuSession(456);
+    test('menu session initialization creates MenuSessionData with initial values', () {
+      _initMenuSession(container);
 
       final state = container.read(analyticsProvider);
       final menuData = state.menuSessionData!;
@@ -113,16 +136,16 @@ void main() {
       expect(menuData.filterResultHistory, isEmpty);
     });
 
-    test('endMenuSession() clears menuSessionData', () {
-      container.read(analyticsProvider.notifier).startMenuSession(789);
+    test('clearing menu session nullifies menuSessionData', () {
+      _initMenuSession(container);
       expect(container.read(analyticsProvider).menuSessionData, isNotNull);
 
-      container.read(analyticsProvider.notifier).endMenuSession(789);
+      _clearMenuSession(container);
       expect(container.read(analyticsProvider).menuSessionData, null);
     });
 
     test('incrementItemClick() increases count', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       container.read(analyticsProvider.notifier).incrementItemClick();
       container.read(analyticsProvider.notifier).incrementItemClick();
@@ -133,7 +156,7 @@ void main() {
     });
 
     test('incrementPackageClick() increases count', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       container.read(analyticsProvider.notifier).incrementPackageClick();
       container.read(analyticsProvider.notifier).incrementPackageClick();
@@ -143,7 +166,7 @@ void main() {
     });
 
     test('recordCategoryViewed() adds unique categories only', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       container.read(analyticsProvider.notifier).recordCategoryViewed(1);
       container.read(analyticsProvider.notifier).recordCategoryViewed(2);
@@ -155,7 +178,7 @@ void main() {
     });
 
     test('updateDeepestScroll() only updates if higher', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       container.read(analyticsProvider.notifier).updateDeepestScroll(25);
       expect(
@@ -177,7 +200,7 @@ void main() {
     });
 
     test('incrementFilterReset() increases count', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       container.read(analyticsProvider.notifier).incrementFilterReset();
       container.read(analyticsProvider.notifier).incrementFilterReset();
@@ -187,7 +210,7 @@ void main() {
     });
 
     test('updateMenuSessionFilterMetrics() tracks interactions', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(5, true);
 
@@ -197,7 +220,7 @@ void main() {
     });
 
     test('updateMenuSessionFilterMetrics() tracks zero results', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(0, true);
       container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(10, true);
@@ -209,7 +232,7 @@ void main() {
     });
 
     test('updateMenuSessionFilterMetrics() tracks low results (1-2)', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(1, true);
       container.read(analyticsProvider.notifier).updateMenuSessionFilterMetrics(2, true);
@@ -222,7 +245,7 @@ void main() {
     });
 
     test('updateMenuSessionFilterMetrics() sets everHadFiltersActive', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       expect(
         container.read(analyticsProvider).menuSessionData!.everHadFiltersActive,
@@ -252,7 +275,7 @@ void main() {
     });
 
     test('all 11 fields are tracked correctly in a full session', () {
-      container.read(analyticsProvider.notifier).startMenuSession(200);
+      _initMenuSession(container);
 
       // Track various events
       container.read(analyticsProvider.notifier).incrementItemClick();
@@ -322,7 +345,7 @@ void main() {
     });
 
     test('MenuSessionData is immutable', () {
-      container.read(analyticsProvider.notifier).startMenuSession(100);
+      _initMenuSession(container);
 
       final menuData1 = container.read(analyticsProvider).menuSessionData!;
       container.read(analyticsProvider.notifier).incrementItemClick();
