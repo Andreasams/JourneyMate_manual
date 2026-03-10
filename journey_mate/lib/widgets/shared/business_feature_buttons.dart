@@ -542,25 +542,25 @@ class _BusinessFeatureButtonsState
   // FILTER DESCRIPTION LOGIC
   // ========================================
 
-  /// Gets filter description from filterDescriptions data.
+  /// Gets filter description from business profile's filters array.
+  /// Descriptions are served by /getBusinessProfile, not the global /filters endpoint.
   String? _getFilterDescription(int filterId) {
     try {
-      final filterState = ref.watch(filterProvider);
+      final businessState = ref.watch(businessProvider);
+      final filters = businessState.currentBusiness?['filters'] as List?;
+      if (filters == null) return null;
 
-      return filterState.when(
-        data: (state) {
-          final filterData = state.filterLookupMap[filterId];
-          if (filterData == null) return null;
-
-          final description = filterData['description'] as String?;
+      for (final filter in filters) {
+        if (filter is Map<String, dynamic> &&
+            filter['filter_id'] == filterId) {
+          final description = filter['filter_description'] as String?;
           if (description != null && description.trim().isNotEmpty) {
             return description;
           }
           return null;
-        },
-        loading: () => null,
-        error: (e, _) => null,
-      );
+        }
+      }
+      return null;
     } catch (e) {
       debugPrint('Error getting filter description: $e');
       return null;
