@@ -1498,7 +1498,7 @@ class _NoDishesMessage extends StatelessWidget {
             child: Text(
               message,
               style: AppTypography.bodyLg.copyWith(
-                color: AppColors.textMuted,
+                color: AppColors.textSecondary,
               ),
             ),
           ),
@@ -1576,9 +1576,7 @@ class _CategoryHeader extends StatelessWidget {
     }
 
     final availableWidth = _getAvailableDescriptionWidth(context);
-    final descriptionStyle = AppTypography.bodySm.copyWith(
-      fontWeight: FontWeight.w300,
-    );
+    final descriptionStyle = AppTypography.bodySm;
 
     return _willTextOverflow(
       text: categoryDescription!,
@@ -1606,10 +1604,7 @@ class _CategoryHeader extends StatelessWidget {
           // Category name (always shown)
           Text(
             categoryName,
-            style: AppTypography.h2.copyWith(
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
+            style: AppTypography.h4,
           ),
 
           // Description row (only shown when description exists)
@@ -1629,8 +1624,7 @@ class _CategoryHeader extends StatelessWidget {
                         child: Text(
                           categoryDescription!,
                           style: AppTypography.bodySm.copyWith(
-                            fontWeight: FontWeight.w300,
-                            color: Colors.black54,
+                            color: AppColors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1972,9 +1966,7 @@ class _MenuItem extends ConsumerWidget {
                         children: [
                           Text(
                             itemTitle,
-                            style: AppTypography.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w400,
-                            ),
+                            style: AppTypography.bodyMedium,
                             maxLines: titleMaxLines,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1982,8 +1974,7 @@ class _MenuItem extends ConsumerWidget {
                             const SizedBox(height: _titleDescriptionSpacing),
                             Text(
                               description,
-                              style: AppTypography.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w300,
+                              style: AppTypography.body.copyWith(
                                 color: AppColors.textSecondary,
                               ),
                               maxLines: _descriptionMaxLines,
@@ -1995,8 +1986,8 @@ class _MenuItem extends ConsumerWidget {
                             opacity: _isZeroPrice(displayPrice) ? 0.0 : 1.0,
                             child: Text(
                               _isZeroPrice(displayPrice) ? '0 kr' : displayPrice,
-                              style: AppTypography.price.copyWith(
-                                fontWeight: FontWeight.w400,
+                              style: AppTypography.bodySm.copyWith(
+                                fontWeight: FontWeight.w500,
                                 color: AppColors.accent,
                               ),
                             ),

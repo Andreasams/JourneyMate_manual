@@ -350,7 +350,7 @@ class _OpeningHoursContactWidgetState
               children: [
                 Text(
                   td(ref, 'opening_hours_and_contact'),
-                  style: AppTypography.h2,
+                  style: AppTypography.h4,
                 ),
                 if (widget.showTodayPreview && !_isExpanded)
                   Padding(
@@ -402,8 +402,6 @@ class _OpeningHoursContactWidgetState
           children: [
             _buildHoursSection(openingHours),
             const SizedBox(height: 16),
-            const Divider(height: 1, thickness: 1, color: AppColors.border),
-            const SizedBox(height: 16),
             _buildContactSection(business),
           ],
         ),
@@ -419,21 +417,17 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'opening_hours_label'),
-          style: AppTypography.bodyLgMedium,
+          style: AppTypography.h6,
         ),
         SizedBox(height: AppSpacing.msm),
         // Days list
         Column(
-          children: List.generate(7, (index) {
-            final isLastRow = index == 6;
-            return Column(
+          children: List.generate(7, (index) => Column(
               children: [
                 _buildDayRow(index, openingHours),
-                if (!isLastRow)
-                  const Divider(height: 1, thickness: 1, color: AppColors.border),
+                const Divider(height: 1, thickness: 1, color: AppColors.border),
               ],
-            );
-          }),
+            )),
         ),
       ],
     );
@@ -545,7 +539,7 @@ class _OpeningHoursContactWidgetState
         ),
         Text(
           cutoffText,
-          style: AppTypography.bodyMedium.copyWith(
+          style: AppTypography.bodyHeavy.copyWith(
             color: AppColors.textTertiary,
           ),
         ),
@@ -644,7 +638,7 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'contact_label'),
-          style: AppTypography.bodyLgMedium,
+          style: AppTypography.h6,
         ),
         SizedBox(height: AppSpacing.msm),
         // Contact fields with dividers
@@ -686,7 +680,7 @@ class _OpeningHoursContactWidgetState
             onLongPress: onLongPress,
             child: Text(
               value,
-              style: AppTypography.body.copyWith(
+              style: AppTypography.bodyHeavy.copyWith(
                 color: valueColor,
               ),
             ),

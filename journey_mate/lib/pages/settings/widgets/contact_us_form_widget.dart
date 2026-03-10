@@ -156,7 +156,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           // Main title
           Text(
             td(ref, 'contact_form_title_main'),
-            style: AppTypography.h2,
+            style: AppTypography.h4,
           ),
           SizedBox(height: AppSpacing.sm),
 
@@ -293,10 +293,12 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           controller: controller,
           onChanged: (_) => onChanged(),
           maxLines: maxLines,
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
+            hintStyle: AppTypography.body.copyWith(
+              color: AppColors.textSecondary.withValues(alpha: 0.7),
+            ),
             filled: true,
             fillColor: AppColors.bgInput,
             contentPadding: EdgeInsets.all(maxLines > 1 ? 12 : 16),

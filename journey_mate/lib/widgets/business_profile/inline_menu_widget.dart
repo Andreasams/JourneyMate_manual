@@ -40,7 +40,7 @@ class InlineMenuWidget extends ConsumerWidget {
 
           // ── "View on full page" row ──────────────────────────────────────
           Padding(
-            padding: EdgeInsets.only(top: 12),
+            padding: EdgeInsets.only(top: AppSpacing.lg),
             child: GestureDetector(
               onTap: () => context.push('/business/$businessId/menu'),
               child: Row(
@@ -50,9 +50,7 @@ class InlineMenuWidget extends ConsumerWidget {
                     padding: EdgeInsets.only(bottom: 4),
                     child: Text(
                       td(ref, 'menu_view_full_page'),
-                      style: AppTypography.bodyLgMedium.copyWith(
-                        fontWeight: FontWeight.normal,
-                      ),
+                      style: AppTypography.bodyLgMedium,
                     ),
                   ),
                   Padding(

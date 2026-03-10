@@ -1,16 +1,21 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_radius.dart';
 import '../../providers/app_providers.dart';
 import '../../services/translation_service.dart';
 import '../../services/custom_functions/price_formatter.dart';
 import '../../services/custom_functions/dietary_formatter.dart';
 import '../../services/custom_functions/allergen_formatter.dart';
+import '../../services/custom_functions/menu_language_currency_utils.dart';
 import 'bottom_sheet_header.dart';
+import 'information_source_section.dart';
 import 'package_courses_display.dart';
 
 /// A bottom sheet with nested navigation for viewing package details and menu items.
@@ -19,11 +24,16 @@ import 'package_courses_display.dart';
 /// - Two-level navigation: Package view → Item detail view
 /// - Platform-specific transitions (iOS swipe-back, Android slide)
 /// - Image display with fallback states
-/// - Currency conversion support
+/// - Currency conversion support with inline exchange rate fetching (self-contained)
+/// - Language switching with API data fetching and caching (self-contained)
+/// - Three-dot menu for language/currency options
 /// - Expandable information source section
 /// - Premium upcharge display
 /// - Allergen and dietary preference information
 /// - Localized UI text via translation system
+///
+/// Self-contained state management: All language and currency switching occurs
+/// within local state and does NOT propagate changes to parent context.
 class PackageBottomSheet extends ConsumerStatefulWidget {
   const PackageBottomSheet({
     super.key,
@@ -35,6 +45,8 @@ class PackageBottomSheet extends ConsumerStatefulWidget {
     required this.originalCurrencyCode,
     required this.exchangeRate,
     required this.businessName,
+    required this.currentLanguage,
+    required this.translationsCache,
   });
 
   final double? width;
@@ -45,6 +57,8 @@ class PackageBottomSheet extends ConsumerStatefulWidget {
   final String originalCurrencyCode;
   final double exchangeRate;
   final String businessName;
+  final String currentLanguage;
+  final dynamic translationsCache;
 
   @override
   ConsumerState<PackageBottomSheet> createState() =>
@@ -56,7 +70,8 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
   /// STATE & CONSTANTS
   /// =========================================================================
 
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  /// Navigator key — reassigned on language/currency switch to force rebuild
+  GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   Map<String, dynamic>? _packageData;
   Map<int, Map<String, dynamic>> _menuItemMap = {};
@@ -87,6 +102,83 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
   static const String _errorPackageNotFoundKey = 'error_package_not_found';
 
   /// =========================================================================
+  /// STATE - LANGUAGE SWITCHING
+  /// =========================================================================
+
+  /// The language code of the data currently being displayed
+  late String _currentlyDisplayedLanguage;
+
+  /// Whether currently loading language or currency switch
+  bool _isLoadingLanguage = false;
+
+  /// Cache of fetched language data to avoid re-fetching
+  /// Key: language code, Value: API response from /menupackage
+  late Map<String, dynamic> _languageDataCache;
+
+  /// =========================================================================
+  /// STATE - CURRENCY SWITCHING (SELF-CONTAINED)
+  /// =========================================================================
+
+  /// Override currency selected within this sheet (null = use widget prop)
+  String? _overrideCurrency;
+
+  /// Override exchange rate fetched within this sheet (null = use widget prop)
+  double? _overrideExchangeRate;
+
+  /// Effective currency: local override takes precedence over widget prop
+  String get _effectiveCurrency => _overrideCurrency ?? widget.chosenCurrency;
+
+  /// Effective exchange rate: local override takes precedence over widget prop
+  double get _effectiveExchangeRate =>
+      _overrideExchangeRate ?? widget.exchangeRate;
+
+  /// =========================================================================
+  /// EFFECTIVE DATA GETTERS
+  /// =========================================================================
+
+  /// Gets the effective normalized menu data (original or synthetic from API)
+  dynamic get _effectiveNormalizedMenuData {
+    if (_currentlyDisplayedLanguage == widget.currentLanguage) {
+      return widget.normalizedMenuData;
+    }
+    final cached = _languageDataCache[_currentlyDisplayedLanguage];
+    if (cached != null) {
+      return _buildSyntheticMenuData(cached);
+    }
+    return widget.normalizedMenuData;
+  }
+
+  /// Gets the effective package data for the current language
+  Map<String, dynamic>? get _effectivePackageData {
+    if (_currentlyDisplayedLanguage == widget.currentLanguage) {
+      return _packageData;
+    }
+    final cached = _languageDataCache[_currentlyDisplayedLanguage];
+    if (cached != null) {
+      // The API response IS the package data
+      return cached;
+    }
+    return _packageData;
+  }
+
+  /// Gets the effective menu item map for the current language
+  Map<int, Map<String, dynamic>> get _effectiveMenuItemMap {
+    if (_currentlyDisplayedLanguage == widget.currentLanguage) {
+      return _menuItemMap;
+    }
+    final cached = _languageDataCache[_currentlyDisplayedLanguage];
+    if (cached != null) {
+      final menuItems = cached[_menuItemsKey] as List<dynamic>? ?? [];
+      return Map.fromEntries(
+        menuItems.whereType<Map<String, dynamic>>().map(
+              (item) => MapEntry(item[_menuItemIdKey] as int, item),
+            ),
+      );
+    }
+    return _menuItemMap;
+  }
+
+  /// =========================================================================
   /// LIFECYCLE METHODS
   /// =========================================================================
 
@@ -94,6 +186,16 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
   void initState() {
     super.initState();
     _extractPackageData();
+    _initializeLanguageCurrencyState();
+  }
+
+  /// Initializes language and currency state
+  void _initializeLanguageCurrencyState() {
+    _currentlyDisplayedLanguage = widget.currentLanguage;
+    _languageDataCache = {};
+    _isLoadingLanguage = false;
+    _overrideCurrency = null;
+    _overrideExchangeRate = null;
   }
 
   /// =========================================================================
@@ -136,6 +238,341 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
     if (category is! Map<String, dynamic>) return false;
     return category[_categoryTypeKey] == _menuPackageType &&
         category[_packageIdKey] == widget.packageId;
+  }
+
+  /// =========================================================================
+  /// SYNTHETIC DATA BUILDERS
+  /// =========================================================================
+
+  /// Builds synthetic normalizedMenuData from a /menupackage API response.
+  /// Injects `category_type: 'menu_package'` so PackageCoursesDisplay
+  /// can find the package via its existing _findSelectedPackage() logic.
+  Map<String, dynamic> _buildSyntheticMenuData(Map<String, dynamic> apiResponse) {
+    return {
+      'menu_items': apiResponse['menu_items'] ?? [],
+      'categories': [
+        {...apiResponse, 'category_type': 'menu_package'},
+      ],
+    };
+  }
+
+  /// =========================================================================
+  /// TRANSLATION HELPERS
+  /// =========================================================================
+
+  /// Gets human-readable language name from language code
+  String _getLanguageName(String langCode) {
+    final translationKey = 'lang_name_$langCode';
+    return td(ref, translationKey);
+  }
+
+  /// Gets display name for currency (e.g., "Danish Krone (kr.)")
+  String _getCurrencyDisplayName(String currencyCode) {
+    return formatCurrencyDisplayName(
+      widget.currentLanguage,
+      currencyCode,
+      widget.translationsCache,
+    );
+  }
+
+  /// Gets the list of authentic languages from the original package data
+  /// or from the first menu item in the original normalized data
+  List<String> _getAuthenticLanguages() {
+    // Try package data first
+    if (_packageData is Map) {
+      final authLangs = _packageData!['authentic_languages'];
+      if (authLangs is List) {
+        return authLangs.whereType<String>().toList();
+      }
+    }
+
+    // Fallback: check first menu item in original normalized data
+    if (widget.normalizedMenuData is Map<String, dynamic>) {
+      final normalizedMap = widget.normalizedMenuData as Map<String, dynamic>;
+      final menuItems = normalizedMap[_menuItemsKey] as List<dynamic>? ?? [];
+      if (menuItems.isNotEmpty && menuItems.first is Map) {
+        final authLangs = (menuItems.first as Map)['authentic_languages'];
+        if (authLangs is List) {
+          return authLangs.whereType<String>().toList();
+        }
+      }
+    }
+
+    return [];
+  }
+
+  /// =========================================================================
+  /// MENU LOGIC - COMBINED LANGUAGE AND CURRENCY
+  /// =========================================================================
+
+  /// Computes which menu options should be shown (languages + currencies)
+  List<MenuOption> _computeMenuOptions() {
+    final options = <MenuOption>[];
+    options.addAll(computeLanguageOptions(
+      appLanguage: widget.currentLanguage,
+      displayedLanguage: _currentlyDisplayedLanguage,
+      authenticLanguages: _getAuthenticLanguages(),
+      getLanguageName: _getLanguageName,
+    ));
+    options.addAll(computeCurrencyOptions(
+      currentCurrency: _effectiveCurrency,
+      appLanguage: widget.currentLanguage,
+      getCurrencyDisplayName: _getCurrencyDisplayName,
+    ));
+    return options;
+  }
+
+  /// =========================================================================
+  /// MENU HANDLERS
+  /// =========================================================================
+
+  /// Shows the action menu with available options
+  void _showActionMenu() {
+    final menuOptions = _computeMenuOptions();
+
+    if (menuOptions.isEmpty) return;
+
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        MediaQuery.of(context).size.width - 60,
+        60,
+        12,
+        0,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.input),
+      ),
+      color: AppColors.bgInput,
+      elevation: 8,
+      items: _buildMenuItemsWithDividers(menuOptions),
+    ).then((value) {
+      if (value != null) {
+        _handleMenuSelection(value);
+      }
+    });
+  }
+
+  /// Builds menu items with dividers between each option
+  List<PopupMenuEntry<String>> _buildMenuItemsWithDividers(
+      List<MenuOption> options) {
+    final items = <PopupMenuEntry<String>>[];
+
+    for (int i = 0; i < options.length; i++) {
+      items.add(_buildMenuItem(options[i]));
+
+      if (i < options.length - 1) {
+        items.add(const PopupMenuDivider(height: 1));
+      }
+    }
+
+    return items;
+  }
+
+  /// Builds a menu item (language or currency)
+  PopupMenuItem<String> _buildMenuItem(MenuOption option) {
+    return PopupMenuItem<String>(
+      value: '${option.type}:${option.code}',
+      enabled: !_isLoadingLanguage,
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: _isLoadingLanguage
+          ? _buildLoadingMenuItem()
+          : _buildMenuItemContent(option),
+    );
+  }
+
+  /// Builds the loading state for menu items
+  Widget _buildLoadingMenuItem() {
+    return Row(
+      children: [
+        SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Colors.black54,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          'Loading...',
+          style: AppTypography.body.copyWith(
+            color: Colors.black54,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Builds the content of a menu item
+  Widget _buildMenuItemContent(MenuOption option) {
+    final String displayText;
+
+    if (option.type == 'language') {
+      final template = td(ref, 'menu_view_dish_in_param');
+      displayText = template.replaceAll('{language}', option.displayName);
+    } else {
+      final template = td(ref, 'menu_view_price_in_param');
+      displayText = template.replaceAll('{currency}', option.displayName);
+    }
+
+    final finalText = displayText.isEmpty
+        ? (option.type == 'language'
+            ? 'View dish in ${option.displayName}'
+            : 'View price in ${option.displayName}')
+        : displayText;
+
+    return Text(
+      finalText,
+      style: AppTypography.body,
+    );
+  }
+
+  /// Handles menu selection (language or currency)
+  Future<void> _handleMenuSelection(String selection) async {
+    final parts = selection.split(':');
+    if (parts.length != 2) return;
+
+    final type = parts[0];
+    final code = parts[1];
+
+    if (type == 'language') {
+      await _handleLanguageSwitch(code);
+    } else if (type == 'currency') {
+      await _handleCurrencySwitch(code);
+    }
+  }
+
+  /// Handles switching to a different language
+  Future<void> _handleLanguageSwitch(String targetLanguageCode) async {
+    // Switching back to app language → use original widget data
+    if (targetLanguageCode == widget.currentLanguage) {
+      setState(() {
+        _currentlyDisplayedLanguage = targetLanguageCode;
+        _navigatorKey = GlobalKey<NavigatorState>();
+      });
+      return;
+    }
+
+    // Check if we already have this language cached
+    if (_languageDataCache.containsKey(targetLanguageCode)) {
+      setState(() {
+        _currentlyDisplayedLanguage = targetLanguageCode;
+        _navigatorKey = GlobalKey<NavigatorState>();
+      });
+      return;
+    }
+
+    // Show loading state
+    setState(() {
+      _isLoadingLanguage = true;
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://wvb8ww.buildship.run/menupackage').replace(
+          queryParameters: {
+            'packageId': widget.packageId.toString(),
+            'languageCode': targetLanguageCode,
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+
+        // Cache the fetched data
+        _languageDataCache[targetLanguageCode] = data;
+
+        if (context.mounted) {
+          setState(() {
+            _currentlyDisplayedLanguage = targetLanguageCode;
+            _isLoadingLanguage = false;
+            _navigatorKey = GlobalKey<NavigatorState>();
+          });
+        }
+      } else {
+        throw Exception('Failed to load language data: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        setState(() {
+          _isLoadingLanguage = false;
+        });
+
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not load language: $e'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: AppColors.error.withValues(alpha: 0.9),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Handles currency switching with inline exchange rate fetching
+  Future<void> _handleCurrencySwitch(String newCurrencyCode) async {
+    if (newCurrencyCode == 'DKK') {
+      setState(() {
+        _overrideCurrency = 'DKK';
+        _overrideExchangeRate = 1.0;
+        _navigatorKey = GlobalKey<NavigatorState>();
+      });
+      return;
+    }
+
+    setState(() => _isLoadingLanguage = true);
+
+    try {
+      final url = Uri.parse('https://wvb8ww.buildship.run/getExchangeRates')
+          .replace(queryParameters: {
+        'to_currency': newCurrencyCode,
+        'from_currency': 'DKK',
+      });
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        final double? rate = (data is List && data.isNotEmpty)
+            ? (data[0]['rate'] as num?)?.toDouble()
+            : null;
+
+        if (rate != null && context.mounted) {
+          setState(() {
+            _overrideCurrency = newCurrencyCode;
+            _overrideExchangeRate = rate;
+            _isLoadingLanguage = false;
+            _navigatorKey = GlobalKey<NavigatorState>();
+          });
+          return;
+        }
+        throw Exception('Invalid rate in response');
+      } else {
+        throw Exception('Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        setState(() {
+          _isLoadingLanguage = false;
+        });
+
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Could not update currency'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: AppColors.error.withValues(alpha: 0.9),
+          ),
+        );
+      }
+    }
   }
 
   /// =========================================================================
@@ -186,9 +623,9 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
       maintainState: true,
       builder: (context) => _ItemDetailPage(
         itemData: itemData,
-        chosenCurrency: widget.chosenCurrency,
+        chosenCurrency: _effectiveCurrency,
         originalCurrencyCode: widget.originalCurrencyCode,
-        exchangeRate: widget.exchangeRate,
+        exchangeRate: _effectiveExchangeRate,
         businessName: widget.businessName,
         onBack: () => _navigatorKey.currentState?.pop(),
       ),
@@ -201,9 +638,9 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
       maintainState: true,
       pageBuilder: (context, animation, secondaryAnimation) => _ItemDetailPage(
         itemData: itemData,
-        chosenCurrency: widget.chosenCurrency,
+        chosenCurrency: _effectiveCurrency,
         originalCurrencyCode: widget.originalCurrencyCode,
-        exchangeRate: widget.exchangeRate,
+        exchangeRate: _effectiveExchangeRate,
         businessName: widget.businessName,
         onBack: () => _navigatorKey.currentState?.pop(),
       ),
@@ -241,14 +678,15 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
   PageRouteBuilder _buildPackageRoute() {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => _PackageViewPage(
-        packageData: _packageData!,
-        menuItemMap: _menuItemMap,
-        normalizedMenuData: widget.normalizedMenuData,
-        chosenCurrency: widget.chosenCurrency,
+        packageData: _effectivePackageData!,
+        menuItemMap: _effectiveMenuItemMap,
+        normalizedMenuData: _effectiveNormalizedMenuData,
+        chosenCurrency: _effectiveCurrency,
         originalCurrencyCode: widget.originalCurrencyCode,
-        exchangeRate: widget.exchangeRate,
+        exchangeRate: _effectiveExchangeRate,
         onClose: () => _handleClose(context),
         onItemTap: _navigateToItem,
+        onShowMenu: _showActionMenu,
       ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
     );
@@ -287,9 +725,28 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
       width: widget.width,
       height: _calculateSheetHeight(context),
       decoration: _getSheetDecoration(),
-      child: Navigator(
-        key: _navigatorKey,
-        onGenerateRoute: _onGenerateRoute,
+      child: Stack(
+        children: [
+          Navigator(
+            key: _navigatorKey,
+            onGenerateRoute: _onGenerateRoute,
+          ),
+          if (_isLoadingLanguage) _buildLoadingOverlay(),
+        ],
+      ),
+    );
+  }
+
+  /// Builds loading overlay during language/currency switch
+  Widget _buildLoadingOverlay() {
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.3),
+        child: const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        ),
       ),
     );
   }
@@ -321,6 +778,7 @@ class _PackageViewPage extends ConsumerWidget {
     required this.exchangeRate,
     required this.onClose,
     required this.onItemTap,
+    required this.onShowMenu,
   });
 
   final Map<String, dynamic> packageData;
@@ -331,6 +789,7 @@ class _PackageViewPage extends ConsumerWidget {
   final double exchangeRate;
   final VoidCallback onClose;
   final Function(Map<String, dynamic>) onItemTap;
+  final VoidCallback onShowMenu;
 
   /// Visual constants
   static const double _imageHeight = 200.0;
@@ -357,6 +816,10 @@ class _PackageViewPage extends ConsumerWidget {
           leftAction: BottomSheetAction(
             icon: Icons.close,
             onPressed: onClose,
+          ),
+          rightAction: BottomSheetAction(
+            icon: Icons.more_horiz,
+            onPressed: onShowMenu,
           ),
           image: hasImage ? _buildPackageImage() : null,
         ),
@@ -519,33 +982,12 @@ class _ItemDetailPage extends ConsumerWidget {
   static const double _imageHeight = 200.0;
   static const double _contentHorizontalPadding = AppSpacing.xxl + 4;
   static const double _contentTopSpacing = AppSpacing.md;
-  static const double _titleToPriceSpacing = 2.0;
-  static const double _priceToDescriptionSpacing = 4.0;
   static const double _descriptionToDividerSpacing = AppSpacing.xl;
   static const double _dividerToInfoSpacing = AppSpacing.xl;
   static const double _infoHeaderSpacing = 4.0;
   static const double _dietaryToAllergenSpacing = AppSpacing.md;
   static const double _allergenToSourceSpacing = AppSpacing.md;
   static const double _bottomPadding = AppSpacing.xl;
-
-  /// Typography constants
-  static const double _itemNameFontSize = 22.0;
-  static const FontWeight _itemNameFontWeight = FontWeight.w600;
-  static const double _premiumPriceFontSize = 15.0;
-  static const FontWeight _premiumPriceFontWeight = FontWeight.w500;
-  static const double _descriptionFontSize = 18.0;
-  static const FontWeight _descriptionFontWeight = FontWeight.w300;
-  static const double _infoHeaderFontSize = 16.0;
-  static const FontWeight _infoHeaderFontWeight = FontWeight.w500;
-  static const double _infoLabelFontSize = 15.0;
-  static const FontWeight _infoLabelFontWeight = FontWeight.w400;
-  static const double _infoTextFontSize = 15.0;
-  static const FontWeight _infoTextFontWeight = FontWeight.w300;
-
-  /// Premium badge styling
-  static const double _premiumBadgeHorizontalPadding = 6.0;
-  static const double _premiumBadgeVerticalPadding = 2.0;
-  static const double _premiumBadgeBorderRadius = 4.0;
 
   /// Divider styling
   static const double _dividerThickness = 1.0;
@@ -646,11 +1088,7 @@ class _ItemDetailPage extends ConsumerWidget {
 
     return Text(
       itemName,
-      style: AppTypography.bodyLg.copyWith(
-        fontSize: _itemNameFontSize,
-        fontWeight: _itemNameFontWeight,
-        color: AppColors.textPrimary,
-      ),
+      style: AppTypography.h4,
     );
   }
 
@@ -666,23 +1104,12 @@ class _ItemDetailPage extends ConsumerWidget {
     final displayPrice = _formatPremiumPrice(premiumUpcharge);
 
     return Padding(
-      padding: const EdgeInsets.only(top: _titleToPriceSpacing),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: _premiumBadgeHorizontalPadding,
-          vertical: _premiumBadgeVerticalPadding,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.accent.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(_premiumBadgeBorderRadius),
-        ),
-        child: Text(
-          displayPrice,
-          style: AppTypography.bodyLg.copyWith(
-            fontSize: _premiumPriceFontSize,
-            fontWeight: _premiumPriceFontWeight,
-            color: AppColors.accent,
-          ),
+      padding: EdgeInsets.only(top: AppSpacing.xs), // 4px
+      child: Text(
+        displayPrice,
+        style: AppTypography.bodySm.copyWith(
+          fontWeight: FontWeight.w500,
+          color: AppColors.accent,
         ),
       ),
     );
@@ -702,22 +1129,16 @@ class _ItemDetailPage extends ConsumerWidget {
   /// Builds item description
   Widget _buildItemDescription() {
     final itemDescription = itemData['item_description'] as String? ?? '';
-    final premiumUpcharge =
-        (itemData['premium_upcharge'] as num?)?.toDouble() ?? 0.0;
 
     if (itemDescription.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final topPadding = premiumUpcharge > 0 ? _priceToDescriptionSpacing : 0.0;
-
     return Padding(
-      padding: EdgeInsets.only(top: topPadding),
+      padding: EdgeInsets.only(top: AppSpacing.sm), // 8px
       child: Text(
         itemDescription,
-        style: AppTypography.bodyLg.copyWith(
-          fontSize: _descriptionFontSize,
-          fontWeight: _descriptionFontWeight,
+        style: AppTypography.body.copyWith(
           color: AppColors.textPrimary,
         ),
       ),
@@ -726,8 +1147,8 @@ class _ItemDetailPage extends ConsumerWidget {
 
   /// Builds divider
   Widget _buildDivider() {
-    return Divider(
-      color: AppColors.textSecondary,
+    return const Divider(
+      color: AppColors.border,
       thickness: _dividerThickness,
     );
   }
@@ -761,11 +1182,7 @@ class _ItemDetailPage extends ConsumerWidget {
   Widget _buildInfoHeader(WidgetRef ref) {
     return Text(
       td(ref, _infoHeaderAdditionalKey),
-      style: AppTypography.bodyLg.copyWith(
-        fontSize: _infoHeaderFontSize,
-        fontWeight: _infoHeaderFontWeight,
-        color: AppColors.textPrimary,
-      ),
+      style: AppTypography.h5,
     );
   }
 
@@ -792,19 +1209,11 @@ class _ItemDetailPage extends ConsumerWidget {
       children: [
         Text(
           td(ref, _infoHeaderDietaryKey),
-          style: AppTypography.bodyLg.copyWith(
-            fontSize: _infoLabelFontSize,
-            fontWeight: _infoLabelFontWeight,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.h6,
         ),
         Text(
           dietaryText ?? '',
-          style: AppTypography.bodyLg.copyWith(
-            fontSize: _infoTextFontSize,
-            fontWeight: _infoTextFontWeight,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.body,
         ),
       ],
     );
@@ -833,19 +1242,11 @@ class _ItemDetailPage extends ConsumerWidget {
       children: [
         Text(
           td(ref, _infoHeaderAllergensKey),
-          style: AppTypography.bodyLg.copyWith(
-            fontSize: _infoLabelFontSize,
-            fontWeight: _infoLabelFontWeight,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.h6,
         ),
         Text(
           allergyText ?? '',
-          style: AppTypography.bodyLg.copyWith(
-            fontSize: _infoTextFontSize,
-            fontWeight: _infoTextFontWeight,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.body,
         ),
       ],
     );
@@ -858,167 +1259,10 @@ class _ItemDetailPage extends ConsumerWidget {
 
     final journeymateText = td(ref, _infoDisclaimerJourneymateKey);
 
-    return _InformationSourceSection(
+    return InformationSourceSection(
       headerText: td(ref, _infoHeaderSourceKey),
       disclaimerText: disclaimerText,
       journeymateText: journeymateText,
-    );
-  }
-}
-
-/// ============================================================================
-/// INFORMATION SOURCE ACCORDION SECTION
-/// ============================================================================
-
-/// An expandable accordion section for displaying information source disclaimers
-class _InformationSourceSection extends StatefulWidget {
-  const _InformationSourceSection({
-    required this.headerText,
-    required this.disclaimerText,
-    required this.journeymateText,
-  });
-
-  final String headerText;
-  final String disclaimerText;
-  final String journeymateText;
-
-  @override
-  State<_InformationSourceSection> createState() =>
-      _InformationSourceSectionState();
-}
-
-class _InformationSourceSectionState extends State<_InformationSourceSection> {
-  /// =========================================================================
-  /// STATE & CONSTANTS
-  /// =========================================================================
-
-  bool _isExpanded = false;
-
-  /// Animation constants
-  static const Duration _expandDuration = Duration(milliseconds: 100);
-  static const Curve _expandCurve = Curves.linear;
-
-  /// Spacing constants
-  static const double _expandedContentTopSpacing = AppSpacing.sm;
-  static const double _disclaimerToJourneymateSpacing = AppSpacing.sm;
-
-  /// Typography constants
-  static const double _headerFontSize = 16.0;
-  static const FontWeight _headerFontWeight = FontWeight.w400;
-  static const double _contentFontSize = 15.0;
-  static const FontWeight _contentFontWeight = FontWeight.w300;
-
-  /// Icon size
-  static const double _iconSize = 24.0;
-
-  /// =========================================================================
-  /// USER INTERACTION HANDLERS
-  /// =========================================================================
-
-  /// Toggles the expanded state
-  void _toggleExpanded() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-    });
-  }
-
-  /// =========================================================================
-  /// UI BUILDERS
-  /// =========================================================================
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeaderRow(),
-        _buildExpandableContent(),
-      ],
-    );
-  }
-
-  /// Builds the header row with tap handler
-  Widget _buildHeaderRow() {
-    return InkWell(
-      onTap: _toggleExpanded,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildHeaderText(),
-          _buildExpandIcon(),
-        ],
-      ),
-    );
-  }
-
-  /// Builds the header text
-  Widget _buildHeaderText() {
-    return Text(
-      widget.headerText,
-      style: AppTypography.bodyLg.copyWith(
-        fontSize: _headerFontSize,
-        fontWeight: _headerFontWeight,
-        color: AppColors.textPrimary,
-      ),
-    );
-  }
-
-  /// Builds the expand/collapse icon
-  Widget _buildExpandIcon() {
-    return Icon(
-      _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-      color: AppColors.textPrimary,
-      size: _iconSize,
-    );
-  }
-
-  /// Builds the expandable content with animation
-  Widget _buildExpandableContent() {
-    return ClipRect(
-      child: AnimatedAlign(
-        duration: _expandDuration,
-        curve: _expandCurve,
-        heightFactor: _isExpanded ? 1.0 : 0.0,
-        alignment: Alignment.topCenter,
-        child: _buildExpandedContent(),
-      ),
-    );
-  }
-
-  /// Builds the expanded content
-  Widget _buildExpandedContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: _expandedContentTopSpacing),
-        _buildDisclaimerText(),
-        const SizedBox(height: _disclaimerToJourneymateSpacing),
-        _buildJourneymateText(),
-      ],
-    );
-  }
-
-  /// Builds the disclaimer text
-  Widget _buildDisclaimerText() {
-    return Text(
-      widget.disclaimerText,
-      style: AppTypography.bodyLg.copyWith(
-        fontSize: _contentFontSize,
-        fontWeight: _contentFontWeight,
-        color: AppColors.textSecondary,
-      ),
-    );
-  }
-
-  /// Builds the Journeymate text
-  Widget _buildJourneymateText() {
-    return Text(
-      widget.journeymateText,
-      style: AppTypography.bodyLg.copyWith(
-        fontSize: _contentFontSize,
-        fontWeight: _contentFontWeight,
-        color: AppColors.textSecondary,
-      ),
     );
   }
 }

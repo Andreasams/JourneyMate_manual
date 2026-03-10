@@ -319,7 +319,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       builder: (context) => AlertDialog(
         title: Text(
           'Connection Error',
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         content: Text(
           'Could not load restaurants. Please check your internet connection and try again.',
@@ -401,16 +401,18 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 child: Text(
                   td(ref, 'onboarding_title_welcome_prefix'), // "Welcome to"
                   textAlign: TextAlign.center,
-                  style: AppTypography.h1Heavy.copyWith(
+                  style: AppTypography.h1.copyWith(
                     fontSize: 28,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
               Text(
                 'JourneyMate', // Hardcoded - never translated
                 textAlign: TextAlign.center,
-                style: AppTypography.h1Heavy.copyWith(
+                style: AppTypography.h1.copyWith(
                   fontSize: 28,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
 
@@ -448,7 +450,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                     Text(
                       td(ref, 'welcome_tagline'), // "Go out, your way."
                       textAlign: TextAlign.center,
-                      style: AppTypography.h2.copyWith(
+                      style: AppTypography.h4.copyWith(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                       ),

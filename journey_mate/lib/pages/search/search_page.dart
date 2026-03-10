@@ -599,11 +599,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   // Search results list
                   _buildContent(),
 
-                  // Floating sort button
+                  // Floating button: sort (list view) or open-only chip (map view)
                   Positioned(
                     bottom: 12.0,
                     right: AppSpacing.xl, // 20px per JSX
-                    child: _buildSortButton(),
+                    child: _viewMode == _ViewMode.map
+                        ? _buildOpenOnlyChip()
+                        : _buildSortButton(),
                   ),
                 ],
               ),
@@ -869,6 +871,76 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Floating "open only" chip for map view — mirrors the sort sheet toggle.
+  Widget _buildOpenOnlyChip() {
+    return Container(
+      decoration: BoxDecoration(
+        color: _onlyOpen ? AppColors.greenBg : AppColors.bgCard,
+        border: Border.all(
+          color: _onlyOpen ? AppColors.greenBorder : AppColors.border,
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.circular(20), // Pill shape
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() => _onlyOpen = !_onlyOpen);
+            final searchText =
+                ref.read(searchStateProvider).currentSearchText;
+            _executeSearch(searchText);
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.mlg,
+              vertical: AppSpacing.sm,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Checkbox indicator
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: _onlyOpen ? AppColors.green : Colors.transparent,
+                    border: _onlyOpen
+                        ? null
+                        : Border.all(color: AppColors.border, width: 1.5),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: _onlyOpen
+                      ? Icon(Icons.check, size: 10, color: Colors.white)
+                      : null,
+                ),
+                SizedBox(width: AppSpacing.xs),
+                Text(
+                  td(ref, 'filter_only_open'),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: _onlyOpen
+                        ? AppColors.green
+                        : AppColors.textSecondary,
+                    fontWeight:
+                        _onlyOpen ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ],

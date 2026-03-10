@@ -279,7 +279,7 @@ class _AppSettingsInitiateFlowPageState
         centerTitle: true,
         title: Text(
           td(ref, 'feedback_page_settings'), // "App setup"
-          style: AppTypography.h3,
+          style: AppTypography.h5,
         ),
       ),
       body: SafeArea(
@@ -291,7 +291,7 @@ class _AppSettingsInitiateFlowPageState
               // Main page title
               Text(
                 td(ref, 'settings_localization_title'), // "Localization"
-                style: AppTypography.h2.copyWith(
+                style: AppTypography.h4.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),

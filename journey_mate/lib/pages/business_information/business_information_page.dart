@@ -117,7 +117,7 @@ class _BusinessInformationPageState
       ),
       title: Text(
         businessName,
-        style: AppTypography.h3,
+        style: AppTypography.h5,
       ),
       centerTitle: true,
     );
@@ -266,7 +266,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           businessName,
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         SizedBox(height: AppSpacing.xs),
         Row(
@@ -276,7 +276,7 @@ class _BusinessInformationPageState
             Flexible(
               child: Text(
                 openingHoursText,
-                style: AppTypography.bodyLg,
+                style: AppTypography.body,
               ),
             ),
           ],
@@ -302,7 +302,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           td(ref, 'about_description_label'), // "About"
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         SizedBox(height: AppSpacing.sm),
         ExpandableTextWidget(
@@ -324,7 +324,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           td(ref, 'facilities_heading'),
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         SizedBox(height: AppSpacing.sm),
         BusinessFeatureButtons(
@@ -355,16 +355,10 @@ class _BusinessInformationPageState
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) => DraggableScrollableSheet(
-          initialChildSize: 0.4,
-          maxChildSize: 0.9,
-          minChildSize: 0.25,
-          builder: (context, scrollController) => DescriptionSheet(
-            title: filterName,
-            description: filterDescription,
-            scrollController: scrollController,
-            fallbackDescription: td(ref, 'no_description_available'),
-          ),
+        builder: (context) => DescriptionSheet(
+          title: filterName,
+          description: filterDescription,
+          fallbackDescription: td(ref, 'no_description_available'),
         ),
       );
     }
@@ -404,7 +398,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           td(ref, 'about_payment_options_label'), // "Payment Options"
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         SizedBox(height: AppSpacing.sm),
         PaymentOptionsWidget(
@@ -432,21 +426,45 @@ class _BusinessInformationPageState
 
   Widget _buildReportButton() {
     return Center(
-      child: TextButton.icon(
+      child: TextButton(
         onPressed: () async {
-          await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (context) => const ErroneousInfoFormWidget(),
-          );
+          final analytics = AnalyticsService.instance;
+          ApiService.instance
+              .postAnalytics(
+            eventType: 'report_link_tapped',
+            deviceId: analytics.deviceId ?? '',
+            sessionId: analytics.currentSessionId ?? '',
+            userId: analytics.userId ?? '',
+            timestamp: DateTime.now().toIso8601String(),
+            eventData: {'pageName': 'businessInformation'},
+          )
+              .catchError((e) {
+            debugPrint('Analytics error: $e');
+            return ApiCallResponse.failure('Analytics failed');
+          });
+          if (mounted) {
+            await showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const ErroneousInfoFormWidget(),
+            );
+          }
         },
-        icon: Icon(Icons.report_outlined, color: AppColors.textSecondary),
-        label: Text(
-          td(ref, 'about_report_incorrect_info'),
-          style: AppTypography.bodyLgMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.report_outlined, color: AppColors.textSecondary),
+            SizedBox(width: AppSpacing.xs),
+            Text(
+              td(ref, 'about_report_incorrect_info'),
+              style: AppTypography.bodyLg.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.0,
+              ),
+            ),
+          ],
         ),
       ),
     );

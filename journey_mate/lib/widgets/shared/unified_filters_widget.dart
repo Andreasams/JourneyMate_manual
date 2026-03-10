@@ -115,7 +115,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   /// =========================================================================
 
   static const Color _selectedColor = AppColors.accent;
-  static const Color _unselectedColor = AppColors.bgSurface;
+  static const Color _unselectedColor = AppColors.bgCard;
   static const Color _selectedTextColor = AppColors.bgPage;
   static const Color _unselectedTextColor = AppColors.textPrimary;
   static final Color _borderColor = AppColors.border;
@@ -123,16 +123,16 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   static const Duration _animationDuration = Duration(milliseconds: 200);
   static const EdgeInsets _buttonPadding = EdgeInsets.symmetric(horizontal: 16);
   static const Size _buttonMinSize = Size(0, 32);
-  static const double _buttonBorderRadius = AppRadius.button;
+  static const double _buttonBorderRadius = AppRadius.chip;
   static const double _buttonSpacing = AppSpacing.sm;
 
   static const Color _containerColor = Color(0x1957636C);
   static const double _containerBorderRadius = AppRadius.button;
-  static const EdgeInsets _containerPadding = EdgeInsets.symmetric(vertical: 18);
+  static const EdgeInsets _containerPadding = EdgeInsets.fromLTRB(16, 18, 16, 18);
 
   static const double _sectionSpacing = AppSpacing.lg;
   static const double _widgetTopPadding = 4.0;
-  static const double _widgetHeight = 28.0;
+  static const double _widgetHeight = 32.0;
 
   /// =========================================================================
   /// STATE - SCROLL CONTROLLERS
@@ -465,13 +465,46 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   }
 
   String _getDietaryName(int id) {
-    return _getUIText('dietary_${id}_cap');
+    final key = _dietaryIdToKey[id];
+    if (key == null) return '⚠️ Unknown dietary $id';
+    return _getUIText('${key}_cap');
   }
 
   String? _getAllergenName(int id) {
-    final name = _getUIText('allergen_${id}_cap');
+    final key = _allergenIdToKey[id];
+    if (key == null) return null;
+    final name = _getUIText('${key}_cap');
     return name.isEmpty || name.startsWith('⚠️') ? null : name;
   }
+
+  /// Maps dietary type IDs to named translation key prefixes.
+  static const Map<int, String> _dietaryIdToKey = {
+    1: 'dietary_glutenfree',
+    2: 'dietary_pescetarian',
+    3: 'dietary_halal',
+    4: 'dietary_lactosefree',
+    5: 'dietary_kosher',
+    6: 'dietary_vegan',
+    7: 'dietary_vegetarian',
+  };
+
+  /// Maps allergen IDs to named translation key prefixes.
+  static const Map<int, String> _allergenIdToKey = {
+    1: 'allergen_celery',
+    2: 'allergen_gluten',
+    3: 'allergen_crustaceans',
+    4: 'allergen_eggs',
+    5: 'allergen_fish',
+    6: 'allergen_lupin',
+    7: 'allergen_milk',
+    8: 'allergen_molluscs',
+    9: 'allergen_mustard',
+    10: 'allergen_nuts',
+    11: 'allergen_peanuts',
+    12: 'allergen_sesame',
+    13: 'allergen_soybeans',
+    14: 'allergen_sulfites',
+  };
 
   /// =========================================================================
   /// DATA RETRIEVAL & SORTING
@@ -863,6 +896,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         style: ButtonStyle(
           padding: WidgetStateProperty.all(_buttonPadding),
           minimumSize: WidgetStateProperty.all(_buttonMinSize),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: WidgetStateProperty.all<OutlinedBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(_buttonBorderRadius),
@@ -899,6 +933,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         style: ButtonStyle(
           padding: WidgetStateProperty.all(_buttonPadding),
           minimumSize: WidgetStateProperty.all(_buttonMinSize),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: WidgetStateProperty.all<OutlinedBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(_buttonBorderRadius),
@@ -933,9 +968,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           _getUIText('menu_dishes_filter_title'),
-          style: AppTypography.h3.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTypography.h5,
         ),
         if (_hasActiveFilters())
           GestureDetector(
@@ -962,13 +995,11 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           header,
-          style: AppTypography.bodyLg,
+          style: AppTypography.h6,
         ),
         Text(
           description,
-          style: AppTypography.bodySm.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
+          style: AppTypography.body,
         ),
         Padding(
           padding: const EdgeInsets.only(top: _widgetTopPadding),
@@ -1003,19 +1034,16 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           _getUIText('info_header_allergens'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.h6,
         ),
         Text(
           _getUIText('menu_dishes_filter_allergens_subtitle'),
-          style: AppTypography.bodySm.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
+          style: AppTypography.body,
         ),
         Padding(
           padding: const EdgeInsets.only(top: _widgetTopPadding),
           child: Wrap(
             spacing: _buttonSpacing,
-            runSpacing: _buttonSpacing,
             children: allergens
                 .map((allergen) => _buildAllergenButton(
                       text: allergen.value,

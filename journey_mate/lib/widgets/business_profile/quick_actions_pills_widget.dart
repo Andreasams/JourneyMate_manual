@@ -11,6 +11,7 @@ import '../../providers/app_providers.dart';
 import '../../services/custom_functions/contact_utils.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
+import '../../utils/map_launcher_utils.dart';
 
 /// Quick Actions Pills Widget - Horizontal scrollable row of action pills
 ///
@@ -49,7 +50,8 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     final longitude = (business['longitude'] as num?)?.toDouble();
     final businessName = business['business_name'] as String?;
 
-    // Build action pills (only show if data available)
+    // Build action pills in fixed order: Call → Book → Map → Website
+    // Missing pills are simply omitted; order is always preserved.
     final pills = <Widget>[
       if (phone != null && phone.isNotEmpty)
         _buildPill(
@@ -58,14 +60,6 @@ class QuickActionsPillsWidget extends ConsumerWidget {
           icon: Icons.phone,
           label: td(ref, 'action_call'),
           onTap: () => _handleCallTap(context, ref, phone),
-        ),
-      if (website != null && website.isNotEmpty)
-        _buildPill(
-          context: context,
-          ref: ref,
-          icon: Icons.language,
-          label: td(ref, 'website'),
-          onTap: () => _handleWebsiteTap(context, ref, website),
         ),
       if (bookingUrl != null && bookingUrl.isNotEmpty)
         _buildPill(
@@ -89,6 +83,14 @@ class QuickActionsPillsWidget extends ConsumerWidget {
           businessName ?? td(ref, 'business_type_default'),
         ),
       ),
+      if (website != null && website.isNotEmpty)
+        _buildPill(
+          context: context,
+          ref: ref,
+          icon: Icons.language,
+          label: td(ref, 'website'),
+          onTap: () => _handleWebsiteTap(context, ref, website),
+        ),
     ];
 
     if (pills.isEmpty) {
@@ -145,8 +147,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
               SizedBox(width: AppSpacing.xsm),
               Text(
                 label,
-                style: AppTypography.bodySm.copyWith(
-                  fontWeight: FontWeight.w500,
+                style: AppTypography.bodySmMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -306,42 +307,32 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     final business = ref.read(businessProvider).currentBusiness;
     final businessId = business?['business_id'] as int?;
 
-    try {
-      // maps: scheme opens Apple Maps natively on iOS (no browser redirect)
-      final uri = Uri.parse(
-        'maps:?q=${Uri.encodeComponent(businessName)}&ll=$latitude,$longitude',
+    final mapAppName = await openInPreferredMaps(
+      latitude: latitude,
+      longitude: longitude,
+      title: businessName,
+    );
+
+    if (mapAppName != null) {
+      // Track map tap (fire-and-forget)
+      final analyticsState = ref.read(analyticsProvider);
+      ApiService.instance.postAnalytics(
+        eventType: 'business_map_tapped',
+        deviceId: analyticsState.deviceId,
+        sessionId: analyticsState.sessionId ?? '',
+        userId: '',
+        timestamp: DateTime.now().toIso8601String(),
+        eventData: {
+          'business_id': businessId ?? 0,
+          'latitude': latitude,
+          'longitude': longitude,
+          'map_app': mapAppName,
+        },
       );
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-
-        // Track map tap (fire-and-forget)
-        final analyticsState = ref.read(analyticsProvider);
-        ApiService.instance.postAnalytics(
-          eventType: 'business_map_tapped',
-          deviceId: analyticsState.deviceId,
-          sessionId: analyticsState.sessionId ?? '',
-          userId: '',
-          timestamp: DateTime.now().toIso8601String(),
-          eventData: {
-            'business_id': businessId ?? 0,
-            'latitude': latitude,
-            'longitude': longitude,
-            'map_app': 'system_default',
-          },
-        );
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(td(ref, 'error_cannot_open_map'))),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('Error launching map: $e');
+    } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(td(ref, 'error_cannot_open_map'))),
+          SnackBar(content: Text(td(ref, 'error_no_map_app'))),
         );
       }
     }

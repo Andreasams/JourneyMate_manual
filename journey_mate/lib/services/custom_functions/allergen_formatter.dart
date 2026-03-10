@@ -54,41 +54,27 @@ String? convertAllergiesToString(
         : 'No allergens listed';
   }
 
-  // Map allergen IDs to translation keys
-  final allergenKeys = allergyIDs.map((id) {
-    switch (id) {
-      case 1:
-        return 'allergen_gluten';
-      case 2:
-        return 'allergen_crustaceans';
-      case 3:
-        return 'allergen_eggs';
-      case 4:
-        return 'allergen_fish';
-      case 5:
-        return 'allergen_peanuts';
-      case 6:
-        return 'allergen_soybeans';
-      case 7:
-        return 'allergen_milk';
-      case 8:
-        return 'allergen_nuts';
-      case 9:
-        return 'allergen_celery';
-      case 10:
-        return 'allergen_mustard';
-      case 11:
-        return 'allergen_sesame';
-      case 12:
-        return 'allergen_sulfites';
-      case 13:
-        return 'allergen_lupin';
-      case 14:
-        return 'allergen_molluscs';
-      default:
-        return 'allergen_unknown';
-    }
-  }).toList();
+  // Map allergen IDs to translation keys (matches Supabase allergen ID order)
+  const allergenIdToKey = {
+    1: 'allergen_celery',
+    2: 'allergen_gluten',
+    3: 'allergen_crustaceans',
+    4: 'allergen_eggs',
+    5: 'allergen_fish',
+    6: 'allergen_lupin',
+    7: 'allergen_milk',
+    8: 'allergen_molluscs',
+    9: 'allergen_mustard',
+    10: 'allergen_nuts',
+    11: 'allergen_peanuts',
+    12: 'allergen_sesame',
+    13: 'allergen_soybeans',
+    14: 'allergen_sulfites',
+  };
+
+  final allergenKeys = allergyIDs
+      .map((id) => allergenIdToKey[id] ?? 'allergen_unknown')
+      .toList();
 
   // Get localized names
   final allergenNames = allergenKeys

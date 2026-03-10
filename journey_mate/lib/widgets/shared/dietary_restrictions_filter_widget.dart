@@ -157,19 +157,32 @@ class _DietaryRestrictionsFilterWidgetState
   ///
   /// Returns:
   ///   Localized restriction name, or null if invalid/missing
+  /// Maps dietary type IDs to named translation key prefixes.
+  static const Map<int, String> _dietaryIdToKey = {
+    1: 'dietary_glutenfree',
+    2: 'dietary_pescetarian',
+    3: 'dietary_halal',
+    4: 'dietary_lactosefree',
+    5: 'dietary_kosher',
+    6: 'dietary_vegan',
+    7: 'dietary_vegetarian',
+  };
+
   String? _getRestrictionNameSafe(int? restrictionId) {
     // Guard: null or zero ID
     if (restrictionId == null || restrictionId == 0) {
       return null;
     }
 
-    final translationKey = 'dietary_${restrictionId}_cap';
-    final restrictionName = td(ref, translationKey);
+    final key = _dietaryIdToKey[restrictionId];
+    if (key == null) return null;
+
+    final restrictionName = td(ref, '${key}_cap');
 
     // Return null if translation not found (indicated by empty or ⚠️ prefix)
     if (restrictionName.isEmpty || restrictionName.startsWith('⚠️')) {
       debugPrint(
-          '⚠️ Missing translation for $translationKey in current language');
+          '⚠️ Missing translation for ${key}_cap in current language');
       return null;
     }
 

@@ -150,42 +150,48 @@ class _ErroneousInfoFormWidgetState
     final city = currentBusiness?['postal_city'] as String? ?? '';
     final address = '$street, $postalCode $city';
 
-    return Container(
-      width: widget.width,
-      height: widget.height,
-      decoration: BottomSheetHeader.sheetDecoration(color: AppColors.bgPage),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          BottomSheetHeader(
-            leftAction: BottomSheetAction(
-              icon: Icons.close,
-              onPressed: () => Navigator.of(context).pop(),
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.8;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: Container(
+        width: widget.width,
+        height: widget.height,
+        decoration:
+            BottomSheetHeader.sheetDecoration(color: AppColors.bgPage),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BottomSheetHeader(
+              leftAction: BottomSheetAction(
+                icon: Icons.close,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
             ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxxl - 4, // 28px
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildBusinessInfoSection(businessName, address),
-                    const SizedBox(height: AppSpacing.xl + 4), // 20px
-                    _buildMessageSection(),
-                    const SizedBox(height: AppSpacing.xl + 4), // 20px
-                    _buildSubmitArea(),
-                    const SizedBox(height: AppSpacing.xl + 4), // 20px
-                  ],
+            Expanded(
+              child: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxxl - 4, // 28px
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildBusinessInfoSection(businessName, address),
+                      const SizedBox(height: AppSpacing.xl + 4), // 20px
+                      _buildMessageSection(),
+                      const SizedBox(height: AppSpacing.xl + 4), // 20px
+                      _buildSubmitArea(),
+                      const SizedBox(height: AppSpacing.xl + 4), // 20px
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -200,10 +206,7 @@ class _ErroneousInfoFormWidgetState
         // Main title
         Text(
           td(ref, 'about_report_incorrect_info'),
-          style: AppTypography.h1.copyWith(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.h3,
         ),
         const SizedBox(height: AppSpacing.xl + 4), // 20px
 
@@ -214,22 +217,37 @@ class _ErroneousInfoFormWidgetState
             color: AppColors.textSecondary,
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: AppSpacing.sm),
 
-        // Business name
-        Text(
-          businessName,
-          style: AppTypography.h3,
-        ),
-
-        // Business address
-        Text(
-          address,
-          style: AppTypography.bodyLg.copyWith(
-            color: AppColors.textSecondary,
+        // Business name & address card
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            border: Border.all(
+              color: AppColors.border,
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                businessName,
+                style: AppTypography.h5,
+              ),
+              Text(
+                address,
+                style: AppTypography.bodyLg.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.md),
 
         // Help text
         Text(
@@ -252,7 +270,7 @@ class _ErroneousInfoFormWidgetState
         // Section header with required indicator
         RichText(
           text: TextSpan(
-            style: AppTypography.h3,
+            style: AppTypography.h5,
             children: [
               TextSpan(
                 text: td(ref, 'erroneous_info_title_message'),
@@ -280,31 +298,35 @@ class _ErroneousInfoFormWidgetState
             minLines: 5,
             maxLines: null,
             textAlignVertical: TextAlignVertical.top,
-            style: AppTypography.bodyLg,
+            style: AppTypography.body,
             decoration: InputDecoration(
               hintText: td(ref, 'erroneous_info_hint_message'),
-              hintStyle: AppTypography.bodyLg.copyWith(
+              hintStyle: AppTypography.body.copyWith(
                 color: AppColors.textSecondary.withValues(alpha: 0.7),
               ),
               filled: true,
-              fillColor: AppColors.bgSurface,
+              fillColor: AppColors.bgInput,
+              contentPadding: const EdgeInsets.all(12),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-                borderSide: _messageError != null
-                    ? const BorderSide(color: AppColors.error, width: 1)
-                    : BorderSide.none,
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-                borderSide: _messageError != null
-                    ? const BorderSide(color: AppColors.error, width: 1)
-                    : BorderSide.none,
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.accent, width: 2),
               ),
-              contentPadding: const EdgeInsets.all(AppSpacing.md),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.error),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.error, width: 2),
+              ),
             ),
             onChanged: (_) {
               if (_messageError != null) {
@@ -368,7 +390,7 @@ class _ErroneousInfoFormWidgetState
           Text(
             td(ref, 'erroneous_info_success_message'),
             textAlign: TextAlign.center,
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h5.copyWith(
               color: AppColors.success,
             ),
           ),

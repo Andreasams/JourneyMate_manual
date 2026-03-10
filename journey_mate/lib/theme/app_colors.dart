@@ -112,6 +112,4 @@ class AppColors {
   /// Status disabled - Red dot for disabled features (same as red)
   static const Color statusDisabled = red;
 
-  /// Card background subtle - Very subtle gray for status cards (same as bgSurface)
-  static const Color bgCardSubtle = bgSurface;
 }
