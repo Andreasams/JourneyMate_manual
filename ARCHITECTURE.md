@@ -17,24 +17,24 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - **Need a specific section?** Use alphabetical index below for direct access
 
 **Section Index (Alphabetical):**
-- [Analytics Architecture](#analytics-architecture) (lines 1764-1838) — Fire-and-forget, ActivityScope, 47 event types
-- [API Service Pattern](#api-service-pattern) (lines 1307-1441) — Singleton, cache, BuildShip integration, graceful degradation, BusinessCache
-- [Code Quality Standards](#code-quality-standards) (lines 1841-1960) — Flutter analyze, design tokens, algorithms
-- [Code Review Checklist](#code-review-checklist) (lines 1963-2057) — Pre-commit checklist (⚠️ use before every commit)
-- [Common Pitfalls](#common-pitfalls) (lines 2060-3326) — 32 anti-patterns with fixes (⚠️ read before first commit)
-- [Design Token System](#design-token-system) (lines 1751-1761) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 3329-3342) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 3372-3405) — CityID, favorites, filters, translations, engagement
-- [Location Permission Pattern](#location-permission-pattern) (lines 1524-1602) — Three methods, when to use what, Settings fallback
+- [Analytics Architecture](#analytics-architecture) (lines 1833-1907) — Fire-and-forget, ActivityScope, 47 event types
+- [API Service Pattern](#api-service-pattern) (lines 1376-1510) — Singleton, cache, BuildShip integration, graceful degradation, BusinessCache
+- [Code Quality Standards](#code-quality-standards) (lines 1910-2029) — Flutter analyze, design tokens, algorithms
+- [Code Review Checklist](#code-review-checklist) (lines 2032-2126) — Pre-commit checklist (⚠️ use before every commit)
+- [Common Pitfalls](#common-pitfalls) (lines 2129-3487) — 34 anti-patterns with fixes (⚠️ read before first commit)
+- [Design Token System](#design-token-system) (lines 1820-1830) — Quick lookup tables for colors, spacing, typography
+- [Documentation Philosophy](#documentation-philosophy) (lines 3490-3503) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 3533-3566) — CityID, favorites, filters, translations, engagement
+- [Location Permission Pattern](#location-permission-pattern) (lines 1593-1671) — Three methods, when to use what, Settings fallback
 - [Philosophy](#philosophy) (lines 39-81) — Five core principles (design tokens, state, translations, analytics, widgets)
-- [Pre-Loading Architecture](#pre-loading-architecture) (lines 1444-1521) — Safe async pattern for instant page loads
+- [Pre-Loading Architecture](#pre-loading-architecture) (lines 1513-1590) — Safe async pattern for instant page loads
 - [Project Structure](#project-structure) (lines 86-151) — File organization, 12 pages, 34 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 3345-3369) — Critical startup sequence in main.dart
-- [References](#references) (lines 3408-3416) — Links to other documentation files
+- [Provider Initialization Order](#provider-initialization-order) (lines 3506-3530) — Critical startup sequence in main.dart
+- [References](#references) (lines 3569-3577) — Links to other documentation files
 - [State Management](#state-management) (lines 154-351) — When to use what, provider catalog, Riverpod 3.x patterns, ref.listen
-- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 959-1304) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
-- [Translation System](#translation-system) (lines 1605-1748) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages
-- [Widget Patterns](#widget-patterns) (lines 354-956) — Self-contained widgets, page wrappers, bottom sheets, BottomSheetHeader, contact utils, cross-page reuse, map view
+- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 1028-1373) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
+- [Translation System](#translation-system) (lines 1674-1817) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages
+- [Widget Patterns](#widget-patterns) (lines 354-1025) — Self-contained widgets, page wrappers, bottom sheets, BottomSheetHeader, contact utils, cross-page reuse, MenuSectionWidget, TabbedGalleryWidget, MenuScrollController, map view
 
 ---
 
@@ -550,6 +550,75 @@ String ensureHttpsUrl(String url) {
 **Used by:** `quick_actions_pills_widget.dart`, `opening_hours_contact_widget.dart`, `contact_details_widget.dart`
 
 **Reference:** Commit `932e351` — extracted shared contact utilities from duplicated widget logic
+
+### MenuSectionWidget — Shared Menu Section
+
+**File:** `journey_mate/lib/widgets/shared/menu_section_widget.dart` (~330 lines)
+
+Consolidated menu section logic used by both `InlineMenuWidget` (business profile) and `MenuFullPage`. Eliminated ~580 lines of duplication.
+
+| Consumer | Before | After |
+|----------|--------|-------|
+| `InlineMenuWidget` | 371 lines | 74 lines (thin wrapper + "View full page" link) |
+| `MenuFullPage` | 436 lines | 153 lines (Scaffold/AppBar + analytics + shared widget) |
+
+**Key unification:**
+- Filter toggle (show/hide) instead of always-visible
+- Dynamic 1-2 category rows (42/72px) instead of fixed single row (40px)
+- `GestureDetector` + `viewInsets` padding on all bottom sheets
+- Consistent horizontal padding (`AppSpacing.xxl`)
+
+**Bug fixes discovered during extraction:**
+- Description sheet keys: used snake_case/short names, but `MenuDishesListView` sends camelCase (`categoryName`/`categoryDescription`)
+- Currency code: inline was hardcoded to `'DKK'`, now reads from business data
+- Analytics double-counting: `MenuFullPage` duplicated item/package/category tracking already handled by `MenuDishesListView`
+
+**Reference:** Commit `51e2b58`
+
+### TabbedGalleryWidget — Unified Gallery
+
+**File:** `journey_mate/lib/widgets/shared/tabbed_gallery_widget.dart` (~680 lines)
+
+Consolidates `GalleryTabWidget` + `InlineGalleryWidget` (~1200 lines) into a single prop-based widget for both full-page and inline business profile contexts.
+
+**API:** `galleryData`, `onImageTap` (sync void), `limitToEightImages`, `onViewAllTap` (VoidCallback?), `pageName` (analytics context)
+
+**Key fix — tab-jumping bug:** Dropped `TabController`, uses `PageController` + `_targetPage` guard to ignore intermediate `onPageChanged` events during `animateToPage`. Without this guard, jumping across multiple tabs triggers intermediate page change events that override the animation target.
+
+```dart
+// _targetPage guard pattern:
+// 1. Set _targetPage on tap
+// 2. In onPageChanged, ignore if page != _targetPage
+// 3. Clear _targetPage when destination reached
+```
+
+**Animation:** 450ms duration (up from 300ms) for visible tab transitions. `AnimatedBuilder` on `PageController` provides smooth indicator sliding.
+
+**Reference:** Commit `a348fd4`
+
+### MenuScrollController — Category Chip → Dishes List Communication
+
+**File:** `journey_mate/lib/widgets/shared/menu_dishes_list_view.dart` (controller class defined here)
+
+`ChangeNotifier` that enables `MenuSectionWidget` → `MenuDishesListView` scroll communication. Tapping a category chip scrolls the dishes list to that category header.
+
+```dart
+class MenuScrollController extends ChangeNotifier {
+  String? _targetCategory;
+  String? get targetCategory => _targetCategory;
+
+  void scrollTo(String categoryId) {
+    _targetCategory = categoryId;
+    notifyListeners();  // Re-tap works (ChangeNotifier doesn't suppress same-value)
+  }
+}
+```
+
+**Why ChangeNotifier over Provider:** Provider-based scroll detection was fundamentally broken — `_getSelectedCategoryId()` always returned 0, so the build-time comparison never triggered a scroll. ChangeNotifier avoids same-value suppression (re-tapping the same chip re-scrolls).
+
+**Lifecycle:** Created in `MenuSectionWidget`, passed to `MenuDishesListView`. Listener attached in `initState`/`didUpdateWidget`, removed in `dispose`.
+
+**Reference:** Commit `05029da`
 
 ### Map View with Viewport-Based Geo-Filtering Pattern
 
@@ -1974,7 +2043,7 @@ int _getSectionLevel(String matchLevel) {
   - See [Pitfall #2](#pitfall-2-using-magic-numbers-for-spacing) (line 1792)
   - See [Design Token System](#design-token-system) (lines 1116-1127)
 
-- [ ] **Typography from AppTypography** — No inline `TextStyle(...)`. Use `AppTypography.headingLarge`, `AppTypography.bodyMedium`, etc.
+- [ ] **Typography from AppTypography** — No inline `TextStyle(...)`. Use `AppTypography.h1`, `AppTypography.body`, `AppTypography.bodySm`, etc. (14-style scale: h1/h1Heavy/h2/h3, bodyLg/bodyLgMedium/body/bodyMedium/bodySm/bodySmMedium, button, price).
   - See [Design Token System](#design-token-system) (lines 1116-1127)
 
 - [ ] **Radii from AppRadius** — No `BorderRadius.circular(16)`. Use `AppRadius.lg`, `AppRadius.full`, etc.
@@ -3326,6 +3395,98 @@ void dispose() {
 
 ---
 
+### Pitfall #33: ref.read() in dispose() Throws StateError — Cache Analytics State Early
+
+**Context:** Calling `ref.read(analyticsProvider)` in `dispose()` throws `StateError` when navigating between business profiles. This corrupts widget tree finalization and cascades into unrelated viewport assertion and duplicate GlobalKey errors.
+
+**Extends Pitfall #11:** Pitfall #11 covers saving a notifier reference in `initState()` for safe disposal. This pitfall covers the analytics-specific pattern where `deviceId`/`sessionId` must be cached as instance fields.
+
+❌ **Bad:**
+```dart
+@override
+void dispose() {
+  final analytics = ref.read(analyticsProvider);  // StateError!
+  ApiService.instance.postAnalytics(
+    deviceId: analytics.deviceId,  // Never reached
+    sessionId: analytics.sessionId,
+  );
+  super.dispose();
+}
+```
+
+✅ **Good:**
+```dart
+String? _cachedDeviceId;
+String? _cachedSessionId;
+
+@override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    final analytics = ref.read(analyticsProvider);
+    _cachedDeviceId = analytics.deviceId;
+    _cachedSessionId = analytics.sessionId;
+  });
+}
+
+@override
+void dispose() {
+  ApiService.instance.postAnalytics(
+    deviceId: _cachedDeviceId ?? '',  // Safe — cached while ref was valid
+    sessionId: _cachedSessionId ?? '',
+  );
+  super.dispose();
+}
+```
+
+**Key insight:** A single `StateError` during finalization cascades into unrelated viewport and `GlobalKey` failures, making the root cause hard to diagnose.
+
+**Reference:** Commit `dd052b5` — "fix: cache analytics state to avoid ref access in dispose()"
+
+---
+
+### Pitfall #34: TabController + PageController Dual-Control Causes Tab-Jumping Bug
+
+**Context:** Using both `TabController` and `PageController` to control a tabbed view causes intermediate `onPageChanged` events when jumping across multiple tabs. For example, jumping from tab 0 to tab 3 fires events for tabs 1 and 2, which override the animation target.
+
+❌ **Bad:**
+```dart
+// Dual controllers — onPageChanged fires for every intermediate page
+TabController _tabController;
+PageController _pageController;
+
+void _onTabTap(int index) {
+  _pageController.animateToPage(index, ...);
+}
+
+void _onPageChanged(int page) {
+  _tabController.animateTo(page);  // Fires for tab 1, 2, then 3!
+}
+```
+
+✅ **Good — _targetPage guard pattern:**
+```dart
+PageController _pageController;
+int? _targetPage;  // Guard
+
+void _onTabTap(int index) {
+  _targetPage = index;  // 1. Set target
+  _pageController.animateToPage(index, ...);
+}
+
+void _onPageChanged(int page) {
+  if (_targetPage != null && page != _targetPage) return;  // 2. Ignore intermediates
+  _targetPage = null;  // 3. Clear when destination reached
+  setState(() => _currentPage = page);
+}
+```
+
+**Rule:** When using `PageController` with animated page transitions, always guard `onPageChanged` with a `_targetPage` field to filter intermediate events.
+
+**Reference:** Commit `a348fd4` — "refactor: unify GalleryTabWidget + InlineGalleryWidget into TabbedGalleryWidget"
+
+---
+
 ## Documentation Philosophy
 
 JourneyMate maintains **three types of documentation**:
@@ -3410,7 +3571,7 @@ Providers MUST initialize in this exact order at app startup:
 - **Development Process:** `CODE_DEVELOPMENT_WORKFLOW.md` (systematic workflow for writing code)
 - **API Contracts:** `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines, 12 endpoints)
 - **Provider Catalog:** `_reference/PROVIDERS_REFERENCE.md` (797 lines, 8 providers)
-- **Design Tokens:** `DESIGN_SYSTEM_flutter.md` (819 lines, colors/spacing/typography)
+- **Design Tokens:** `DESIGN_SYSTEM_flutter.md` (869 lines, colors/spacing/typography)
 - **Quick Start:** `CLAUDE.md` (streamlined session primer)
 - **Developer Onboarding:** `CONTRIBUTING.md` (workflow and standards)
 

@@ -67,8 +67,8 @@ See **CODE_DEVELOPMENT_WORKFLOW.md** for complete development process including:
 **Quick reference:**
 1. Before coding → NAVIGATION_GUIDE.md (find your scenario)
 2. During coding → Follow ARCHITECTURE.md patterns
-3. Before commit → ARCHITECTURE.md → Code Review Checklist (lines 1816-1910)
-4. Validate against → ARCHITECTURE.md → Common Pitfalls (lines 1913-3178)
+3. Before commit → ARCHITECTURE.md → Code Review Checklist (lines 2032-2126)
+4. Validate against → ARCHITECTURE.md → Common Pitfalls (lines 2129-3487)
 
 ---
 
@@ -76,8 +76,8 @@ See **CODE_DEVELOPMENT_WORKFLOW.md** for complete development process including:
 
 **For all code patterns, see ARCHITECTURE.md:**
 - **Design tokens, state management, translations, analytics:** See ARCHITECTURE.md → Philosophy (lines 39-81)
-- **Widget patterns:** See ARCHITECTURE.md → Widget Patterns (lines 354-870)
-- **Pre-commit checklist:** See ARCHITECTURE.md → Code Review Checklist (lines 1816-1910)
+- **Widget patterns:** See ARCHITECTURE.md → Widget Patterns (lines 354-950)
+- **Pre-commit checklist:** See ARCHITECTURE.md → Code Review Checklist (lines 2032-2126)
 
 ---
 
@@ -187,5 +187,5 @@ The docs worktree will then review your commit and update the formal documentati
 
 ---
 
-**Last Updated:** February 2026
+**Last Updated:** March 2026
 **For deep dives:** See ARCHITECTURE.md (how app is built), DESIGN_SYSTEM_flutter.md (design tokens), PROVIDERS_REFERENCE.md (state catalog), BUILDSHIP_API_REFERENCE.md (API contracts), DIRECTORY_STRUCTURE.md (file organization)

@@ -82,8 +82,8 @@ Based on NAVIGATION_GUIDE.md recommendations, read:
 - **Code Review Checklist** — Items relevant to your changes
 
 **Example:** If adding state management (Scenario 2):
-1. Read ARCHITECTURE.md → State Management (lines 146-285)
-2. Read Common Pitfalls #6-10 (state-related, lines 1874-1986)
+1. Read ARCHITECTURE.md → State Management (lines 154-351)
+2. Read Common Pitfalls #6-10 (state-related, lines 2187-2262)
 3. Note checklist items: "Global state uses NotifierProvider"
 
 ### Step 1.3: Check Reference Documentation
@@ -126,7 +126,7 @@ Before modifying existing code:
 - ✅ `color: AppColors.accent`
 - ❌ `color: Color(0xFFe8751a)`
 
-**Reference:** ARCHITECTURE.md → Design Token System (lines 1116-1127)
+**Reference:** ARCHITECTURE.md → Design Token System (lines 1820-1830)
 
 ### Step 2.2: Follow State Management Patterns
 
@@ -137,10 +137,10 @@ Before modifying existing code:
 
 **Before creating new provider:**
 1. Check _reference/PROVIDERS_REFERENCE.md — Does provider already exist?
-2. Check ARCHITECTURE.md → State Management (lines 146-285) — Which type?
+2. Check ARCHITECTURE.md → State Management (lines 154-351) — Which type?
 3. Follow established patterns from existing providers
 
-**Reference:** ARCHITECTURE.md → State Management (lines 146-285)
+**Reference:** ARCHITECTURE.md → State Management (lines 154-351)
 
 ### Step 2.3: Follow Widget Patterns
 
@@ -154,7 +154,7 @@ Before modifying existing code:
 - Use `StatelessWidget` for pure widgets (no provider reads)
 - Use `ConsumerStatefulWidget` for widgets with local state + provider reads
 
-**Reference:** ARCHITECTURE.md → Widget Patterns (lines 288-483)
+**Reference:** ARCHITECTURE.md → Widget Patterns (lines 354-1025)
 
 ### Step 2.4: Translations (100% Required)
 
@@ -171,7 +171,7 @@ Text('Welcome to JourneyMate')
 1. Check if key exists in _reference/BUILDSHIP_API_REFERENCE.md → GET /languageText
 2. If new key needed, add to all 7 languages via Supabase
 
-**Reference:** ARCHITECTURE.md → Translation System (lines 1054-1113)
+**Reference:** ARCHITECTURE.md → Translation System (lines 1674-1817)
 
 ### Step 2.5: Analytics (Fire-and-Forget)
 
@@ -180,14 +180,14 @@ Text('Welcome to JourneyMate')
 - NEVER call `markUserEngaged()` manually (ActivityScope handles it)
 - Fire-and-forget pattern: `AnalyticsService().logEvent(...);`
 
-**Reference:** ARCHITECTURE.md → Analytics Architecture (lines 1129-1203)
+**Reference:** ARCHITECTURE.md → Analytics Architecture (lines 1833-1907)
 
 ### Step 2.6: API Calls
 
 **Before making API call:**
 1. Read _reference/BUILDSHIP_API_REFERENCE.md → Find endpoint
 2. Verify required parameters and response format
-3. Use ApiService singleton pattern (see ARCHITECTURE.md lines 834-890)
+3. Use ApiService singleton pattern (see ARCHITECTURE.md lines 1376-1510)
 
 **Common mistake:** Assuming API response structure. Always check reference first.
 
@@ -223,11 +223,11 @@ flutter analyze
 **If warnings appear:**
 - Fix them (don't ignore)
 - Common warnings: unnecessary_underscores, prefer_const_constructors
-- See ARCHITECTURE.md → Common Pitfalls #19-21 (lines 2196-2262) for linting rules
+- See ARCHITECTURE.md → Common Pitfalls #19-21 (lines 2754-2901) for linting rules
 
 ### Step 3.2: Review Against Code Review Checklist
 
-**Required reading:** ARCHITECTURE.md → Code Review Checklist (lines 1698-1778)
+**Required reading:** ARCHITECTURE.md → Code Review Checklist (lines 2032-2126)
 
 **Go through EVERY item relevant to your changes:**
 
@@ -272,19 +272,19 @@ flutter analyze
 
 | Code Area | Check These Pitfalls |
 |-----------|---------------------|
-| **Colors/Spacing** | Pitfalls #1-2 (lines 1778-1809) |
-| **Flutter 3.x APIs** | Pitfalls #3-5 (lines 1810-1871) |
-| **State Management** | Pitfalls #6-10 (lines 1872-1986) |
-| **Analytics** | Pitfall #11 (lines 1987-2010) |
-| **Translations** | Pitfall #12 (lines 2011-2044) |
-| **Widget Props** | Pitfall #7 (lines 1897-1938) |
-| **Search/Filter** | Pitfalls #13-18 (lines 2045-2195) |
-| **Linting** | Pitfalls #19-21 (lines 2196-2262) |
-| **Code Quality** | Pitfalls #22-24 (lines 2263-2370) |
+| **Colors/Spacing** | Pitfalls #1-2 (lines 2131-2160) |
+| **Flutter 3.x APIs** | Pitfalls #3-5 (lines 2151-2206) |
+| **State Management** | Pitfalls #6-10 (lines 2187-2262) |
+| **Widget Lifecycle** | Pitfalls #11, #33 (lines 2263-2347, 3398-3447) |
+| **Translations** | Pitfall #12 (lines 2348-2462) |
+| **Widget Props** | Pitfall #8 (lines 2218-2231) |
+| **Search/Filter** | Pitfalls #13-18 (lines 2463-2753) |
+| **Linting** | Pitfalls #19-21 (lines 2754-2901) |
+| **Code Quality** | Pitfalls #22-24, #34 (lines 2902-3116, 3448-3487) |
 
 **Action:** Scan relevant pitfalls, verify your code doesn't violate them.
 
-**Reference:** ARCHITECTURE.md → Common Pitfalls (lines 1778-2780)
+**Reference:** ARCHITECTURE.md → Common Pitfalls (lines 2129-3487)
 
 ### Step 3.4: Test Your Changes
 
@@ -356,7 +356,7 @@ See also:
 **Example: Adding API call to new page:**
 1. CODE_DEVELOPMENT_WORKFLOW.md (this doc) → Understand workflow
 2. NAVIGATION_GUIDE.md → Scenario 3 (API Integration) → 15-minute reading list
-3. ARCHITECTURE.md → API Service Pattern (lines 834-890)
+3. ARCHITECTURE.md → API Service Pattern (lines 1376-1510)
 4. BUILDSHIP_API_REFERENCE.md → Specific endpoint you're calling
 5. ARCHITECTURE.md → Code Review Checklist before commit
 
@@ -379,16 +379,18 @@ If you notice documentation doesn't match reality:
 
 ### Pitfall Categories
 
-**24 documented pitfalls organized by category:**
+**34 documented pitfalls organized by category:**
 
 1. **Design Tokens (Pitfalls #1-2)** — Raw hex, magic numbers
 2. **Flutter 3.x APIs (Pitfalls #3-5)** — Deprecated APIs
 3. **State Management (Pitfalls #6-10)** — Non-atomic updates, staleness, prop drilling
-4. **Analytics (Pitfall #11)** — Awaiting analytics
+4. **Widget Lifecycle (Pitfalls #11, #33)** — ref after unmount, ref.read in dispose
 5. **Translations (Pitfall #12)** — Hardcoded strings
 6. **Search/Filter (Pitfalls #13-18)** — Client-side logic, state management
 7. **Linting (Pitfalls #19-21)** — Double underscores, conditional entries
 8. **Code Quality (Pitfalls #22-24)** — Refactoring tested code, defensive validation
+9. **Data & API (Pitfalls #25-32)** — Provider data, day keys, JSON casting, caching, sessions
+10. **UI Patterns (Pitfall #34)** — Tab-jumping guard for PageController
 
 ### How to Use Pitfalls
 
@@ -420,7 +422,7 @@ If you notice documentation doesn't match reality:
 - Don't mix FlutterFlow patterns with new patterns
 - Consider refactoring entire file to new patterns (if feasible)
 
-**Reference:** ARCHITECTURE.md → Code Quality Standards (lines 1206-1245)
+**Reference:** ARCHITECTURE.md → Code Quality Standards (lines 1910-2029)
 
 ### Emergency Fixes
 
@@ -435,7 +437,7 @@ If you notice documentation doesn't match reality:
 ### Refactoring Existing Code
 
 **Before refactoring:**
-- Read ARCHITECTURE.md → Pitfall #22 (lines 2263-2313)
+- Read ARCHITECTURE.md → Pitfall #22 (lines 2902-2961)
 - Understand why code exists as-is
 - Test thoroughly before/after
 
@@ -461,8 +463,8 @@ If you notice documentation doesn't match reality:
 
 **Before committing:**
 8. `flutter analyze` (must be clean)
-9. ARCHITECTURE.md → Code Review Checklist (lines 1698-1778)
-10. Verify against relevant Common Pitfalls (lines 1778-2780)
+9. ARCHITECTURE.md → Code Review Checklist (lines 2032-2126)
+10. Verify against relevant Common Pitfalls (lines 2129-3487)
 11. Test changes work
 12. Document discoveries in commit message
 
