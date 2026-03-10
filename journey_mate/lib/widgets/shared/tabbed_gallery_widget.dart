@@ -103,11 +103,6 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
   static const Duration _pageTransitionDuration = Duration(milliseconds: 450);
   static const Curve _pageTransitionCurve = Curves.easeInOut;
 
-  // Tab text styling
-  static const double _selectedTabFontSize = 18.0;
-  static const FontWeight _selectedTabFontWeight = FontWeight.w400;
-  static const FontWeight _unselectedTabFontWeight = FontWeight.w300;
-
   // Category keys
   static const String _foodKey = 'food';
   static const String _menuKey = 'menu';
@@ -498,11 +493,10 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: _selectedTabFontSize,
+              style: AppTypography.h3.copyWith(
                 fontWeight: isSelected
-                    ? _selectedTabFontWeight
-                    : _unselectedTabFontWeight,
+                    ? FontWeight.w400
+                    : FontWeight.w300,
                 color: isSelected ? AppColors.accent : AppColors.textPrimary,
               ),
             ),
@@ -620,7 +614,7 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
     return Center(
       child: Text(
         td(ref, _noImagesTranslationKey),
-        style: AppTypography.bodyRegular.copyWith(
+        style: AppTypography.bodyLg.copyWith(
           color: AppColors.textPrimary,
         ),
       ),
@@ -643,7 +637,7 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
               child: Text(
                 td(ref, 'gallery_view_all'),
-                style: AppTypography.bodyMedium.copyWith(
+                style: AppTypography.bodyLgMedium.copyWith(
                   fontWeight: FontWeight.normal,
                 ),
               ),

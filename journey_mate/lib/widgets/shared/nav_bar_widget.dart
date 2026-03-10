@@ -235,7 +235,7 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
             // Label
             Text(
               label,
-              style: AppTypography.bodyRegular.copyWith(color: color),
+              style: AppTypography.bodyLg.copyWith(color: color),
             ),
           ],
         ),

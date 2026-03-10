@@ -247,7 +247,7 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
         alignment: Alignment.centerLeft,
         child: Text(
           _getDayName(context, dayIndex),
-          style: AppTypography.label,
+          style: AppTypography.bodyLgMedium,
         ),
       ),
     );
@@ -262,7 +262,7 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
           : _getUIText(ref, _closedTranslationKey);
       return Text(
         label,
-        style: AppTypography.bodyRegular,
+        style: AppTypography.bodyLg,
       );
     }
 
@@ -273,7 +273,7 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
     if (timeSlots.isEmpty) {
       return Text(
         _getUIText(ref, _closedTranslationKey),
-        style: AppTypography.bodyRegular,
+        style: AppTypography.bodyLg,
       );
     }
 
@@ -333,7 +333,7 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
     if (cutoffs.isEmpty) {
       return Text(
         hoursText,
-        style: AppTypography.bodyRegular,
+        style: AppTypography.bodyLg,
       );
     }
 
@@ -358,11 +358,11 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
         children: [
           Text(
             hoursText,
-            style: AppTypography.bodyRegular,
+            style: AppTypography.bodyLg,
           ),
           Text(
             cutoffText,
-            style: AppTypography.bodySmall,
+            style: AppTypography.bodyMedium,
           ),
         ],
       );
@@ -370,7 +370,7 @@ class _OpeningHoursAndWeekdaysState extends ConsumerState<OpeningHoursAndWeekday
 
     return Text(
       '$hoursText $cutoffText',
-      style: AppTypography.bodyRegular,
+      style: AppTypography.bodyLg,
     );
   }
 }

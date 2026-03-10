@@ -271,12 +271,12 @@ class _MapBusinessPreviewCardState
                 _businessName ?? '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTypography.cardRestaurantName,
+                style: AppTypography.bodyMedium,
               ),
             ),
             if (distanceText != null) ...[
               const SizedBox(width: 6),
-              Text(distanceText, style: AppTypography.cardDistance),
+              Text(distanceText, style: AppTypography.bodySmMedium),
             ],
           ],
         ),
@@ -289,7 +289,7 @@ class _MapBusinessPreviewCardState
             if (statusText.isNotEmpty)
               Text(
                 statusText,
-                style: AppTypography.cardDetail.copyWith(
+                style: AppTypography.bodySm.copyWith(
                   color: statusColor,
                   fontWeight: statusText.toLowerCase() == 'closed'
                       ? FontWeight.w600
@@ -299,7 +299,7 @@ class _MapBusinessPreviewCardState
             if (statusText.isNotEmpty && _businessType != null) ...[
               const SizedBox(width: AppSpacing.xs),
               Text('·',
-                  style: AppTypography.cardDetail
+                  style: AppTypography.bodySm
                       .copyWith(color: AppColors.textSecondary)),
               const SizedBox(width: AppSpacing.xs),
             ],
@@ -309,16 +309,16 @@ class _MapBusinessPreviewCardState
                   _businessType!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.cardDetail,
+                  style: AppTypography.bodySm,
                 ),
               ),
             if (priceRange != null) ...[
               const SizedBox(width: AppSpacing.xs),
               Text('·',
-                  style: AppTypography.cardDetail
+                  style: AppTypography.bodySm
                       .copyWith(color: AppColors.textSecondary)),
               const SizedBox(width: AppSpacing.xs),
-              Text(priceRange, style: AppTypography.cardDetail),
+              Text(priceRange, style: AppTypography.bodySm),
             ],
           ],
         ),

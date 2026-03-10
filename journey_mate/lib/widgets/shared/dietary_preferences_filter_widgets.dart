@@ -343,7 +343,7 @@ class _DietaryPreferencesFilterWidgetsState
         ),
         child: Text(
           preferenceName,
-          style: AppTypography.label.copyWith(
+          style: AppTypography.bodyLgMedium.copyWith(
             color: isSelected ? Colors.white : AppColors.textPrimary,
           ),
         ),

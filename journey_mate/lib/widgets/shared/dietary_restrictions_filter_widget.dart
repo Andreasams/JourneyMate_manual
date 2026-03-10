@@ -508,7 +508,7 @@ class _DietaryRestrictionsFilterWidgetState
         ),
         child: Text(
           text,
-          style: AppTypography.bodySmall.copyWith(
+          style: AppTypography.bodyMedium.copyWith(
             color: isSelected ? _selectedTextColor : _unselectedTextColor,
           ),
         ),

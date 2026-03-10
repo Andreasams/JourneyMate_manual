@@ -11,6 +11,7 @@ import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/app_typography.dart';
 
 /// Displays business feature/preference filters as interactive buttons.
 ///
@@ -59,16 +60,13 @@ class _BusinessFeatureButtonsState
   static const double _buttonRunSpacing = 8.0;
   static const double _iconSize = 16.0;
   static const double _iconSpacing = 6.0;
-  static const double _fontSize = 14.0;
   // AppRadius.facility (9px) — unified with payment_options_widget
   static const double _borderRadius = AppRadius.facility;
   static const double _textMeasurementSafetyMargin = 4.0;
 
   // Text style for measurement (use w300 for conservative calculation)
-  static const TextStyle _buttonTextStyleUnselected = TextStyle(
-    fontSize: _fontSize,
+  static final TextStyle _buttonTextStyleUnselected = AppTypography.bodySm.copyWith(
     fontWeight: FontWeight.w300,
-    fontFamily: 'Roboto',
     letterSpacing: 0,
   );
 
@@ -803,10 +801,8 @@ class _BusinessFeatureButtonsState
 
   /// Creates button text style based on selection state.
   TextStyle _buildButtonTextStyle(bool isSelected) {
-    return TextStyle(
-      // Use AppColors.accent for design system compliance
+    return AppTypography.bodySm.copyWith(
       color: isSelected ? AppColors.accent : AppColors.textPrimary,
-      fontSize: _fontSize,
       fontWeight: FontWeight.w300,
     );
   }

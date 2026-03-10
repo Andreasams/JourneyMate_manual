@@ -239,7 +239,7 @@ class _PackageCoursesDisplayState
       padding: const EdgeInsets.symmetric(vertical: _listPadding),
       child: Text(
         td(ref, _errorPackageNotFoundKey),
-        style: AppTypography.bodyRegular.copyWith(
+        style: AppTypography.bodyLg.copyWith(
           fontSize: 16.0,
           color: AppColors.error,
         ),
@@ -315,7 +315,7 @@ class _PackageCoursesDisplayState
       margin: const EdgeInsets.only(bottom: _courseNameBottomMargin),
       child: Text(
         courseName,
-        style: AppTypography.bodyRegular.copyWith(
+        style: AppTypography.bodyLg.copyWith(
           fontSize: _courseNameFontSize,
           fontWeight: _courseNameFontWeight,
           color: _courseNameColor,
@@ -331,7 +331,7 @@ class _PackageCoursesDisplayState
       margin: const EdgeInsets.only(bottom: _courseDescriptionBottomMargin),
       child: Text(
         courseDescription,
-        style: AppTypography.bodyRegular.copyWith(
+        style: AppTypography.bodyLg.copyWith(
           fontSize: _courseDescriptionFontSize,
           fontWeight: _courseDescriptionFontWeight,
           color: _courseDescriptionColor,
@@ -477,7 +477,7 @@ class _PackageCoursesDisplayState
   Widget _buildItemName(String itemName) {
     return Text(
       itemName,
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: _itemNameFontSize,
         fontWeight: _itemNameFontWeight,
         color: _itemNameColor,
@@ -499,7 +499,7 @@ class _PackageCoursesDisplayState
       ),
       child: Text(
         premiumText,
-        style: AppTypography.bodyRegular.copyWith(
+        style: AppTypography.bodyLg.copyWith(
           fontSize: _premiumBadgeFontSize,
           fontWeight: _premiumBadgeFontWeight,
           color: AppColors.accent,
@@ -514,7 +514,7 @@ class _PackageCoursesDisplayState
       padding: const EdgeInsets.only(top: _itemDescriptionTopSpacing),
       child: Text(
         itemDescription,
-        style: AppTypography.bodyRegular.copyWith(
+        style: AppTypography.bodyLg.copyWith(
           fontSize: _itemDescriptionFontSize,
           fontWeight: _itemDescriptionFontWeight,
           color: _itemDescriptionColor,

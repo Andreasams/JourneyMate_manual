@@ -155,20 +155,20 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
       children: [
         Text(
           td(ref, 'tab_menu'),
-          style: AppTypography.sectionHeading,
+          style: AppTypography.h2,
         ),
         Row(
           children: [
             Text(
               td(ref, 'menu_last_updated_prefix'),
-              style: AppTypography.bodySmall.copyWith(
+              style: AppTypography.bodyMedium.copyWith(
                 fontWeight: FontWeight.w300,
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
             Text(
               _formatLocalizedDate(lastReviewedAt, language),
-              style: AppTypography.bodySmall.copyWith(
+              style: AppTypography.bodyMedium.copyWith(
                 fontWeight: FontWeight.w300,
               ),
             ),
@@ -188,7 +188,7 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
             padding: EdgeInsets.only(bottom: AppSpacing.xs),
             child: Text(
               _buildFilterSummary(),
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
             ),
           ),
 
@@ -201,7 +201,7 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
               _showFilters
                   ? td(ref, 'menu_hide_filters')
                   : td(ref, 'menu_show_filters'),
-              style: AppTypography.bodyMedium.copyWith(
+              style: AppTypography.bodyLgMedium.copyWith(
                 color: AppColors.accent,
                 fontWeight: FontWeight.normal,
               ),

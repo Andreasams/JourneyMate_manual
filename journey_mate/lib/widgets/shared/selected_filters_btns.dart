@@ -5,6 +5,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_constants.dart';
+import '../../theme/app_typography.dart';
 
 /// Displays selected filters as removable buttons with a "Clear All" action.
 ///
@@ -57,7 +58,6 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
   static const double _buttonSpacing = 6.0;
   static const double _clearButtonSpacing = 8.0;
   static const double _iconSize = 10.0;
-  static const double _fontSize = 13.5;
 
   // --- Category Title IDs ---
   static const int _locationTitleId = 1;
@@ -582,8 +582,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
         children: [
           Text(
             displayName,
-            style: const TextStyle(
-              fontSize: _fontSize,
+            style: AppTypography.bodySm.copyWith(
               fontWeight: FontWeight.w600,
               color: AppColors.green,
               height: 1.2,
@@ -657,8 +656,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       ),
       child: Text(
         _getUIText('search_clear_all'),
-        style: const TextStyle(
-          fontSize: _fontSize,
+        style: AppTypography.bodySm.copyWith(
           fontWeight: FontWeight.w600,
           color: AppColors.accent,
           height: 1.2,

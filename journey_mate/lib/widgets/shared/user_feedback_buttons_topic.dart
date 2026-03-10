@@ -141,7 +141,7 @@ class _UserFeedbackButtonsTopicState
 
   /// Creates text style based on selection state.
   TextStyle _buildTextStyle(bool isSelected) {
-    return AppTypography.chip.copyWith(
+    return AppTypography.bodySmMedium.copyWith(
       color: isSelected ? Colors.white : AppColors.textSecondary,
     );
   }

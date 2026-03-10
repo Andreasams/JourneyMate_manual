@@ -424,7 +424,7 @@ class _PackageViewPage extends ConsumerWidget {
 
     return Text(
       packageName,
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: _packageNameFontSize,
         fontWeight: _packageNameFontWeight,
         color: AppColors.textPrimary,
@@ -448,7 +448,7 @@ class _PackageViewPage extends ConsumerWidget {
 
     return Text(
       formattedPrice,
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: _priceFontSize,
         fontWeight: _priceFontWeight,
         color: AppColors.accent,
@@ -467,7 +467,7 @@ class _PackageViewPage extends ConsumerWidget {
 
     return Text(
       packageDescription,
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: _descriptionFontSize,
         fontWeight: _descriptionFontWeight,
         color: AppColors.textPrimary,
@@ -646,7 +646,7 @@ class _ItemDetailPage extends ConsumerWidget {
 
     return Text(
       itemName,
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: _itemNameFontSize,
         fontWeight: _itemNameFontWeight,
         color: AppColors.textPrimary,
@@ -678,7 +678,7 @@ class _ItemDetailPage extends ConsumerWidget {
         ),
         child: Text(
           displayPrice,
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             fontSize: _premiumPriceFontSize,
             fontWeight: _premiumPriceFontWeight,
             color: AppColors.accent,
@@ -715,7 +715,7 @@ class _ItemDetailPage extends ConsumerWidget {
       padding: EdgeInsets.only(top: topPadding),
       child: Text(
         itemDescription,
-        style: AppTypography.bodyRegular.copyWith(
+        style: AppTypography.bodyLg.copyWith(
           fontSize: _descriptionFontSize,
           fontWeight: _descriptionFontWeight,
           color: AppColors.textPrimary,
@@ -761,7 +761,7 @@ class _ItemDetailPage extends ConsumerWidget {
   Widget _buildInfoHeader(WidgetRef ref) {
     return Text(
       td(ref, _infoHeaderAdditionalKey),
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: _infoHeaderFontSize,
         fontWeight: _infoHeaderFontWeight,
         color: AppColors.textPrimary,
@@ -792,7 +792,7 @@ class _ItemDetailPage extends ConsumerWidget {
       children: [
         Text(
           td(ref, _infoHeaderDietaryKey),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             fontSize: _infoLabelFontSize,
             fontWeight: _infoLabelFontWeight,
             color: AppColors.textPrimary,
@@ -800,7 +800,7 @@ class _ItemDetailPage extends ConsumerWidget {
         ),
         Text(
           dietaryText ?? '',
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             fontSize: _infoTextFontSize,
             fontWeight: _infoTextFontWeight,
             color: AppColors.textSecondary,
@@ -833,7 +833,7 @@ class _ItemDetailPage extends ConsumerWidget {
       children: [
         Text(
           td(ref, _infoHeaderAllergensKey),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             fontSize: _infoLabelFontSize,
             fontWeight: _infoLabelFontWeight,
             color: AppColors.textPrimary,
@@ -841,7 +841,7 @@ class _ItemDetailPage extends ConsumerWidget {
         ),
         Text(
           allergyText ?? '',
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             fontSize: _infoTextFontSize,
             fontWeight: _infoTextFontWeight,
             color: AppColors.textSecondary,
@@ -955,7 +955,7 @@ class _InformationSourceSectionState extends State<_InformationSourceSection> {
   Widget _buildHeaderText() {
     return Text(
       widget.headerText,
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: _headerFontSize,
         fontWeight: _headerFontWeight,
         color: AppColors.textPrimary,
@@ -1002,7 +1002,7 @@ class _InformationSourceSectionState extends State<_InformationSourceSection> {
   Widget _buildDisclaimerText() {
     return Text(
       widget.disclaimerText,
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: _contentFontSize,
         fontWeight: _contentFontWeight,
         color: AppColors.textSecondary,
@@ -1014,7 +1014,7 @@ class _InformationSourceSectionState extends State<_InformationSourceSection> {
   Widget _buildJourneymateText() {
     return Text(
       widget.journeymateText,
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: _contentFontSize,
         fontWeight: _contentFontWeight,
         color: AppColors.textSecondary,

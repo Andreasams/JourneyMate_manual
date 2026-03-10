@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -280,7 +279,7 @@ class _AppSettingsInitiateFlowPageState
         centerTitle: true,
         title: Text(
           td(ref, 'feedback_page_settings'), // "App setup"
-          style: AppTypography.categoryHeading,
+          style: AppTypography.h3,
         ),
       ),
       body: SafeArea(
@@ -292,10 +291,8 @@ class _AppSettingsInitiateFlowPageState
               // Main page title
               Text(
                 td(ref, 'settings_localization_title'), // "Localization"
-                style: GoogleFonts.roboto(
-                  fontSize: 20,
+                style: AppTypography.h2.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
                 ),
               ),
               SizedBox(height: AppSpacing.sm),
@@ -303,8 +300,7 @@ class _AppSettingsInitiateFlowPageState
               // Main subtitle
               Text(
                 td(ref, 'onboarding_language_currency_desc'), // "Select your preferred language..."
-                style: GoogleFonts.roboto(
-                  fontSize: 14,
+                style: AppTypography.bodySm.copyWith(
                   fontWeight: FontWeight.w300,
                   color: AppColors.textSecondary,
                 ),
@@ -314,7 +310,7 @@ class _AppSettingsInitiateFlowPageState
               // Language Section Title
               Text(
                 td(ref, 'settings_language_label'), // "Language"
-                style: AppTypography.label.copyWith(
+                style: AppTypography.bodyLgMedium.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -329,7 +325,7 @@ class _AppSettingsInitiateFlowPageState
               // Currency Section Title
               Text(
                 td(ref, 'onboarding_currency_label'), // "Currency"
-                style: AppTypography.label.copyWith(
+                style: AppTypography.bodyLgMedium.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -344,7 +340,7 @@ class _AppSettingsInitiateFlowPageState
               Text(
                 td(ref,
                     'currency_exchange_rate_disclaimer'), // "Exchange rates are updated once per 24 hours"
-                style: AppTypography.helper.copyWith(
+                style: AppTypography.bodySm.copyWith(
                   color: AppColors.textTertiary,
                 ),
               ),

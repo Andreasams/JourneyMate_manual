@@ -81,7 +81,7 @@ class MenuItemCard extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     name,
-                    style: AppTypography.bodyRegular.copyWith(
+                    style: AppTypography.bodyLg.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 2,
@@ -101,7 +101,7 @@ class MenuItemCard extends ConsumerWidget {
                             currencyCode!,
                           ) ??
                           '${price!.round()} ${currencyCode!}',
-                      style: AppTypography.label.copyWith(
+                      style: AppTypography.bodyLgMedium.copyWith(
                         color: AppColors.accent,
                       ),
                       textAlign: TextAlign.right,
@@ -115,7 +115,7 @@ class MenuItemCard extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 description!,
-                style: AppTypography.bodySmall.copyWith(
+                style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
                 maxLines: 3,
@@ -158,7 +158,7 @@ class MenuItemCard extends ConsumerWidget {
                             ref,
                             'menu_contains_allergens',
                           ).replaceAll('{count}', '${allergenIds.length}'),
-                          style: AppTypography.bodySmall.copyWith(
+                          style: AppTypography.bodyMedium.copyWith(
                             color: AppColors.error,
                             fontWeight: FontWeight.w500,
                           ),

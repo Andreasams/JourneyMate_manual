@@ -80,7 +80,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
         ),
         title: Text(
           businessName,
-          style: AppTypography.categoryHeading,
+          style: AppTypography.h3,
         ),
         centerTitle: true,
       ),
@@ -101,14 +101,14 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
             children: [
               Text(
                 td(ref, 'menu_load_error'),
-                style: AppTypography.bodyRegular,
+                style: AppTypography.bodyLg,
               ),
               SizedBox(height: AppSpacing.sm),
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Text(
                   td(ref, 'back'),
-                  style: AppTypography.bodyMedium.copyWith(
+                  style: AppTypography.bodyLgMedium.copyWith(
                     color: AppColors.accent,
                   ),
                 ),
@@ -121,7 +121,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
       return Center(
         child: Text(
           td(ref, 'menu_loading'),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             color: AppColors.textSecondary,
           ),
         ),

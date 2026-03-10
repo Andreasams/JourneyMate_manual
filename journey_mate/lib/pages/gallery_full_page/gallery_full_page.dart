@@ -107,7 +107,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
         ),
         title: Text(
           businessName,
-          style: AppTypography.categoryHeading,
+          style: AppTypography.h3,
         ),
         centerTitle: true,
       ),
@@ -133,7 +133,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
       return Center(
         child: Text(
           td(ref, 'gallery_loading'),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
@@ -148,7 +148,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
           // "Gallery" label
           Text(
             td(ref, 'tab_gallery'), // "Gallery"
-            style: AppTypography.sectionHeading.copyWith(
+            style: AppTypography.h2.copyWith(
               color: AppColors.textPrimary,
             ),
           ),

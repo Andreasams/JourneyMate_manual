@@ -186,7 +186,7 @@ class _OverlayDropdownSelectorState<T>
             children: [
               Text(
                 displayText,
-                style: AppTypography.bodyRegular.copyWith(
+                style: AppTypography.bodyLg.copyWith(
                   fontWeight: FontWeight.w300,
                 ),
               ),
@@ -287,7 +287,7 @@ class _OverlayDropdownSelectorState<T>
         ),
         child: Text(
           widget.itemDisplayBuilder(item),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             fontWeight: FontWeight.w300,
           ),
         ),

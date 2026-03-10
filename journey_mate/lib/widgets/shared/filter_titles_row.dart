@@ -143,7 +143,7 @@ class FilterTitlesRow extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: AppTypography.bodyRegular.copyWith(
+                  style: AppTypography.bodyLg.copyWith(
                     fontSize: 13.5,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected ? AppColors.bgCard : AppColors.textSecondary,

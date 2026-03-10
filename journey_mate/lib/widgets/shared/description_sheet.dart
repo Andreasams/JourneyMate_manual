@@ -100,7 +100,7 @@ class _DescriptionSheetState extends State<DescriptionSheet> {
                   SizedBox(height: AppSpacing.md),
                   Text(
                     widget.title,
-                    style: AppTypography.sectionHeading,
+                    style: AppTypography.h2,
                   ),
                   SizedBox(height: AppSpacing.sm),
                   Text(
@@ -108,7 +108,7 @@ class _DescriptionSheetState extends State<DescriptionSheet> {
                         ? widget.description!
                         : (widget.fallbackDescription ??
                             'No description available.'),
-                    style: AppTypography.bodyRegular.copyWith(
+                    style: AppTypography.bodyLg.copyWith(
                       color: _hasDescription
                           ? AppColors.textSecondary
                           : AppColors.textTertiary,

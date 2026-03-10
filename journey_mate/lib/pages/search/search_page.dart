@@ -626,7 +626,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         SizedBox(width: AppSpacing.xs),
         Text(
           td(ref, 'city_copenhagen'), // FlutterFlow legacy key for Copenhagen
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             fontSize: 15, // Increased from 13.5 to match JSX
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
@@ -661,7 +661,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     return Text(
       title,
-      style: AppTypography.pageTitle.copyWith(fontWeight: FontWeight.w700),
+      style: AppTypography.h1,
     );
   }
 
@@ -722,7 +722,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             Center(
               child: Text(
                 count > 0 && !isActive ? '$label ($count)' : label,
-                style: AppTypography.bodyRegular.copyWith(
+                style: AppTypography.bodyLg.copyWith(
                   fontSize: 13.5,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                   color: isActive ? AppColors.bgCard : AppColors.textSecondary,
@@ -791,7 +791,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: Text(
                 td(ref, 'view_toggle_list'), // Use translation key
                 textAlign: TextAlign.center,
-                style: AppTypography.viewToggle.copyWith(
+                style: AppTypography.bodySmMedium.copyWith(
                   fontWeight: _viewMode == _ViewMode.list ? FontWeight.w600 : FontWeight.w500,
                   color: _viewMode == _ViewMode.list ? AppColors.textPrimary : AppColors.textMuted,
                 ),
@@ -818,7 +818,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 child: Text(
                   td(ref, 'action_map'), // Use translation key
                   textAlign: TextAlign.center,
-                  style: AppTypography.viewToggle.copyWith(
+                  style: AppTypography.bodySmMedium.copyWith(
                     fontWeight: _viewMode == _ViewMode.map ? FontWeight.w600 : FontWeight.w500,
                     color: _viewMode == _ViewMode.map ? AppColors.textPrimary : AppColors.textMuted,
                   ),
@@ -863,7 +863,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 Flexible(
                   child: Text(
                     _getSortButtonText(),
-                    style: AppTypography.bodySmall.copyWith(
+                    style: AppTypography.bodyMedium.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
@@ -977,7 +977,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   Expanded(
                     child: Text(
                       td(ref, 'location_permission_denied'),
-                      style: AppTypography.bodySmall.copyWith(
+                      style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
@@ -1002,7 +1002,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     },
                     child: Text(
                       td(ref, 'location_permission_enable'),
-                      style: AppTypography.bodySmall.copyWith(
+                      style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.accent,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1116,7 +1116,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             SizedBox(height: AppSpacing.lg),
             Text(
               _errorMessage!,
-              style: AppTypography.bodyRegular.copyWith(
+              style: AppTypography.bodyLg.copyWith(
                 color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
@@ -1155,7 +1155,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   ? td(ref, 'search_no_results_with_query')
                       .replaceAll('{query}', searchState.currentSearchText)
                   : td(ref, 'search_no_results'),
-              style: AppTypography.bodyRegular.copyWith(
+              style: AppTypography.bodyLg.copyWith(
                 color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,

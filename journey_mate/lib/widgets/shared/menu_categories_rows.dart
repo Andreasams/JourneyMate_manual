@@ -957,7 +957,7 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
         alignment: Alignment.center,
         child: Text(
           _getUIText('menu_no_categories'),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             color: _ColorConstants.unselectedTextColor,
           ),
         ),
@@ -1113,10 +1113,10 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
           child: Text(
             text,
             style: isSelected
-                ? AppTypography.bodyRegular.copyWith(
+                ? AppTypography.bodyLg.copyWith(
                     color: _ColorConstants.selectedTextColor,
                   )
-                : AppTypography.bodyRegular.copyWith(
+                : AppTypography.bodyLg.copyWith(
                     color: _ColorConstants.unselectedTextColor,
                   ),
           ),

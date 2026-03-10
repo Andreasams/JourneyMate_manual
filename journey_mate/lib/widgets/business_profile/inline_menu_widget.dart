@@ -50,7 +50,7 @@ class InlineMenuWidget extends ConsumerWidget {
                     padding: EdgeInsets.only(bottom: 4),
                     child: Text(
                       td(ref, 'menu_view_full_page'),
-                      style: AppTypography.bodyMedium.copyWith(
+                      style: AppTypography.bodyLgMedium.copyWith(
                         fontWeight: FontWeight.normal,
                       ),
                     ),

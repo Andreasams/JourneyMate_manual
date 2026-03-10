@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// Typography - Text styles from design system
+/// Typography — 14-style type scale.
+///
+/// Sizes snap to 14 / 15 / 16 / 18 / 20 / 26. Every style uses
+/// textPrimary except [button] (white) and [price] (accent).
 class AppTypography {
   AppTypography._();
 
@@ -9,34 +12,34 @@ class AppTypography {
   // HEADINGS
   // ============================================================
 
-  /// Page title (h2) - 26px, weight 720 → w700
-  static const TextStyle pageTitle = TextStyle(
+  /// 26/w700 — page titles, hero headings
+  static const TextStyle h1 = TextStyle(
     fontSize: 26,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
-    letterSpacing: -0.65, // -0.025em × 26px
     height: 1.2,
+    letterSpacing: -0.65,
   );
 
-  /// Restaurant name (h1) - 26px, weight 750 → w800
-  static const TextStyle restaurantName = TextStyle(
+  /// 26/w800 — restaurant name on profile
+  static const TextStyle h1Heavy = TextStyle(
     fontSize: 26,
     fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
-    letterSpacing: -0.78, // -0.03em × 26px
     height: 1.2,
+    letterSpacing: -0.78,
   );
 
-  /// Section heading (h3) - 20px, weight 680 → w700
-  static const TextStyle sectionHeading = TextStyle(
+  /// 20/w700 — section headings
+  static const TextStyle h2 = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
     height: 1.3,
   );
 
-  /// Category heading (h4) - 18px, weight 650 → w700
-  static const TextStyle categoryHeading = TextStyle(
+  /// 18/w700 — category headings
+  static const TextStyle h3 = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
@@ -44,87 +47,62 @@ class AppTypography {
   );
 
   // ============================================================
-  // BODY TEXT
+  // BODY
   // ============================================================
 
-  /// Body regular - 16px, weight 400
-  static const TextStyle bodyRegular = TextStyle(
+  /// 16/w400 — long-form text, descriptions
+  static const TextStyle bodyLg = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
-    height: 1.5, // 24px line height
+    color: AppColors.textPrimary,
+    height: 1.45,
   );
 
-  /// Body medium - 16px, weight 500
-  static const TextStyle bodyMedium = TextStyle(
+  /// 16/w500 — labels, emphasized body
+  static const TextStyle bodyLgMedium = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
-    height: 1.5,
+    height: 1.45,
   );
 
-  /// Body small - 15px, weight 460 → w500
-  static const TextStyle bodySmall = TextStyle(
+  /// 15/w400 — standard body text
+  static const TextStyle body = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+    height: 1.45,
+  );
+
+  /// 15/w500 — card names, menu items
+  static const TextStyle bodyMedium = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w500,
-    color: AppColors.textSecondary,
-    height: 1.4,
+    color: AppColors.textPrimary,
+    height: 1.45,
   );
 
-  /// Body tiny - 14px, weight 400
-  static const TextStyle bodyTiny = TextStyle(
+  /// 14/w400 — helper text, card details
+  static const TextStyle bodySm = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    color: AppColors.textTertiary,
-    height: 1.43, // ~20px line height
+    color: AppColors.textPrimary,
+    height: 1.45,
   );
 
-  /// Subtitle - Descriptive text under headings (16px, weight 300)
-  /// Used for section descriptions on settings forms and explanatory text
-  static const TextStyle subtitle = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w300,
-    color: AppColors.textSecondary,
-    height: 1.5, // 24px line height
-  );
-
-  // ============================================================
-  // UI ELEMENTS
-  // ============================================================
-
-  /// Label - Form field labels (16px, weight 500)
-  static const TextStyle label = TextStyle(
-    fontSize: 16,
+  /// 14/w500 — chips, status, distance
+  static const TextStyle bodySmMedium = TextStyle(
+    fontSize: 14,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
-    height: 1.4,
+    height: 1.45,
   );
 
-  /// Helper text - Below form fields (14px, weight 400)
-  static const TextStyle helper = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textTertiary,
-    height: 1.43,
-  );
+  // ============================================================
+  // UI
+  // ============================================================
 
-  /// Input text - Text inside input fields (16px, weight 400)
-  static const TextStyle input = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
-    height: 1.4,
-  );
-
-  /// Placeholder - Input placeholder text (16px, weight 400)
-  static const TextStyle placeholder = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textTertiary,
-    height: 1.4,
-  );
-
-  /// Button text - Primary buttons (18px, weight 600)
+  /// 18/w600/white — primary buttons
   static const TextStyle button = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
@@ -132,69 +110,11 @@ class AppTypography {
     height: 1.2,
   );
 
-  /// Chip text - Small chips (12.5px, weight 540 → w600)
-  static const TextStyle chip = TextStyle(
-    fontSize: 12.5,
-    fontWeight: FontWeight.w600,
-    height: 1.2,
-  );
-
-  /// Status text - Open/Closed (12.5px, weight 560 → w600)
-  static const TextStyle status = TextStyle(
-    fontSize: 12.5,
-    fontWeight: FontWeight.w600,
-    height: 1.2,
-  );
-
-  /// View toggle - List/Map toggle buttons (13.5px, weight 500)
-  static const TextStyle viewToggle = TextStyle(
-    fontSize: 13.5,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textSecondary,
-    height: 1.2,
-  );
-
-  // ============================================================
-  // CARD ELEMENTS
-  // ============================================================
-
-  /// Card restaurant name - 15.5px, weight 630 → w700
-  static const TextStyle cardRestaurantName = TextStyle(
-    fontSize: 15.5,
-    fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
-    height: 1.3,
-  );
-
-  /// Menu item name - 15px, weight 590 → w600
-  static const TextStyle menuItemName = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-    height: 1.3,
-  );
-
-  /// Price - 13.5px, weight 540 → w600, ACCENT color
+  /// 14/w600/accent — prices
   static const TextStyle price = TextStyle(
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.accent,
-    height: 1.2,
-  );
-
-  /// Card detail text - Status, cuisine, price (14px, weight 400)
-  static const TextStyle cardDetail = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
-    height: 1.3,
-  );
-
-  /// Card distance - Right-aligned distance label (14px, weight 500)
-  static const TextStyle cardDistance = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textSecondary,
-    height: 1.3,
+    height: 1.45,
   );
 }

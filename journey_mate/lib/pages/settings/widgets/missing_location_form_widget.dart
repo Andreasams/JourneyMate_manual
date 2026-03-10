@@ -213,17 +213,17 @@ class _MissingLocationFormWidgetState
       children: [
         Text(
           td(ref, 'missing_location_title_main'),
-          style: AppTypography.sectionHeading,
+          style: AppTypography.h2,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           td(ref, 'missing_location_subtitle_main_1'),
-          style: AppTypography.subtitle,
+          style: AppTypography.bodyLg,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           td(ref, 'missing_location_subtitle_main_2'),
-          style: AppTypography.subtitle,
+          style: AppTypography.bodyLg,
         ),
       ],
     );
@@ -257,7 +257,7 @@ class _MissingLocationFormWidgetState
         const SizedBox(height: AppSpacing.xs),
         Text(
           td(ref, 'missing_location_subtitle_business_address'),
-          style: AppTypography.subtitle,
+          style: AppTypography.bodyLg,
         ),
         const SizedBox(height: AppSpacing.sm),
         _buildTextField(
@@ -280,7 +280,7 @@ class _MissingLocationFormWidgetState
         const SizedBox(height: AppSpacing.xs),
         Text(
           td(ref, 'contact_form_subtitle_message'),
-          style: AppTypography.subtitle,
+          style: AppTypography.bodyLg,
         ),
         const SizedBox(height: AppSpacing.sm),
         _buildTextField(
@@ -371,20 +371,16 @@ class _MissingLocationFormWidgetState
             Text(
               td(ref, 'missing_location_success_message'),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.success,
-                fontSize: 15.0,
-                fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               td(ref, 'contact_form_success_navigate_away'),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: AppTypography.bodySm.copyWith(
                 color: AppColors.success.withValues(alpha:0.8),
-                fontSize: 13.0,
-                fontWeight: FontWeight.w400,
               ),
             ),
           ],
@@ -417,10 +413,8 @@ class _MissingLocationFormWidgetState
                 Text(
                   td(ref, 'contact_form_error_submission'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.error,
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -444,17 +438,15 @@ class _MissingLocationFormWidgetState
         children: [
           TextSpan(
             text: text,
-            style: AppTypography.label.copyWith(
+            style: AppTypography.bodyLgMedium.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
           TextSpan(
             text: ' *',
-            style: TextStyle(
+            style: AppTypography.bodySmMedium.copyWith(
               color: AppColors.error,
-              fontSize: 14.0,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -475,10 +467,10 @@ class _MissingLocationFormWidgetState
         TextField(
           controller: controller,
           maxLines: maxLines,
-          style: const TextStyle(fontSize: 14.0),
+          style: AppTypography.bodySm,
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: const TextStyle(fontSize: 14.0, color: Color(0xFFAAAAAA)),
+            hintStyle: AppTypography.bodySm.copyWith(color: const Color(0xFFAAAAAA)),
             filled: true,
             fillColor: AppColors.bgInput,
             border: OutlineInputBorder(
@@ -520,10 +512,8 @@ class _MissingLocationFormWidgetState
             padding: const EdgeInsets.only(top: 4.0),
             child: Text(
               errorText,
-              style: TextStyle(
+              style: AppTypography.bodySm.copyWith(
                 color: AppColors.error,
-                fontSize: 12.0,
-                fontWeight: FontWeight.w400,
               ),
             ),
           ),

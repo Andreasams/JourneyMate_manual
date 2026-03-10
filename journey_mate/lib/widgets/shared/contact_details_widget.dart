@@ -151,22 +151,22 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
       children: [
         Text(
           _getUIText(context, 'address_label'), // address
-          style: AppTypography.sectionHeading,
+          style: AppTypography.h2,
         ),
         Text(
           street,
-          style: AppTypography.bodyRegular,
+          style: AppTypography.bodyLg,
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               '$postalCode, ',
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
             ),
             Text(
               postalCity,
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
             ),
           ].expand((w) => [w, const SizedBox(width: 2)]).toList()
             ..removeLast(),
@@ -179,7 +179,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           highlightColor: Colors.transparent,
           child: Text(
             _getUIText(context, 'view_on_map_action'), // view on map
-            style: AppTypography.bodyRegular.copyWith(
+            style: AppTypography.bodyLg.copyWith(
               color: AppColors.accent,
             ),
           ),
@@ -200,7 +200,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
       children: [
         Text(
           _getUIText(context, 'opening_hours_label'), // opening hours
-          style: AppTypography.sectionHeading,
+          style: AppTypography.h2,
         ),
         OpeningHoursAndWeekdays(
           width: double.infinity,
@@ -225,7 +225,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           ),
           child: Text(
             _getUIText(context, 'feedback_form_title_contact_info'), // contact information
-            style: AppTypography.sectionHeading,
+            style: AppTypography.h2,
           ),
         ),
         ..._buildContactMethodsList(context, businessData),
@@ -282,7 +282,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           children: [
             Text(
               _getUIText(context, 'phone_number_label'), // phone number
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
             ),
             InkWell(
               onTap: () => _handlePhoneTap(phone),
@@ -293,7 +293,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               highlightColor: Colors.transparent,
               child: Text(
                 formatPhoneForDisplay(phone),
-                style: AppTypography.bodyRegular.copyWith(
+                style: AppTypography.bodyLg.copyWith(
                   color: AppColors.accent,
                 ),
               ),
@@ -316,7 +316,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           children: [
             Text(
               _getUIText(context, 'email_label'), // email
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
             ),
             InkWell(
               onTap: () => _handleEmailTap(email),
@@ -327,7 +327,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               highlightColor: Colors.transparent,
               child: Text(
                 _getUIText(context, 'send_email_action'), // send email
-                style: AppTypography.bodyRegular.copyWith(
+                style: AppTypography.bodyLg.copyWith(
                   color: AppColors.accent,
                 ),
               ),
@@ -350,7 +350,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           children: [
             Text(
               _getUIText(context, 'website'), // website
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
             ),
             InkWell(
               onTap: () => _handleWebsiteTap(url),
@@ -360,7 +360,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               highlightColor: Colors.transparent,
               child: Text(
                 _getUIText(context, 'visit_website_action'), // visit website
-                style: AppTypography.bodyRegular.copyWith(
+                style: AppTypography.bodyLg.copyWith(
                   color: AppColors.accent,
                 ),
               ),
@@ -383,7 +383,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           children: [
             Text(
               _getUIText(context, 'booking'), // reservation
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
             ),
             InkWell(
               onTap: () => _handleReservationTap(url),
@@ -393,7 +393,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               highlightColor: Colors.transparent,
               child: Text(
                 _getUIText(context, 'make_reservation_action'), // make reservation
-                style: AppTypography.bodyRegular.copyWith(
+                style: AppTypography.bodyLg.copyWith(
                   color: AppColors.accent,
                 ),
               ),
@@ -416,7 +416,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           children: [
             Text(
               _getUIText(context, 'instagram'), // instagram
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
             ),
             InkWell(
               onTap: () => _handleInstagramTap(url),
@@ -426,7 +426,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               highlightColor: Colors.transparent,
               child: Text(
                 _getUIText(context, 'view_instagram_action'), // view on Instagram
-                style: AppTypography.bodyRegular.copyWith(
+                style: AppTypography.bodyLg.copyWith(
                   color: AppColors.accent,
                 ),
               ),
@@ -449,7 +449,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           children: [
             Text(
               _getUIText(context, 'facebook_label'), // facebook
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
             ),
             InkWell(
               onTap: () => _handleFacebookTap(url),
@@ -459,7 +459,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               highlightColor: Colors.transparent,
               child: Text(
                 _getUIText(context, 'view_facebook_action'), // view on Facebook
-                style: AppTypography.bodyRegular.copyWith(
+                style: AppTypography.bodyLg.copyWith(
                   color: AppColors.accent,
                 ),
               ),
@@ -601,7 +601,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Text(
               prompt,
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
               textAlign: TextAlign.center,
             ),
           ),
@@ -619,7 +619,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
       builder: (_) => AlertDialog(
         content: Text(
           td(ref, 'missing_location_copied'), // "Copied!"
-          style: AppTypography.bodyRegular,
+          style: AppTypography.bodyLg,
           textAlign: TextAlign.center,
         ),
       ),

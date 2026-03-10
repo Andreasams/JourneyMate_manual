@@ -189,7 +189,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                 // Page title
                 Text(
                   td(ref, 'settings_section_settings_account'), // "Settings & account"
-                  style: AppTypography.pageTitle.copyWith(
+                  style: AppTypography.h1.copyWith(
                     color: AppColors.accent,
                   ),
                 ),
@@ -300,7 +300,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
         // Section header
         Text(
           header,
-          style: AppTypography.label,
+          style: AppTypography.bodyLgMedium,
         ),
         const SizedBox(height: AppSpacing.sm),
 
@@ -356,7 +356,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
                 Expanded(
                   child: Text(
                     label,
-                    style: AppTypography.bodyRegular,
+                    style: AppTypography.bodyLg,
                   ),
                 ),
                 // Chevron

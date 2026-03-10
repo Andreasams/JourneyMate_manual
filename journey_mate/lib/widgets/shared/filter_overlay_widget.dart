@@ -1547,7 +1547,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     // When selected, use next heavier weight (w500)
     final fontWeight = isSelected ? FontWeight.w500 : baseFontWeight;
 
-    return TextStyle(
+    return AppTypography.bodySm.copyWith(
       fontSize: _adjustedFontSize(14),
       color: isSelected
           ? _selectedCategoryTextColor
@@ -1597,7 +1597,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       elevation: WidgetStateProperty.all(0),
       overlayColor: WidgetStateProperty.all(_transparentColor),
       textStyle: WidgetStateProperty.all(
-        TextStyle(
+        AppTypography.button.copyWith(
           fontSize: _adjustedFontSize(AppTypography.button.fontSize!),
           fontWeight: shouldHighlight ? FontWeight.w500 : FontWeight.w400,
         ),
@@ -1629,7 +1629,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       elevation: WidgetStateProperty.all(0),
       overlayColor: WidgetStateProperty.all(_transparentColor),
       textStyle: WidgetStateProperty.all(
-        TextStyle(
+        AppTypography.button.copyWith(
           fontSize: _adjustedFontSize(AppTypography.button.fontSize!),
           fontWeight: FontWeight.w400,
         ),

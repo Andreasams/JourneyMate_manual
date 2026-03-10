@@ -71,9 +71,6 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
 
   static const double _imageHeight = 200.0;
 
-  static const double _menuItemFontSize = 15.0;
-  static const FontWeight _menuItemFontWeight = FontWeight.w400;
-
   /// =========================================================================
   /// STATE - LANGUAGE SWITCHING
   /// =========================================================================
@@ -461,11 +458,9 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
           ),
         ),
         const SizedBox(width: 12),
-        const Text(
+        Text(
           'Loading...',
-          style: TextStyle(
-            fontSize: _menuItemFontSize,
-            fontWeight: _menuItemFontWeight,
+          style: AppTypography.body.copyWith(
             color: Colors.black54,
           ),
         ),
@@ -493,11 +488,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
 
     return Text(
       finalText,
-      style: const TextStyle(
-        fontSize: _menuItemFontSize,
-        fontWeight: _menuItemFontWeight,
-        color: AppColors.textPrimary,
-      ),
+      style: AppTypography.body,
     );
   }
 
@@ -845,7 +836,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
 
     return Text(
       itemName,
-      style: AppTypography.pageTitle.copyWith(
+      style: AppTypography.h1.copyWith(
         fontSize: 22.0,
         fontWeight: FontWeight.w600,
         color: Colors.black,
@@ -881,7 +872,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
         ),
         child: Text(
           displayPrice,
-          style: AppTypography.label.copyWith(
+          style: AppTypography.bodyLgMedium.copyWith(
             fontSize: 16.0,
             fontWeight: FontWeight.w500,
             color: AppColors.accent,
@@ -932,7 +923,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       padding: EdgeInsets.only(top: AppSpacing.xs), // 4px
       child: Text(
         itemDescription,
-        style: AppTypography.bodyRegular.copyWith(
+        style: AppTypography.bodyLg.copyWith(
           fontSize: 16.0,
           fontWeight: FontWeight.w300,
           color: AppColors.textSecondary,
@@ -1032,7 +1023,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   Widget _buildInfoHeader() {
     return Text(
       _getUITextFromApi('info_header_additional'),
-      style: AppTypography.label.copyWith(
+      style: AppTypography.bodyLgMedium.copyWith(
         fontSize: 15.0,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
@@ -1057,7 +1048,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       children: [
         Text(
           _getUITextFromApi('info_header_dietary'),
-          style: AppTypography.bodySmall.copyWith(
+          style: AppTypography.bodyMedium.copyWith(
             fontSize: 14.0,
             fontWeight: FontWeight.w400,
             color: AppColors.textPrimary,
@@ -1065,7 +1056,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
         ),
         Text(
           dietaryText ?? '',
-          style: AppTypography.bodySmall.copyWith(
+          style: AppTypography.bodyMedium.copyWith(
             fontSize: 14.0,
             fontWeight: FontWeight.w300,
             color: AppColors.textSecondary,
@@ -1092,7 +1083,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       children: [
         Text(
           _getUITextFromApi('info_header_allergens'),
-          style: AppTypography.bodySmall.copyWith(
+          style: AppTypography.bodyMedium.copyWith(
             fontSize: 14.0,
             fontWeight: FontWeight.w400,
             color: AppColors.textPrimary,
@@ -1100,7 +1091,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
         ),
         Text(
           allergyText ?? '',
-          style: AppTypography.bodySmall.copyWith(
+          style: AppTypography.bodyMedium.copyWith(
             fontSize: 14.0,
             fontWeight: FontWeight.w300,
             color: AppColors.textSecondary,
@@ -1166,15 +1157,6 @@ class _ModifierGroupDisplay extends ConsumerWidget {
   final dynamic translationsCache;
   final String currentLanguage;
 
-  static const double _headerFontSize = 16.0;
-  static const FontWeight _headerFontWeight = FontWeight.w500;
-  static const Color _headerColor = Colors.black;
-  static const double _constraintFontSize = 14.0;
-  static const FontWeight _constraintFontWeight = FontWeight.w400;
-  static const Color _constraintColor = Colors.black54;
-  static const double _modifierFontSize = 14.0;
-  static const FontWeight _modifierFontWeight = FontWeight.w400;
-  static const Color _modifierColor = Colors.black87;
   static const double _headerBottomSpacing = 2.0;
   static const double _constraintBottomSpacing = 8.0;
   static const double _modifierItemSpacing = 2.0;
@@ -1283,12 +1265,7 @@ class _ModifierGroupDisplay extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: _headerBottomSpacing),
       child: Text(
         typeLabel,
-        style: const TextStyle(
-          fontFamily: 'Roboto',
-          fontSize: _headerFontSize,
-          fontWeight: _headerFontWeight,
-          color: _headerColor,
-        ),
+        style: AppTypography.bodyLgMedium,
       ),
     );
   }
@@ -1298,11 +1275,8 @@ class _ModifierGroupDisplay extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: _constraintBottomSpacing),
       child: Text(
         constraintText,
-        style: const TextStyle(
-          fontFamily: 'Roboto',
-          fontSize: _constraintFontSize,
-          fontWeight: _constraintFontWeight,
-          color: _constraintColor,
+        style: AppTypography.bodySm.copyWith(
+          color: Colors.black54,
         ),
       ),
     );
@@ -1337,11 +1311,8 @@ class _ModifierGroupDisplay extends ConsumerWidget {
         Expanded(
           child: Text(
             displayText,
-            style: const TextStyle(
-              fontFamily: 'Roboto',
-              fontSize: _modifierFontSize,
-              fontWeight: _modifierFontWeight,
-              color: _modifierColor,
+            style: AppTypography.bodySm.copyWith(
+              color: Colors.black87,
             ),
           ),
         ),
@@ -1368,10 +1339,7 @@ class _ModifierGroupDisplay extends ConsumerWidget {
 
     return Text(
       priceText,
-      style: const TextStyle(
-        fontFamily: 'Roboto',
-        fontSize: _modifierFontSize,
-        fontWeight: _modifierFontWeight,
+      style: AppTypography.bodySm.copyWith(
         color: AppColors.accent,
       ),
     );
@@ -1417,13 +1385,7 @@ class _InformationSourceSectionState extends State<_InformationSourceSection> {
   static const Curve _expandCurve = Curves.linear;
   static const double _expandedContentTopSpacing = 8.0;
   static const double _disclaimerToJourneymateSpacing = 8.0;
-  static const double _headerFontSize = 14.0;
-  static const FontWeight _headerFontWeight = FontWeight.w400;
-  static const double _contentFontSize = 14.0;
-  static const FontWeight _contentFontWeight = FontWeight.w300;
-  static const Color _headerTextColor = Colors.black;
   static const Color _iconColor = Colors.black;
-  static const Color _contentTextColor = Colors.black87;
   static const double _iconSize = 24.0;
 
   void _toggleExpanded() {
@@ -1459,12 +1421,7 @@ class _InformationSourceSectionState extends State<_InformationSourceSection> {
   Widget _buildHeaderText() {
     return Text(
       widget.headerText,
-      style: const TextStyle(
-        fontFamily: 'Roboto',
-        fontSize: _headerFontSize,
-        fontWeight: _headerFontWeight,
-        color: _headerTextColor,
-      ),
+      style: AppTypography.bodySm,
     );
   }
 
@@ -1503,11 +1460,9 @@ class _InformationSourceSectionState extends State<_InformationSourceSection> {
   Widget _buildDisclaimerText() {
     return Text(
       widget.disclaimerText,
-      style: const TextStyle(
-        fontFamily: 'Roboto',
-        fontSize: _contentFontSize,
-        fontWeight: _contentFontWeight,
-        color: _contentTextColor,
+      style: AppTypography.bodySm.copyWith(
+        fontWeight: FontWeight.w300,
+        color: Colors.black87,
       ),
     );
   }
@@ -1515,11 +1470,9 @@ class _InformationSourceSectionState extends State<_InformationSourceSection> {
   Widget _buildJourneymateText() {
     return Text(
       widget.journeymateText,
-      style: const TextStyle(
-        fontFamily: 'Roboto',
-        fontSize: _contentFontSize,
-        fontWeight: _contentFontWeight,
-        color: _contentTextColor,
+      style: AppTypography.bodySm.copyWith(
+        fontWeight: FontWeight.w300,
+        color: Colors.black87,
       ),
     );
   }

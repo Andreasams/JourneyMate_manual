@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/app_typography.dart';
 
 /// A widget that displays payment options as non-interactive informational buttons.
 ///
@@ -90,15 +91,9 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
   static const Color _selectedTextColor = AppColors.accent;
   static const Color _unselectedTextColor = AppColors.textPrimary;
 
-  static const double _selectedFontSize = 14.0;
-  static const FontWeight _selectedFontWeight = FontWeight.w300;
-  static const FontWeight _unselectedFontWeight = FontWeight.w300;
-
   /// Text measurement style
-  static const TextStyle _buttonTextStyle = TextStyle(
-    fontSize: 14,
+  static final TextStyle _buttonTextStyle = AppTypography.bodySm.copyWith(
     fontWeight: FontWeight.w300,
-    fontFamily: 'Roboto',
     letterSpacing: 0,
   );
 
@@ -508,10 +503,9 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
   Widget _buildButtonText(String filterName, bool isSelected) {
     return Text(
       filterName,
-      style: TextStyle(
+      style: AppTypography.bodySm.copyWith(
         color: isSelected ? _selectedTextColor : _unselectedTextColor,
-        fontSize: _selectedFontSize,
-        fontWeight: isSelected ? _selectedFontWeight : _unselectedFontWeight,
+        fontWeight: FontWeight.w300,
       ),
     );
   }

@@ -38,12 +38,12 @@ import '../../services/api_service.dart';
 /// - border width: 1.5px
 /// - Header padding: AppSpacing.mlg horizontal, AppSpacing.md vertical
 /// - Header icon: AppIconSize.md (16px), check_circle / info_outline
-/// - Header text: AppTypography.viewToggle w600, AppColors.textPrimary
+/// - Header text: AppTypography.bodySmMedium w600, AppColors.textPrimary
 /// - Chevron: AppIconSize.sm (12px), AppColors.textMuted
 /// - Expanded: Wrap with AppSpacing.xs gap
 /// - Chip padding: AppSpacing.xs vertical, AppSpacing.sm horizontal
 /// - Chip borderRadius: AppRadius.chip (8px)
-/// - Chip font: AppTypography.chip (12.5px, matched w600, missed w500)
+/// - Chip font: AppTypography.bodySmMedium (12.5px, matched w600, missed w500)
 /// - Chip icons: AppIconSize.xs (8px), gap AppSpacing.xs
 /// - Matched chip: green text/icons, AppColors.greenBorder
 /// - Missed chip: red text/icons, AppColors.redBorder
@@ -201,7 +201,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
                             td(ref, 'match_card_matches')
                                 .replaceAll('{count}', matchedCount.toString())
                                 .replaceAll('{total}', totalCount.toString()),
-                            style: AppTypography.viewToggle.copyWith(
+                            style: AppTypography.bodySmMedium.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
                             ),
@@ -270,7 +270,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
           SizedBox(width: AppSpacing.xs),
           Text(
             filter['filter_name'] ?? '',
-            style: AppTypography.chip.copyWith(
+            style: AppTypography.bodySmMedium.copyWith(
               color: AppColors.green,
             ),
           ),
@@ -302,7 +302,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
           SizedBox(width: AppSpacing.xs),
           Text(
             filter['filter_name'] ?? '',
-            style: AppTypography.chip.copyWith(
+            style: AppTypography.bodySmMedium.copyWith(
               fontWeight: FontWeight.w500,
               color: AppColors.red,
             ),

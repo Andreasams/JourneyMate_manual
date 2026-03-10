@@ -222,7 +222,7 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
       child: Center(
         child: Text(
           'No images available',
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
@@ -298,7 +298,7 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
               SizedBox(height: AppSpacing.sm),
               Text(
                 'Image failed to load',
-                style: AppTypography.bodyRegular.copyWith(
+                style: AppTypography.bodyLg.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),

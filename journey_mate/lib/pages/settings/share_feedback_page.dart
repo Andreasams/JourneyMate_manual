@@ -78,7 +78,7 @@ class _ShareFeedbackPageState extends ConsumerState<ShareFeedbackPage> {
         ),
         title: Text(
           td(ref, 'share_feedback_label'), // "Share feedback"
-          style: AppTypography.categoryHeading,
+          style: AppTypography.h3,
         ),
       ),
       body: const FeedbackFormWidget(),

@@ -83,7 +83,7 @@ class LocationStatusCard extends ConsumerWidget {
                       children: [
                         Text(
                           td(ref, 'location_label_sharing'), // "Location sharing"
-                          style: AppTypography.bodyMedium.copyWith(
+                          style: AppTypography.bodyLgMedium.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -105,7 +105,7 @@ class LocationStatusCard extends ConsumerWidget {
                           hasPermission
                               ? td(ref, 'location_status_enabled') // "Enabled"
                               : td(ref, 'location_status_disabled'), // "Disabled"
-                          style: AppTypography.bodySmall.copyWith(
+                          style: AppTypography.bodyMedium.copyWith(
                             color: hasPermission
                                 ? AppColors.statusEnabled
                                 : AppColors.statusDisabled,
@@ -123,7 +123,7 @@ class LocationStatusCard extends ConsumerWidget {
                               'location_hint_enabled') // "We can show you restaurants near you"
                           : td(ref,
                               'location_hint_disabled'), // "Enable to see nearby restaurants"
-                      style: AppTypography.helper.copyWith(
+                      style: AppTypography.bodySm.copyWith(
                         color: AppColors.textTertiary,
                       ),
                     ),

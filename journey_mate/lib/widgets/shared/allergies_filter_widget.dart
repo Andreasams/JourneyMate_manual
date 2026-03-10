@@ -239,7 +239,7 @@ class _AllergiesFilterWidgetState
         ),
         child: Text(
           allergyName,
-          style: AppTypography.bodySmall.copyWith(
+          style: AppTypography.bodyMedium.copyWith(
             color:
                 isVisuallySelected ? _selectedTextColor : _unselectedTextColor,
           ),

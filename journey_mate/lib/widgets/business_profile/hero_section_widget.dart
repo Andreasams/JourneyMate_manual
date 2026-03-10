@@ -132,7 +132,7 @@ class HeroSectionWidget extends ConsumerWidget {
               // Business name
               Text(
                 businessName,
-                style: AppTypography.restaurantName.copyWith(
+                style: AppTypography.h1Heavy.copyWith(
                   fontSize: 24,
                   letterSpacing: -0.72,
                 ),
@@ -145,7 +145,7 @@ class HeroSectionWidget extends ConsumerWidget {
                   if (statusText != null && statusText.isNotEmpty)
                     Text(
                       statusText,
-                      style: AppTypography.subtitle.copyWith(
+                      style: AppTypography.bodyLg.copyWith(
                         color: statusColor ?? AppColors.green,
                       ),
                     ),
@@ -156,7 +156,7 @@ class HeroSectionWidget extends ConsumerWidget {
                     Flexible(
                       child: Text(
                         timingText,
-                        style: AppTypography.subtitle.copyWith(
+                        style: AppTypography.bodyLg.copyWith(
                           color: AppColors.textSecondary,
                         ),
                         maxLines: 1,
@@ -175,7 +175,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       Flexible(
                         child: Text(
                           businessType,
-                          style: AppTypography.subtitle.copyWith(
+                          style: AppTypography.bodyLg.copyWith(
                             color: AppColors.textSecondary,
                           ),
                           maxLines: 1,
@@ -191,7 +191,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       ],
                       Text(
                         priceRangeText,
-                        style: AppTypography.subtitle.copyWith(
+                        style: AppTypography.bodyLg.copyWith(
                           color: AppColors.textSecondary,
                         ),
                       ),
@@ -206,7 +206,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       ],
                       Text(
                         distanceText,
-                        style: AppTypography.subtitle.copyWith(
+                        style: AppTypography.bodyLg.copyWith(
                           color: AppColors.textSecondary,
                         ),
                       ),
@@ -220,7 +220,7 @@ class HeroSectionWidget extends ConsumerWidget {
               if (addressText.isNotEmpty)
                 Text(
                   addressText,
-                  style: AppTypography.subtitle.copyWith(
+                  style: AppTypography.bodyLg.copyWith(
                     color: AppColors.textSecondary,
                   ),
                 ),
@@ -248,7 +248,7 @@ class HeroSectionWidget extends ConsumerWidget {
         child: Center(
           child: Text(
             logoInitial,
-            style: AppTypography.sectionHeading.copyWith(
+            style: AppTypography.h2.copyWith(
               color: Colors.white,
             ),
           ),

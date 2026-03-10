@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_radius.dart';
+import 'app_typography.dart';
 
 /// Creates the complete app theme
 /// ⚠️ CRITICAL: Uses CardThemeData (Flutter 3.x) not CardTheme
@@ -28,10 +28,8 @@ ThemeData appTheme() {
       surfaceTintColor: Colors.transparent, // Remove Material 3 tint overlay when scrolled
       scrolledUnderElevation: 0, // Keep elevation at 0 when content scrolls under AppBar
       centerTitle: true,
-      titleTextStyle: GoogleFonts.roboto(
-        fontSize: 16,
+      titleTextStyle: AppTypography.bodyLgMedium.copyWith(
         fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
       ),
     ),
 
@@ -73,8 +71,7 @@ ThemeData appTheme() {
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
-        textStyle: GoogleFonts.roboto(
-          fontSize: 16,
+        textStyle: AppTypography.bodyLgMedium.copyWith(
           fontWeight: FontWeight.w600,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -89,8 +86,7 @@ ThemeData appTheme() {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: AppColors.accent,
-        textStyle: GoogleFonts.roboto(
-          fontSize: 14,
+        textStyle: AppTypography.bodySmMedium.copyWith(
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -100,8 +96,7 @@ ThemeData appTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.textPrimary,
-        textStyle: GoogleFonts.roboto(
-          fontSize: 16,
+        textStyle: AppTypography.bodyLgMedium.copyWith(
           fontWeight: FontWeight.w600,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),

@@ -1497,7 +1497,7 @@ class _NoDishesMessage extends StatelessWidget {
             alignment: AlignmentDirectional.centerStart,
             child: Text(
               message,
-              style: AppTypography.bodyRegular.copyWith(
+              style: AppTypography.bodyLg.copyWith(
                 color: AppColors.textMuted,
               ),
             ),
@@ -1576,8 +1576,7 @@ class _CategoryHeader extends StatelessWidget {
     }
 
     final availableWidth = _getAvailableDescriptionWidth(context);
-    const descriptionStyle = TextStyle(
-      fontSize: 14.0,
+    final descriptionStyle = AppTypography.bodySm.copyWith(
       fontWeight: FontWeight.w300,
     );
 
@@ -1607,7 +1606,7 @@ class _CategoryHeader extends StatelessWidget {
           // Category name (always shown)
           Text(
             categoryName,
-            style: AppTypography.sectionHeading.copyWith(
+            style: AppTypography.h2.copyWith(
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
             ),
@@ -1629,8 +1628,7 @@ class _CategoryHeader extends StatelessWidget {
                       Flexible(
                         child: Text(
                           categoryDescription!,
-                          style: const TextStyle(
-                            fontSize: 14.0,
+                          style: AppTypography.bodySm.copyWith(
                             fontWeight: FontWeight.w300,
                             color: Colors.black54,
                           ),
@@ -1974,7 +1972,7 @@ class _MenuItem extends ConsumerWidget {
                         children: [
                           Text(
                             itemTitle,
-                            style: AppTypography.menuItemName.copyWith(
+                            style: AppTypography.bodyMedium.copyWith(
                               fontWeight: FontWeight.w400,
                             ),
                             maxLines: titleMaxLines,
@@ -1984,7 +1982,7 @@ class _MenuItem extends ConsumerWidget {
                             const SizedBox(height: _titleDescriptionSpacing),
                             Text(
                               description,
-                              style: AppTypography.bodySmall.copyWith(
+                              style: AppTypography.bodyMedium.copyWith(
                                 fontWeight: FontWeight.w300,
                                 color: AppColors.textSecondary,
                               ),

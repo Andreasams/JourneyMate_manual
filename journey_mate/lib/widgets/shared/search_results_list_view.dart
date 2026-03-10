@@ -410,7 +410,7 @@ class _SearchResultsListViewState
           ],
           Text(
             td(ref, labelKey),
-            style: AppTypography.bodyRegular.copyWith(
+            style: AppTypography.bodyLg.copyWith(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: color,
@@ -582,7 +582,7 @@ class _SearchResultsListViewState
           const SizedBox(height: AppSpacing.lg),
           Text(
             td(ref, 'noresultsfound'),
-            style: AppTypography.bodyRegular.copyWith(
+            style: AppTypography.bodyLg.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
@@ -860,14 +860,14 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
             _businessName ?? 'Business',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.cardRestaurantName,
+            style: AppTypography.bodyMedium,
           ),
         ),
         if (distanceText != null) ...[
           const SizedBox(width: 8), // Prevent text collision
           Text(
             distanceText,
-            style: AppTypography.cardDistance, // 12px w500
+            style: AppTypography.bodySmMedium, // 12px w500
           ),
         ],
       ],
@@ -884,7 +884,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
       children: [
         Text(
           statusText,
-          style: AppTypography.cardDetail.copyWith( // Now 12.5px
+          style: AppTypography.bodySm.copyWith(
             color: statusColor,
             fontWeight: statusText.toLowerCase() == 'closed'
                 ? FontWeight.w600
@@ -895,7 +895,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           const SizedBox(width: AppSpacing.xs),
           Text(
             '•',
-            style: AppTypography.cardDetail.copyWith(
+            style: AppTypography.bodySm.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
@@ -903,7 +903,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           Flexible(
             child: Text(
               timingText,
-              style: AppTypography.cardDetail, // 12.5px, no override needed
+              style: AppTypography.bodySm, // 12.5px, no override needed
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -941,7 +941,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           _businessType!,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppTypography.cardDetail, // 12.5px per JSX
+          style: AppTypography.bodySm, // 12.5px per JSX
         ),
       ));
     }
@@ -953,14 +953,14 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         items.addAll([
           const SizedBox(width: AppSpacing.xs),
           Text('•',
-              style: AppTypography.cardDetail
+              style: AppTypography.bodySm
                   .copyWith(color: AppColors.textSecondary)),
           const SizedBox(width: AppSpacing.xs),
         ]);
       }
       items.add(Text(
         priceRange,
-        style: AppTypography.cardDetail, // 12.5px per JSX
+        style: AppTypography.bodySm, // 12.5px per JSX
       ));
     }
 
@@ -1086,7 +1086,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     return Text(
       fullAddress,
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: 12.5,
         color: AppColors.textTertiary,
       ),
@@ -1097,7 +1097,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     if (_openingHours == null) {
       return Text(
         td(ref, 'hours_no_data'),
-        style: AppTypography.bodyRegular.copyWith(
+        style: AppTypography.bodyLg.copyWith(
           fontSize: 12.5,
           color: AppColors.textSecondary,
         ),
@@ -1109,7 +1109,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     return Text(
       '${td(ref, 'today_prefix')} $todayStr', // Space between label and time
-      style: AppTypography.bodyRegular.copyWith(
+      style: AppTypography.bodyLg.copyWith(
         fontSize: 12.5,
         color: AppColors.textSecondary,
       ),
@@ -1297,7 +1297,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           children: [
             Text(
               td(ref, 'expandable_show_more'),
-              style: AppTypography.cardDetail.copyWith( // 14px now
+              style: AppTypography.bodySm.copyWith(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
@@ -1305,8 +1305,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
             const SizedBox(width: AppSpacing.xs),
             Text(
               '→',
-              style: TextStyle(
-                fontSize: 14,
+              style: AppTypography.bodySm.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
@@ -1378,7 +1377,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           Expanded(
             child: Text(
               missedNames.isNotEmpty ? '$matchesText · $missingText' : matchesText,
-              style: AppTypography.bodyRegular.copyWith(
+              style: AppTypography.bodyLg.copyWith(
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),

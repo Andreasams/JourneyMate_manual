@@ -9,6 +9,7 @@ import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/app_typography.dart';
 
 /// A unified filter widget combining dietary restrictions, preferences, and
 /// allergens with MULTI-RESTRICTION SUPPORT.
@@ -123,21 +124,11 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   static const EdgeInsets _buttonPadding = EdgeInsets.symmetric(horizontal: 16);
   static const Size _buttonMinSize = Size(0, 32);
   static const double _buttonBorderRadius = AppRadius.button;
-  static const double _buttonFontSize = 14.0;
   static const double _buttonSpacing = AppSpacing.sm;
 
   static const Color _containerColor = Color(0x1957636C);
   static const double _containerBorderRadius = AppRadius.button;
   static const EdgeInsets _containerPadding = EdgeInsets.symmetric(vertical: 18);
-
-  static const String _fontFamily = 'Roboto';
-  static const double _headerFontSize = 18.0;
-  static const FontWeight _headerFontWeight = FontWeight.w500;
-  static const double _subHeaderFontSize = 16.0;
-  static const FontWeight _subHeaderFontWeight = FontWeight.w400;
-  static const double _descriptionFontSize = 14.0;
-  static const FontWeight _descriptionFontWeight = FontWeight.w300;
-  static const Color _textColor = AppColors.textPrimary;
 
   static const double _sectionSpacing = AppSpacing.lg;
   static const double _widgetTopPadding = 4.0;
@@ -888,12 +879,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         ),
         child: Text(
           text,
-          style: const TextStyle(
-            color: _selectedTextColor,
-            fontSize: _buttonFontSize,
-            fontWeight: FontWeight.w400,
-            fontFamily: _fontFamily,
-          ).copyWith(
+          style: AppTypography.bodySm.copyWith(
             color: isSelected ? _selectedTextColor : _unselectedTextColor,
           ),
         ),
@@ -929,12 +915,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         ),
         child: Text(
           text,
-          style: const TextStyle(
-            color: _selectedTextColor,
-            fontSize: _buttonFontSize,
-            fontWeight: FontWeight.w400,
-            fontFamily: _fontFamily,
-          ).copyWith(
+          style: AppTypography.bodySm.copyWith(
             color: isVisible ? _selectedTextColor : _unselectedTextColor,
           ),
         ),
@@ -952,11 +933,8 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           _getUIText('menu_dishes_filter_title'),
-          style: const TextStyle(
-            fontSize: _headerFontSize,
-            fontWeight: _headerFontWeight,
-            color: _textColor,
-            fontFamily: _fontFamily,
+          style: AppTypography.h3.copyWith(
+            fontWeight: FontWeight.w500,
           ),
         ),
         if (_hasActiveFilters())
@@ -964,12 +942,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
             onTap: _handleResetTap,
             child: Text(
               _getUIText('search_reset'),
-              style: const TextStyle(
-                fontSize: _subHeaderFontSize,
-                fontWeight: _subHeaderFontWeight,
-                color: _textColor,
-                fontFamily: _fontFamily,
-              ),
+              style: AppTypography.bodyLg,
             ),
           ),
       ],
@@ -989,20 +962,12 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           header,
-          style: const TextStyle(
-            fontSize: _subHeaderFontSize,
-            fontWeight: _subHeaderFontWeight,
-            color: _textColor,
-            fontFamily: _fontFamily,
-          ),
+          style: AppTypography.bodyLg,
         ),
         Text(
           description,
-          style: const TextStyle(
-            fontSize: _descriptionFontSize,
-            fontWeight: _descriptionFontWeight,
-            color: _textColor,
-            fontFamily: _fontFamily,
+          style: AppTypography.bodySm.copyWith(
+            fontWeight: FontWeight.w300,
           ),
         ),
         Padding(
@@ -1038,20 +1003,12 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           _getUIText('info_header_allergens'),
-          style: const TextStyle(
-            fontSize: _subHeaderFontSize,
-            fontWeight: _subHeaderFontWeight,
-            color: _textColor,
-            fontFamily: _fontFamily,
-          ),
+          style: AppTypography.bodyLg,
         ),
         Text(
           _getUIText('menu_dishes_filter_allergens_subtitle'),
-          style: const TextStyle(
-            fontSize: _descriptionFontSize,
-            fontWeight: _descriptionFontWeight,
-            color: _textColor,
-            fontFamily: _fontFamily,
+          style: AppTypography.bodySm.copyWith(
+            fontWeight: FontWeight.w300,
           ),
         ),
         Padding(

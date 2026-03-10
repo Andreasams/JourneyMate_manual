@@ -101,10 +101,10 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
         onChanged: widget.onChanged,
         onSubmitted: widget.onSubmitted,
         autofocus: widget.autofocus,
-        style: AppTypography.input,
+        style: AppTypography.bodyLg,
         decoration: InputDecoration(
           hintText: td(ref, widget.hintTextKey),
-          hintStyle: AppTypography.placeholder,
+          hintStyle: AppTypography.bodyLg,
           filled: false,
           prefixIcon: Icon(
             Icons.search,

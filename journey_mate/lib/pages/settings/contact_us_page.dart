@@ -78,7 +78,7 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
         ),
         title: Text(
           td(ref, 'contact_form_title_main'), // "Contact us"
-          style: AppTypography.categoryHeading,
+          style: AppTypography.h3,
         ),
       ),
       body: const ContactUsFormWidget(),

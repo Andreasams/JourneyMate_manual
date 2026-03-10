@@ -319,11 +319,11 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       builder: (context) => AlertDialog(
         title: Text(
           'Connection Error',
-          style: AppTypography.sectionHeading,
+          style: AppTypography.h2,
         ),
         content: Text(
           'Could not load restaurants. Please check your internet connection and try again.',
-          style: AppTypography.bodyRegular,
+          style: AppTypography.bodyLg,
         ),
         actions: [
           TextButton(
@@ -401,7 +401,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 child: Text(
                   td(ref, 'onboarding_title_welcome_prefix'), // "Welcome to"
                   textAlign: TextAlign.center,
-                  style: AppTypography.restaurantName.copyWith(
+                  style: AppTypography.h1Heavy.copyWith(
                     fontSize: 28,
                   ),
                 ),
@@ -409,7 +409,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               Text(
                 'JourneyMate', // Hardcoded - never translated
                 textAlign: TextAlign.center,
-                style: AppTypography.restaurantName.copyWith(
+                style: AppTypography.h1Heavy.copyWith(
                   fontSize: 28,
                 ),
               ),
@@ -448,7 +448,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                     Text(
                       td(ref, 'welcome_tagline'), // "Go out, your way."
                       textAlign: TextAlign.center,
-                      style: AppTypography.sectionHeading.copyWith(
+                      style: AppTypography.h2.copyWith(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                       ),
@@ -457,7 +457,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                     Text(
                       td(ref, 'welcome_subtitle'), // "Discover restaurants, cafés, and..."
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodyRegular.copyWith(
+                      style: AppTypography.bodyLg.copyWith(
                         fontSize: 16,
                         color: AppColors.textSecondary,
                       ),

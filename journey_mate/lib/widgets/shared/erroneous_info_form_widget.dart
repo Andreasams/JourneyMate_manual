@@ -200,7 +200,7 @@ class _ErroneousInfoFormWidgetState
         // Main title
         Text(
           td(ref, 'about_report_incorrect_info'),
-          style: AppTypography.pageTitle.copyWith(
+          style: AppTypography.h1.copyWith(
             fontSize: 22,
             fontWeight: FontWeight.w600,
           ),
@@ -210,7 +210,7 @@ class _ErroneousInfoFormWidgetState
         // "Reporting information for" label
         Text(
           td(ref, 'erroneous_info_subtitle_reporting_for'),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
@@ -219,13 +219,13 @@ class _ErroneousInfoFormWidgetState
         // Business name
         Text(
           businessName,
-          style: AppTypography.categoryHeading,
+          style: AppTypography.h3,
         ),
 
         // Business address
         Text(
           address,
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
@@ -234,7 +234,7 @@ class _ErroneousInfoFormWidgetState
         // Help text
         Text(
           td(ref, 'erroneous_info_subtitle_main'),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             fontWeight: FontWeight.w300,
           ),
         ),
@@ -252,7 +252,7 @@ class _ErroneousInfoFormWidgetState
         // Section header with required indicator
         RichText(
           text: TextSpan(
-            style: AppTypography.categoryHeading,
+            style: AppTypography.h3,
             children: [
               TextSpan(
                 text: td(ref, 'erroneous_info_title_message'),
@@ -268,7 +268,7 @@ class _ErroneousInfoFormWidgetState
         // Subtitle
         Text(
           td(ref, 'erroneous_info_subtitle_message'),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             fontWeight: FontWeight.w300,
           ),
         ),
@@ -280,10 +280,10 @@ class _ErroneousInfoFormWidgetState
             minLines: 5,
             maxLines: null,
             textAlignVertical: TextAlignVertical.top,
-            style: AppTypography.bodyRegular,
+            style: AppTypography.bodyLg,
             decoration: InputDecoration(
               hintText: td(ref, 'erroneous_info_hint_message'),
-              hintStyle: AppTypography.bodyRegular.copyWith(
+              hintStyle: AppTypography.bodyLg.copyWith(
                 color: AppColors.textSecondary.withValues(alpha: 0.7),
               ),
               filled: true,
@@ -319,7 +319,7 @@ class _ErroneousInfoFormWidgetState
             padding: const EdgeInsets.only(top: AppSpacing.xs),
             child: Text(
               _messageError!,
-              style: AppTypography.helper.copyWith(
+              style: AppTypography.bodySm.copyWith(
                 color: AppColors.error,
               ),
             ),
@@ -368,7 +368,7 @@ class _ErroneousInfoFormWidgetState
           Text(
             td(ref, 'erroneous_info_success_message'),
             textAlign: TextAlign.center,
-            style: AppTypography.categoryHeading.copyWith(
+            style: AppTypography.h3.copyWith(
               color: AppColors.success,
             ),
           ),
@@ -376,7 +376,7 @@ class _ErroneousInfoFormWidgetState
           Text(
             td(ref, 'contact_form_success_navigate_away'),
             textAlign: TextAlign.center,
-            style: AppTypography.bodyRegular.copyWith(
+            style: AppTypography.bodyLg.copyWith(
               fontWeight: FontWeight.w300,
               color: AppColors.success.withValues(alpha: 0.8),
             ),
@@ -406,7 +406,7 @@ class _ErroneousInfoFormWidgetState
           Expanded(
             child: Text(
               _submissionError!,
-              style: AppTypography.bodyRegular.copyWith(
+              style: AppTypography.bodyLg.copyWith(
                 color: AppColors.error,
               ),
             ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
 import '../../../theme/app_colors.dart';
@@ -157,14 +156,14 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           // Main title
           Text(
             td(ref, 'contact_form_title_main'),
-            style: AppTypography.sectionHeading,
+            style: AppTypography.h2,
           ),
           SizedBox(height: AppSpacing.sm),
 
           // Main subtitle
           Text(
             td(ref, 'contact_form_subtitle_main'),
-            style: AppTypography.subtitle,
+            style: AppTypography.bodyLg,
           ),
           SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
@@ -265,7 +264,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
         RichText(
           text: TextSpan(
             text: title,
-            style: AppTypography.label.copyWith(
+            style: AppTypography.bodyLgMedium.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
@@ -283,7 +282,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           SizedBox(height: AppSpacing.xs),
           Text(
             subtitle,
-            style: AppTypography.subtitle,
+            style: AppTypography.bodyLg,
           ),
         ],
 
@@ -294,10 +293,10 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           controller: controller,
           onChanged: (_) => onChanged(),
           maxLines: maxLines,
-          style: AppTypography.input,
+          style: AppTypography.bodyLg,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
+            hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
             filled: true,
             fillColor: AppColors.bgInput,
             contentPadding: EdgeInsets.all(maxLines > 1 ? 12 : 16),
@@ -329,7 +328,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           SizedBox(height: AppSpacing.sm),
           Text(
             error,
-            style: AppTypography.helper.copyWith(color: AppColors.error),
+            style: AppTypography.bodySm.copyWith(color: AppColors.error),
           ),
         ],
       ],
@@ -399,9 +398,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           Text(
             td(ref, 'contact_form_success_message'),
             textAlign: TextAlign.center,
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+            style: AppTypography.bodyLgMedium.copyWith(
               color: AppColors.success,
             ),
           ),
@@ -409,7 +406,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           Text(
             td(ref, 'contact_form_success_navigate_away'),
             textAlign: TextAlign.center,
-            style: AppTypography.helper.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodySm.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -437,7 +434,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           Expanded(
             child: Text(
               _submissionError!,
-              style: AppTypography.bodyRegular.copyWith(color: AppColors.error),
+              style: AppTypography.bodyLg.copyWith(color: AppColors.error),
             ),
           ),
         ],

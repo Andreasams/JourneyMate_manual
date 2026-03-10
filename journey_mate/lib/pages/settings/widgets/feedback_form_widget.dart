@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_spacing.dart';
@@ -184,14 +183,14 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           // Main title
           Text(
             td(ref, 'feedback_form_title_main'),
-            style: AppTypography.sectionHeading,
+            style: AppTypography.h2,
           ),
           SizedBox(height: AppSpacing.sm),
 
           // Main subtitle
           Text(
             td(ref, 'feedback_form_subtitle_main'),
-            style: AppTypography.subtitle,
+            style: AppTypography.bodyLg,
           ),
           SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
@@ -238,7 +237,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section title
         Text(
           td(ref, 'feedback_form_title_topic'),
-          style: AppTypography.label.copyWith(
+          style: AppTypography.bodyLgMedium.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
@@ -248,7 +247,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section subtitle
         Text(
           td(ref, 'feedback_form_subtitle_topic'),
-          style: AppTypography.subtitle,
+          style: AppTypography.bodyLg,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -280,7 +279,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                 ),
                 child: Text(
                   td(ref, topicKey),
-                  style: AppTypography.chip.copyWith(
+                  style: AppTypography.bodySmMedium.copyWith(
                     color: isSelected ? Colors.white : AppColors.textSecondary,
                   ),
                 ),
@@ -294,7 +293,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           SizedBox(height: AppSpacing.sm),
           Text(
             _topicError!,
-            style: AppTypography.helper.copyWith(color: AppColors.error),
+            style: AppTypography.bodySm.copyWith(color: AppColors.error),
           ),
         ],
       ],
@@ -310,7 +309,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         RichText(
           text: TextSpan(
             text: td(ref, 'feedback_form_title_message'),
-            style: AppTypography.label.copyWith(
+            style: AppTypography.bodyLgMedium.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
@@ -327,7 +326,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Subtitle
         Text(
           td(ref, 'feedback_form_subtitle_message'),
-          style: AppTypography.subtitle,
+          style: AppTypography.bodyLg,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -340,10 +339,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             }
           },
           maxLines: 6,
-          style: AppTypography.input,
+          style: AppTypography.bodyLg,
           decoration: InputDecoration(
             hintText: td(ref, 'feedback_form_hint_message'),
-            hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
+            hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
             filled: true,
             fillColor: AppColors.bgInput,
             contentPadding: EdgeInsets.all(12),
@@ -375,7 +374,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           SizedBox(height: AppSpacing.sm),
           Text(
             _messageError!,
-            style: AppTypography.helper.copyWith(color: AppColors.error),
+            style: AppTypography.bodySm.copyWith(color: AppColors.error),
           ),
         ],
       ],
@@ -390,7 +389,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section title
         Text(
           td(ref, 'feedback_form_title_contact_consent'),
-          style: AppTypography.label.copyWith(
+          style: AppTypography.bodyLgMedium.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
@@ -400,7 +399,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section subtitle
         Text(
           td(ref, 'feedback_form_subtitle_contact_consent'),
-          style: AppTypography.subtitle,
+          style: AppTypography.bodyLg,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -440,7 +439,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                   padding: EdgeInsets.only(top: 2), // Align with checkbox
                   child: Text(
                     td(ref, 'feedback_form_checkbox_label'),
-                    style: AppTypography.bodyRegular.copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.bodyLg.copyWith(color: AppColors.textSecondary),
                   ),
                 ),
               ),
@@ -464,7 +463,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             RichText(
               text: TextSpan(
                 text: td(ref, 'feedback_form_title_name'),
-                style: AppTypography.label.copyWith(
+                style: AppTypography.bodyLgMedium.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -487,10 +486,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                 }
               },
               maxLines: 1,
-              style: AppTypography.input,
+              style: AppTypography.bodyLg,
               decoration: InputDecoration(
                 hintText: td(ref, 'feedback_form_hint_name'),
-                hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
+                hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
                 filled: true,
                 fillColor: AppColors.bgInput,
                 contentPadding: EdgeInsets.all(16),
@@ -522,7 +521,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
               SizedBox(height: AppSpacing.sm),
               Text(
                 _nameError!,
-                style: AppTypography.helper.copyWith(color: AppColors.error),
+                style: AppTypography.bodySm.copyWith(color: AppColors.error),
               ),
             ],
           ],
@@ -538,7 +537,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             RichText(
               text: TextSpan(
                 text: td(ref, 'feedback_form_title_contact'),
-                style: AppTypography.label.copyWith(
+                style: AppTypography.bodyLgMedium.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -555,7 +554,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             // Subtitle
             Text(
               td(ref, 'feedback_form_subtitle_contact'),
-              style: AppTypography.subtitle,
+              style: AppTypography.bodyLg,
             ),
             SizedBox(height: AppSpacing.sm),
 
@@ -568,10 +567,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                 }
               },
               maxLines: 1,
-              style: AppTypography.input,
+              style: AppTypography.bodyLg,
               decoration: InputDecoration(
                 hintText: td(ref, 'feedback_form_hint_contact'),
-                hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
+                hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
                 filled: true,
                 fillColor: AppColors.bgInput,
                 contentPadding: EdgeInsets.all(16),
@@ -603,7 +602,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
               SizedBox(height: AppSpacing.sm),
               Text(
                 _contactError!,
-                style: AppTypography.helper.copyWith(color: AppColors.error),
+                style: AppTypography.bodySm.copyWith(color: AppColors.error),
               ),
             ],
           ],
@@ -675,9 +674,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           Text(
             td(ref, 'feedback_form_success_message'),
             textAlign: TextAlign.center,
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+            style: AppTypography.bodyLgMedium.copyWith(
               color: AppColors.success,
             ),
           ),
@@ -685,7 +682,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           Text(
             td(ref, 'contact_form_success_navigate_away'),
             textAlign: TextAlign.center,
-            style: AppTypography.helper.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodySm.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -713,7 +710,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           Expanded(
             child: Text(
               _submissionError!,
-              style: AppTypography.bodyRegular.copyWith(color: AppColors.error),
+              style: AppTypography.bodyLg.copyWith(color: AppColors.error),
             ),
           ),
         ],

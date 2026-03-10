@@ -194,7 +194,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               ? Center(
                   child: Text(
                     td(ref, 'hours_no_data'),
-                    style: AppTypography.bodyRegular.copyWith(
+                    style: AppTypography.bodyLg.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -239,7 +239,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           // Title - left-aligned
           Text(
             td(ref, 'sort_sheet_title'),
-            style: AppTypography.sectionHeading,
+            style: AppTypography.h2,
           ),
         ],
       ),
@@ -305,7 +305,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                 Expanded(
                   child: Text(
                     td(ref, 'filter_only_open'),
-                    style: AppTypography.bodyRegular.copyWith(
+                    style: AppTypography.bodyLg.copyWith(
                       fontWeight: _onlyOpen ? FontWeight.w600 : FontWeight.w400,
                       color: _onlyOpen
                           ? AppColors.green
@@ -317,7 +317,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                 if (_onlyOpen)
                   Text(
                     '${widget.openPlacesCount} ${td(ref, 'sort_places_label')}',
-                    style: AppTypography.bodyRegular.copyWith(
+                    style: AppTypography.bodyLg.copyWith(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: AppColors.green,
@@ -338,7 +338,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
       child: ListTile(
         title: Text(
           td(ref, translationKey),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
@@ -403,7 +403,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           child: ListTile(
             title: Text(
               displayText,
-              style: AppTypography.bodyRegular.copyWith(
+              style: AppTypography.bodyLg.copyWith(
                 color: hasShoppingArea
                     ? AppColors.textSecondary.withValues(alpha: 0.5)
                     : (isSelected ? AppColors.textPrimary : AppColors.textSecondary),
@@ -466,7 +466,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               Expanded(
                 child: Text(
                   td(ref, 'sort_select_station'),
-                  style: AppTypography.sectionHeading,
+                  style: AppTypography.h2,
                 ),
               ),
             ],
@@ -486,7 +486,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
       child: ListTile(
         title: Text(
           stationName,
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),

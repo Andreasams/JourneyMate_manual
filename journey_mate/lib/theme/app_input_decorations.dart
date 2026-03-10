@@ -19,8 +19,8 @@ class AppInputDecorations {
       labelText: labelText,
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
-      hintStyle: AppTypography.placeholder,
-      labelStyle: AppTypography.label,
+      hintStyle: AppTypography.bodyLg,
+      labelStyle: AppTypography.bodyLgMedium,
       filled: true,
       fillColor: AppColors.bgInput,
       contentPadding: const EdgeInsets.symmetric(
@@ -58,8 +58,8 @@ class AppInputDecorations {
     return InputDecoration(
       hintText: hintText,
       labelText: labelText,
-      hintStyle: AppTypography.placeholder,
-      labelStyle: AppTypography.label,
+      hintStyle: AppTypography.bodyLg,
+      labelStyle: AppTypography.bodyLgMedium,
       filled: true,
       fillColor: AppColors.bgInput,
       contentPadding: const EdgeInsets.all(12),

@@ -55,14 +55,14 @@ class _ExpandableTextWidgetState extends ConsumerState<ExpandableTextWidget> {
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
   // Text style with w300 to match FlutterFlow exactly
-  static final TextStyle _textStyle = AppTypography.bodyRegular.copyWith(
+  static final TextStyle _textStyle = AppTypography.bodyLg.copyWith(
     fontSize: _baseFontSize,
     fontWeight: FontWeight.w300,
     color: AppColors.textPrimary,
     height: _lineHeightMultiplier,
   );
 
-  static final TextStyle _buttonTextStyle = AppTypography.bodyMedium.copyWith(
+  static final TextStyle _buttonTextStyle = AppTypography.bodyLgMedium.copyWith(
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
   );
