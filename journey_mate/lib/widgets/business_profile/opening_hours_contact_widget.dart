@@ -574,10 +574,9 @@ class _OpeningHoursContactWidgetState
     final contactFields = <Widget>[];
 
     if (phone != null && phone.isNotEmpty) {
-      final formattedPhone = formatPhoneForDial(phone);
       contactFields.add(_buildContactRow(
         label: td(ref, 'phone_number_label'),
-        value: formattedPhone,
+        value: formatPhoneForDisplay(phone),
         valueColor: AppColors.accent,
         onTap: () => _handlePhoneTap(phone),
         onLongPress: () => _handlePhoneLongPress(phone),

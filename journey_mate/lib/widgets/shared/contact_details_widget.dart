@@ -9,6 +9,7 @@ import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/app_providers.dart';
+import '../../services/custom_functions/contact_utils.dart';
 import 'opening_hours_and_weekdays.dart';
 
 /// Displays business contact information with consistent typography across
@@ -291,7 +292,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               child: Text(
-                '+45 $phone',
+                formatPhoneForDisplay(phone),
                 style: AppTypography.bodyRegular.copyWith(
                   color: AppColors.accent,
                 ),
