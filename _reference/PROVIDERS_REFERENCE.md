@@ -726,8 +726,8 @@ final accessibility = ref.watch(accessibilityProvider);
 return Text(
   'Hello',
   style: accessibility.isBoldTextEnabled
-    ? AppTypography.headingBold
-    : AppTypography.heading,
+    ? AppTypography.h4
+    : AppTypography.bodyLgMedium,
 );
 ```
 

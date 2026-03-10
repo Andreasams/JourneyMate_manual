@@ -179,39 +179,53 @@ Container(
 
 ## 4. Typography (AppTypography)
 
-**17-style type scale.** Sizes snap to 14/15/16/18/20/26. All body styles default to `textPrimary` with `height: 1.45`. Only `button` (white) and `price` (accent) differ.
+**21-style type scale.** Headings: 6-level hierarchy (26→16, 2px steps, all w700). Body: 14/15/16 at w300–w700. All styles default to `textPrimary` with `height: 1.45`. Only `button` (white) and `price` (accent) differ.
 
 **Streamlined in commit `7f0c892` (2026-03-10):** Replaced 21 inconsistent styles with a clean, predictable scale. Heavy body variants added 2026-03-10.
+**Heading scale expanded in commit `8095eb9` (2026-03-10):** 6-level hierarchy (h1-h6), 2px steps, all w700. Removed h1Heavy and letterSpacing from headings.
 
 ### Compact Reference
 
 ```
-HEADINGS
-h1          → 26/w700/textPrimary/1.2/ls:-0.65
-h1Heavy     → 26/w800/textPrimary/1.2/ls:-0.78
-h2          → 20/w700/textPrimary/1.3
-h3          → 18/w700/textPrimary/1.3
+HEADINGS — 6-level hierarchy, 2px steps, all w700/textPrimary
+h1 → 26/w700/1.2  — app-section entry titles (Search, Settings)
+h2 → 24/w700/1.2  — featured entity names (restaurant, coupon, blog)
+h3 → 22/w700/1.3  — sheet / overlay titles
+h4 → 20/w700/1.3  — section headings, sub-headings
+h5 → 18/w700/1.3  — AppBar titles (deliberately understated)
+h6 → 16/w700/1.3  — sub-section labels (e.g. inside collapsibles)
 
-BODY (3 sizes × 3 weights, all 1.45 line height, all textPrimary)
-bodyLg       → 16/w400    bodyLgMedium → 16/w500    bodyLgHeavy → 16/w700
-body         → 15/w400    bodyMedium   → 15/w500    bodyHeavy   → 15/w700
-bodySm       → 14/w400    bodySmMedium → 14/w500    bodySmHeavy → 14/w700
+BODY (3 sizes × 3–4 weights, all 1.45 line height, all textPrimary)
+                  Light(w300)    Regular(w400)  Medium(w500)   Heavy(w700)
+bodyLg (16px)     —              bodyLg         bodyLgMedium   bodyLgHeavy
+body   (15px)     bodyLight      body           bodyMedium     bodyHeavy
+bodySm (14px)     —              bodySm         bodySmMedium   bodySmHeavy
 
 UI
 button       → 18/w600/white/1.2
 price        → 14/w600/accent/1.45
 ```
 
-### Headings
+### Headings — 2px Step System
 
-| Style | Size | Weight | Line Height | Usage |
-|-------|------|--------|-------------|-------|
-| `AppTypography.h1` | 26px | w700 | 1.2 | Page titles, hero headings |
-| `AppTypography.h1Heavy` | 26px | w800 | 1.2 | Restaurant name on profile |
-| `AppTypography.h2` | 20px | w700 | 1.3 | Section headings |
-| `AppTypography.h3` | 18px | w700 | 1.3 | Category headings, app bar titles |
+All headings use `w700` and `textPrimary`. No letterSpacing.
 
-### Body Text (3 sizes × 3 weights)
+| Style | Size | Weight | Line Height | Role |
+|-------|------|--------|-------------|------|
+| `AppTypography.h1` | 26px | w700 | 1.2 | App-section entry titles (Search, Settings) |
+| `AppTypography.h2` | 24px | w700 | 1.2 | Featured entity names (restaurant, coupon, blog) |
+| `AppTypography.h3` | 22px | w700 | 1.3 | Sheet / overlay titles |
+| `AppTypography.h4` | 20px | w700 | 1.3 | Section headings, sub-headings |
+| `AppTypography.h5` | 18px | w700 | 1.3 | AppBar titles (deliberately understated) |
+| `AppTypography.h6` | 16px | w700 | 1.3 | Sub-section labels (e.g. inside collapsibles) |
+
+**Hierarchy logic:**
+- h1–h3 are all "page titles" in their respective contexts (app section, page, sheet)
+- h4 is for sectioning content within a page
+- h5 is deliberately small so AppBar titles don't compete with page headings
+- h6 bridges headings and body text for sub-section labels
+
+### Body Text (3 sizes × 3–4 weights)
 
 All body styles: `color: textPrimary`, `height: 1.45`
 
@@ -221,6 +235,7 @@ All body styles: `color: textPrimary`, `height: 1.45`
 | `AppTypography.bodyLgMedium` | 16px | w500 | Labels, emphasized body |
 | `AppTypography.bodyLgHeavy` | 16px | w700 | Bold body text, strong emphasis |
 | `AppTypography.body` | 15px | w400 | Standard body text |
+| `AppTypography.bodyLight` | 15px | w300 | Light secondary text (last-updated rows, subtle metadata) |
 | `AppTypography.bodyMedium` | 15px | w500 | Card names, menu items |
 | `AppTypography.bodyHeavy` | 15px | w700 | Bold card names, section labels |
 | `AppTypography.bodySm` | 14px | w400 | Helper text, card details |
@@ -239,9 +254,9 @@ All body styles: `color: textPrimary`, `height: 1.45`
 | Old Name (removed) | New Name | Notes |
 |---------------------|----------|-------|
 | `pageTitle` | `h1` | Same: 26/w700 |
-| `restaurantName` | `h1Heavy` | Same: 26/w800 |
-| `sectionHeading` | `h2` | Same: 20/w700 |
-| `categoryHeading` | `h3` | Same: 18/w700 |
+| `restaurantName` / `h1Heavy` | `h2` | Was 26/w800, now 24/w700 |
+| `sectionHeading` | `h4` | Was `h2` (20/w700), renamed |
+| `categoryHeading` | `h5` | Was `h3` (18/w700), renamed |
 | `bodyRegular` | `bodyLg` | Same: 16/w400 |
 | `label` | `bodyLgMedium` | Same: 16/w500 |
 | `bodySmall` | `bodyMedium` | Was 16/w500, now 15/w500 |
@@ -270,15 +285,15 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 | 480-540 | `FontWeight.w500` | Medium |
 | 560-600 | `FontWeight.w600` | Semibold |
 | 620-680 | `FontWeight.w700` | Bold |
-| 700-750 | `FontWeight.w800` | Extra-bold |
+| 700-750 | `FontWeight.w800` | Extra-bold (not used in heading scale) |
 
 ### Common Patterns
 
 ```dart
-// Page heading
+// Section heading
 Text(
   'Share feedback',
-  style: AppTypography.h2,  // 20px, w700
+  style: AppTypography.h4,  // 20px, w700
 )
 
 // Form label
@@ -323,6 +338,8 @@ Text(
 ---
 
 ## 5. Input Decorations (AppInputDecorations)
+
+**Unified in commit `9e67b62` (2026-03-10):** All forms now use consistent input styling — `AppTypography.body` for text, `AppColors.bgInput` for fill, `AppRadius.input` for corners, proper border states (error, focusedError, accent focused). The `bgCardSubtle` color alias was removed (was just `bgSurface`).
 
 ### Standard Single-Line Input
 
@@ -590,7 +607,7 @@ Column(
     // Main page title (if present)
     Text(
       'Main Title',
-      style: AppTypography.h2,  // 20px, w700
+      style: AppTypography.h4,  // 20px, w700
     ),
     SizedBox(height: AppSpacing.sm),  // 8px
 
@@ -749,7 +766,7 @@ Scaffold(
       icon: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary),
       onPressed: () => Navigator.of(context).pop(),
     ),
-    title: Text('Page Title', style: AppTypography.h3),
+    title: Text('Page Title', style: AppTypography.h5),
     centerTitle: true,
   ),
   body: SafeArea(

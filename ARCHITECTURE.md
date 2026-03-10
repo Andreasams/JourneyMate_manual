@@ -17,24 +17,24 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - **Need a specific section?** Use alphabetical index below for direct access
 
 **Section Index (Alphabetical):**
-- [Analytics Architecture](#analytics-architecture) (lines 1833-1907) — Fire-and-forget, ActivityScope, 47 event types
-- [API Service Pattern](#api-service-pattern) (lines 1376-1510) — Singleton, cache, BuildShip integration, graceful degradation, BusinessCache
-- [Code Quality Standards](#code-quality-standards) (lines 1910-2029) — Flutter analyze, design tokens, algorithms
-- [Code Review Checklist](#code-review-checklist) (lines 2032-2126) — Pre-commit checklist (⚠️ use before every commit)
-- [Common Pitfalls](#common-pitfalls) (lines 2129-3487) — 34 anti-patterns with fixes (⚠️ read before first commit)
-- [Design Token System](#design-token-system) (lines 1820-1830) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 3490-3503) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 3533-3566) — CityID, favorites, filters, translations, engagement
-- [Location Permission Pattern](#location-permission-pattern) (lines 1593-1671) — Three methods, when to use what, Settings fallback
-- [Philosophy](#philosophy) (lines 39-81) — Five core principles (design tokens, state, translations, analytics, widgets)
-- [Pre-Loading Architecture](#pre-loading-architecture) (lines 1513-1590) — Safe async pattern for instant page loads
-- [Project Structure](#project-structure) (lines 86-151) — File organization, 12 pages, 34 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 3506-3530) — Critical startup sequence in main.dart
-- [References](#references) (lines 3569-3577) — Links to other documentation files
-- [State Management](#state-management) (lines 154-351) — When to use what, provider catalog, Riverpod 3.x patterns, ref.listen
-- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 1028-1373) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
-- [Translation System](#translation-system) (lines 1674-1817) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages
-- [Widget Patterns](#widget-patterns) (lines 354-1025) — Self-contained widgets, page wrappers, bottom sheets, BottomSheetHeader, contact utils, cross-page reuse, MenuSectionWidget, TabbedGalleryWidget, MenuScrollController, map view
+- [Analytics Architecture](#analytics-architecture) (lines 1844-1918) — Fire-and-forget, ActivityScope, 47 event types
+- [API Service Pattern](#api-service-pattern) (lines 1387-1521) — Singleton, cache, BuildShip integration, graceful degradation, BusinessCache
+- [Code Quality Standards](#code-quality-standards) (lines 1921-2040) — Flutter analyze, design tokens, algorithms
+- [Code Review Checklist](#code-review-checklist) (lines 2043-2137) — Pre-commit checklist (⚠️ use before every commit)
+- [Common Pitfalls](#common-pitfalls) (lines 2140-3589) — 37 anti-patterns with fixes (⚠️ read before first commit)
+- [Design Token System](#design-token-system) (lines 1831-1841) — Quick lookup tables for colors, spacing, typography
+- [Documentation Philosophy](#documentation-philosophy) (lines 3592-3605) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 3635-3668) — CityID, favorites, filters, translations, engagement
+- [Location Permission Pattern](#location-permission-pattern) (lines 1604-1682) — Three methods, when to use what, Settings fallback
+- [Philosophy](#philosophy) (lines 41-83) — Five core principles (design tokens, state, translations, analytics, widgets)
+- [Pre-Loading Architecture](#pre-loading-architecture) (lines 1524-1601) — Safe async pattern for instant page loads
+- [Project Structure](#project-structure) (lines 86-157) — File organization, 12 pages, 36 widgets, 8 providers
+- [Provider Initialization Order](#provider-initialization-order) (lines 3608-3632) — Critical startup sequence in main.dart
+- [References](#references) (lines 3671-3684) — Links to other documentation files
+- [State Management](#state-management) (lines 160-357) — When to use what, provider catalog, Riverpod 3.x patterns, ref.listen
+- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 1039-1384) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
+- [Translation System](#translation-system) (lines 1685-1828) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages
+- [Widget Patterns](#widget-patterns) (lines 360-1036) — Self-contained widgets, page wrappers, bottom sheets, BottomSheetHeader, contact utils, cross-page reuse, MenuSectionWidget, TabbedGalleryWidget, MenuScrollController, map view
 
 ---
 
@@ -106,7 +106,13 @@ journey_mate/
 │   │       ├── business_status.dart   # determineStatusAndColor()
 │   │       ├── distance_calculator.dart # returnDistance() + formatDistanceText()
 │   │       ├── hours_formatter.dart   # openClosesAt(), daysDayOpeningHour()
-│   │       └── price_formatter.dart   # convertAndFormatPriceRange()
+│   │       ├── price_formatter.dart   # convertAndFormatPriceRange()
+│   │       └── allergen_formatter.dart # Allergen ID-to-name mapping, named key lookups
+│   ├── utils/                         # Shared utility functions
+│   │   ├── map_launcher_utils.dart    # openInPreferredMaps() — priority-based map app selection
+│   │   ├── map_marker_helper.dart     # Teardrop pin marker generation (Canvas, cached)
+│   │   ├── search_result_helpers.dart # Shared lat/lng extraction from result documents
+│   │   └── menu_language_currency_utils.dart # MenuOption, computeLanguageOptions, computeCurrencyOptions
 │   ├── models/                        # Data classes
 │   │   ├── latlng.dart                # Location coordinates
 │   │   └── api_call_response.dart     # API response wrapper
@@ -132,14 +138,14 @@ journey_mate/
 │   │       ├── contact_us_page.dart   # Contact form wrapper
 │   │       ├── share_feedback_page.dart # Feedback form wrapper
 │   │       └── missing_place_page.dart # Missing place form wrapper
-│   ├── widgets/                       # 35 shared widgets
-│   │   ├── shared/                    # Reusable components
+│   ├── widgets/                       # 36 shared widgets
+│   │   ├── shared/                    # Reusable components (includes InformationSourceSection accordion)
 │   │   ├── activity_scope.dart        # Automatic engagement tracking
 │   │   └── app_lifecycle_observer.dart # App state lifecycle hooks
 │   ├── theme/                         # Design tokens (source of truth)
 │   │   ├── app_colors.dart            # 30 color constants
 │   │   ├── app_spacing.dart           # 8 spacing constants
-│   │   ├── app_typography.dart        # 17 text styles
+│   │   ├── app_typography.dart        # 21 text styles
 │   │   ├── app_radius.dart            # 7 border radius constants
 │   │   ├── app_button_styles.dart     # Button style presets
 │   │   ├── app_input_decorations.dart # Input decoration presets
@@ -631,15 +637,20 @@ Search page supports list/map toggle via page-local `_ViewMode` enum. Each mode 
 | **Geo-filtering** | None | Viewport bounds (`geoBoundsJson`) |
 | **On interaction** | Load next page | Re-query on pan/zoom |
 
+**Map markers:** Teardrop pin markers (Google Maps style) with fork-and-knife icon. Pins are color-coded by match status: green (full match), orange (partial), red (no match), brand orange (unfiltered/no active filters). Selected pins get a white halo effect. Generated bitmaps are cached per color+selection state.
+
+**Open-only chip:** Floating toggle chip appears in map view, replacing the sort button. Filters results to currently-open restaurants only.
+
 **Key files:**
 - `search_results_map_view.dart` — Google Maps widget with markers
 - `map_business_preview_card.dart` — Bottom card shown on marker tap
-- `map_marker_helper.dart` — Marker icon generation utilities
+- `map_marker_helper.dart` — Teardrop pin marker generation (vector Canvas drawing, cached)
+- `map_launcher_utils.dart` — `openInPreferredMaps()` shared utility (Google Maps > Apple Maps > first available)
 - `search_result_helpers.dart` — Shared lat/lng extraction from result documents
 
 **API integration:** Map mode sends `geoBoundsJson` parameter (format: `{"ne_lat":55.72,"ne_lng":12.62,"sw_lat":55.65,"sw_lng":12.50}`) which BuildShip converts to a Typesense geo polygon filter. This is ANDed with all other filters but does NOT affect sort order.
 
-**Reference:** Commit `c545543` — search map view implementation
+**Reference:** Commit `c545543` — search map view implementation, `f4d1948` — teardrop pins + open-only chip, `ba77b79` — map launcher utility
 
 ### Bottom Sheet Pattern
 
@@ -2043,7 +2054,7 @@ int _getSectionLevel(String matchLevel) {
   - See [Pitfall #2](#pitfall-2-using-magic-numbers-for-spacing) (line 1792)
   - See [Design Token System](#design-token-system) (lines 1116-1127)
 
-- [ ] **Typography from AppTypography** — No inline `TextStyle(...)`. Use `AppTypography.h1`, `AppTypography.body`, `AppTypography.bodySm`, etc. (17-style scale: h1/h1Heavy/h2/h3, bodyLg/bodyLgMedium/bodyLgHeavy/body/bodyMedium/bodyHeavy/bodySm/bodySmMedium/bodySmHeavy, button, price).
+- [ ] **Typography from AppTypography** — No inline `TextStyle(...)`. Use `AppTypography.h1`, `AppTypography.body`, `AppTypography.bodySm`, etc. (20-style scale: h1/h2/h3/h4/h5/h6, bodyLg/bodyLgMedium/bodyLgHeavy/body/bodyMedium/bodyHeavy/bodySm/bodySmMedium/bodySmHeavy, button, price).
   - See [Design Token System](#design-token-system) (lines 1116-1127)
 
 - [ ] **Radii from AppRadius** — No `BorderRadius.circular(16)`. Use `AppRadius.lg`, `AppRadius.full`, etc.
@@ -3484,6 +3495,97 @@ void _onPageChanged(int page) {
 **Rule:** When using `PageController` with animated page transitions, always guard `onPageChanged` with a `_targetPage` field to filter intermediate events.
 
 **Reference:** Commit `a348fd4` — "refactor: unify GalleryTabWidget + InlineGalleryWidget into TabbedGalleryWidget"
+
+### Pitfall #35: Filter Descriptions Come From Business Profile, Not Filter Endpoint
+
+**Context:** `_getFilterDescription()` was looking up descriptions from `filterProvider.filterLookupMap`, which is built from the `/filters` endpoint. That endpoint never serves `filter_description` data — descriptions are always null in it.
+
+❌ **Bad:**
+```dart
+// filterLookupMap comes from /filters endpoint — no descriptions there
+final filterData = ref.read(filterProvider).filterLookupMap[filterId];
+final description = filterData?['filter_description'] as String?;
+// description is ALWAYS null
+```
+
+✅ **Good:**
+```dart
+// Business profile comes from /getBusinessProfile — has actual descriptions
+final business = ref.read(businessProvider).currentBusiness;
+final filters = business?['filters'] as List<dynamic>? ?? [];
+final filterData = filters.firstWhere(
+  (f) => f['filter_id'] == filterId,
+  orElse: () => null,
+);
+final description = filterData?['filter_description'] as String?;
+```
+
+**Rule:** `filter_description` data lives in the `/getBusinessProfile` response, not `/filters`. The `/filters` endpoint is for filter hierarchy and names only.
+
+**Reference:** Commit `5f27c8b` — "fix: read filter descriptions from business profile API response"
+
+### Pitfall #36: Dietary/Allergen Translation Keys Must Use Named System, Not ID-Based
+
+**Context:** Dietary and allergen filter labels use Supabase translation keys. The old system used ID-based keys (`dietary_1_cap`, `allergen_2_cap`) which were fragile — the ID-to-name mapping was completely wrong (e.g., allergen ID 1 was mapped to "gluten" instead of "celery").
+
+❌ **Bad — ID-based keys:**
+```dart
+// Fragile: ID mappings can drift from actual Supabase order
+final key = 'dietary_${item['filter_id']}_cap';
+final label = td(ref, key);  // Might show wrong label!
+```
+
+✅ **Good — Named keys with ID-to-key maps:**
+```dart
+const _dietaryIdToKey = {
+  1: 'glutenfree', 2: 'vegan', 3: 'vegetarian',
+  4: 'pescatarian', 5: 'halal', 6: 'kosher',
+};
+const _allergenIdToKey = {
+  1: 'celery', 2: 'gluten', 3: 'crustaceans',
+  4: 'eggs', 5: 'fish', 6: 'lupin',
+  // ...
+};
+
+final keyName = _dietaryIdToKey[filterId];
+final label = td(ref, 'dietary_${keyName}_cap');  // "dietary_glutenfree_cap"
+```
+
+**Rule:** Always use named translation keys (`dietary_glutenfree_cap`) not ID-based keys (`dietary_1_cap`). The `_dietaryIdToKey` and `_allergenIdToKey` maps in each filter widget provide the mapping.
+
+**Reference:** Commit `26d738e` — "fix: migrate dietary/allergen translation keys to named system and port filter summary"
+
+### Pitfall #37: Open-In-Maps Must Use Priority-Based Map Selection, Not URI Schemes
+
+**Context:** Using `maps:` URI scheme only opens Apple Maps. Using `availableMaps.first` picks whichever app is installed first (unpredictable). Both approaches provide poor UX.
+
+❌ **Bad:**
+```dart
+// Only works for Apple Maps
+launchUrl(Uri.parse('maps:?q=$lat,$lng'));
+
+// Unpredictable: picks first installed map app
+final maps = await MapLauncher.installedMaps;
+await maps.first.showMarker(...);
+```
+
+✅ **Good — Use shared utility:**
+```dart
+import '../utils/map_launcher_utils.dart';
+
+final mapName = await openInPreferredMaps(
+  latitude: lat, longitude: lng, title: businessName,
+);
+if (mapName == null && context.mounted) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('No maps app available')),
+  );
+}
+```
+
+**Rule:** Always use `openInPreferredMaps()` from `map_launcher_utils.dart`. Priority: Google Maps > Apple Maps > first available. Returns app name for analytics, null on failure.
+
+**Reference:** Commit `ba77b79` — "fix: open in maps with Google Maps priority and Apple Maps fallback"
 
 ---
 
