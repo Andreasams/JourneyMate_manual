@@ -25,7 +25,7 @@ Container(color: AppColors.accent)
 SizedBox(height: AppSpacing.xl)
 
 // Use predefined text styles
-Text('Hello', style: AppTypography.bodyRegular)
+Text('Hello', style: AppTypography.body)
 
 // Use predefined input decorations
 TextField(decoration: AppInputDecorations.standard(hintText: 'Email'))
@@ -179,7 +179,88 @@ Container(
 
 ## 4. Typography (AppTypography)
 
-### Font Weight Mapping ⚠️ IMPORTANT
+**17-style type scale.** Sizes snap to 14/15/16/18/20/26. All body styles default to `textPrimary` with `height: 1.45`. Only `button` (white) and `price` (accent) differ.
+
+**Streamlined in commit `7f0c892` (2026-03-10):** Replaced 21 inconsistent styles with a clean, predictable scale. Heavy body variants added 2026-03-10.
+
+### Compact Reference
+
+```
+HEADINGS
+h1          → 26/w700/textPrimary/1.2/ls:-0.65
+h1Heavy     → 26/w800/textPrimary/1.2/ls:-0.78
+h2          → 20/w700/textPrimary/1.3
+h3          → 18/w700/textPrimary/1.3
+
+BODY (3 sizes × 3 weights, all 1.45 line height, all textPrimary)
+bodyLg       → 16/w400    bodyLgMedium → 16/w500    bodyLgHeavy → 16/w700
+body         → 15/w400    bodyMedium   → 15/w500    bodyHeavy   → 15/w700
+bodySm       → 14/w400    bodySmMedium → 14/w500    bodySmHeavy → 14/w700
+
+UI
+button       → 18/w600/white/1.2
+price        → 14/w600/accent/1.45
+```
+
+### Headings
+
+| Style | Size | Weight | Line Height | Usage |
+|-------|------|--------|-------------|-------|
+| `AppTypography.h1` | 26px | w700 | 1.2 | Page titles, hero headings |
+| `AppTypography.h1Heavy` | 26px | w800 | 1.2 | Restaurant name on profile |
+| `AppTypography.h2` | 20px | w700 | 1.3 | Section headings |
+| `AppTypography.h3` | 18px | w700 | 1.3 | Category headings, app bar titles |
+
+### Body Text (3 sizes × 3 weights)
+
+All body styles: `color: textPrimary`, `height: 1.45`
+
+| Style | Size | Weight | Usage |
+|-------|------|--------|-------|
+| `AppTypography.bodyLg` | 16px | w400 | Long-form text, descriptions |
+| `AppTypography.bodyLgMedium` | 16px | w500 | Labels, emphasized body |
+| `AppTypography.bodyLgHeavy` | 16px | w700 | Bold body text, strong emphasis |
+| `AppTypography.body` | 15px | w400 | Standard body text |
+| `AppTypography.bodyMedium` | 15px | w500 | Card names, menu items |
+| `AppTypography.bodyHeavy` | 15px | w700 | Bold card names, section labels |
+| `AppTypography.bodySm` | 14px | w400 | Helper text, card details |
+| `AppTypography.bodySmMedium` | 14px | w500 | Chips, status, distance |
+| `AppTypography.bodySmHeavy` | 14px | w700 | Bold small text, highlighted details |
+
+### UI Elements
+
+| Style | Size | Weight | Color | Usage |
+|-------|------|--------|-------|-------|
+| `AppTypography.button` | 18px | w600 | white | Primary buttons |
+| `AppTypography.price` | 14px | w600 | accent | Prices (orange) |
+
+### Migration from Old Names
+
+| Old Name (removed) | New Name | Notes |
+|---------------------|----------|-------|
+| `pageTitle` | `h1` | Same: 26/w700 |
+| `restaurantName` | `h1Heavy` | Same: 26/w800 |
+| `sectionHeading` | `h2` | Same: 20/w700 |
+| `categoryHeading` | `h3` | Same: 18/w700 |
+| `bodyRegular` | `bodyLg` | Same: 16/w400 |
+| `label` | `bodyLgMedium` | Same: 16/w500 |
+| `bodySmall` | `bodyMedium` | Was 16/w500, now 15/w500 |
+| `bodyTiny` | `bodySm` | Same: 14/w400 |
+| `subtitle` | Use `bodyLg.copyWith(...)` | Removed (was 16/w300) |
+| `helper` | `bodySm` | Same: 14/w400 |
+| `input` | `bodyLg` | Same: 16/w400 |
+| `placeholder` | `bodyLg` | Same: 16/w400 |
+| `chip` | `bodySmMedium.copyWith(...)` | Was 12.5/w600, now use 14/w500 base |
+| `status` | `bodySmMedium.copyWith(...)` | Was 12.5/w600, now use 14/w500 base |
+| `viewToggle` | Removed | Was 13.5/w500 |
+| `cardRestaurantName` | `bodyHeavy` | Was 15.5/w700, now 15/w700 |
+| `menuItemName` | `bodyMedium.copyWith(fontWeight: FontWeight.w600)` | Was 15/w600 |
+| `price` | `price` | Size changed: was 13.5, now 14 |
+| `cardDetail` | `bodySm` | Same: 14/w400 |
+| `cardDistance` | `bodySmMedium` | Same: 14/w500 |
+| `button` | `button` | Unchanged: 18/w600/white |
+
+### Font Weight Mapping
 
 Design system uses numeric weights (420-750). Flutter only supports 100-900 in increments of 100:
 
@@ -191,77 +272,51 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 | 620-680 | `FontWeight.w700` | Bold |
 | 700-750 | `FontWeight.w800` | Extra-bold |
 
-**Rule:** Always round design weights to the nearest Flutter weight constant.
-
----
-
-### Headings
-
-| Style | Size | Weight | Usage |
-|-------|------|--------|-------|
-| `AppTypography.pageTitle` | 26px | w700 | Page titles (h2) |
-| `AppTypography.restaurantName` | 26px | w800 | Business names (h1) |
-| `AppTypography.sectionHeading` | 20px | w700 | Section headings (h3) |
-| `AppTypography.categoryHeading` | 18px | w700 | Category headings (h4) |
-
-### Body Text
-
-| Style | Size | Weight | Usage |
-|-------|------|--------|-------|
-| `AppTypography.bodyRegular` | 16px | w400 | Body paragraphs, descriptions |
-| `AppTypography.bodyMedium` | 16px | w500 | Emphasized body text |
-| `AppTypography.bodySmall` | 15px | w500 | Smaller body text |
-| `AppTypography.bodyTiny` | 14px | w400 | Tiny text, footnotes |
-| `AppTypography.subtitle` | 16px | w300 | Descriptive text under headings (settings forms) |
-
-### UI Elements
-
-| Style | Size | Weight | Usage |
-|-------|------|--------|-------|
-| `AppTypography.label` | 16px | w500 | Form field labels |
-| `AppTypography.helper` | 14px | w400 | Helper text below fields |
-| `AppTypography.input` | 16px | w400 | Text inside input fields |
-| `AppTypography.placeholder` | 16px | w400 | Input placeholder text |
-| `AppTypography.button` | 18px | w600 | Button text |
-| `AppTypography.chip` | 12.5px | w600 | Chip/tag text |
-| `AppTypography.status` | 12.5px | w600 | Status indicators |
-| `AppTypography.viewToggle` | 13.5px | w500 | List/Map toggle buttons |
-
-### Card Elements
-
-| Style | Size | Weight | Usage |
-|-------|------|--------|-------|
-| `AppTypography.cardRestaurantName` | 15.5px | w700 | Restaurant name in cards |
-| `AppTypography.menuItemName` | 15px | w600 | Menu item names |
-| `AppTypography.price` | 13.5px | w600 | Prices (orange color) |
-| `AppTypography.cardDetail` | 14px | w400 | Status, cuisine, price in cards |
-| `AppTypography.cardDistance` | 14px | w500 | Distance label (right-aligned) |
-
 ### Common Patterns
 
 ```dart
 // Page heading
 Text(
   'Share feedback',
-  style: AppTypography.sectionHeading,  // 20px, w700
+  style: AppTypography.h2,  // 20px, w700
 )
 
 // Form label
 Text(
   'Your name',
-  style: AppTypography.label,  // 16px, w500, textPrimary
+  style: AppTypography.bodyLgMedium,  // 16px, w500, textPrimary
 )
 
 // Helper text
 Text(
   'Enter your full name',
-  style: AppTypography.helper,  // 14px, w400
+  style: AppTypography.bodySm,  // 14px, w400
 )
 
 // Body paragraph
 Text(
   'Description text...',
-  style: AppTypography.bodyRegular,  // 16px, w400, textSecondary
+  style: AppTypography.bodyLg,  // 16px, w400, textPrimary
+)
+
+// Price
+Text(
+  '149 DKK',
+  style: AppTypography.price,  // 14px, w600, accent
+)
+```
+
+### Dynamic Font Size Override
+
+`filter_overlay_widget.dart` uses `_adjustedFontSize()` for dynamic sizing. Inline styles there still need `fontSize` override via `.copyWith()`:
+
+```dart
+// When dynamic sizing is needed
+Text(
+  label,
+  style: AppTypography.bodySm.copyWith(
+    fontSize: _adjustedFontSize(14),  // Scale for responsive layout
+  ),
 )
 ```
 
@@ -468,7 +523,7 @@ Column(
     RichText(
       text: TextSpan(
         text: 'Your name ',
-        style: AppTypography.label,
+        style: AppTypography.bodyLgMedium,
         children: [
           TextSpan(
             text: '*',
@@ -499,13 +554,13 @@ Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
     // Label
-    Text('Email or phone', style: AppTypography.label),
+    Text('Email or phone', style: AppTypography.bodyLgMedium),
     SizedBox(height: AppSpacing.xs),  // 4px
 
     // Helper text
     Text(
       'Please provide either or both',
-      style: AppTypography.helper,
+      style: AppTypography.bodySm,
     ),
     SizedBox(height: AppSpacing.sm),  // 8px
 
@@ -535,21 +590,24 @@ Column(
     // Main page title (if present)
     Text(
       'Main Title',
-      style: AppTypography.sectionHeading,  // 20px, w700
+      style: AppTypography.h2,  // 20px, w700
     ),
     SizedBox(height: AppSpacing.sm),  // 8px
 
     // Main subtitle
     Text(
       'Description of the page',
-      style: AppTypography.subtitle,  // 16px, w300, textSecondary
+      style: AppTypography.bodyLg.copyWith(
+        fontWeight: FontWeight.w300,
+        color: AppColors.textSecondary,
+      ),  // 16px, w300, textSecondary
     ),
     SizedBox(height: 28),  // Tighter first gap (not 32px)
 
     // Section title (heavier weight)
     Text(
       'Section Title',
-      style: AppTypography.label.copyWith(
+      style: AppTypography.bodyLgMedium.copyWith(
         fontWeight: FontWeight.w600,  // Override w500 → w600
       ),
     ),
@@ -558,7 +616,10 @@ Column(
     // Section subtitle
     Text(
       'Section description',
-      style: AppTypography.subtitle,  // 16px, w300, textSecondary
+      style: AppTypography.bodyLg.copyWith(
+        fontWeight: FontWeight.w300,
+        color: AppColors.textSecondary,
+      ),  // 16px, w300, textSecondary
     ),
     SizedBox(height: AppSpacing.sm),  // 8px
 
@@ -566,7 +627,7 @@ Column(
     TextField(
       decoration: InputDecoration(
         hintText: 'Placeholder text',
-        hintStyle: AppTypography.placeholder.copyWith(fontSize: 14),
+        hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
       ),
     ),
 
@@ -579,12 +640,12 @@ Column(
 
 **Key Rules:**
 - Section titles: 16px, **w600**, textPrimary (darker, heavier)
-- Subtitles: **16px**, w300, textSecondary (lighter weight, lighter color) - use `AppTypography.subtitle`
+- Subtitles: **16px**, w300, textSecondary (lighter weight, lighter color) - use `AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w300, color: AppColors.textSecondary)`
 - Placeholders: **14px** (not default 16px)
 - First gap: **28px** (tighter than other sections)
 - Section spacing: **24px** (AppSpacing.xxl, not xl)
 
-**Rationale:** Consistent visual hierarchy across all settings forms. Weight (w600 vs w300) and color (textPrimary vs textSecondary) create clear distinction. Subtitles increased from 14px to 16px (March 2026) for improved readability while maintaining light w300 weight for visual hierarchy.
+**Rationale:** Consistent visual hierarchy across all settings forms. Weight (w600 vs w300) and color (textPrimary vs textSecondary) create clear distinction. The old `subtitle` style was removed in the 14-style streamlining (commit `7f0c892`); use `.copyWith()` on `bodyLg` for the same effect.
 
 **Example files:**
 - `journey_mate/lib/pages/settings/widgets/feedback_form_widget.dart`
@@ -604,12 +665,12 @@ Column(
   children: [
     Text(
       'First paragraph text...',
-      style: AppTypography.bodyRegular,
+      style: AppTypography.bodyLg,
     ),
     SizedBox(height: AppSpacing.sm),  // 8px between paragraphs
     Text(
       'Second paragraph text...',
-      style: AppTypography.bodyRegular,
+      style: AppTypography.bodyLg,
     ),
   ],
 )
@@ -634,7 +695,7 @@ GestureDetector(
     ),
     child: Text(
       'Category',
-      style: AppTypography.chip.copyWith(
+      style: AppTypography.bodySmMedium.copyWith(
         color: _selected ? Colors.white : AppColors.textSecondary,
       ),
     ),
@@ -660,9 +721,9 @@ Row(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Label', style: AppTypography.label),
+          Text('Label', style: AppTypography.bodyLgMedium),
           SizedBox(height: AppSpacing.xs),  // 4px
-          Text('Description', style: AppTypography.helper),
+          Text('Description', style: AppTypography.bodySm),
         ],
       ),
     ),
@@ -688,7 +749,7 @@ Scaffold(
       icon: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary),
       onPressed: () => Navigator.of(context).pop(),
     ),
-    title: Text('Page Title', style: AppTypography.categoryHeading),
+    title: Text('Page Title', style: AppTypography.h3),
     centerTitle: true,
   ),
   body: SafeArea(
@@ -788,7 +849,7 @@ AppInputDecorations.standard(hintText: '...')  // Correct
 ❌ **Inline text styles** → Use `AppTypography.*`
 ```dart
 TextStyle(fontSize: 14, fontWeight: FontWeight.w500)  // Wrong
-AppTypography.label  // Correct
+AppTypography.bodyLgMedium  // Correct
 ```
 
 ### Quick Checks
@@ -808,4 +869,4 @@ AppTypography.label  // Correct
 
 ---
 
-**Status:** Complete — All design tokens implemented | **Source of truth:** `journey_mate/lib/theme/` | **Last verified:** 2026-03-03
+**Status:** Complete — All design tokens implemented | **Source of truth:** `journey_mate/lib/theme/` | **Last verified:** 2026-03-10

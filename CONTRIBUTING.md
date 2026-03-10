@@ -65,7 +65,7 @@ git checkout -b feature/your-feature-name
    // ✅ Good
    color: AppColors.accent
    padding: EdgeInsets.all(AppSpacing.lg)
-   style: AppTypography.bodyRegular
+   style: AppTypography.bodyLg
 
    // ❌ Bad
    color: Color(0xFFe8751a)
