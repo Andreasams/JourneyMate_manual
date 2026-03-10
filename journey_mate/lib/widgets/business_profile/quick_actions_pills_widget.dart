@@ -49,7 +49,8 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     final longitude = (business['longitude'] as num?)?.toDouble();
     final businessName = business['business_name'] as String?;
 
-    // Build action pills (only show if data available)
+    // Build action pills in fixed order: Call → Book → Map → Website
+    // Missing pills are simply omitted; order is always preserved.
     final pills = <Widget>[
       if (phone != null && phone.isNotEmpty)
         _buildPill(
@@ -58,14 +59,6 @@ class QuickActionsPillsWidget extends ConsumerWidget {
           icon: Icons.phone,
           label: td(ref, 'action_call'),
           onTap: () => _handleCallTap(context, ref, phone),
-        ),
-      if (website != null && website.isNotEmpty)
-        _buildPill(
-          context: context,
-          ref: ref,
-          icon: Icons.language,
-          label: td(ref, 'website'),
-          onTap: () => _handleWebsiteTap(context, ref, website),
         ),
       if (bookingUrl != null && bookingUrl.isNotEmpty)
         _buildPill(
@@ -89,6 +82,14 @@ class QuickActionsPillsWidget extends ConsumerWidget {
           businessName ?? td(ref, 'business_type_default'),
         ),
       ),
+      if (website != null && website.isNotEmpty)
+        _buildPill(
+          context: context,
+          ref: ref,
+          icon: Icons.language,
+          label: td(ref, 'website'),
+          onTap: () => _handleWebsiteTap(context, ref, website),
+        ),
     ];
 
     if (pills.isEmpty) {

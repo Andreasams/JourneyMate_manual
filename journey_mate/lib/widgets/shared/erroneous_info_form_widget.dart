@@ -224,7 +224,7 @@ class _ErroneousInfoFormWidgetState
           width: double.infinity,
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.bgCardSubtle,
+            color: AppColors.bgSurface,
             borderRadius: BorderRadius.circular(AppRadius.card),
             border: Border.all(
               color: AppColors.border,
@@ -298,31 +298,35 @@ class _ErroneousInfoFormWidgetState
             minLines: 5,
             maxLines: null,
             textAlignVertical: TextAlignVertical.top,
-            style: AppTypography.bodyLg,
+            style: AppTypography.body,
             decoration: InputDecoration(
               hintText: td(ref, 'erroneous_info_hint_message'),
-              hintStyle: AppTypography.bodyLg.copyWith(
+              hintStyle: AppTypography.body.copyWith(
                 color: AppColors.textSecondary.withValues(alpha: 0.7),
               ),
               filled: true,
-              fillColor: AppColors.bgSurface,
+              fillColor: AppColors.bgInput,
+              contentPadding: const EdgeInsets.all(12),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-                borderSide: _messageError != null
-                    ? const BorderSide(color: AppColors.error, width: 1)
-                    : BorderSide.none,
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-                borderSide: _messageError != null
-                    ? const BorderSide(color: AppColors.error, width: 1)
-                    : BorderSide.none,
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.accent, width: 2),
               ),
-              contentPadding: const EdgeInsets.all(AppSpacing.md),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.error),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.error, width: 2),
+              ),
             ),
             onChanged: (_) {
               if (_messageError != null) {

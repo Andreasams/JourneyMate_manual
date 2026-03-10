@@ -55,7 +55,7 @@ class LocationStatusCard extends ConsumerWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.bgCardSubtle,
+            color: AppColors.bgSurface,
             borderRadius: BorderRadius.circular(AppRadius.card),
             border: Border.all(
               color: AppColors.border,

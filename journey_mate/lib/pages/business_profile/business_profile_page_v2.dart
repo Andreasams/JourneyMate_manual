@@ -596,17 +596,11 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (context) => DraggableScrollableSheet(
-                    initialChildSize: 0.4,
-                    maxChildSize: 0.9,
-                    minChildSize: 0.25,
-                    builder: (context, scrollController) => DescriptionSheet(
-                      title: filterName,
-                      description: filterDescription,
-                      scrollController: scrollController,
-                      fallbackDescription:
-                          td(ref, 'no_description_available'),
-                    ),
+                  builder: (context) => DescriptionSheet(
+                    title: filterName,
+                    description: filterDescription,
+                    fallbackDescription:
+                        td(ref, 'no_description_available'),
                   ),
                 );
               }

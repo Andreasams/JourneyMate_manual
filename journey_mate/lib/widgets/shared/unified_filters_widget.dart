@@ -115,15 +115,15 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   /// =========================================================================
 
   static const Color _selectedColor = AppColors.accent;
-  static const Color _unselectedColor = AppColors.bgSurface;
+  static const Color _unselectedColor = AppColors.bgCard;
   static const Color _selectedTextColor = AppColors.bgPage;
-  static const Color _unselectedTextColor = AppColors.textPrimary;
+  static const Color _unselectedTextColor = AppColors.textSecondary;
   static final Color _borderColor = AppColors.border;
 
   static const Duration _animationDuration = Duration(milliseconds: 200);
   static const EdgeInsets _buttonPadding = EdgeInsets.symmetric(horizontal: 16);
   static const Size _buttonMinSize = Size(0, 32);
-  static const double _buttonBorderRadius = AppRadius.button;
+  static const double _buttonBorderRadius = AppRadius.chip;
   static const double _buttonSpacing = AppSpacing.sm;
 
   static const Color _containerColor = Color(0x1957636C);
@@ -879,7 +879,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         ),
         child: Text(
           text,
-          style: AppTypography.bodySm.copyWith(
+          style: AppTypography.bodySmMedium.copyWith(
             color: isSelected ? _selectedTextColor : _unselectedTextColor,
           ),
         ),
@@ -915,7 +915,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         ),
         child: Text(
           text,
-          style: AppTypography.bodySm.copyWith(
+          style: AppTypography.bodySmMedium.copyWith(
             color: isVisible ? _selectedTextColor : _unselectedTextColor,
           ),
         ),
@@ -1015,7 +1015,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
           padding: const EdgeInsets.only(top: _widgetTopPadding),
           child: Wrap(
             spacing: _buttonSpacing,
-            runSpacing: AppSpacing.xxs,
             children: allergens
                 .map((allergen) => _buildAllergenButton(
                       text: allergen.value,

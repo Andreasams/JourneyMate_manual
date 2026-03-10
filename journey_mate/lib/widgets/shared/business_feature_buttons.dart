@@ -60,8 +60,8 @@ class _BusinessFeatureButtonsState
   static const double _buttonRunSpacing = 8.0;
   static const double _iconSize = 16.0;
   static const double _iconSpacing = 6.0;
-  // AppRadius.facility (9px) — unified with payment_options_widget
-  static const double _borderRadius = AppRadius.facility;
+  // AppRadius.chip (8px) — unified chip radius across all chip-style buttons
+  static const double _borderRadius = AppRadius.chip;
   static const double _textMeasurementSafetyMargin = 4.0;
 
   // Text style for measurement
@@ -761,9 +761,7 @@ class _BusinessFeatureButtonsState
             Icon(
               Icons.info_outline,
               size: _iconSize,
-              // Use AppColors.accent for design system compliance
-              // (FlutterFlow uses #D35400 but design system is #e8751a)
-              color: isSelected ? AppColors.accent : AppColors.textSecondary,
+              color: isSelected ? AppColors.green : AppColors.textSecondary,
             ),
           ],
         ],
@@ -783,13 +781,12 @@ class _BusinessFeatureButtonsState
         (states) => RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(_borderRadius),
           side: isSelected
-              // Use AppColors.accent for design system compliance
-              ? BorderSide(color: AppColors.accent, width: 1)
+              ? BorderSide(color: AppColors.greenBorder, width: 1)
               : BorderSide(color: AppColors.border, width: 1),
         ),
       ),
       backgroundColor: WidgetStateProperty.resolveWith<Color>(
-        (states) => isSelected ? AppColors.orangeBg : AppColors.bgSurface,
+        (states) => isSelected ? AppColors.greenBg : AppColors.bgSurface,
       ),
       elevation: WidgetStateProperty.all(0),
       overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -799,7 +796,7 @@ class _BusinessFeatureButtonsState
   /// Creates button text style based on selection state.
   TextStyle _buildButtonTextStyle(bool isSelected) {
     return AppTypography.bodySm.copyWith(
-      color: isSelected ? AppColors.accent : AppColors.textPrimary,
+      color: isSelected ? AppColors.green : AppColors.textPrimary,
     );
   }
 

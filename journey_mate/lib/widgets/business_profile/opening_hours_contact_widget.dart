@@ -402,8 +402,6 @@ class _OpeningHoursContactWidgetState
           children: [
             _buildHoursSection(openingHours),
             const SizedBox(height: 16),
-            const Divider(height: 1, thickness: 1, color: AppColors.border),
-            const SizedBox(height: 16),
             _buildContactSection(business),
           ],
         ),
@@ -424,16 +422,12 @@ class _OpeningHoursContactWidgetState
         SizedBox(height: AppSpacing.msm),
         // Days list
         Column(
-          children: List.generate(7, (index) {
-            final isLastRow = index == 6;
-            return Column(
+          children: List.generate(7, (index) => Column(
               children: [
                 _buildDayRow(index, openingHours),
-                if (!isLastRow)
-                  const Divider(height: 1, thickness: 1, color: AppColors.border),
+                const Divider(height: 1, thickness: 1, color: AppColors.border),
               ],
-            );
-          }),
+            )),
         ),
       ],
     );

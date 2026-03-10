@@ -208,7 +208,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
 
             // Message field
             _buildMessageField(),
-            SizedBox(height: AppSpacing.xxl), // Increased from xl (20) to xxl (24)
+            SizedBox(height: 26), // xxl (24) + 2px breathing room before checkbox
 
             // Contact consent checkbox
             _buildContactConsentSection(),
@@ -271,7 +271,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.accent : AppColors.bgSurface,
+                  color: isSelected ? AppColors.accent : AppColors.bgCard,
                   borderRadius: BorderRadius.circular(AppRadius.chip),
                   border: Border.all(
                     color: isSelected ? AppColors.accent : AppColors.border,
@@ -339,10 +339,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             }
           },
           maxLines: 6,
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
           decoration: InputDecoration(
             hintText: td(ref, 'feedback_form_hint_message'),
-            hintStyle: AppTypography.bodyLg.copyWith(
+            hintStyle: AppTypography.body.copyWith(
               color: AppColors.textSecondary.withValues(alpha: 0.7),
             ),
             filled: true,
@@ -441,7 +441,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                   padding: EdgeInsets.only(top: 2), // Align with checkbox
                   child: Text(
                     td(ref, 'feedback_form_checkbox_label'),
-                    style: AppTypography.bodyLg.copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.body.copyWith(color: AppColors.textPrimary),
                   ),
                 ),
               ),
@@ -488,10 +488,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                 }
               },
               maxLines: 1,
-              style: AppTypography.bodyLg,
+              style: AppTypography.body,
               decoration: InputDecoration(
                 hintText: td(ref, 'feedback_form_hint_name'),
-                hintStyle: AppTypography.bodyLg.copyWith(
+                hintStyle: AppTypography.body.copyWith(
                   color: AppColors.textSecondary.withValues(alpha: 0.7),
                 ),
                 filled: true,
@@ -571,10 +571,10 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
                 }
               },
               maxLines: 1,
-              style: AppTypography.bodyLg,
+              style: AppTypography.body,
               decoration: InputDecoration(
                 hintText: td(ref, 'feedback_form_hint_contact'),
-                hintStyle: AppTypography.bodyLg.copyWith(
+                hintStyle: AppTypography.body.copyWith(
                   color: AppColors.textSecondary.withValues(alpha: 0.7),
                 ),
                 filled: true,

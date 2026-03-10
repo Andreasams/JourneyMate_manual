@@ -79,7 +79,7 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
   static const double _buttonRowHeight = 32.0;
   static const double _buttonSpacing = AppSpacing.sm;
   static const double _buttonRunSpacing = AppSpacing.sm;
-  static const double _buttonBorderRadius = AppRadius.facility;
+  static const double _buttonBorderRadius = AppRadius.chip;
   static const double _buttonBorderWidth = 1.0;
   static const double _textWidthSafetyMargin = 4.0;
 

@@ -36,6 +36,7 @@ import '../../services/api_service.dart';
 /// Design (matches JSX lines 190-234):
 /// - borderRadius: AppRadius.input (12px)
 /// - border width: 1.5px
+/// - Outer vertical margin: AppSpacing.xs (4px) — tops up page 12px spacers to 16px
 /// - Header padding: AppSpacing.mlg horizontal, AppSpacing.md vertical
 /// - Header icon: AppIconSize.md (16px), check_circle / info_outline
 /// - Header text: AppTypography.bodySmMedium w600, AppColors.textPrimary
@@ -169,79 +170,82 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
             ? Icons.error_outline
             : Icons.info_outline;
 
-    return GestureDetector(
-      onTap: _toggleExpanded,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          border: Border.all(color: borderColor, width: 1.5),
-          borderRadius: BorderRadius.circular(AppRadius.input),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header: Icon + Match count + Chevron
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.mlg, vertical: AppSpacing.md),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Icon(
-                          icon,
-                          size: AppIconSize.md,
-                          color: primaryColor,
-                        ),
-                        SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            td(ref, 'match_card_matches')
-                                .replaceAll('{count}', matchedCount.toString())
-                                .replaceAll('{total}', totalCount.toString()),
-                            style: AppTypography.bodySmMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: GestureDetector(
+        onTap: _toggleExpanded,
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            border: Border.all(color: borderColor, width: 1.5),
+            borderRadius: BorderRadius.circular(AppRadius.input),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header: Icon + Match count + Chevron
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.mlg, vertical: AppSpacing.md),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(
+                            icon,
+                            size: AppIconSize.md,
+                            color: primaryColor,
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              td(ref, 'match_card_matches')
+                                  .replaceAll('{count}', matchedCount.toString())
+                                  .replaceAll('{total}', totalCount.toString()),
+                              style: AppTypography.bodySmMedium.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  // Animated chevron icon
-                  AnimatedRotation(
-                    turns: _isExpanded ? 0.5 : 0.0,
-                    duration: const Duration(milliseconds: 250),
-                    child: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: AppColors.textMuted,
-                      size: AppIconSize.sm,
+                    // Animated chevron icon
+                    AnimatedRotation(
+                      turns: _isExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 250),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        color: AppColors.textMuted,
+                        size: AppIconSize.sm,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Expanded content: filter chips in Wrap
-            if (_isExpanded) ...[
-              Padding(
-                padding: EdgeInsets.only(left: AppSpacing.mlg, right: AppSpacing.mlg, bottom: AppSpacing.mlg),
-                child: Wrap(
-                  spacing: AppSpacing.xs,
-                  runSpacing: AppSpacing.xs,
-                  children: [
-                    // Matched filter chips
-                    ...matchedFilters.map((filter) => _buildMatchedChip(filter)),
-
-                    // Missed filter chips
-                    ...missedFilters.map((filter) => _buildMissedChip(filter)),
                   ],
                 ),
               ),
+
+              // Expanded content: filter chips in Wrap
+              if (_isExpanded) ...[
+                Padding(
+                  padding: EdgeInsets.only(left: AppSpacing.mlg, right: AppSpacing.mlg, bottom: AppSpacing.mlg),
+                  child: Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      // Matched filter chips
+                      ...matchedFilters.map((filter) => _buildMatchedChip(filter)),
+
+                      // Missed filter chips
+                      ...missedFilters.map((filter) => _buildMissedChip(filter)),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

@@ -61,10 +61,10 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
   /// Prevents duplicate gallery_opened events on rebuilds
   bool _hasLoggedOpen = false;
 
-  /// Multiplier for creating infinite scroll effect in multi-image view
-  /// 600 * 1000 = 600000, which is divisible by all common gallery sizes (1-12 images)
-  /// This ensures (600000 + N) % imageCount = N for correct initial page positioning
-  static const int _virtualMultiplier = 600;
+  /// Multiplier for creating infinite scroll effect in multi-image view.
+  /// Used as: initialPage = _virtualMultiplier * imageCount + tappedIndex.
+  /// This guarantees (N * count + index) % count == index for ANY gallery size.
+  static const int _virtualMultiplier = 10000;
 
   /// =========================================================================
   /// LIFECYCLE METHODS
@@ -79,9 +79,10 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
 
     // Initialize PageController ONLY for multi-image mode
     if (widget.imageUrls.length > 1) {
-      // CRITICAL: Virtual indexing pattern from FlutterFlow
+      // Virtual indexing: base must be a multiple of imageUrls.length
+      // so that (base + index) % length == index for any gallery size
       _pageController = PageController(
-        initialPage: _virtualMultiplier * 1000 + _currentImageIndex,
+        initialPage: _virtualMultiplier * widget.imageUrls.length + _currentImageIndex,
       );
     }
 

@@ -7,10 +7,14 @@ import 'bottom_sheet_header.dart';
 /// DescriptionSheet — Shared bottom sheet for displaying title + body text.
 ///
 /// Canonical JourneyMate bottom sheet pattern: swipe bar, 40px close button
-/// top-right, DraggableScrollableSheet wrapper (provided by caller).
+/// top-right, self-sizing height based on content.
 ///
 /// Replaces FacilitiesInfoSheet, CategoryDescriptionSheet, and
 /// FilterDescriptionSheet with a single, design-system-aligned widget.
+///
+/// The sheet sizes itself to fit content, with a minimum height of 40% and
+/// maximum of 80% of screen height. Scrolls automatically when content
+/// exceeds the maximum.
 ///
 /// Usage:
 /// ```dart
@@ -18,15 +22,9 @@ import 'bottom_sheet_header.dart';
 ///   context: context,
 ///   isScrollControlled: true,
 ///   backgroundColor: Colors.transparent,
-///   builder: (context) => DraggableScrollableSheet(
-///     initialChildSize: 0.4,
-///     maxChildSize: 0.9,
-///     minChildSize: 0.25,
-///     builder: (context, scrollController) => DescriptionSheet(
-///       title: 'Appetizers',
-///       description: 'Start your meal with...',
-///       scrollController: scrollController,
-///     ),
+///   builder: (context) => DescriptionSheet(
+///     title: 'Appetizers',
+///     description: 'Start your meal with...',
 ///   ),
 /// );
 /// ```
@@ -44,7 +42,7 @@ class DescriptionSheet extends StatefulWidget {
     super.key,
     required this.title,
     this.description,
-    required this.scrollController,
+    this.scrollController,
     this.fallbackDescription = 'No description available.',
     this.width,
   });
@@ -55,8 +53,8 @@ class DescriptionSheet extends StatefulWidget {
   /// Body text. When null or empty, [fallbackDescription] is shown instead.
   final String? description;
 
-  /// Scroll controller from parent [DraggableScrollableSheet].
-  final ScrollController scrollController;
+  /// Optional scroll controller (for external scroll coordination).
+  final ScrollController? scrollController;
 
   /// Text shown when [description] is null or empty.
   final String? fallbackDescription;
@@ -70,58 +68,70 @@ class DescriptionSheet extends StatefulWidget {
 
 class _DescriptionSheetState extends State<DescriptionSheet> {
   static const double _contentHorizontalPadding = 24.0;
+  static const double _minHeightFraction = 0.4;
+  static const double _maxHeightFraction = 0.8;
 
   bool get _hasDescription =>
       widget.description != null && widget.description!.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: widget.width,
-      decoration: BottomSheetHeader.sheetDecoration(),
-      child: Column(
-        children: [
-          BottomSheetHeader(
-            rightAction: BottomSheetAction(
-              icon: Icons.close,
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              controller: widget.scrollController,
-              physics: const ClampingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: _contentHorizontalPadding,
+    final screenHeight = MediaQuery.sizeOf(context).height;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: screenHeight * _minHeightFraction,
+        maxHeight: screenHeight * _maxHeightFraction,
+      ),
+      child: Container(
+        width: widget.width,
+        decoration: BottomSheetHeader.sheetDecoration(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BottomSheetHeader(
+              rightAction: BottomSheetAction(
+                icon: Icons.close,
+                onPressed: () => Navigator.of(context).pop(),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: AppSpacing.md),
-                  Text(
-                    widget.title,
-                    style: AppTypography.h4,
-                  ),
-                  SizedBox(height: AppSpacing.sm),
-                  Text(
-                    _hasDescription
-                        ? widget.description!
-                        : (widget.fallbackDescription ??
-                            'No description available.'),
-                    style: AppTypography.bodyLg.copyWith(
-                      color: _hasDescription
-                          ? AppColors.textSecondary
-                          : AppColors.textTertiary,
-                      fontStyle:
-                          _hasDescription ? FontStyle.normal : FontStyle.italic,
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                controller: widget.scrollController,
+                physics: const ClampingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: _contentHorizontalPadding,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: AppSpacing.md),
+                    Text(
+                      widget.title,
+                      style: AppTypography.h4,
                     ),
-                  ),
-                  SizedBox(height: AppSpacing.xxl),
-                ],
+                    SizedBox(height: AppSpacing.sm),
+                    Text(
+                      _hasDescription
+                          ? widget.description!
+                          : (widget.fallbackDescription ??
+                              'No description available.'),
+                      style: AppTypography.bodyLg.copyWith(
+                        color: _hasDescription
+                            ? AppColors.textSecondary
+                            : AppColors.textTertiary,
+                        fontStyle: _hasDescription
+                            ? FontStyle.normal
+                            : FontStyle.italic,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.xxl),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

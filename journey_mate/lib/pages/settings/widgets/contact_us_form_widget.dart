@@ -293,10 +293,10 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           controller: controller,
           onChanged: (_) => onChanged(),
           maxLines: maxLines,
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTypography.bodyLg.copyWith(
+            hintStyle: AppTypography.body.copyWith(
               color: AppColors.textSecondary.withValues(alpha: 0.7),
             ),
             filled: true,

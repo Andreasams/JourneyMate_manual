@@ -378,16 +378,10 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
               FocusScope.of(sheetContext).unfocus();
               FocusManager.instance.primaryFocus?.unfocus();
             },
-            child: DraggableScrollableSheet(
-              initialChildSize: 0.4,
-              maxChildSize: 0.9,
-              minChildSize: 0.25,
-              builder: (sheetContext, scrollController) => DescriptionSheet(
-                title: catName,
-                description: catDescription,
-                scrollController: scrollController,
-                width: double.infinity,
-              ),
+            child: DescriptionSheet(
+              title: catName,
+              description: catDescription,
+              width: double.infinity,
             ),
           ),
         );
