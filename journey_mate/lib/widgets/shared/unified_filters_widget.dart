@@ -117,7 +117,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   static const Color _selectedColor = AppColors.accent;
   static const Color _unselectedColor = AppColors.bgCard;
   static const Color _selectedTextColor = AppColors.bgPage;
-  static const Color _unselectedTextColor = AppColors.textSecondary;
+  static const Color _unselectedTextColor = AppColors.textPrimary;
   static final Color _borderColor = AppColors.border;
 
   static const Duration _animationDuration = Duration(milliseconds: 200);
@@ -132,7 +132,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
 
   static const double _sectionSpacing = AppSpacing.lg;
   static const double _widgetTopPadding = 4.0;
-  static const double _widgetHeight = 28.0;
+  static const double _widgetHeight = 32.0;
 
   /// =========================================================================
   /// STATE - SCROLL CONTROLLERS
@@ -863,6 +863,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         style: ButtonStyle(
           padding: WidgetStateProperty.all(_buttonPadding),
           minimumSize: WidgetStateProperty.all(_buttonMinSize),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: WidgetStateProperty.all<OutlinedBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(_buttonBorderRadius),
@@ -879,7 +880,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         ),
         child: Text(
           text,
-          style: AppTypography.bodySmMedium.copyWith(
+          style: AppTypography.bodySm.copyWith(
             color: isSelected ? _selectedTextColor : _unselectedTextColor,
           ),
         ),
@@ -899,6 +900,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         style: ButtonStyle(
           padding: WidgetStateProperty.all(_buttonPadding),
           minimumSize: WidgetStateProperty.all(_buttonMinSize),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: WidgetStateProperty.all<OutlinedBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(_buttonBorderRadius),
@@ -915,7 +917,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         ),
         child: Text(
           text,
-          style: AppTypography.bodySmMedium.copyWith(
+          style: AppTypography.bodySm.copyWith(
             color: isVisible ? _selectedTextColor : _unselectedTextColor,
           ),
         ),
@@ -933,9 +935,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           _getUIText('menu_dishes_filter_title'),
-          style: AppTypography.h5.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTypography.h5,
         ),
         if (_hasActiveFilters())
           GestureDetector(
@@ -962,13 +962,11 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           header,
-          style: AppTypography.bodyLg,
+          style: AppTypography.h6,
         ),
         Text(
           description,
-          style: AppTypography.bodySm.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
+          style: AppTypography.body,
         ),
         Padding(
           padding: const EdgeInsets.only(top: _widgetTopPadding),
@@ -1003,13 +1001,11 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           _getUIText('info_header_allergens'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.h6,
         ),
         Text(
           _getUIText('menu_dishes_filter_allergens_subtitle'),
-          style: AppTypography.bodySm.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
+          style: AppTypography.body,
         ),
         Padding(
           padding: const EdgeInsets.only(top: _widgetTopPadding),

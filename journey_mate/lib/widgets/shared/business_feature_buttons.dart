@@ -9,6 +9,7 @@ import '../../providers/filter_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
+import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
@@ -66,6 +67,41 @@ class _BusinessFeatureButtonsState
 
   // Text style for measurement
   static const TextStyle _buttonTextStyleUnselected = AppTypography.bodySm;
+
+  // ========================================
+  // EXPAND/COLLAPSE CONSTANTS
+  // ========================================
+
+  /// Show expand/collapse only when rows exceed this threshold
+  static const int _maxRowsWhenCollapsed = 3;
+
+  /// Collapsed height: 3 rows * 32px + 2 gaps * 8px = 112px
+  static const double _collapsedContentHeight =
+      _maxRowsWhenCollapsed * _buttonRowHeight +
+      (_maxRowsWhenCollapsed - 1) * _buttonRunSpacing;
+
+  /// Gradient overlay height covers the bottom row area
+  static const double _gradientOverlayHeight =
+      _buttonRowHeight + _buttonRunSpacing;
+
+  // Gradient: matching ExpandableTextWidget exactly
+  static const double _gradientStartOpacity = 0.0;
+  static const double _gradientMidOpacity = 0.8;
+  static const double _gradientEndOpacity = 1.0;
+  static const List<double> _gradientStops = [0.0, 0.5, 1.0];
+
+  // Toggle button style: matching ExpandableTextWidget
+  static final TextStyle _toggleButtonTextStyle =
+      AppTypography.bodyLgMedium.copyWith(
+    fontWeight: FontWeight.normal,
+    color: AppColors.textPrimary,
+  );
+  static const double _toggleButtonVerticalPadding = 12.0;
+  static const double _toggleButtonIconSpacing = 6.0;
+  static const double _arrowIconSize = 20.0;
+
+  // Animation: matching ExpandableTextWidget
+  static const Duration _animationDuration = Duration(milliseconds: 300);
 
   // ========================================
   // FILTER CONFIGURATION CONSTANTS
@@ -131,6 +167,14 @@ class _BusinessFeatureButtonsState
       _specialParentChildren.values.expand((list) => list).toList();
 
   // ========================================
+  // STATE VARIABLES
+  // ========================================
+
+  bool _isExpanded = false;
+  bool _hasOverflow = false;
+  int _totalRowCount = 0;
+
+  // ========================================
   // LIFECYCLE METHODS
   // ========================================
 
@@ -168,12 +212,20 @@ class _BusinessFeatureButtonsState
 
       await widget.onInitialCount(organizedFilters.length);
 
-      final calculatedHeight = _calculateRequiredHeight(
+      final metrics = _calculateHeightAndRowCount(
         organizedFilters,
         widget.containerWidth,
       );
 
-      await widget.onHeightCalculated?.call(calculatedHeight);
+      // Update overflow state for expand/collapse UI
+      if (mounted) {
+        setState(() {
+          _totalRowCount = metrics.rowCount;
+          _hasOverflow = metrics.rowCount > _maxRowsWhenCollapsed;
+        });
+      }
+
+      await widget.onHeightCalculated?.call(metrics.height);
     } catch (e) {
       debugPrint('Error in _calculateAndNotifyMetrics: $e');
       await widget.onInitialCount(0);
@@ -206,12 +258,12 @@ class _BusinessFeatureButtonsState
     return width;
   }
 
-  /// Calculates total height required for filter buttons in wrap layout.
-  double _calculateRequiredHeight(
+  /// Calculates total height and row count for filter buttons in wrap layout.
+  ({double height, int rowCount}) _calculateHeightAndRowCount(
     List<Map<String, dynamic>> filters,
     double containerWidth,
   ) {
-    if (filters.isEmpty) return 0.0;
+    if (filters.isEmpty) return (height: 0.0, rowCount: 0);
 
     double currentRowWidth = 0;
     int rowCount = 1;
@@ -242,7 +294,7 @@ class _BusinessFeatureButtonsState
     debugPrint(
         '📐 Height calc: $rowCount rows, ${filters.length} filters, height=$totalHeight, containerWidth=$containerWidth');
 
-    return totalHeight;
+    return (height: totalHeight, rowCount: rowCount);
   }
 
   // ========================================
@@ -696,15 +748,36 @@ class _BusinessFeatureButtonsState
         return SizedBox(width: widget.width, height: 0);
       }
 
-      return SizedBox(
-        width: widget.width,
-        height: widget.height,
-        child: SingleChildScrollView(
+      final buttonChildren = _buildFilterButtons(organizedFilters);
+
+      // 1-3 rows: render Wrap directly (no expand/collapse)
+      if (!_hasOverflow) {
+        return SizedBox(
+          width: widget.width,
           child: Wrap(
             spacing: _buttonSpacing,
             runSpacing: _buttonRunSpacing,
             alignment: WrapAlignment.start,
-            children: _buildFilterButtons(organizedFilters),
+            children: buttonChildren,
+          ),
+        );
+      }
+
+      // 4+ rows: animated expand/collapse
+      return SizedBox(
+        width: widget.width,
+        child: AnimatedSize(
+          duration: _animationDuration,
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _isExpanded
+                  ? _buildExpandedButtons(buttonChildren)
+                  : _buildCollapsedButtons(buttonChildren),
+            ],
           ),
         ),
       );
@@ -712,6 +785,120 @@ class _BusinessFeatureButtonsState
       debugPrint('Error in build method: $e');
       return SizedBox(width: widget.width, height: 0);
     }
+  }
+
+  // ========================================
+  // EXPAND/COLLAPSE UI BUILDERS
+  // ========================================
+
+  Widget _buildCollapsedButtons(List<Widget> buttonChildren) {
+    final backgroundColor = AppColors.bgPage;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: _collapsedContentHeight,
+          child: ClipRect(
+            child: Stack(
+              children: [
+                Wrap(
+                  spacing: _buttonSpacing,
+                  runSpacing: _buttonRunSpacing,
+                  alignment: WrapAlignment.start,
+                  children: buttonChildren,
+                ),
+                _buildGradientOverlay(backgroundColor),
+              ],
+            ),
+          ),
+        ),
+        _buildShowMoreButton(backgroundColor),
+      ],
+    );
+  }
+
+  Widget _buildExpandedButtons(List<Widget> buttonChildren) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: _buttonSpacing,
+          runSpacing: _buttonRunSpacing,
+          alignment: WrapAlignment.start,
+          children: buttonChildren,
+        ),
+        _buildShowLessButton(),
+      ],
+    );
+  }
+
+  Widget _buildGradientOverlay(Color backgroundColor) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      height: _gradientOverlayHeight,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: _gradientStops,
+            colors: [
+              backgroundColor.withValues(alpha: _gradientStartOpacity),
+              backgroundColor.withValues(alpha: _gradientMidOpacity),
+              backgroundColor.withValues(alpha: _gradientEndOpacity),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShowMoreButton(Color backgroundColor) {
+    return GestureDetector(
+      onTap: _expandButtons,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        color: backgroundColor,
+        padding:
+            const EdgeInsets.symmetric(vertical: _toggleButtonVerticalPadding),
+        child: Center(
+          child: Text(
+            td(ref, 'expandable_show_more'),
+            style: _toggleButtonTextStyle,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShowLessButton() {
+    return GestureDetector(
+      onTap: _collapseButtons,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding:
+            const EdgeInsets.symmetric(vertical: _toggleButtonVerticalPadding),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                td(ref, 'expandable_show_less'),
+                style: _toggleButtonTextStyle,
+              ),
+              const SizedBox(width: _toggleButtonIconSpacing),
+              Icon(
+                Icons.keyboard_arrow_up,
+                color: AppColors.textPrimary,
+                size: _arrowIconSize,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   /// Builds list of filter button widgets.
@@ -838,6 +1025,43 @@ class _BusinessFeatureButtonsState
     } catch (e) {
       debugPrint('Error in button onPressed: $e');
     }
+  }
+
+  /// Expands the button list to show all rows.
+  void _expandButtons() {
+    _trackButtonsToggle('expand');
+    setState(() => _isExpanded = true);
+  }
+
+  /// Collapses the button list back to 3 rows.
+  void _collapseButtons() {
+    _trackButtonsToggle('collapse');
+    setState(() => _isExpanded = false);
+  }
+
+  /// Tracks expand/collapse interaction to analytics backend.
+  void _trackButtonsToggle(String action) {
+    final analyticsState = ref.read(analyticsProvider);
+    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
+    final sessionId = analyticsState.sessionId ?? 'unknown';
+    final userId = AnalyticsService.instance.userId ?? 'unknown';
+
+    final businessState = ref.read(businessProvider);
+    final businessId = businessState.currentBusiness?['id'];
+
+    // Track event (fire and forget)
+    ApiService.instance.postAnalytics(
+      eventType: 'feature_buttons_toggled',
+      deviceId: deviceId,
+      sessionId: sessionId,
+      userId: userId,
+      eventData: {
+        'action': action,
+        'total_rows': _totalRowCount,
+        'business_id': businessId,
+      },
+      timestamp: DateTime.now().toIso8601String(),
+    );
   }
 
   /// Tracks filter info icon click to analytics backend.
