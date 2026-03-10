@@ -128,7 +128,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
 
   static const Color _containerColor = Color(0x1957636C);
   static const double _containerBorderRadius = AppRadius.button;
-  static const EdgeInsets _containerPadding = EdgeInsets.symmetric(vertical: 18);
+  static const EdgeInsets _containerPadding = EdgeInsets.fromLTRB(16, 18, 16, 18);
 
   static const double _sectionSpacing = AppSpacing.lg;
   static const double _widgetTopPadding = 4.0;
@@ -1015,7 +1015,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
           padding: const EdgeInsets.only(top: _widgetTopPadding),
           child: Wrap(
             spacing: _buttonSpacing,
-            runSpacing: _buttonSpacing,
+            runSpacing: AppSpacing.xxs,
             children: allergens
                 .map((allergen) => _buildAllergenButton(
                       text: allergen.value,
