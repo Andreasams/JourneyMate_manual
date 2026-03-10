@@ -179,7 +179,7 @@ Container(
 
 ## 4. Typography (AppTypography)
 
-**20-style type scale.** Headings: 6-level hierarchy (26→16, 2px steps, all w700). Body: 14/15/16 at w300–w700. All styles default to `textPrimary` with `height: 1.45`. Only `button` (white) and `price` (accent) differ.
+**21-style type scale.** Headings: 6-level hierarchy (26→16, 2px steps, all w700). Body: 14/15/16 at w300–w700. All styles default to `textPrimary` with `height: 1.45`. Only `button` (white) and `price` (accent) differ.
 
 **Streamlined in commit `7f0c892` (2026-03-10):** Replaced 21 inconsistent styles with a clean, predictable scale. Heavy body variants added 2026-03-10.
 **Heading scale expanded in commit `8095eb9` (2026-03-10):** 6-level hierarchy (h1-h6), 2px steps, all w700. Removed h1Heavy and letterSpacing from headings.
@@ -195,10 +195,11 @@ h4 → 20/w700/1.3  — section headings, sub-headings
 h5 → 18/w700/1.3  — AppBar titles (deliberately understated)
 h6 → 16/w700/1.3  — sub-section labels (e.g. inside collapsibles)
 
-BODY (3 sizes × 3 weights, all 1.45 line height, all textPrimary)
-bodyLg       → 16/w400    bodyLgMedium → 16/w500    bodyLgHeavy → 16/w700
-body         → 15/w400    bodyMedium   → 15/w500    bodyHeavy   → 15/w700
-bodySm       → 14/w400    bodySmMedium → 14/w500    bodySmHeavy → 14/w700
+BODY (3 sizes × 3–4 weights, all 1.45 line height, all textPrimary)
+                  Light(w300)    Regular(w400)  Medium(w500)   Heavy(w700)
+bodyLg (16px)     —              bodyLg         bodyLgMedium   bodyLgHeavy
+body   (15px)     bodyLight      body           bodyMedium     bodyHeavy
+bodySm (14px)     —              bodySm         bodySmMedium   bodySmHeavy
 
 UI
 button       → 18/w600/white/1.2
@@ -224,7 +225,7 @@ All headings use `w700` and `textPrimary`. No letterSpacing.
 - h5 is deliberately small so AppBar titles don't compete with page headings
 - h6 bridges headings and body text for sub-section labels
 
-### Body Text (3 sizes × 3 weights)
+### Body Text (3 sizes × 3–4 weights)
 
 All body styles: `color: textPrimary`, `height: 1.45`
 
@@ -234,6 +235,7 @@ All body styles: `color: textPrimary`, `height: 1.45`
 | `AppTypography.bodyLgMedium` | 16px | w500 | Labels, emphasized body |
 | `AppTypography.bodyLgHeavy` | 16px | w700 | Bold body text, strong emphasis |
 | `AppTypography.body` | 15px | w400 | Standard body text |
+| `AppTypography.bodyLight` | 15px | w300 | Light secondary text (last-updated rows, subtle metadata) |
 | `AppTypography.bodyMedium` | 15px | w500 | Card names, menu items |
 | `AppTypography.bodyHeavy` | 15px | w700 | Bold card names, section labels |
 | `AppTypography.bodySm` | 14px | w400 | Helper text, card details |
@@ -336,6 +338,8 @@ Text(
 ---
 
 ## 5. Input Decorations (AppInputDecorations)
+
+**Unified in commit `9e67b62` (2026-03-10):** All forms now use consistent input styling — `AppTypography.body` for text, `AppColors.bgInput` for fill, `AppRadius.input` for corners, proper border states (error, focusedError, accent focused). The `bgCardSubtle` color alias was removed (was just `bgSurface`).
 
 ### Standard Single-Line Input
 

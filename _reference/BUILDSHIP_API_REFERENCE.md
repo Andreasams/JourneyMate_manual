@@ -468,7 +468,69 @@ Ordered by `menu.display_order`, then `menu_category.display_order`. `category_t
 
 ---
 
-## 8. GET UI TRANSLATIONS (`GET_UI_TRANSLATIONS`)
+## 8. GET MENU PACKAGE IN LANGUAGE (`GET_MENU_PACKAGE_IN_LANGUAGE`)
+
+**Endpoint:** `GET /menupackage`
+
+**Purpose:** Fetch a single menu package with all translations in a specified language. Used for "view in original language" feature in PackageBottomSheet — mirrors GET_SINGLE_MENU_ITEM but for packages instead of individual items.
+
+**Inputs:**
+| Field | Type |
+|-------|------|
+| `packageId` | `number` |
+| `languageCode` | `string` |
+
+**Output:** `MenuPackageOutput`:
+```dart
+{
+  "package_id": number,
+  "package_name": string,
+  "package_description": string,
+  "base_price": number,
+  "is_combo": bool,
+  "is_fixed_price_menu": bool,
+  "is_tasting_menu": bool,
+  "is_sharing_menu": bool,
+  "display_order": number,
+  "course_count": number,
+  "category_selection_count": number,
+  "language_code": string,
+  "business_id": number,
+  "authentic_languages": [string],  // Languages available for "view in original" feature
+  "courses": [
+    {
+      "course_id": number,
+      "course_name": string,
+      "course_description": string,
+      "categories": [
+        {
+          "category_id": number,
+          "category_name": string,
+          "category_description": string,
+          "menu_item_ids": [number]  // Cross-reference with menu_items array
+        }
+      ]
+    }
+  ],
+  "menu_items": [
+    // Same structure as GET_RESTAURANT_MENU items:
+    // item_name, item_description, base_price, item_image_url,
+    // dietary_type_ids, allergy_ids, item_modifier_groups (with normalized pricing)
+  ]
+}
+```
+
+**Notes:**
+- Package inherits `authentic_languages` from its parent Menu
+- `menu_items` array uses same structure as `get_menu_complete` items, including modifier groups with normalized pricing
+- Categories include `menu_item_ids` arrays for lookup-map cross-referencing
+- Language data is cached per-language on the client side; navigator key is replaced on language switch to force UI rebuild
+
+**Reference:** Commit `dedabe2` — "feat: add language/currency switching to PackageBottomSheet and extract shared utilities"
+
+---
+
+## 9. GET UI TRANSLATIONS (`GET_UI_TRANSLATIONS`)
 
 **Endpoint:** `GET /languageText`
 
@@ -493,7 +555,7 @@ Source table: `ui_translations` (columns: `translation_key`, `translation_value`
 
 ---
 
-## 9. POST ANALYTICS (`POST_ANALYTICS_TO_SUPABASE`)
+## 10. POST ANALYTICS (`POST_ANALYTICS_TO_SUPABASE`)
 
 **Purpose:** Track user behaviour events. Fire-and-forget — never await.
 
@@ -543,7 +605,7 @@ facility_info_opened, report_link_tapped
 
 ---
 
-## 10. SUBMIT MISSING PLACE (`/missingplace`)
+## 11. SUBMIT MISSING PLACE (`/missingplace`)
 
 **Purpose:** User reports a restaurant that is missing from the app.
 
@@ -569,7 +631,7 @@ Non-200 → error state shown with retry.
 
 ---
 
-## 11. SUBMIT CONTACT US (`/contact`)
+## 12. SUBMIT CONTACT US (`/contact`)
 
 **Purpose:** User sends a support or general enquiry message.
 
@@ -590,7 +652,7 @@ Non-200 → error state shown with retry.
 
 ---
 
-## 12. SUBMIT FEEDBACK (`/feedbackform`)
+## 13. SUBMIT FEEDBACK (`/feedbackform`)
 
 **Purpose:** User submits app feedback with an optional topic tag and contact consent.
 
@@ -623,8 +685,9 @@ Non-200 → error state shown with retry.
 | 5 | GET_EXCHANGE_RATE | to_currency | rate (double) |
 | 6 | GET_FILTER_DESCRIPTIONS | businessId, languageCode | filterDescriptions [{filter_id, description}] |
 | 7 | GET_SINGLE_MENU_ITEM | menuItemId, languageCode | full menu item object |
-| 8 | GET_UI_TRANSLATIONS | languageCode | Map<String, String> key-value pairs (table: `ui_translations`) |
-| 9 | POST_ANALYTICS | eventType, deviceId, sessionId, userId, eventData, timestamp | success bool |
-| 10 | SUBMIT_MISSING_PLACE (`/missingplace`) | businessName, businessAddress, message, languageCode | inserted row array |
-| 11 | SUBMIT_CONTACT (`/contact`) | name, contact, subject, message, languageCode | inserted row array |
-| 12 | SUBMIT_FEEDBACK (`/feedbackform`) | topic, message, allowContact, name?, contact?, languageCode | inserted row array |
+| 8 | GET_MENU_PACKAGE_IN_LANGUAGE (`/menupackage`) | packageId, languageCode | full menu package with courses, categories, menu_items, authentic_languages |
+| 9 | GET_UI_TRANSLATIONS | languageCode | Map<String, String> key-value pairs (table: `ui_translations`) |
+| 10 | POST_ANALYTICS | eventType, deviceId, sessionId, userId, eventData, timestamp | success bool |
+| 11 | SUBMIT_MISSING_PLACE (`/missingplace`) | businessName, businessAddress, message, languageCode | inserted row array |
+| 12 | SUBMIT_CONTACT (`/contact`) | name, contact, subject, message, languageCode | inserted row array |
+| 13 | SUBMIT_FEEDBACK (`/feedbackform`) | topic, message, allowContact, name?, contact?, languageCode | inserted row array |
