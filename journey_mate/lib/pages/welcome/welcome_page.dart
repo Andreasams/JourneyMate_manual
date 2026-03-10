@@ -403,6 +403,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                   textAlign: TextAlign.center,
                   style: AppTypography.h1.copyWith(
                     fontSize: 28,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
@@ -411,6 +412,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 textAlign: TextAlign.center,
                 style: AppTypography.h1.copyWith(
                   fontSize: 28,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
 
