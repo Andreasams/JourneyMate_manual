@@ -196,7 +196,7 @@ Each scenario below provides:
 **Reference files:**
 - `journey_mate/lib/theme/app_colors.dart` — All 30 color constants
 - `journey_mate/lib/theme/app_spacing.dart` — All 8 spacing constants
-- `journey_mate/lib/theme/app_typography.dart` — All 14 text styles
+- `journey_mate/lib/theme/app_typography.dart` — All 17 text styles
 - `journey_mate/lib/theme/app_theme.dart` — Centralized ThemeData (AppBar, buttons, inputs, cards)
 - `DESIGN_SYSTEM_flutter.md` — Complete design system documentation (869 lines)
 

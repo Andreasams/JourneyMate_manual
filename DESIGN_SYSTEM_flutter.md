@@ -179,9 +179,9 @@ Container(
 
 ## 4. Typography (AppTypography)
 
-**14-style type scale.** Sizes snap to 14/15/16/18/20/26. All body styles default to `textPrimary` with `height: 1.45`. Only `button` (white) and `price` (accent) differ.
+**17-style type scale.** Sizes snap to 14/15/16/18/20/26. All body styles default to `textPrimary` with `height: 1.45`. Only `button` (white) and `price` (accent) differ.
 
-**Streamlined in commit `7f0c892` (2026-03-10):** Replaced 21 inconsistent styles (fractional sizes like 12.5, 13.5, 15.5px and mixed default colors) with a clean, predictable scale.
+**Streamlined in commit `7f0c892` (2026-03-10):** Replaced 21 inconsistent styles with a clean, predictable scale. Heavy body variants added 2026-03-10.
 
 ### Compact Reference
 
@@ -192,10 +192,10 @@ h1Heavy     → 26/w800/textPrimary/1.2/ls:-0.78
 h2          → 20/w700/textPrimary/1.3
 h3          → 18/w700/textPrimary/1.3
 
-BODY (3 sizes × 2 weights, all 1.45 line height, all textPrimary)
-bodyLg       → 16/w400    bodyLgMedium → 16/w500
-body         → 15/w400    bodyMedium   → 15/w500
-bodySm       → 14/w400    bodySmMedium → 14/w500
+BODY (3 sizes × 3 weights, all 1.45 line height, all textPrimary)
+bodyLg       → 16/w400    bodyLgMedium → 16/w500    bodyLgHeavy → 16/w700
+body         → 15/w400    bodyMedium   → 15/w500    bodyHeavy   → 15/w700
+bodySm       → 14/w400    bodySmMedium → 14/w500    bodySmHeavy → 14/w700
 
 UI
 button       → 18/w600/white/1.2
@@ -211,7 +211,7 @@ price        → 14/w600/accent/1.45
 | `AppTypography.h2` | 20px | w700 | 1.3 | Section headings |
 | `AppTypography.h3` | 18px | w700 | 1.3 | Category headings, app bar titles |
 
-### Body Text (3 sizes × 2 weights)
+### Body Text (3 sizes × 3 weights)
 
 All body styles: `color: textPrimary`, `height: 1.45`
 
@@ -219,10 +219,13 @@ All body styles: `color: textPrimary`, `height: 1.45`
 |-------|------|--------|-------|
 | `AppTypography.bodyLg` | 16px | w400 | Long-form text, descriptions |
 | `AppTypography.bodyLgMedium` | 16px | w500 | Labels, emphasized body |
+| `AppTypography.bodyLgHeavy` | 16px | w700 | Bold body text, strong emphasis |
 | `AppTypography.body` | 15px | w400 | Standard body text |
 | `AppTypography.bodyMedium` | 15px | w500 | Card names, menu items |
+| `AppTypography.bodyHeavy` | 15px | w700 | Bold card names, section labels |
 | `AppTypography.bodySm` | 14px | w400 | Helper text, card details |
 | `AppTypography.bodySmMedium` | 14px | w500 | Chips, status, distance |
+| `AppTypography.bodySmHeavy` | 14px | w700 | Bold small text, highlighted details |
 
 ### UI Elements
 
@@ -250,7 +253,7 @@ All body styles: `color: textPrimary`, `height: 1.45`
 | `chip` | `bodySmMedium.copyWith(...)` | Was 12.5/w600, now use 14/w500 base |
 | `status` | `bodySmMedium.copyWith(...)` | Was 12.5/w600, now use 14/w500 base |
 | `viewToggle` | Removed | Was 13.5/w500 |
-| `cardRestaurantName` | `bodyMedium.copyWith(fontWeight: FontWeight.w700)` | Was 15.5/w700 |
+| `cardRestaurantName` | `bodyHeavy` | Was 15.5/w700, now 15/w700 |
 | `menuItemName` | `bodyMedium.copyWith(fontWeight: FontWeight.w600)` | Was 15/w600 |
 | `price` | `price` | Size changed: was 13.5, now 14 |
 | `cardDetail` | `bodySm` | Same: 14/w400 |

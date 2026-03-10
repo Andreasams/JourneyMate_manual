@@ -139,7 +139,7 @@ journey_mate/
 │   ├── theme/                         # Design tokens (source of truth)
 │   │   ├── app_colors.dart            # 30 color constants
 │   │   ├── app_spacing.dart           # 8 spacing constants
-│   │   ├── app_typography.dart        # 14 text styles
+│   │   ├── app_typography.dart        # 17 text styles
 │   │   ├── app_radius.dart            # 7 border radius constants
 │   │   ├── app_button_styles.dart     # Button style presets
 │   │   ├── app_input_decorations.dart # Input decoration presets
@@ -2043,7 +2043,7 @@ int _getSectionLevel(String matchLevel) {
   - See [Pitfall #2](#pitfall-2-using-magic-numbers-for-spacing) (line 1792)
   - See [Design Token System](#design-token-system) (lines 1116-1127)
 
-- [ ] **Typography from AppTypography** — No inline `TextStyle(...)`. Use `AppTypography.h1`, `AppTypography.body`, `AppTypography.bodySm`, etc. (14-style scale: h1/h1Heavy/h2/h3, bodyLg/bodyLgMedium/body/bodyMedium/bodySm/bodySmMedium, button, price).
+- [ ] **Typography from AppTypography** — No inline `TextStyle(...)`. Use `AppTypography.h1`, `AppTypography.body`, `AppTypography.bodySm`, etc. (17-style scale: h1/h1Heavy/h2/h3, bodyLg/bodyLgMedium/bodyLgHeavy/body/bodyMedium/bodyHeavy/bodySm/bodySmMedium/bodySmHeavy, button, price).
   - See [Design Token System](#design-token-system) (lines 1116-1127)
 
 - [ ] **Radii from AppRadius** — No `BorderRadius.circular(16)`. Use `AppRadius.lg`, `AppRadius.full`, etc.
