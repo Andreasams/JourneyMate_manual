@@ -161,16 +161,12 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
           children: [
             Text(
               td(ref, 'menu_last_updated_prefix'),
-              style: AppTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.w300,
-              ),
+              style: AppTypography.bodyLight,
             ),
             const SizedBox(width: AppSpacing.xs),
             Text(
               _formatLocalizedDate(lastReviewedAt, language),
-              style: AppTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.w300,
-              ),
+              style: AppTypography.bodyLight,
             ),
           ],
         ),
@@ -203,7 +199,6 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
                   : td(ref, 'menu_show_filters'),
               style: AppTypography.bodyLgMedium.copyWith(
                 color: AppColors.accent,
-                fontWeight: FontWeight.normal,
               ),
             ),
           ),

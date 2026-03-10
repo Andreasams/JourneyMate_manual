@@ -64,11 +64,8 @@ class _BusinessFeatureButtonsState
   static const double _borderRadius = AppRadius.facility;
   static const double _textMeasurementSafetyMargin = 4.0;
 
-  // Text style for measurement (use w300 for conservative calculation)
-  static final TextStyle _buttonTextStyleUnselected = AppTypography.bodySm.copyWith(
-    fontWeight: FontWeight.w300,
-    letterSpacing: 0,
-  );
+  // Text style for measurement
+  static const TextStyle _buttonTextStyleUnselected = AppTypography.bodySm;
 
   // ========================================
   // FILTER CONFIGURATION CONSTANTS
@@ -803,7 +800,6 @@ class _BusinessFeatureButtonsState
   TextStyle _buildButtonTextStyle(bool isSelected) {
     return AppTypography.bodySm.copyWith(
       color: isSelected ? AppColors.accent : AppColors.textPrimary,
-      fontWeight: FontWeight.w300,
     );
   }
 

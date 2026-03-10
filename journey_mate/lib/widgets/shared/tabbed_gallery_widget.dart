@@ -627,7 +627,7 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
 
   Widget _buildViewAllLink() {
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
+      padding: const EdgeInsets.only(top: AppSpacing.lg),
       child: GestureDetector(
         onTap: _handleViewAllTap,
         child: Row(
@@ -637,9 +637,7 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
               child: Text(
                 td(ref, 'gallery_view_all'),
-                style: AppTypography.bodyLgMedium.copyWith(
-                  fontWeight: FontWeight.normal,
-                ),
+                style: AppTypography.bodyLgMedium,
               ),
             ),
             const Padding(

@@ -1108,18 +1108,15 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: _getButtonStyle(isSelected, selectedBorder, unselectedBorder),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            text,
-            style: isSelected
-                ? AppTypography.bodyLg.copyWith(
-                    color: _ColorConstants.selectedTextColor,
-                  )
-                : AppTypography.bodyLg.copyWith(
-                    color: _ColorConstants.unselectedTextColor,
-                  ),
-          ),
+        child: Text(
+          text,
+          style: isSelected
+              ? AppTypography.bodyLg.copyWith(
+                  color: _ColorConstants.selectedTextColor,
+                )
+              : AppTypography.bodyLg.copyWith(
+                  color: _ColorConstants.unselectedTextColor,
+                ),
         ),
       ),
     );

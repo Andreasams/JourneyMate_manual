@@ -74,6 +74,14 @@ class AppTypography {
     height: 1.45,
   );
 
+  /// 15/w300 — light body text, secondary info
+  static const TextStyle bodyLight = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w300,
+    color: AppColors.textPrimary,
+    height: 1.45,
+  );
+
   /// 15/w400 — standard body text
   static const TextStyle body = TextStyle(
     fontSize: 15,

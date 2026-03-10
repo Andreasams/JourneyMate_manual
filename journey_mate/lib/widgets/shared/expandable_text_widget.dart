@@ -54,13 +54,7 @@ class _ExpandableTextWidgetState extends ConsumerState<ExpandableTextWidget> {
   static const List<double> _gradientStops = [0.0, 0.5, 1.0];
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
-  // Text style with w300 to match FlutterFlow exactly
-  static final TextStyle _textStyle = AppTypography.bodyLg.copyWith(
-    fontSize: _baseFontSize,
-    fontWeight: FontWeight.w300,
-    color: AppColors.textPrimary,
-    height: _lineHeightMultiplier,
-  );
+  static const TextStyle _textStyle = AppTypography.body;
 
   static final TextStyle _buttonTextStyle = AppTypography.bodyLgMedium.copyWith(
     fontWeight: FontWeight.normal,

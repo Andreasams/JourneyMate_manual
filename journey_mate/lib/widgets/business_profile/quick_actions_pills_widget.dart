@@ -145,8 +145,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
               SizedBox(width: AppSpacing.xsm),
               Text(
                 label,
-                style: AppTypography.bodySm.copyWith(
-                  fontWeight: FontWeight.w500,
+                style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),

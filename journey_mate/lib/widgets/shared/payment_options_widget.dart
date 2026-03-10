@@ -92,10 +92,7 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
   static const Color _unselectedTextColor = AppColors.textPrimary;
 
   /// Text measurement style
-  static final TextStyle _buttonTextStyle = AppTypography.bodySm.copyWith(
-    fontWeight: FontWeight.w300,
-    letterSpacing: 0,
-  );
+  static const TextStyle _buttonTextStyle = AppTypography.bodySm;
 
   /// Error fallback constants
   static const double _defaultErrorHeight = 50.0;
@@ -505,7 +502,6 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
       filterName,
       style: AppTypography.bodySm.copyWith(
         color: isSelected ? _selectedTextColor : _unselectedTextColor,
-        fontWeight: FontWeight.w300,
       ),
     );
   }

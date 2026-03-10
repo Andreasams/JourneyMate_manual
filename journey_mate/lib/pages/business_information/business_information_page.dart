@@ -276,7 +276,7 @@ class _BusinessInformationPageState
             Flexible(
               child: Text(
                 openingHoursText,
-                style: AppTypography.bodyLg,
+                style: AppTypography.body,
               ),
             ),
           ],
@@ -432,7 +432,7 @@ class _BusinessInformationPageState
 
   Widget _buildReportButton() {
     return Center(
-      child: TextButton.icon(
+      child: TextButton(
         onPressed: () async {
           await showModalBottomSheet(
             context: context,
@@ -441,12 +441,20 @@ class _BusinessInformationPageState
             builder: (context) => const ErroneousInfoFormWidget(),
           );
         },
-        icon: Icon(Icons.report_outlined, color: AppColors.textSecondary),
-        label: Text(
-          td(ref, 'about_report_incorrect_info'),
-          style: AppTypography.bodyLgMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.report_outlined, color: AppColors.textSecondary),
+            SizedBox(width: AppSpacing.xs),
+            Text(
+              td(ref, 'about_report_incorrect_info'),
+              style: AppTypography.bodyLg.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.0,
+              ),
+            ),
+          ],
         ),
       ),
     );
