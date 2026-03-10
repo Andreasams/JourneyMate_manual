@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:map_launcher/map_launcher.dart' as ml;
+import '../../utils/map_launcher_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -483,21 +483,32 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
   // INTERACTION HANDLERS
   // ============================================================================
 
-  /// Handles map link tap
+  /// Handles map link tap — uses shared utility with Google Maps priority
   Future<void> _handleMapTap(
       BuildContext context, Map<String, dynamic> businessData) async {
     final businessName = _getBusinessField(businessData, 'business_name');
     final latitude = businessData['latitude'] as double?;
     final longitude = businessData['longitude'] as double?;
 
-    if (latitude != null && longitude != null) {
-      final availableMaps = await ml.MapLauncher.installedMaps;
-      if (availableMaps.isNotEmpty && context.mounted) {
-        await availableMaps.first.showMarker(
-          coords: ml.Coords(latitude, longitude),
-          title: businessName,
+    if (latitude == null || longitude == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(td(ref, 'error_no_location_data'))),
         );
       }
+      return;
+    }
+
+    final mapAppName = await openInPreferredMaps(
+      latitude: latitude,
+      longitude: longitude,
+      title: businessName,
+    );
+
+    if (mapAppName == null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(td(ref, 'error_no_map_app'))),
+      );
     }
   }
 
