@@ -1,4 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../services/custom_functions/contact_utils.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -71,8 +75,93 @@ class _DescriptionSheetState extends State<DescriptionSheet> {
   static const double _minHeightFraction = 0.4;
   static const double _maxHeightFraction = 0.8;
 
+  /// Combined regex matching URLs, emails, and international phone numbers.
+  /// Phone pattern requires '+' prefix to avoid false positives on plain numbers.
+  static final _linkPattern = RegExp(
+    r'https?://\S+'
+    r'|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    r'|\+\d[\d\s-]{6,}\d',
+  );
+
+  final List<TapGestureRecognizer> _recognizers = [];
+
   bool get _hasDescription =>
       widget.description != null && widget.description!.isNotEmpty;
+
+  @override
+  void dispose() {
+    for (final r in _recognizers) {
+      r.dispose();
+    }
+    super.dispose();
+  }
+
+  /// Builds a Text.rich widget that auto-links URLs, emails, and phone numbers.
+  Widget _buildLinkifiedText(String text) {
+    // Dispose recognizers from any previous build.
+    for (final r in _recognizers) {
+      r.dispose();
+    }
+    _recognizers.clear();
+
+    final baseStyle = AppTypography.bodyLg.copyWith(
+      color: AppColors.textSecondary,
+    );
+    final linkStyle = AppTypography.bodyLg.copyWith(
+      color: AppColors.accent,
+      decoration: TextDecoration.underline,
+      decorationColor: AppColors.accent,
+    );
+
+    final spans = <InlineSpan>[];
+    var lastEnd = 0;
+
+    for (final match in _linkPattern.allMatches(text)) {
+      // Plain text before this match.
+      if (match.start > lastEnd) {
+        spans.add(TextSpan(
+          text: text.substring(lastEnd, match.start),
+          style: baseStyle,
+        ));
+      }
+
+      final matched = match.group(0)!;
+      final recognizer = TapGestureRecognizer()
+        ..onTap = () => _launchLink(matched);
+      _recognizers.add(recognizer);
+
+      spans.add(TextSpan(
+        text: matched,
+        style: linkStyle,
+        recognizer: recognizer,
+      ));
+
+      lastEnd = match.end;
+    }
+
+    // Trailing plain text after the last match.
+    if (lastEnd < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastEnd),
+        style: baseStyle,
+      ));
+    }
+
+    return Text.rich(TextSpan(children: spans));
+  }
+
+  /// Launches the appropriate handler for a detected link.
+  Future<void> _launchLink(String link) async {
+    final Uri uri;
+    if (link.contains('@') && !link.startsWith('http')) {
+      uri = Uri(scheme: 'mailto', path: link);
+    } else if (link.startsWith('+')) {
+      uri = Uri(scheme: 'tel', path: formatPhoneForDial(link));
+    } else {
+      uri = Uri.parse(ensureHttpsUrl(link));
+    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,20 +200,17 @@ class _DescriptionSheetState extends State<DescriptionSheet> {
                       style: AppTypography.h4,
                     ),
                     SizedBox(height: AppSpacing.sm),
-                    Text(
-                      _hasDescription
-                          ? widget.description!
-                          : (widget.fallbackDescription ??
-                              'No description available.'),
-                      style: AppTypography.bodyLg.copyWith(
-                        color: _hasDescription
-                            ? AppColors.textSecondary
-                            : AppColors.textTertiary,
-                        fontStyle: _hasDescription
-                            ? FontStyle.normal
-                            : FontStyle.italic,
+                    if (_hasDescription)
+                      _buildLinkifiedText(widget.description!)
+                    else
+                      Text(
+                        widget.fallbackDescription ??
+                            'No description available.',
+                        style: AppTypography.bodyLg.copyWith(
+                          color: AppColors.textTertiary,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
-                    ),
                     SizedBox(height: AppSpacing.xxl),
                   ],
                 ),
