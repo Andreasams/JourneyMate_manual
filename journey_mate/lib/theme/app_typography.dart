@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// Typography — 14-style type scale.
+/// Typography — 17-style type scale.
 ///
 /// Sizes snap to 14 / 15 / 16 / 18 / 20 / 26. Every style uses
 /// textPrimary except [button] (white) and [price] (accent).
@@ -66,6 +66,14 @@ class AppTypography {
     height: 1.45,
   );
 
+  /// 16/w700 — bold body text, strong emphasis
+  static const TextStyle bodyLgHeavy = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+    height: 1.45,
+  );
+
   /// 15/w400 — standard body text
   static const TextStyle body = TextStyle(
     fontSize: 15,
@@ -82,6 +90,14 @@ class AppTypography {
     height: 1.45,
   );
 
+  /// 15/w700 — bold card names, section labels
+  static const TextStyle bodyHeavy = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+    height: 1.45,
+  );
+
   /// 14/w400 — helper text, card details
   static const TextStyle bodySm = TextStyle(
     fontSize: 14,
@@ -94,6 +110,14 @@ class AppTypography {
   static const TextStyle bodySmMedium = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+    height: 1.45,
+  );
+
+  /// 14/w700 — bold small text, highlighted details
+  static const TextStyle bodySmHeavy = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
     height: 1.45,
   );
