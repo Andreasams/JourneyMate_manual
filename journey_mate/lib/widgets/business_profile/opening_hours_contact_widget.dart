@@ -419,7 +419,7 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'opening_hours_label'),
-          style: AppTypography.bodyLgMedium,
+          style: AppTypography.bodyLgHeavy,
         ),
         SizedBox(height: AppSpacing.msm),
         // Days list
@@ -545,7 +545,7 @@ class _OpeningHoursContactWidgetState
         ),
         Text(
           cutoffText,
-          style: AppTypography.bodyMedium.copyWith(
+          style: AppTypography.bodyHeavy.copyWith(
             color: AppColors.textTertiary,
           ),
         ),
@@ -644,7 +644,7 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'contact_label'),
-          style: AppTypography.bodyLgMedium,
+          style: AppTypography.bodyLgHeavy,
         ),
         SizedBox(height: AppSpacing.msm),
         // Contact fields with dividers
@@ -686,7 +686,7 @@ class _OpeningHoursContactWidgetState
             onLongPress: onLongPress,
             child: Text(
               value,
-              style: AppTypography.body.copyWith(
+              style: AppTypography.bodyHeavy.copyWith(
                 color: valueColor,
               ),
             ),
