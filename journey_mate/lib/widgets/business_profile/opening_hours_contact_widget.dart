@@ -24,7 +24,13 @@ import '../../services/api_service.dart';
 ///
 /// JSX reference: _reference/jsx_design/business_profile/_shared.jsx lines 464-718
 class OpeningHoursContactWidget extends ConsumerStatefulWidget {
-  const OpeningHoursContactWidget({super.key});
+  /// Whether to show today's hours preview below the header when collapsed.
+  final bool showTodayPreview;
+
+  const OpeningHoursContactWidget({
+    super.key,
+    this.showTodayPreview = true,
+  });
 
   @override
   ConsumerState<OpeningHoursContactWidget> createState() =>
@@ -331,8 +337,6 @@ class _OpeningHoursContactWidgetState
   /// Collapsible header (always visible)
   Widget _buildHeader(Map<String, dynamic> openingHours) {
     final todayPreview = _getTodayPreview(openingHours);
-    final todayIndex = DateTime.now().weekday - 1;
-    final isClosed = _isDayClosed(_getDayHours(todayIndex, openingHours));
 
     return GestureDetector(
       onTap: _handleToggle,
@@ -346,16 +350,14 @@ class _OpeningHoursContactWidgetState
               children: [
                 Text(
                   td(ref, 'opening_hours_and_contact'),
-                  style: AppTypography.sectionHeading,
+                  style: AppTypography.h2,
                 ),
-                // Show today's preview only when collapsed AND business is open
-                // (when closed, hero section already shows status — no value repeating it)
-                if (!_isExpanded && !isClosed)
+                if (widget.showTodayPreview && !_isExpanded)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       todayPreview,
-                      style: AppTypography.subtitle.copyWith(
+                      style: AppTypography.bodyLg.copyWith(
                         color: AppColors.textTertiary,
                       ),
                     ),
@@ -417,7 +419,7 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'opening_hours_label'),
-          style: AppTypography.chip.copyWith(
+          style: AppTypography.bodySmMedium.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
@@ -452,7 +454,7 @@ class _OpeningHoursContactWidgetState
             width: 90,
             child: Text(
               _getDayName(dayIndex),
-              style: AppTypography.bodyTiny.copyWith(
+              style: AppTypography.bodySm.copyWith(
                 fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
               ),
@@ -471,7 +473,7 @@ class _OpeningHoursContactWidgetState
     if (_isDayClosed(dayHours)) {
       return Text(
         td(ref, 'closed'),
-        style: AppTypography.bodyTiny.copyWith(
+        style: AppTypography.bodySm.copyWith(
           fontWeight: FontWeight.w600,
           color: AppColors.red,
         ),
@@ -502,7 +504,7 @@ class _OpeningHoursContactWidgetState
     if (slots.isEmpty) {
       return Text(
         td(ref, 'closed'),
-        style: AppTypography.bodyTiny.copyWith(
+        style: AppTypography.bodySm.copyWith(
           fontWeight: FontWeight.w600,
           color: AppColors.red,
         ),
@@ -526,7 +528,7 @@ class _OpeningHoursContactWidgetState
     if (cutoffs.isEmpty) {
       return Text(
         hoursText,
-        style: AppTypography.bodyTiny.copyWith(
+        style: AppTypography.bodySm.copyWith(
           color: AppColors.textSecondary,
         ),
       );
@@ -544,13 +546,13 @@ class _OpeningHoursContactWidgetState
       children: [
         Text(
           hoursText,
-          style: AppTypography.bodyTiny.copyWith(
+          style: AppTypography.bodySm.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
         Text(
           cutoffText,
-          style: AppTypography.chip.copyWith(
+          style: AppTypography.bodySmMedium.copyWith(
             color: AppColors.textMuted,
           ),
         ),
@@ -649,7 +651,7 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'contact_label'),
-          style: AppTypography.chip.copyWith(
+          style: AppTypography.bodySmMedium.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
@@ -686,7 +688,7 @@ class _OpeningHoursContactWidgetState
         children: [
           Text(
             label,
-            style: AppTypography.bodyRegular.copyWith(
+            style: AppTypography.bodyLg.copyWith(
               fontSize: 14,
               color: AppColors.textSecondary,
             ),
@@ -696,7 +698,7 @@ class _OpeningHoursContactWidgetState
             onLongPress: onLongPress,
             child: Text(
               value,
-              style: AppTypography.bodyRegular.copyWith(
+              style: AppTypography.bodyLg.copyWith(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: valueColor,

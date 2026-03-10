@@ -117,7 +117,7 @@ class _BusinessInformationPageState
       ),
       title: Text(
         businessName,
-        style: AppTypography.categoryHeading,
+        style: AppTypography.h3,
       ),
       centerTitle: true,
     );
@@ -132,7 +132,7 @@ class _BusinessInformationPageState
       return Center(
         child: Text(
           td(ref, 'no_business_data'),
-          style: AppTypography.bodyRegular.copyWith(
+          style: AppTypography.bodyLg.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
@@ -162,7 +162,7 @@ class _BusinessInformationPageState
                 _buildDescriptionSection(business),
 
                 // Opening hours table + contact links (self-contained with heading)
-                const OpeningHoursContactWidget(),
+                const OpeningHoursContactWidget(showTodayPreview: false),
                 SizedBox(height: AppSpacing.xxl),
 
                 // Features, services & amenities
@@ -199,7 +199,7 @@ class _BusinessInformationPageState
           child: Center(
             child: Text(
               td(ref, 'map_unavailable'),
-              style: AppTypography.bodyRegular.copyWith(
+              style: AppTypography.bodyLg.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
@@ -266,7 +266,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           businessName,
-          style: AppTypography.sectionHeading,
+          style: AppTypography.h2,
         ),
         SizedBox(height: AppSpacing.xs),
         Row(
@@ -276,7 +276,7 @@ class _BusinessInformationPageState
             Flexible(
               child: Text(
                 openingHoursText,
-                style: AppTypography.subtitle,
+                style: AppTypography.bodyLg,
               ),
             ),
           ],
@@ -302,7 +302,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           td(ref, 'about_description_label'), // "About"
-          style: AppTypography.sectionHeading,
+          style: AppTypography.h2,
         ),
         SizedBox(height: AppSpacing.sm),
         ExpandableTextWidget(
@@ -324,7 +324,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           td(ref, 'facilities_heading'),
-          style: AppTypography.sectionHeading,
+          style: AppTypography.h2,
         ),
         SizedBox(height: AppSpacing.sm),
         BusinessFeatureButtons(
@@ -404,7 +404,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           td(ref, 'about_payment_options_label'), // "Payment Options"
-          style: AppTypography.sectionHeading,
+          style: AppTypography.h2,
         ),
         SizedBox(height: AppSpacing.sm),
         PaymentOptionsWidget(
@@ -444,7 +444,7 @@ class _BusinessInformationPageState
         icon: Icon(Icons.report_outlined, color: AppColors.textSecondary),
         label: Text(
           td(ref, 'about_report_incorrect_info'),
-          style: AppTypography.label.copyWith(
+          style: AppTypography.bodyLgMedium.copyWith(
             color: AppColors.textSecondary,
           ),
         ),

@@ -377,7 +377,8 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
               const SizedBox(height: AppSpacing.xxl),
 
               // 4. Opening Hours & Contact
-              const OpeningHoursContactWidget(),
+              // Hide today preview when closed — hero section already shows that status
+              _buildOpeningHoursSection(),
             ]),
           ),
         ),
@@ -449,19 +450,19 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'tab_menu'),
-            style: AppTypography.sectionHeading,
+            style: AppTypography.h2,
           ),
           SizedBox(height: AppSpacing.sm),
           Text(
             td(ref, 'menu_load_error'),
-            style: AppTypography.bodyRegular,
+            style: AppTypography.bodyLg,
           ),
           SizedBox(height: AppSpacing.sm),
           GestureDetector(
             onTap: _loadBusinessData,
             child: Text(
               td(ref, 'retry'),
-              style: AppTypography.bodyMedium.copyWith(
+              style: AppTypography.bodyLgMedium.copyWith(
                 color: AppColors.accent,
               ),
             ),
@@ -487,7 +488,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             SizedBox(height: AppSpacing.lg),
             Text(
               _errorMessage ?? td(ref, 'error_loading_business'),
-              style: AppTypography.bodyRegular,
+              style: AppTypography.bodyLg,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -508,6 +509,20 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     );
   }
 
+  /// Opening hours section — hides today preview when business is closed
+  /// (hero section already shows closed status, so repeating it adds no value)
+  Widget _buildOpeningHoursSection() {
+    final openingHours = ref.watch(businessProvider).openingHours;
+    final todayIndex = DateTime.now().weekday - 1;
+    final todayData = openingHours?[todayIndex.toString()] as Map<String, dynamic>?;
+    final isClosed = todayData == null ||
+        todayData['closed']?.toString().toLowerCase() == 'true' ||
+        !List.generate(5, (i) => i + 1)
+            .any((slot) => todayData['opening_time_$slot'] != null);
+
+    return OpeningHoursContactWidget(showTodayPreview: !isClosed);
+  }
+
   /// Build gallery section with tabbed image grid
   /// Follows _buildFacilitiesSection() pattern: reads provider, wraps in padding
   Widget _buildGallerySection() {
@@ -526,7 +541,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'tab_gallery'),
-            style: AppTypography.sectionHeading,
+            style: AppTypography.h2,
           ),
           SizedBox(height: AppSpacing.sm),
           TabbedGalleryWidget(
@@ -566,7 +581,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'facilities_heading'),
-            style: AppTypography.sectionHeading,
+            style: AppTypography.h2,
           ),
           SizedBox(height: AppSpacing.sm),
           BusinessFeatureButtons(
@@ -612,7 +627,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'about_payment_options_label'),
-            style: AppTypography.sectionHeading,
+            style: AppTypography.h2,
           ),
           SizedBox(height: AppSpacing.sm),
           PaymentOptionsWidget(
@@ -649,7 +664,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'about_description_label'),
-            style: AppTypography.sectionHeading,
+            style: AppTypography.h2,
           ),
           SizedBox(height: AppSpacing.sm),
           ExpandableTextWidget(
@@ -696,7 +711,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
           icon: Icon(Icons.report_outlined, color: AppColors.textSecondary),
           label: Text(
             td(ref, 'about_report_incorrect_info'),
-            style: AppTypography.label.copyWith(
+            style: AppTypography.bodyLgMedium.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
