@@ -358,7 +358,7 @@ class _OpeningHoursContactWidgetState
                     child: Text(
                       todayPreview,
                       style: AppTypography.bodyLg.copyWith(
-                        color: AppColors.textTertiary,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -419,9 +419,7 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'opening_hours_label'),
-          style: AppTypography.bodySmMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.bodyLgMedium,
         ),
         SizedBox(height: AppSpacing.msm),
         // Days list
@@ -454,10 +452,7 @@ class _OpeningHoursContactWidgetState
             width: 90,
             child: Text(
               _getDayName(dayIndex),
-              style: AppTypography.bodySm.copyWith(
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTypography.bodyMedium,
             ),
           ),
           Expanded(
@@ -473,8 +468,7 @@ class _OpeningHoursContactWidgetState
     if (_isDayClosed(dayHours)) {
       return Text(
         td(ref, 'closed'),
-        style: AppTypography.bodySm.copyWith(
-          fontWeight: FontWeight.w600,
+        style: AppTypography.bodyMedium.copyWith(
           color: AppColors.red,
         ),
       );
@@ -504,8 +498,7 @@ class _OpeningHoursContactWidgetState
     if (slots.isEmpty) {
       return Text(
         td(ref, 'closed'),
-        style: AppTypography.bodySm.copyWith(
-          fontWeight: FontWeight.w600,
+        style: AppTypography.bodyMedium.copyWith(
           color: AppColors.red,
         ),
       );
@@ -528,7 +521,7 @@ class _OpeningHoursContactWidgetState
     if (cutoffs.isEmpty) {
       return Text(
         hoursText,
-        style: AppTypography.bodySm.copyWith(
+        style: AppTypography.body.copyWith(
           color: AppColors.textSecondary,
         ),
       );
@@ -546,14 +539,14 @@ class _OpeningHoursContactWidgetState
       children: [
         Text(
           hoursText,
-          style: AppTypography.bodySm.copyWith(
+          style: AppTypography.body.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
         Text(
           cutoffText,
-          style: AppTypography.bodySmMedium.copyWith(
-            color: AppColors.textMuted,
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textTertiary,
           ),
         ),
       ],
@@ -651,9 +644,7 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'contact_label'),
-          style: AppTypography.bodySmMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.bodyLgMedium,
         ),
         SizedBox(height: AppSpacing.msm),
         // Contact fields with dividers
@@ -688,19 +679,14 @@ class _OpeningHoursContactWidgetState
         children: [
           Text(
             label,
-            style: AppTypography.bodyLg.copyWith(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: AppTypography.bodyMedium,
           ),
           GestureDetector(
             onTap: onTap,
             onLongPress: onLongPress,
             child: Text(
               value,
-              style: AppTypography.bodyLg.copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              style: AppTypography.body.copyWith(
                 color: valueColor,
               ),
             ),
