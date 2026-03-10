@@ -100,7 +100,7 @@ class _DescriptionSheetState extends State<DescriptionSheet> {
                   SizedBox(height: AppSpacing.md),
                   Text(
                     widget.title,
-                    style: AppTypography.h2,
+                    style: AppTypography.h4,
                   ),
                   SizedBox(height: AppSpacing.sm),
                   Text(

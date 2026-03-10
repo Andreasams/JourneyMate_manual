@@ -933,7 +933,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       children: [
         Text(
           _getUIText('menu_dishes_filter_title'),
-          style: AppTypography.h3.copyWith(
+          style: AppTypography.h5.copyWith(
             fontWeight: FontWeight.w500,
           ),
         ),

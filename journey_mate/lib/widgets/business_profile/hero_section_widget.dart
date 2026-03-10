@@ -132,10 +132,7 @@ class HeroSectionWidget extends ConsumerWidget {
               // Business name
               Text(
                 businessName,
-                style: AppTypography.h1Heavy.copyWith(
-                  fontSize: 24,
-                  letterSpacing: -0.72,
-                ),
+                style: AppTypography.h2,
               ),
               SizedBox(height: AppSpacing.xs),
 
@@ -238,7 +235,7 @@ class HeroSectionWidget extends ConsumerWidget {
         child: Center(
           child: Text(
             logoInitial,
-            style: AppTypography.h2.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
             ),
           ),

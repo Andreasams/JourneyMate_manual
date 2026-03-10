@@ -80,7 +80,7 @@ class _MissingPlacePageState extends ConsumerState<MissingPlacePage> {
         ),
         title: Text(
           td(ref, 'missing_place_prompt'), // "Are we missing a place?"
-          style: AppTypography.h3,
+          style: AppTypography.h5,
         ),
       ),
       body: const MissingLocationFormWidget(),

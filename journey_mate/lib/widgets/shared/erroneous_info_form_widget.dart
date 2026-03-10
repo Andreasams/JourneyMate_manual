@@ -200,10 +200,7 @@ class _ErroneousInfoFormWidgetState
         // Main title
         Text(
           td(ref, 'about_report_incorrect_info'),
-          style: AppTypography.h1.copyWith(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.h3,
         ),
         const SizedBox(height: AppSpacing.xl + 4), // 20px
 
@@ -219,7 +216,7 @@ class _ErroneousInfoFormWidgetState
         // Business name
         Text(
           businessName,
-          style: AppTypography.h3,
+          style: AppTypography.h5,
         ),
 
         // Business address
@@ -252,7 +249,7 @@ class _ErroneousInfoFormWidgetState
         // Section header with required indicator
         RichText(
           text: TextSpan(
-            style: AppTypography.h3,
+            style: AppTypography.h5,
             children: [
               TextSpan(
                 text: td(ref, 'erroneous_info_title_message'),
@@ -368,7 +365,7 @@ class _ErroneousInfoFormWidgetState
           Text(
             td(ref, 'erroneous_info_success_message'),
             textAlign: TextAlign.center,
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h5.copyWith(
               color: AppColors.success,
             ),
           ),

@@ -1606,7 +1606,7 @@ class _CategoryHeader extends StatelessWidget {
           // Category name (always shown)
           Text(
             categoryName,
-            style: AppTypography.h2.copyWith(
+            style: AppTypography.h4.copyWith(
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
             ),

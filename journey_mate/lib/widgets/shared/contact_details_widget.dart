@@ -151,7 +151,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
       children: [
         Text(
           _getUIText(context, 'address_label'), // address
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         Text(
           street,
@@ -200,7 +200,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
       children: [
         Text(
           _getUIText(context, 'opening_hours_label'), // opening hours
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         OpeningHoursAndWeekdays(
           width: double.infinity,
@@ -225,7 +225,7 @@ class _ContactDetailsWidgetState extends ConsumerState<ContactDetailsWidget> {
           ),
           child: Text(
             _getUIText(context, 'feedback_form_title_contact_info'), // contact information
-            style: AppTypography.h2,
+            style: AppTypography.h4,
           ),
         ),
         ..._buildContactMethodsList(context, businessData),

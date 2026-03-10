@@ -156,7 +156,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           // Main title
           Text(
             td(ref, 'contact_form_title_main'),
-            style: AppTypography.h2,
+            style: AppTypography.h4,
           ),
           SizedBox(height: AppSpacing.sm),
 

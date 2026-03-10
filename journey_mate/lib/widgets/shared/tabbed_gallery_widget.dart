@@ -493,7 +493,7 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: AppTypography.h3.copyWith(
+              style: AppTypography.h5.copyWith(
                 fontWeight: isSelected
                     ? FontWeight.w400
                     : FontWeight.w300,

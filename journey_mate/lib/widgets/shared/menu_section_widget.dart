@@ -155,7 +155,7 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
       children: [
         Text(
           td(ref, 'tab_menu'),
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         Row(
           children: [

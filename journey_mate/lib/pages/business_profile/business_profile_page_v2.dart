@@ -370,11 +370,11 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
               // 2. Quick Actions Pills (Call, Website, Booking, Map)
               const QuickActionsPillsWidget(),
-              const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.md),
 
               // 3. Match Card (if search filters are active)
               const MatchCardWidget(),
-              const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.md),
 
               // 4. Opening Hours & Contact
               // Hide today preview when closed — hero section already shows that status
@@ -450,7 +450,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'tab_menu'),
-            style: AppTypography.h2,
+            style: AppTypography.h4,
           ),
           SizedBox(height: AppSpacing.sm),
           Text(
@@ -541,7 +541,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'tab_gallery'),
-            style: AppTypography.h2,
+            style: AppTypography.h4,
           ),
           SizedBox(height: AppSpacing.sm),
           TabbedGalleryWidget(
@@ -581,7 +581,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'facilities_heading'),
-            style: AppTypography.h2,
+            style: AppTypography.h4,
           ),
           SizedBox(height: AppSpacing.sm),
           BusinessFeatureButtons(
@@ -627,7 +627,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'about_payment_options_label'),
-            style: AppTypography.h2,
+            style: AppTypography.h4,
           ),
           SizedBox(height: AppSpacing.sm),
           PaymentOptionsWidget(
@@ -664,7 +664,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         children: [
           Text(
             td(ref, 'about_description_label'),
-            style: AppTypography.h2,
+            style: AppTypography.h4,
           ),
           SizedBox(height: AppSpacing.sm),
           ExpandableTextWidget(

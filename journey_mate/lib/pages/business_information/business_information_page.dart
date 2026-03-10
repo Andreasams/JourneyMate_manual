@@ -117,7 +117,7 @@ class _BusinessInformationPageState
       ),
       title: Text(
         businessName,
-        style: AppTypography.h3,
+        style: AppTypography.h5,
       ),
       centerTitle: true,
     );
@@ -266,7 +266,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           businessName,
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         SizedBox(height: AppSpacing.xs),
         Row(
@@ -302,7 +302,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           td(ref, 'about_description_label'), // "About"
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         SizedBox(height: AppSpacing.sm),
         ExpandableTextWidget(
@@ -324,7 +324,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           td(ref, 'facilities_heading'),
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         SizedBox(height: AppSpacing.sm),
         BusinessFeatureButtons(
@@ -404,7 +404,7 @@ class _BusinessInformationPageState
       children: [
         Text(
           td(ref, 'about_payment_options_label'), // "Payment Options"
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         SizedBox(height: AppSpacing.sm),
         PaymentOptionsWidget(

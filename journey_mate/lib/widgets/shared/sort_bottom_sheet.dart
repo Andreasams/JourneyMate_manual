@@ -239,7 +239,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           // Title - left-aligned
           Text(
             td(ref, 'sort_sheet_title'),
-            style: AppTypography.h2,
+            style: AppTypography.h4,
           ),
         ],
       ),
@@ -466,7 +466,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               Expanded(
                 child: Text(
                   td(ref, 'sort_select_station'),
-                  style: AppTypography.h2,
+                  style: AppTypography.h4,
                 ),
               ),
             ],

@@ -80,7 +80,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
         ),
         title: Text(
           businessName,
-          style: AppTypography.h3,
+          style: AppTypography.h5,
         ),
         centerTitle: true,
       ),

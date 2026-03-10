@@ -213,7 +213,7 @@ class _MissingLocationFormWidgetState
       children: [
         Text(
           td(ref, 'missing_location_title_main'),
-          style: AppTypography.h2,
+          style: AppTypography.h4,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(

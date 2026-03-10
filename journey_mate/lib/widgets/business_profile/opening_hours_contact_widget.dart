@@ -350,7 +350,7 @@ class _OpeningHoursContactWidgetState
               children: [
                 Text(
                   td(ref, 'opening_hours_and_contact'),
-                  style: AppTypography.h2,
+                  style: AppTypography.h4,
                 ),
                 if (widget.showTodayPreview && !_isExpanded)
                   Padding(
@@ -419,7 +419,7 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'opening_hours_label'),
-          style: AppTypography.bodyLgHeavy,
+          style: AppTypography.h6,
         ),
         SizedBox(height: AppSpacing.msm),
         // Days list
@@ -644,7 +644,7 @@ class _OpeningHoursContactWidgetState
         // Label
         Text(
           td(ref, 'contact_label'),
-          style: AppTypography.bodyLgHeavy,
+          style: AppTypography.h6,
         ),
         SizedBox(height: AppSpacing.msm),
         // Contact fields with dividers

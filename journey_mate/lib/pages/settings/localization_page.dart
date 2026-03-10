@@ -121,7 +121,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
         ),
         title: Text(
           td(ref, 'settings_language_currency_title'), // "Settings"
-          style: AppTypography.h3,
+          style: AppTypography.h5,
         ),
       ),
       body: SingleChildScrollView(
@@ -134,7 +134,7 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
             // Page title
             Text(
               td(ref, 'settings_page_title_localization'), // "Localization settings"
-              style: AppTypography.h2,
+              style: AppTypography.h4,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(

@@ -836,9 +836,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
 
     return Text(
       itemName,
-      style: AppTypography.h1.copyWith(
-        fontSize: 22.0,
-        fontWeight: FontWeight.w600,
+      style: AppTypography.h3.copyWith(
         color: Colors.black,
       ),
     );
