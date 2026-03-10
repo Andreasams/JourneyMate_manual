@@ -317,7 +317,9 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
       },
       onPackageTap: (packageData) async {
         final localization = ref.read(localizationProvider);
+        final translationsCache = ref.read(translationsCacheProvider);
         final normalizedMenuData = ref.read(businessProvider).menuItems;
+        final lang = Localizations.localeOf(context).languageCode;
         final packageId =
             (packageData as Map<String, dynamic>)['package_id'] as int? ?? 0;
 
@@ -341,6 +343,8 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
                 originalCurrencyCode: originalCurrencyCode,
                 exchangeRate: localization.exchangeRate,
                 businessName: businessName,
+                currentLanguage: lang,
+                translationsCache: translationsCache,
               ),
             ),
           ),

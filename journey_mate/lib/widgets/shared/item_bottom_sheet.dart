@@ -12,8 +12,9 @@ import '../../services/translation_service.dart';
 import '../../services/custom_functions/price_formatter.dart';
 import '../../services/custom_functions/allergen_formatter.dart';
 import '../../services/custom_functions/dietary_formatter.dart';
-import '../../services/custom_functions/currency_name_formatter.dart';
+import '../../services/custom_functions/menu_language_currency_utils.dart';
 import 'bottom_sheet_header.dart';
+import 'information_source_section.dart';
 
 /// A comprehensive modal bottom sheet that displays detailed information about
 /// a single menu item from a restaurant's menu.
@@ -178,23 +179,11 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
 
   /// Gets display name for currency (e.g., "Danish Krone (kr.)")
   String _getCurrencyDisplayName(String currencyCode) {
-    final localizedName = getLocalizedCurrencyName(
+    return formatCurrencyDisplayName(
       widget.currentLanguage,
       currencyCode,
       widget.translationsCache,
     );
-
-    final rulesJson = getCurrencyFormattingRules(currencyCode);
-    String symbol = currencyCode;
-
-    if (rulesJson != null) {
-      try {
-        final rules = json.decode(rulesJson) as Map<String, dynamic>;
-        symbol = rules['symbol'] as String? ?? currencyCode;
-      } catch (_) {}
-    }
-
-    return '$localizedName ($symbol)';
   }
 
   /// =========================================================================
@@ -259,124 +248,19 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   /// =========================================================================
 
   /// Computes which menu options should be shown (languages + currencies)
-  List<_MenuOption> _computeMenuOptions() {
-    final options = <_MenuOption>[];
-
-    // Add language options
-    options.addAll(_computeLanguageOptions());
-
-    // Add currency options
-    options.addAll(_computeCurrencyOptions());
-
-    return options;
-  }
-
-  /// Computes language options
-  List<_MenuOption> _computeLanguageOptions() {
-    final options = <_MenuOption>[];
-    final appLanguage = widget.currentLanguage;
-    final displayedLanguage = _currentlyDisplayedLanguage;
-    final authenticLanguages = _getAuthenticLanguages();
-
-    // RULE 4: If viewing different language than app language, offer to go back
-    if (displayedLanguage != appLanguage) {
-      options.add(_MenuOption(
-        type: 'language',
-        code: appLanguage,
-        displayName: _getLanguageName(appLanguage),
-      ));
-    }
-
-    // RULE 1: App language is English → offer Danish
-    if (appLanguage == 'en' && displayedLanguage != 'da') {
-      options.add(_MenuOption(
-        type: 'language',
-        code: 'da',
-        displayName: _getLanguageName('da'),
-      ));
-      return options;
-    }
-
-    // RULE 2: App language is Danish → offer English
-    if (appLanguage == 'da' && displayedLanguage != 'en') {
-      options.add(_MenuOption(
-        type: 'language',
-        code: 'en',
-        displayName: _getLanguageName('en'),
-      ));
-      return options;
-    }
-
-    // RULE 3: App language is Other → offer authentic languages (up to 3)
-    if (appLanguage != 'en' && appLanguage != 'da') {
-      final availableAuthLangs = authenticLanguages
-          .where((lang) => lang != displayedLanguage)
-          .take(3)
-          .toList();
-
-      for (final langCode in availableAuthLangs) {
-        options.add(_MenuOption(
-          type: 'language',
-          code: langCode,
-          displayName: _getLanguageName(langCode),
-        ));
-      }
-    }
-
-    return options;
-  }
-
-  /// Computes currency options based on user's current selection
-  /// Uses _effectiveCurrency to check against local override
-  List<_MenuOption> _computeCurrencyOptions() {
-    final options = <_MenuOption>[];
-    final currentCurrency = _effectiveCurrency;
-    final appLanguage = widget.currentLanguage;
-
-    // RULE 1: If user chose USD → offer DKK only
-    if (currentCurrency == 'USD') {
-      options.add(_MenuOption(
-        type: 'currency',
-        code: 'DKK',
-        displayName: _getCurrencyDisplayName('DKK'),
-      ));
-      return options;
-    }
-
-    // RULE 2: If user chose GBP → offer DKK only
-    if (currentCurrency == 'GBP') {
-      options.add(_MenuOption(
-        type: 'currency',
-        code: 'DKK',
-        displayName: _getCurrencyDisplayName('DKK'),
-      ));
-      return options;
-    }
-
-    // RULE 3: If user chose English + DKK → offer USD and GBP
-    if (appLanguage == 'en' && currentCurrency == 'DKK') {
-      options.add(_MenuOption(
-        type: 'currency',
-        code: 'USD',
-        displayName: _getCurrencyDisplayName('USD'),
-      ));
-      options.add(_MenuOption(
-        type: 'currency',
-        code: 'GBP',
-        displayName: _getCurrencyDisplayName('GBP'),
-      ));
-      return options;
-    }
-
-    // RULE 4: Other currencies → offer DKK if not already selected
-    if (currentCurrency != 'DKK') {
-      options.add(_MenuOption(
-        type: 'currency',
-        code: 'DKK',
-        displayName: _getCurrencyDisplayName('DKK'),
-      ));
-    }
-
+  List<MenuOption> _computeMenuOptions() {
+    final options = <MenuOption>[];
+    options.addAll(computeLanguageOptions(
+      appLanguage: widget.currentLanguage,
+      displayedLanguage: _currentlyDisplayedLanguage,
+      authenticLanguages: _getAuthenticLanguages(),
+      getLanguageName: _getLanguageName,
+    ));
+    options.addAll(computeCurrencyOptions(
+      currentCurrency: _effectiveCurrency,
+      appLanguage: widget.currentLanguage,
+      getCurrencyDisplayName: _getCurrencyDisplayName,
+    ));
     return options;
   }
 
@@ -416,7 +300,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
 
   /// Builds menu items with dividers between each option
   List<PopupMenuEntry<String>> _buildMenuItemsWithDividers(
-      List<_MenuOption> options) {
+      List<MenuOption> options) {
     final items = <PopupMenuEntry<String>>[];
 
     for (int i = 0; i < options.length; i++) {
@@ -431,7 +315,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   }
 
   /// Builds a menu item (language or currency)
-  PopupMenuItem<String> _buildMenuItem(_MenuOption option) {
+  PopupMenuItem<String> _buildMenuItem(MenuOption option) {
     return PopupMenuItem<String>(
       value: '${option.type}:${option.code}',
       enabled: !_isLoadingLanguage,
@@ -469,7 +353,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   }
 
   /// Builds the content of a menu item
-  Widget _buildMenuItemContent(_MenuOption option) {
+  Widget _buildMenuItemContent(MenuOption option) {
     final String displayText;
 
     if (option.type == 'language') {
@@ -836,9 +720,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
 
     return Text(
       itemName,
-      style: AppTypography.h3.copyWith(
-        color: Colors.black,
-      ),
+      style: AppTypography.h4,
     );
   }
 
@@ -858,23 +740,12 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
     }
 
     return Padding(
-      padding: EdgeInsets.only(top: AppSpacing.xs / 2), // 2px
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.accent.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppRadius.chip / 1.33), // ~6px
-        ),
-        child: Text(
-          displayPrice,
-          style: AppTypography.bodyLgMedium.copyWith(
-            fontSize: 16.0,
-            fontWeight: FontWeight.w500,
-            color: AppColors.accent,
-          ),
+      padding: EdgeInsets.only(top: AppSpacing.xs), // 4px
+      child: Text(
+        displayPrice,
+        style: AppTypography.bodySm.copyWith(
+          fontWeight: FontWeight.w500,
+          color: AppColors.accent,
         ),
       ),
     );
@@ -918,13 +789,11 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
     }
 
     return Padding(
-      padding: EdgeInsets.only(top: AppSpacing.xs), // 4px
+      padding: EdgeInsets.only(top: AppSpacing.sm), // 8px
       child: Text(
         itemDescription,
-        style: AppTypography.bodyLg.copyWith(
-          fontSize: 16.0,
-          fontWeight: FontWeight.w300,
-          color: AppColors.textSecondary,
+        style: AppTypography.body.copyWith(
+          color: AppColors.textPrimary,
         ),
       ),
     );
@@ -1021,11 +890,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   Widget _buildInfoHeader() {
     return Text(
       _getUITextFromApi('info_header_additional'),
-      style: AppTypography.bodyLgMedium.copyWith(
-        fontSize: 15.0,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textPrimary,
-      ),
+      style: AppTypography.h5,
     );
   }
 
@@ -1046,19 +911,11 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       children: [
         Text(
           _getUITextFromApi('info_header_dietary'),
-          style: AppTypography.bodyMedium.copyWith(
-            fontSize: 14.0,
-            fontWeight: FontWeight.w400,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.h6,
         ),
         Text(
           dietaryText ?? '',
-          style: AppTypography.bodyMedium.copyWith(
-            fontSize: 14.0,
-            fontWeight: FontWeight.w300,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.body,
         ),
       ],
     );
@@ -1081,19 +938,11 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       children: [
         Text(
           _getUITextFromApi('info_header_allergens'),
-          style: AppTypography.bodyMedium.copyWith(
-            fontSize: 14.0,
-            fontWeight: FontWeight.w400,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.h6,
         ),
         Text(
           allergyText ?? '',
-          style: AppTypography.bodyMedium.copyWith(
-            fontSize: 14.0,
-            fontWeight: FontWeight.w300,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.body,
         ),
       ],
     );
@@ -1106,29 +955,12 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
 
     final journeymateText = _getUITextFromApi('info_disclaimer_journeymate');
 
-    return _InformationSourceSection(
+    return InformationSourceSection(
       headerText: _getUITextFromApi('info_header_source'),
       disclaimerText: disclaimerText,
       journeymateText: journeymateText,
     );
   }
-}
-
-/// ============================================================================
-/// MENU OPTION DATA CLASS
-/// ============================================================================
-
-/// Represents a menu option (language or currency)
-class _MenuOption {
-  const _MenuOption({
-    required this.type,
-    required this.code,
-    required this.displayName,
-  });
-
-  final String type; // 'language' or 'currency'
-  final String code; // Language code or currency code
-  final String displayName;
 }
 
 /// ============================================================================
@@ -1263,7 +1095,7 @@ class _ModifierGroupDisplay extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: _headerBottomSpacing),
       child: Text(
         typeLabel,
-        style: AppTypography.bodyLgMedium,
+        style: AppTypography.h5,
       ),
     );
   }
@@ -1273,8 +1105,8 @@ class _ModifierGroupDisplay extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: _constraintBottomSpacing),
       child: Text(
         constraintText,
-        style: AppTypography.bodySm.copyWith(
-          color: Colors.black54,
+        style: AppTypography.body.copyWith(
+          color: AppColors.textSecondary,
         ),
       ),
     );
@@ -1309,8 +1141,8 @@ class _ModifierGroupDisplay extends ConsumerWidget {
         Expanded(
           child: Text(
             displayText,
-            style: AppTypography.bodySm.copyWith(
-              color: Colors.black87,
+            style: AppTypography.body.copyWith(
+              color: AppColors.textPrimary,
             ),
           ),
         ),
@@ -1337,7 +1169,7 @@ class _ModifierGroupDisplay extends ConsumerWidget {
 
     return Text(
       priceText,
-      style: AppTypography.bodySm.copyWith(
+      style: AppTypography.body.copyWith(
         color: AppColors.accent,
       ),
     );
@@ -1354,124 +1186,4 @@ class _SelectionConstraints {
   final bool isRequired;
   final int minSelections;
   final int maxSelections;
-}
-
-/// ============================================================================
-/// INFORMATION SOURCE ACCORDION SECTION
-/// ============================================================================
-
-class _InformationSourceSection extends StatefulWidget {
-  const _InformationSourceSection({
-    required this.headerText,
-    required this.disclaimerText,
-    required this.journeymateText,
-  });
-
-  final String headerText;
-  final String disclaimerText;
-  final String journeymateText;
-
-  @override
-  State<_InformationSourceSection> createState() =>
-      _InformationSourceSectionState();
-}
-
-class _InformationSourceSectionState extends State<_InformationSourceSection> {
-  bool _isExpanded = false;
-
-  static const Duration _expandDuration = Duration(milliseconds: 100);
-  static const Curve _expandCurve = Curves.linear;
-  static const double _expandedContentTopSpacing = 8.0;
-  static const double _disclaimerToJourneymateSpacing = 8.0;
-  static const Color _iconColor = Colors.black;
-  static const double _iconSize = 24.0;
-
-  void _toggleExpanded() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeaderRow(),
-        _buildExpandableContent(),
-      ],
-    );
-  }
-
-  Widget _buildHeaderRow() {
-    return InkWell(
-      onTap: _toggleExpanded,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildHeaderText(),
-          _buildExpandIcon(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderText() {
-    return Text(
-      widget.headerText,
-      style: AppTypography.bodySm,
-    );
-  }
-
-  Widget _buildExpandIcon() {
-    return Icon(
-      _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-      color: _iconColor,
-      size: _iconSize,
-    );
-  }
-
-  Widget _buildExpandableContent() {
-    return ClipRect(
-      child: AnimatedAlign(
-        duration: _expandDuration,
-        curve: _expandCurve,
-        heightFactor: _isExpanded ? 1.0 : 0.0,
-        alignment: Alignment.topCenter,
-        child: _buildExpandedContent(),
-      ),
-    );
-  }
-
-  Widget _buildExpandedContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: _expandedContentTopSpacing),
-        _buildDisclaimerText(),
-        const SizedBox(height: _disclaimerToJourneymateSpacing),
-        _buildJourneymateText(),
-      ],
-    );
-  }
-
-  Widget _buildDisclaimerText() {
-    return Text(
-      widget.disclaimerText,
-      style: AppTypography.bodySm.copyWith(
-        fontWeight: FontWeight.w300,
-        color: Colors.black87,
-      ),
-    );
-  }
-
-  Widget _buildJourneymateText() {
-    return Text(
-      widget.journeymateText,
-      style: AppTypography.bodySm.copyWith(
-        fontWeight: FontWeight.w300,
-        color: Colors.black87,
-      ),
-    );
-  }
 }
