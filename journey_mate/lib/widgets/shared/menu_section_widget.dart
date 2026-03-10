@@ -419,13 +419,195 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FILTER SUMMARY — ported from FlutterFlow generateFilterSummary
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Maps dietary type IDs → named translation keys (lowercase versions).
+  static const Map<int, String> _dietaryIdToKey = {
+    1: 'dietary_glutenfree',
+    2: 'dietary_pescetarian',
+    3: 'dietary_halal',
+    4: 'dietary_lactosefree',
+    5: 'dietary_kosher',
+    6: 'dietary_vegan',
+    7: 'dietary_vegetarian',
+  };
+
+  /// Maps allergen IDs → named translation keys (lowercase versions).
+  static const Map<int, String> _allergenIdToKey = {
+    1: 'allergen_celery',
+    2: 'allergen_gluten',
+    3: 'allergen_crustaceans',
+    4: 'allergen_eggs',
+    5: 'allergen_fish',
+    6: 'allergen_lupin',
+    7: 'allergen_milk',
+    8: 'allergen_molluscs',
+    9: 'allergen_mustard',
+    10: 'allergen_nuts',
+    11: 'allergen_peanuts',
+    12: 'allergen_sesame',
+    13: 'allergen_soybeans',
+    14: 'allergen_sulfites',
+  };
+
+  /// Dietary filters that imply certain allergen exclusions.
+  /// Used to avoid redundant allergen names in the summary text.
+  static const Map<int, List<int>> _impliedAllergenExclusions = {
+    1: [2], // Gluten-free → cereals containing gluten
+    4: [7], // Lactose-free → milk
+    6: [7, 4, 5, 3, 8], // Vegan → milk, eggs, fish, crustaceans, molluscs
+    7: [5, 3, 8], // Vegetarian → fish, crustaceans, molluscs
+  };
+
+  /// Languages where dietary/allergen names should be lowercased in context.
+  static const Set<String> _lowercaseLanguages = {
+    'da', 'en', 'es', 'de', 'fr', 'nl', 'no', 'sv', 'it', 'pl', 'fi',
+  };
+
+  /// Languages where no space is needed before the count number.
+  static const Set<String> _noSpaceBeforeCount = {'zh', 'ja'};
+
   /// Builds the filter summary string shown above the toggle when filters
-  /// are active. Mirrors FlutterFlow's generateFilterSummary custom function.
+  /// are active. Ported from FlutterFlow's generateFilterSummary.
+  ///
+  /// Examples:
+  /// - "Showing the 34 items that are or can be made lactose-free."
+  /// - "Showing the 12 items that are free from peanuts."
+  /// - "Showing the 8 items that are or can be made gluten-free and
+  ///   lactose-free and are free from peanuts and fish."
   String _buildFilterSummary() {
-    final template = td(ref, 'menu_filter_summary');
-    if (template != 'menu_filter_summary') {
-      return template.replaceAll('{count}', _visibleItemCount.toString());
+    final lang = Localizations.localeOf(context).languageCode;
+    final state = ref.read(businessProvider);
+
+    final isPlural = _visibleItemCount != 1;
+    final itemCountKey =
+        isPlural ? 'filter_item_plural' : 'filter_item_singular';
+    final itemCountText =
+        td(ref, itemCountKey).replaceAll('{}', _visibleItemCount.toString());
+
+    // ── Step 1: Collect dietary filter names ──────────────────────────────
+
+    final dietaryFilters = <String>[];
+
+    for (final restrictionId in state.selectedDietaryRestrictionIds) {
+      final name = _getDietaryNameLowercase(restrictionId, lang);
+      if (name != null) dietaryFilters.add(name);
     }
-    return 'Showing $_visibleItemCount items';
+
+    final prefId = state.selectedDietaryPreferenceId;
+    if (prefId != null && prefId != 0) {
+      final name = _getDietaryNameLowercase(prefId, lang);
+      if (name != null) dietaryFilters.add(name);
+    }
+
+    final hasDietary = dietaryFilters.isNotEmpty;
+
+    // ── Step 2: Collect allergen filter names (excluding implied) ─────────
+
+    final impliedAllergens = <int>{};
+    for (final rid in state.selectedDietaryRestrictionIds) {
+      if (_impliedAllergenExclusions.containsKey(rid)) {
+        impliedAllergens.addAll(_impliedAllergenExclusions[rid]!);
+      }
+    }
+    if (prefId != null && _impliedAllergenExclusions.containsKey(prefId)) {
+      impliedAllergens.addAll(_impliedAllergenExclusions[prefId]!);
+    }
+
+    final allergensToShow = <String>[];
+    for (final allergenId in state.excludedAllergyIds) {
+      if (impliedAllergens.contains(allergenId)) continue;
+      final key = _allergenIdToKey[allergenId];
+      if (key == null) continue;
+      final name = td(ref, key);
+      if (name.isEmpty || name.startsWith('⚠️')) continue;
+      allergensToShow.add(_applyCase(name, lang));
+    }
+    allergensToShow.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+    final hasAllergens = allergensToShow.isNotEmpty;
+
+    // ── Step 3: Build sentence ────────────────────────────────────────────
+
+    if (!hasDietary && !hasAllergens) {
+      return '$itemCountText.';
+    }
+
+    final and = td(ref, 'filter_and');
+
+    if (hasDietary && !hasAllergens) {
+      final prefix = td(ref, isPlural
+          ? 'filter_dietary_prefix_plural'
+          : 'filter_dietary_prefix_singular');
+      final dietaryList = _joinList(dietaryFilters, and);
+      return '$itemCountText$prefix$dietaryList.';
+    }
+
+    if (!hasDietary && hasAllergens) {
+      final connector = td(ref, isPlural
+          ? 'filter_connector_plural'
+          : 'filter_connector_singular');
+      final allergenList = _formatAllergenList(allergensToShow, and, lang);
+      return '$itemCountText$connector$allergenList.';
+    }
+
+    // Both dietary AND allergens
+    final prefix = td(ref, isPlural
+        ? 'filter_dietary_prefix_plural'
+        : 'filter_dietary_prefix_singular');
+    final dietaryList = _joinList(dietaryFilters, and);
+    final andAreFreeFrom = td(ref, 'filter_and_are_free_from');
+    final allergenList = _formatAllergenList(allergensToShow, and, lang);
+
+    return '$itemCountText$prefix$dietaryList$andAreFreeFrom$allergenList.';
+  }
+
+  /// Gets a lowercase dietary name for the summary sentence.
+  String? _getDietaryNameLowercase(int id, String lang) {
+    final key = _dietaryIdToKey[id];
+    if (key == null) return null;
+    final name = td(ref, key);
+    if (name.isEmpty || name.startsWith('⚠️')) return null;
+    var result = _applyCase(name, lang);
+    // German grammatical suffix
+    if (lang == 'de') {
+      result += (_visibleItemCount != 1) ? ' sind' : ' ist';
+    }
+    return result;
+  }
+
+  /// Applies lowercase for languages that require it in sentence context.
+  String _applyCase(String text, String lang) {
+    return _lowercaseLanguages.contains(lang) ? text.toLowerCase() : text;
+  }
+
+  /// Joins a list with a conjunction before the last item.
+  String _joinList(List<String> items, String conjunction) {
+    if (items.isEmpty) return '';
+    if (items.length == 1) return items.first;
+    if (items.length == 2) return items.join(conjunction);
+    final allButLast = items.sublist(0, items.length - 1).join(', ');
+    return '$allButLast$conjunction${items.last}';
+  }
+
+  /// Formats allergen list: up to 2 named, then "X other allergens".
+  String _formatAllergenList(
+      List<String> allergens, String and, String lang) {
+    if (allergens.isEmpty) return '';
+    if (allergens.length == 1) return allergens.first;
+    if (allergens.length == 2) return allergens.join(and);
+
+    final firstTwo = allergens.sublist(0, 2).join(', ');
+    final othersCount = allergens.length - 2;
+    final othersNoun = td(ref, othersCount == 1
+        ? 'filter_other_singular'
+        : 'filter_other_plural');
+
+    if (_noSpaceBeforeCount.contains(lang)) {
+      return '$firstTwo$and$othersCount$othersNoun';
+    }
+    return '$firstTwo$and$othersCount $othersNoun';
   }
 }

@@ -465,13 +465,46 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   }
 
   String _getDietaryName(int id) {
-    return _getUIText('dietary_${id}_cap');
+    final key = _dietaryIdToKey[id];
+    if (key == null) return '⚠️ Unknown dietary $id';
+    return _getUIText('${key}_cap');
   }
 
   String? _getAllergenName(int id) {
-    final name = _getUIText('allergen_${id}_cap');
+    final key = _allergenIdToKey[id];
+    if (key == null) return null;
+    final name = _getUIText('${key}_cap');
     return name.isEmpty || name.startsWith('⚠️') ? null : name;
   }
+
+  /// Maps dietary type IDs to named translation key prefixes.
+  static const Map<int, String> _dietaryIdToKey = {
+    1: 'dietary_glutenfree',
+    2: 'dietary_pescetarian',
+    3: 'dietary_halal',
+    4: 'dietary_lactosefree',
+    5: 'dietary_kosher',
+    6: 'dietary_vegan',
+    7: 'dietary_vegetarian',
+  };
+
+  /// Maps allergen IDs to named translation key prefixes.
+  static const Map<int, String> _allergenIdToKey = {
+    1: 'allergen_celery',
+    2: 'allergen_gluten',
+    3: 'allergen_crustaceans',
+    4: 'allergen_eggs',
+    5: 'allergen_fish',
+    6: 'allergen_lupin',
+    7: 'allergen_milk',
+    8: 'allergen_molluscs',
+    9: 'allergen_mustard',
+    10: 'allergen_nuts',
+    11: 'allergen_peanuts',
+    12: 'allergen_sesame',
+    13: 'allergen_soybeans',
+    14: 'allergen_sulfites',
+  };
 
   /// =========================================================================
   /// DATA RETRIEVAL & SORTING

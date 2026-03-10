@@ -154,9 +154,29 @@ class _AllergiesFilterWidgetState
   ///
   /// Returns:
   ///   Localized allergen name, or null if translation not found
+  /// Maps allergen IDs to named translation key prefixes.
+  static const Map<int, String> _allergenIdToKey = {
+    1: 'allergen_celery',
+    2: 'allergen_gluten',
+    3: 'allergen_crustaceans',
+    4: 'allergen_eggs',
+    5: 'allergen_fish',
+    6: 'allergen_lupin',
+    7: 'allergen_milk',
+    8: 'allergen_molluscs',
+    9: 'allergen_mustard',
+    10: 'allergen_nuts',
+    11: 'allergen_peanuts',
+    12: 'allergen_sesame',
+    13: 'allergen_soybeans',
+    14: 'allergen_sulfites',
+  };
+
   String? _getAllergenName(int allergenId) {
-    final translationKey = 'allergen_${allergenId}_cap';
-    final allergenName = td(ref, translationKey);
+    final key = _allergenIdToKey[allergenId];
+    if (key == null) return null;
+
+    final allergenName = td(ref, '${key}_cap');
 
     // Return null if translation not found (indicated by ⚠️ prefix or empty)
     if (allergenName.isEmpty || allergenName.startsWith('⚠️')) {
