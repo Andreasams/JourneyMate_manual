@@ -342,7 +342,9 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           style: AppTypography.bodyLg,
           decoration: InputDecoration(
             hintText: td(ref, 'feedback_form_hint_message'),
-            hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
+            hintStyle: AppTypography.bodyLg.copyWith(
+              color: AppColors.textSecondary.withValues(alpha: 0.7),
+            ),
             filled: true,
             fillColor: AppColors.bgInput,
             contentPadding: EdgeInsets.all(12),
@@ -489,7 +491,9 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
               style: AppTypography.bodyLg,
               decoration: InputDecoration(
                 hintText: td(ref, 'feedback_form_hint_name'),
-                hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
+                hintStyle: AppTypography.bodyLg.copyWith(
+                  color: AppColors.textSecondary.withValues(alpha: 0.7),
+                ),
                 filled: true,
                 fillColor: AppColors.bgInput,
                 contentPadding: EdgeInsets.all(16),
@@ -570,7 +574,9 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
               style: AppTypography.bodyLg,
               decoration: InputDecoration(
                 hintText: td(ref, 'feedback_form_hint_contact'),
-                hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
+                hintStyle: AppTypography.bodyLg.copyWith(
+                  color: AppColors.textSecondary.withValues(alpha: 0.7),
+                ),
                 filled: true,
                 fillColor: AppColors.bgInput,
                 contentPadding: EdgeInsets.all(16),

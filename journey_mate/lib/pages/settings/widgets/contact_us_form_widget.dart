@@ -296,7 +296,9 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           style: AppTypography.bodyLg,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTypography.bodyLg.copyWith(fontSize: 14),
+            hintStyle: AppTypography.bodyLg.copyWith(
+              color: AppColors.textSecondary.withValues(alpha: 0.7),
+            ),
             filled: true,
             fillColor: AppColors.bgInput,
             contentPadding: EdgeInsets.all(maxLines > 1 ? 12 : 16),

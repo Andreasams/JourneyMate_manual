@@ -434,12 +434,28 @@ class _BusinessInformationPageState
     return Center(
       child: TextButton(
         onPressed: () async {
-          await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (context) => const ErroneousInfoFormWidget(),
-          );
+          final analytics = AnalyticsService.instance;
+          ApiService.instance
+              .postAnalytics(
+            eventType: 'report_link_tapped',
+            deviceId: analytics.deviceId ?? '',
+            sessionId: analytics.currentSessionId ?? '',
+            userId: analytics.userId ?? '',
+            timestamp: DateTime.now().toIso8601String(),
+            eventData: {'pageName': 'businessInformation'},
+          )
+              .catchError((e) {
+            debugPrint('Analytics error: $e');
+            return ApiCallResponse.failure('Analytics failed');
+          });
+          if (mounted) {
+            await showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const ErroneousInfoFormWidget(),
+            );
+          }
         },
         child: Row(
           mainAxisSize: MainAxisSize.min,

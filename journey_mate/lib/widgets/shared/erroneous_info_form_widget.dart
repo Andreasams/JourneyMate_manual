@@ -150,42 +150,48 @@ class _ErroneousInfoFormWidgetState
     final city = currentBusiness?['postal_city'] as String? ?? '';
     final address = '$street, $postalCode $city';
 
-    return Container(
-      width: widget.width,
-      height: widget.height,
-      decoration: BottomSheetHeader.sheetDecoration(color: AppColors.bgPage),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          BottomSheetHeader(
-            leftAction: BottomSheetAction(
-              icon: Icons.close,
-              onPressed: () => Navigator.of(context).pop(),
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.8;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: Container(
+        width: widget.width,
+        height: widget.height,
+        decoration:
+            BottomSheetHeader.sheetDecoration(color: AppColors.bgPage),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BottomSheetHeader(
+              leftAction: BottomSheetAction(
+                icon: Icons.close,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
             ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxxl - 4, // 28px
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildBusinessInfoSection(businessName, address),
-                    const SizedBox(height: AppSpacing.xl + 4), // 20px
-                    _buildMessageSection(),
-                    const SizedBox(height: AppSpacing.xl + 4), // 20px
-                    _buildSubmitArea(),
-                    const SizedBox(height: AppSpacing.xl + 4), // 20px
-                  ],
+            Expanded(
+              child: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxxl - 4, // 28px
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildBusinessInfoSection(businessName, address),
+                      const SizedBox(height: AppSpacing.xl + 4), // 20px
+                      _buildMessageSection(),
+                      const SizedBox(height: AppSpacing.xl + 4), // 20px
+                      _buildSubmitArea(),
+                      const SizedBox(height: AppSpacing.xl + 4), // 20px
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -211,22 +217,37 @@ class _ErroneousInfoFormWidgetState
             color: AppColors.textSecondary,
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: AppSpacing.sm),
 
-        // Business name
-        Text(
-          businessName,
-          style: AppTypography.h5,
-        ),
-
-        // Business address
-        Text(
-          address,
-          style: AppTypography.bodyLg.copyWith(
-            color: AppColors.textSecondary,
+        // Business name & address card
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.bgCardSubtle,
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            border: Border.all(
+              color: AppColors.border,
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                businessName,
+                style: AppTypography.h5,
+              ),
+              Text(
+                address,
+                style: AppTypography.bodyLg.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.md),
 
         // Help text
         Text(
