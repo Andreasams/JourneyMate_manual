@@ -1042,7 +1042,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
           padding: const EdgeInsets.only(top: _widgetTopPadding),
           child: Wrap(
             spacing: _buttonSpacing,
-            runSpacing: AppSpacing.xxs,
+            runSpacing: AppSpacing.sm,
             children: allergens
                 .map((allergen) => _buildAllergenButton(
                       text: allergen.value,
