@@ -855,7 +855,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
             _businessName ?? 'Business',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.bodyMedium,
+            style: AppTypography.bodyHeavy,
           ),
         ),
         if (distanceText != null) ...[
