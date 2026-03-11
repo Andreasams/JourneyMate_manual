@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'provider_state_classes.dart';
 import '../services/api_service.dart';
+import '../services/custom_functions/language_currency_config.dart';
 
 // ============================================================
 // LOCALIZATION PROVIDER (with persistence)
@@ -153,19 +154,10 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
     }
   }
 
-  /// Returns filtered currency codes based on language
-  /// Uses same logic as FlutterFlow getCurrencyOptionsForLanguage()
+  /// Returns filtered currency codes based on language.
+  /// Delegates to shared [getCurrenciesForLanguage] config (all 15 languages).
   static List<String> _getCurrenciesForLanguage(String languageCode) {
-    const currencyConfigByLanguage = {
-      'en': ['USD', 'GBP', 'DKK'],
-      'da': ['DKK'],
-      'de': ['EUR', 'DKK'],
-      'fr': ['EUR', 'DKK'],
-      'it': ['EUR', 'DKK'],
-      'no': ['NOK', 'DKK'],
-      'sv': ['SEK', 'DKK'],
-    };
-    return currencyConfigByLanguage[languageCode.toLowerCase()] ?? ['DKK'];
+    return getCurrenciesForLanguage(languageCode);
   }
 
   /// Fetches exchange rate from BuildShip API (with caching)

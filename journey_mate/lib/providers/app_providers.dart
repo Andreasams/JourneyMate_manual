@@ -8,6 +8,7 @@ import 'locale_provider.dart';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
 import '../constants/welcome_fallback_translations.dart';
+import '../services/custom_functions/language_currency_config.dart';
 
 // ============================================================
 // ACCESSIBILITY PROVIDER
@@ -404,7 +405,7 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
   static Future<void> clearAllCaches() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final languages = ['en', 'da', 'de', 'fr', 'it', 'no', 'sv'];
+      final languages = kAllLanguageCodes;
 
       for (final lang in languages) {
         await prefs.remove('translations_$lang');

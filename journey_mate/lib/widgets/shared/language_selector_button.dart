@@ -95,8 +95,11 @@ class _LanguageSelectorButtonState
   // Language Configuration
   // ─────────────────────────────────────────────────────────────────────────────
 
-  // Language names in their native form (MUST NOT be translated)
+  // Language names in their native form (MUST NOT be translated).
+  // All 15 database languages included for name resolution;
+  // only those in _languageOrder appear in the dropdown.
   static const Map<String, String> _languageNames = {
+    // ── Active ──
     'en': 'English',
     'da': 'Dansk',
     'de': 'Deutsch',
@@ -104,6 +107,15 @@ class _LanguageSelectorButtonState
     'it': 'Italiano',
     'no': 'Norsk',
     'sv': 'Svenska',
+    // ── Inactive (ready for activation) ──
+    'es': 'Español',
+    'fi': 'Suomi',
+    'ja': '日本語',
+    'ko': '한국어',
+    'nl': 'Nederlands',
+    'pl': 'Polski',
+    'uk': 'українець',
+    'zh': '中文',
   };
 
   // Language order (same as FlutterFlow)
