@@ -155,7 +155,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           // Main subtitle
           Text(
             td(ref, 'contact_form_subtitle_main'),
-            style: AppTypography.bodyLg,
+            style: AppTypography.body,
           ),
           SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
@@ -256,10 +256,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
         RichText(
           text: TextSpan(
             text: title,
-            style: AppTypography.bodyLgMedium.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTypography.h6,
             children: [
               TextSpan(
                 text: ' *',
@@ -274,7 +271,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           SizedBox(height: AppSpacing.xs),
           Text(
             subtitle,
-            style: AppTypography.bodyLg,
+            style: AppTypography.body,
           ),
         ],
 
@@ -428,7 +425,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
           Expanded(
             child: Text(
               _submissionError!,
-              style: AppTypography.bodyLg.copyWith(color: AppColors.error),
+              style: AppTypography.body.copyWith(color: AppColors.error),
             ),
           ),
         ],

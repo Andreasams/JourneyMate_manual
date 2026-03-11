@@ -177,7 +177,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           // Main subtitle
           Text(
             td(ref, 'feedback_form_subtitle_main'),
-            style: AppTypography.bodyLg,
+            style: AppTypography.body,
           ),
           SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
@@ -224,17 +224,14 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section title
         Text(
           td(ref, 'feedback_form_title_topic'),
-          style: AppTypography.bodyLgMedium.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.h6,
         ),
         SizedBox(height: AppSpacing.xs),
 
         // Section subtitle
         Text(
           td(ref, 'feedback_form_subtitle_topic'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -296,10 +293,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         RichText(
           text: TextSpan(
             text: td(ref, 'feedback_form_title_message'),
-            style: AppTypography.bodyLgMedium.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTypography.h6,
             children: [
               TextSpan(
                 text: ' *',
@@ -313,7 +307,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Subtitle
         Text(
           td(ref, 'feedback_form_subtitle_message'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -378,17 +372,14 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section title
         Text(
           td(ref, 'feedback_form_title_contact_consent'),
-          style: AppTypography.bodyLgMedium.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.h6,
         ),
         SizedBox(height: AppSpacing.xs),
 
         // Section subtitle
         Text(
           td(ref, 'feedback_form_subtitle_contact_consent'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -435,10 +426,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             RichText(
               text: TextSpan(
                 text: td(ref, 'feedback_form_title_name'),
-                style: AppTypography.bodyLgMedium.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.h6,
                 children: [
                   TextSpan(
                     text: ' *',
@@ -511,10 +499,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             RichText(
               text: TextSpan(
                 text: td(ref, 'feedback_form_title_contact'),
-                style: AppTypography.bodyLgMedium.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.h6,
                 children: [
                   TextSpan(
                     text: ' *',
@@ -528,7 +513,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             // Subtitle
             Text(
               td(ref, 'feedback_form_subtitle_contact'),
-              style: AppTypography.bodyLg,
+              style: AppTypography.body,
             ),
             SizedBox(height: AppSpacing.sm),
 
@@ -686,7 +671,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           Expanded(
             child: Text(
               _submissionError!,
-              style: AppTypography.bodyLg.copyWith(color: AppColors.error),
+              style: AppTypography.body.copyWith(color: AppColors.error),
             ),
           ),
         ],

@@ -218,12 +218,12 @@ class _MissingLocationFormWidgetState
         const SizedBox(height: AppSpacing.sm),
         Text(
           td(ref, 'missing_location_subtitle_main_1'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           td(ref, 'missing_location_subtitle_main_2'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
       ],
     );
@@ -257,7 +257,7 @@ class _MissingLocationFormWidgetState
         const SizedBox(height: AppSpacing.xs),
         Text(
           td(ref, 'missing_location_subtitle_business_address'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
         const SizedBox(height: AppSpacing.sm),
         _buildTextField(
@@ -280,7 +280,7 @@ class _MissingLocationFormWidgetState
         const SizedBox(height: AppSpacing.xs),
         Text(
           td(ref, 'contact_form_subtitle_message'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
         const SizedBox(height: AppSpacing.sm),
         _buildTextField(
@@ -438,10 +438,7 @@ class _MissingLocationFormWidgetState
         children: [
           TextSpan(
             text: text,
-            style: AppTypography.bodyLgMedium.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTypography.h6,
           ),
           TextSpan(
             text: ' *',
