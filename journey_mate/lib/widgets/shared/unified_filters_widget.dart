@@ -1042,6 +1042,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
           padding: const EdgeInsets.only(top: _widgetTopPadding),
           child: Wrap(
             spacing: _buttonSpacing,
+            runSpacing: AppSpacing.xxs,
             children: allergens
                 .map((allergen) => _buildAllergenButton(
                       text: allergen.value,
@@ -1075,7 +1076,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeaderRow(),
-          const SizedBox(height: 0),
+          const SizedBox(height: AppSpacing.xs),
           _buildFilterSection(
             header: _getUIText('menu_dishes_filter_restrictions_title'),
             description: _getUIText('menu_dishes_filter_restrictions_subtitle'),
