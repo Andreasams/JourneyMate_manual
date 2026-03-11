@@ -143,6 +143,7 @@ class HeroSectionWidget extends ConsumerWidget {
                     Text(
                       statusText,
                       style: AppTypography.bodyLgHeavy.copyWith(
+                        fontWeight: FontWeight.w600,
                         color: statusColor ?? AppColors.green,
                       ),
                     ),
@@ -153,7 +154,7 @@ class HeroSectionWidget extends ConsumerWidget {
                     Flexible(
                       child: Text(
                         timingText,
-                        style: AppTypography.bodyLg,
+                        style: AppTypography.body,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -170,7 +171,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       Flexible(
                         child: Text(
                           businessType,
-                          style: AppTypography.bodyLg,
+                          style: AppTypography.body,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -184,7 +185,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       ],
                       Text(
                         priceRangeText,
-                        style: AppTypography.bodyLg,
+                        style: AppTypography.body,
                       ),
                     ],
                     if (distanceText != null) ...[
@@ -197,7 +198,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       ],
                       Text(
                         distanceText,
-                        style: AppTypography.bodyLg,
+                        style: AppTypography.body,
                       ),
                     ],
                   ],
@@ -209,7 +210,7 @@ class HeroSectionWidget extends ConsumerWidget {
               if (addressText.isNotEmpty)
                 Text(
                   addressText,
-                  style: AppTypography.bodyLg,
+                  style: AppTypography.body,
                 ),
             ],
           ),
