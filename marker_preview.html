@@ -62,8 +62,8 @@ function drawMarker(canvas, { color, selected, heightRatio, drawUtensils, size =
   const radius = pinWidth / 2;
   const tipY   = padding + pinHeight;
 
-  function drawPin(r, ty, col) {
-    const cy = padding + r;
+  function drawPinAt(topPad, r, ty, col) {
+    const cy = topPad + r;
     const dist = ty - cy;
     const raw = Math.asin(Math.min(r / dist, 1));
     const tangentAngle = Math.max(0.3, Math.min(1.2, raw));
@@ -80,10 +80,13 @@ function drawMarker(canvas, { color, selected, heightRatio, drawUtensils, size =
   }
 
   if (selected) {
-    drawPin(radius + 2 * scale, tipY + 2 * scale, 'white');
+    // Subtract haloWidth from topPadding so circle center stays fixed
+    // and halo expands uniformly on all sides (including the top).
+    const hw = 2;
+    drawPinAt(padding - hw * scale, radius + hw * scale, tipY + hw * scale, 'white');
   }
 
-  drawPin(radius, tipY, color);
+  drawPinAt(padding, radius, tipY, color);
 
   if (drawUtensils) {
     // Legacy utensils drawing

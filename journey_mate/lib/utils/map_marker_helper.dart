@@ -50,9 +50,12 @@ class MapMarkerHelper {
     final tipY = padding + pinHeight;
 
     if (selected) {
-      // White halo behind the pin
-      _drawPinPath(canvas, cx, padding, circleRadius + 2 * scale,
-          tipY + 2 * scale, Paint()..color = Colors.white);
+      // White halo behind the pin — subtract haloWidth from topPadding so the
+      // circle center stays fixed and the halo expands uniformly in all directions.
+      const haloWidth = 2.0;
+      _drawPinPath(canvas, cx, padding - haloWidth * scale,
+          circleRadius + haloWidth * scale, tipY + haloWidth * scale,
+          Paint()..color = Colors.white);
     }
 
     // Pin body
