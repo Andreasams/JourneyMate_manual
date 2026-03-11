@@ -1107,10 +1107,10 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
         child: Text(
           text,
           style: isSelected
-              ? AppTypography.bodyLgMedium.copyWith(
+              ? AppTypography.bodyLg.copyWith(
                   color: _ColorConstants.selectedTextColor,
                 )
-              : AppTypography.bodyLgMedium.copyWith(
+              : AppTypography.bodyLg.copyWith(
                   color: _ColorConstants.unselectedTextColor,
                 ),
         ),
