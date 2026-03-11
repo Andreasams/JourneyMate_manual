@@ -121,12 +121,12 @@ class MenuItemCard extends ConsumerWidget {
             // Image (right-aligned, conditional)
             if (hasImage)
               ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.sm),
+                borderRadius: BorderRadius.circular(AppRadius.chip),
                 child: Image.network(
                   imageUrl!,
                   width: 133,
                   height: 75,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => const SizedBox(
                     width: 133,
                     height: 75,
