@@ -1969,7 +1969,9 @@ class _MenuItem extends ConsumerWidget {
                             const SizedBox(height: _titleDescriptionSpacing),
                             Text(
                               description,
-                              style: AppTypography.bodyMedium,
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
                               maxLines: _descriptionMaxLines,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1980,7 +1982,7 @@ class _MenuItem extends ConsumerWidget {
                             child: Text(
                               _isZeroPrice(displayPrice) ? '0 kr' : displayPrice,
                               style: AppTypography.bodyLgMedium.copyWith(
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 color: AppColors.accent,
                               ),
                             ),
