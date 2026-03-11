@@ -124,27 +124,19 @@ Future<void> _loadAppDataInBackground(
   for (int attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       if (skipTranslations) {
-        debugPrint('🔄 Loading filters (translations cached, skipping refresh)');
         await container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode)
             .timeout(const Duration(seconds: 10));
       } else {
-        debugPrint('🔄 Loading translations + filters (attempt $attempt/$maxAttempts)');
         await Future.wait([
           container.read(translationsCacheProvider.notifier).loadTranslations(languageCode),
           container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode),
         ]).timeout(const Duration(seconds: 10));
       }
 
-      debugPrint('✅ Background data loaded successfully');
       return; // Success
     } catch (e) {
-      debugPrint('⚠️ Attempt $attempt failed: $e');
-
       if (attempt < maxAttempts) {
-        debugPrint('⏳ Waiting ${retryDelay.inSeconds}s before retry...');
         await Future.delayed(retryDelay);
-      } else {
-        debugPrint('⚠️ All attempts failed — app functional with cached data');
       }
     }
   }

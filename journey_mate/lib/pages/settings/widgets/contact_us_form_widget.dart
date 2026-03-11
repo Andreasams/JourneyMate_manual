@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../../../services/api_service.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_spacing.dart';
@@ -26,9 +25,6 @@ class ContactUsFormWidget extends ConsumerStatefulWidget {
 }
 
 class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
-  // API endpoint
-  static const String _apiEndpoint = 'https://wvb8ww.buildship.run/contact';
-
   // Text editing controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
@@ -105,19 +101,15 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
     final languageCode = Localizations.localeOf(context).languageCode;
 
     try {
-      final response = await http.post(
-        Uri.parse(_apiEndpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'name': _nameController.text.trim(),
-          'contact': _contactController.text.trim(),
-          'subject': _subjectController.text.trim(),
-          'message': _messageController.text.trim(),
-          'languageCode': languageCode,
-        }),
+      final response = await ApiService.instance.submitContactUs(
+        name: _nameController.text.trim(),
+        contact: _contactController.text.trim(),
+        subject: _subjectController.text.trim(),
+        message: _messageController.text.trim(),
+        languageCode: languageCode,
       );
 
-      if (response.statusCode == 200) {
+      if (response.succeeded) {
         setState(() {
           _isSubmitted = true;
           _submissionError = null;

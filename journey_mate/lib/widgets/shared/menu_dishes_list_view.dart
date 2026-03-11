@@ -288,7 +288,6 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
         }
       }
     } catch (e) {
-      debugPrint('⚠️ Failed to extract business_id: $e');
     }
   }
 
@@ -301,7 +300,6 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
     try {
       ref.read(analyticsProvider.notifier).incrementItemClick();
     } catch (e) {
-      debugPrint('⚠️ Failed to increment session item clicks: $e');
     }
   }
 
@@ -310,7 +308,6 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
     try {
       ref.read(analyticsProvider.notifier).incrementPackageClick();
     } catch (e) {
-      debugPrint('⚠️ Failed to increment session package clicks: $e');
     }
   }
 
@@ -319,7 +316,6 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
     try {
       ref.read(analyticsProvider.notifier).recordCategoryViewed(categoryId);
     } catch (e) {
-      debugPrint('⚠️ Failed to add viewed category to session: $e');
     }
   }
 
@@ -328,7 +324,6 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
     try {
       ref.read(analyticsProvider.notifier).updateDeepestScroll(scrollPercent);
     } catch (e) {
-      debugPrint('⚠️ Failed to update session scroll depth: $e');
     }
   }
 

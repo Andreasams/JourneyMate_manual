@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
@@ -40,7 +39,6 @@ class AccessibilityNotifier extends Notifier<AccessibilityState> {
 
       state = AccessibilityState(isBoldTextEnabled: isBold, fontScale: scale);
     } catch (e) {
-      debugPrint('⚠️ Failed to load accessibility preferences: $e');
       // Fail silently, keep default state
     }
   }
@@ -52,7 +50,7 @@ class AccessibilityNotifier extends Notifier<AccessibilityState> {
       await prefs.setBool('is_bold_text_enabled', enabled);
       state = state.copyWith(isBoldTextEnabled: enabled);
     } catch (e) {
-      debugPrint('⚠️ Failed to save bold text preference: $e');
+      // Fail silently
     }
   }
 
@@ -63,7 +61,7 @@ class AccessibilityNotifier extends Notifier<AccessibilityState> {
       await prefs.setDouble('font_scale', scale);
       state = state.copyWith(fontScale: scale);
     } catch (e) {
-      debugPrint('⚠️ Failed to save font scale preference: $e');
+      // Fail silently
     }
   }
 }
@@ -102,7 +100,7 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
 
       state = state.copyWith(deviceId: deviceId);
     } catch (e) {
-      debugPrint('⚠️ Failed to initialize analytics: $e');
+      // Fail silently
     }
   }
 
@@ -278,7 +276,6 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
       // First launch — use welcome page fallbacks for instant display
       final fallbacks = kWelcomeFallbackTranslations[languageCode] ?? {};
       state = fallbacks;
-      debugPrint('🎯 Using welcome fallbacks for first launch ($languageCode)');
     } else {
       state = cachedTranslations;
     }
@@ -298,13 +295,10 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
         // Save to cache for next launch (with version metadata)
         _saveToCache(languageCode, translations);
 
-        debugPrint('✅ Loaded ${translations.length} translations for $languageCode');
       } else {
-        debugPrint('⚠️ Failed to load translations for $languageCode');
         // Keep current state (fallbacks or cached translations)
       }
     } catch (e) {
-      debugPrint('⚠️ Error loading translations: $e');
       // Keep current state (fallbacks or cached translations)
     }
   }
@@ -321,9 +315,7 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
       await prefs.setInt('translations_${languageCode}_timestamp', DateTime.now().millisecondsSinceEpoch);
       await prefs.setInt('translations_${languageCode}_version', _cacheVersion);
 
-      debugPrint('✅ Cached ${translations.length} translations for $languageCode (v$_cacheVersion)');
     } catch (e) {
-      debugPrint('⚠️ Failed to cache translations: $e');
       // Non-critical error - continue without caching
     }
   }
@@ -344,7 +336,6 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
 
       // Cache version mismatch — new features added, force refresh
       if (version != _cacheVersion) {
-        debugPrint('🔄 Cache version mismatch (cached: $version, current: $_cacheVersion) — forcing refresh');
         return false;
       }
 
@@ -372,7 +363,6 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
 
       // Cache version mismatch — don't use stale cache
       if (version != _cacheVersion) {
-        debugPrint('🗑️ Ignoring stale cache (v$version, current: v$_cacheVersion)');
         return {};
       }
 
@@ -380,10 +370,8 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
       final decoded = jsonDecode(cachedJson);
       final translations = Map<String, String>.from(decoded as Map);
 
-      debugPrint('✅ Loaded ${translations.length} cached translations for $languageCode (v$version)');
       return translations;
     } catch (e) {
-      debugPrint('⚠️ Failed to load cached translations: $e');
       return {};
     }
   }
@@ -395,9 +383,8 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
       await prefs.remove('translations_$languageCode');
       await prefs.remove('translations_${languageCode}_timestamp');
       await prefs.remove('translations_${languageCode}_version');
-      debugPrint('🗑️ Cleared translation cache for $languageCode');
     } catch (e) {
-      debugPrint('⚠️ Failed to clear cache for $languageCode: $e');
+      // Fail silently
     }
   }
 
@@ -413,9 +400,8 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
         await prefs.remove('translations_${lang}_version');
       }
 
-      debugPrint('🗑️ Cleared all translation caches');
     } catch (e) {
-      debugPrint('⚠️ Failed to clear all caches: $e');
+      // Fail silently
     }
   }
 

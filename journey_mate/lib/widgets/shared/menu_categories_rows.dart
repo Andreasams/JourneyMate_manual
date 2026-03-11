@@ -507,9 +507,7 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
       // Auto-scroll to keep selected category visible
       // Only for scroll updates, not user taps
       _autoScrollToSelection(categoryId, menuId);
-    } catch (e, stackTrace) {
-      debugPrint('Error parsing visibleSelection: $e');
-      debugPrint('Stack trace: $stackTrace');
+    } catch (e) {
     }
   }
 
@@ -673,7 +671,6 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
         );
       }
     } catch (e) {
-      debugPrint('Error scrolling item into view: $e');
     }
   }
 
@@ -728,7 +725,6 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
 
       return [];
     } catch (e) {
-      debugPrint('Error extracting categories data: $e');
       return [];
     }
   }

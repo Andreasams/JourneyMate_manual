@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'api_service.dart';
@@ -57,7 +56,6 @@ class EngagementTracker {
 
   /// Called when app comes to foreground
   Future<void> onAppResumed() async {
-    debugPrint('💚 EngagementTracker: App resumed');
     _inForeground = true;
     await _maybeEndStaleSessionAndStartNew();
     _ensureHeartbeat();
@@ -66,8 +64,6 @@ class EngagementTracker {
 
   /// Called when app goes to background
   Future<void> onAppPaused() async {
-    debugPrint('💤 EngagementTracker: App paused');
-
     final now = DateTime.now();
     _inForeground = false;
 
@@ -75,8 +71,6 @@ class EngagementTracker {
     if (engagedUntil != null && now.isBefore(engagedUntil!)) {
       final remainingSeconds = engagedUntil!.difference(now).inSeconds;
       engagedSeconds += remainingSeconds;
-      debugPrint(
-          '   💤 Credited $remainingSeconds seconds of remaining engagement');
     }
     engagedUntil = null; // Clear engagement window
 
@@ -90,7 +84,6 @@ class EngagementTracker {
 
   /// Called when app is closing (best effort)
   Future<void> onAppDetached() async {
-    debugPrint('🛑 EngagementTracker: App detached');
     await endSession(reason: 'app_closed');
     _stopHeartbeat();
     _flushTimer?.cancel();
@@ -157,8 +150,6 @@ class EngagementTracker {
         hasActiveSession && now.difference(lastActiveAt) > sessionTimeout;
 
     if (isStale) {
-      debugPrint(
-          '⏰ Session stale (${now.difference(lastActiveAt).inMinutes}m inactive)');
       await endSession(reason: 'timeout');
     }
 
@@ -185,7 +176,7 @@ class EngagementTracker {
       _cachedPrefs ??= await SharedPreferences.getInstance();
       await _cachedPrefs!.setString('current_session_id', sessionId!);
     } catch (e) {
-      debugPrint('⚠️ Failed to save session ID to SharedPreferences: $e');
+      // Fail silently
     }
 
     // Track session start (fire and forget)
@@ -193,8 +184,6 @@ class EngagementTracker {
       'sessionId': sessionId,
       'timestamp': now.toIso8601String(),
     }));
-
-    debugPrint('🚀 Engagement session started: ${sessionId?.substring(0, 8)}');
   }
 
   /// Ends the current session
@@ -222,20 +211,12 @@ class EngagementTracker {
       'timestamp': now.toIso8601String(),
     }));
 
-    debugPrint('🏁 Engagement session ended:');
-    debugPrint('   Session: ${sessionId?.substring(0, 8)}');
-    debugPrint('   Duration: ${sessionDuration}s');
-    debugPrint('   Foreground: ${foregroundSeconds}s');
-    debugPrint('   Engaged: ${engagedSeconds}s');
-    debugPrint('   Rate: ${(engagementRate * 100).toStringAsFixed(1)}%');
-    debugPrint('   Reason: $reason');
-
     // Clear session ID from SharedPreferences
     try {
       _cachedPrefs ??= await SharedPreferences.getInstance();
       await _cachedPrefs!.remove('current_session_id');
     } catch (e) {
-      debugPrint('⚠️ Failed to clear session ID from SharedPreferences: $e');
+      // Fail silently
     }
 
     sessionId = null;
@@ -254,14 +235,12 @@ class EngagementTracker {
     if (_heartbeatTimer != null && _heartbeatTimer!.isActive) return;
 
     _heartbeatTimer = Timer.periodic(heartbeatInterval, (_) => _tick());
-    debugPrint('💓 Heartbeat started');
   }
 
   /// Stops heartbeat timer
   void _stopHeartbeat() {
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
-    debugPrint('💔 Heartbeat stopped');
   }
 
   /// Heartbeat tick - increments counters
@@ -293,7 +272,6 @@ class EngagementTracker {
     if (_flushTimer != null && _flushTimer!.isActive) return;
 
     _flushTimer = Timer.periodic(flushInterval, (_) => _flushPartialSession());
-    debugPrint('🔄 Periodic flush started');
   }
 
   /// Flushes partial session data (every 60 seconds while active)
@@ -321,8 +299,6 @@ class EngagementTracker {
     }));
 
     _lastFlushTime = now;
-    debugPrint(
-        '💾 Flushed partial session: ${foregroundSeconds}s fg, ${engagedSeconds}s engaged');
   }
 
   // -------------------------------------------------------------------------
@@ -342,7 +318,7 @@ class EngagementTracker {
         timestamp: DateTime.now().toIso8601String(),
       );
     } catch (e) {
-      debugPrint('⚠️ Failed to track analytics event: $e');
+      // Fail silently
     }
   }
 
@@ -395,9 +371,6 @@ class AnalyticsService {
       if (deviceId == null) {
         deviceId = const Uuid().v4();
         await prefs.setString('analytics_device_id', deviceId);
-        debugPrint('📱 Created new device_id: ${deviceId.substring(0, 8)}...');
-      } else {
-        debugPrint('📱 Existing device_id: ${deviceId.substring(0, 8)}...');
       }
       _deviceId = deviceId;
       _userId = deviceId;
@@ -413,14 +386,8 @@ class AnalyticsService {
 
       // Start engagement tracking
       await engagementTracker.startNewSession();
-
-      debugPrint('✅ Analytics initialized (with prefs)');
-      debugPrint('   Device: ${_deviceId?.substring(0, 8)}...');
-      debugPrint('   Session: ${currentSessionId?.substring(0, 8)}...');
-      debugPrint('   First session: $_isFirstSession');
-    } catch (e, s) {
-      debugPrint('❌ Analytics init failed: $e');
-      debugPrint('$s');
+    } catch (e) {
+      // Fail silently
     }
   }
 
@@ -433,14 +400,8 @@ class AnalyticsService {
 
       // Start engagement tracking
       await engagementTracker.startNewSession();
-
-      debugPrint('✅ Analytics initialized');
-      debugPrint('   Device: ${_deviceId?.substring(0, 8)}...');
-      debugPrint('   Session: ${currentSessionId?.substring(0, 8)}...');
-      debugPrint('   First session: $_isFirstSession');
-    } catch (e, s) {
-      debugPrint('❌ Analytics init failed: $e');
-      debugPrint('$s');
+    } catch (e) {
+      // Fail silently
     }
   }
 
@@ -451,9 +412,6 @@ class AnalyticsService {
     if (deviceId == null) {
       deviceId = const Uuid().v4();
       await prefs.setString('analytics_device_id', deviceId);
-      debugPrint('📱 Created new device_id: ${deviceId.substring(0, 8)}...');
-    } else {
-      debugPrint('📱 Existing device_id: ${deviceId.substring(0, 8)}...');
     }
 
     return deviceId;
@@ -492,15 +450,10 @@ class AnalyticsService {
   /// Set filter session ID
   void setFilterSessionId(String filterSessionId) {
     _currentFilterSessionId = filterSessionId;
-    debugPrint('🔍 Filter session set: ${filterSessionId.substring(0, 8)}...');
   }
 
   /// Clear filter session ID
   void clearFilterSessionId() {
-    if (_currentFilterSessionId != null) {
-      debugPrint(
-          '🔍 Cleared filter session: ${_currentFilterSessionId?.substring(0, 8)}...');
-    }
     _currentFilterSessionId = null;
   }
 }

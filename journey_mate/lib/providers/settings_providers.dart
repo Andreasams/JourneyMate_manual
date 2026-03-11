@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
@@ -38,8 +37,6 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
       exchangeRate: exchangeRate ?? 1.0,
       distanceUnit: distanceUnit,
     );
-    debugPrint('✅ Loaded currency: $currencyCode (rate: ${exchangeRate ?? 1.0})');
-    debugPrint('✅ Loaded distance unit: $distanceUnit');
   }
 
   /// Load currency code from SharedPreferences
@@ -49,9 +46,7 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
       final currencyCode = prefs.getString('user_currency_code') ?? 'DKK';
 
       state = state.copyWith(currencyCode: currencyCode);
-      debugPrint('✅ Loaded currency: $currencyCode');
     } catch (e) {
-      debugPrint('⚠️ Failed to load currency preference: $e');
       // Fail silently, keep default state
     }
   }
@@ -64,17 +59,13 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
 
     // Skip if no currency set or if DKK (base currency, rate = 1.0)
     if (currencyCode.isEmpty || currencyCode == 'DKK') {
-      debugPrint('💱 Exchange rate load skipped (currency: $currencyCode)');
       return;
     }
 
     try {
-      debugPrint('💱 Fetching exchange rate for $currencyCode...');
       final rate = await _fetchExchangeRate(currencyCode);
       setExchangeRate(rate);
-      debugPrint('✅ Exchange rate loaded: $currencyCode = $rate');
     } catch (e) {
-      debugPrint('⚠️ Failed to load exchange rate for $currencyCode: $e');
       // Graceful failure - rate stays at 1.0 (acceptable for DKK base)
     }
   }
@@ -91,9 +82,8 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
         exchangeRate: rate,
       );
 
-      debugPrint('✅ Currency set: $code (rate: $rate)');
     } catch (e) {
-      debugPrint('⚠️ Failed to save currency preference: $e');
+      // Fail silently
     }
   }
 
@@ -104,7 +94,6 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
       await prefs.setDouble('user_exchange_rate', rate);
       state = state.copyWith(exchangeRate: rate);
     } catch (e) {
-      debugPrint('⚠️ Failed to save exchange rate: $e');
       // Still update in-memory state
       state = state.copyWith(exchangeRate: rate);
     }
@@ -121,9 +110,7 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_distance_unit', unit);
       state = state.copyWith(distanceUnit: unit);
-      debugPrint('✅ Distance unit set: $unit');
     } catch (e) {
-      debugPrint('⚠️ Failed to save distance unit: $e');
       // Still update in-memory state (graceful degradation)
       state = state.copyWith(distanceUnit: unit);
     }
@@ -145,12 +132,9 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
 
         // Update currency with new rate
         await setCurrency(defaultCurrency, exchangeRate);
-        debugPrint('💱 Auto-switched currency to $defaultCurrency for language $newLanguageCode');
-      } else {
-        debugPrint('✓ Currency $currentCurrency is available for language $newLanguageCode, no change needed');
       }
     } catch (e) {
-      debugPrint('❌ Error updating currency for language change: $e');
+      // Fail silently
     }
   }
 
@@ -170,7 +154,6 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
 
       // Check cache first
       if (_exchangeRateCache.containsKey(currencyCode)) {
-        debugPrint('💾 Using cached exchange rate for $currencyCode: ${_exchangeRateCache[currencyCode]}');
         return _exchangeRateCache[currencyCode]!;
       }
 
@@ -180,7 +163,6 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
       );
 
       if (!response.succeeded) {
-        debugPrint('⚠️ Exchange rate API failed: ${response.statusCode}');
         return 1.0; // Fallback
       }
 
@@ -193,17 +175,14 @@ class LocalizationNotifier extends Notifier<LocalizationState> {
       } else if (body is Map && body.containsKey('rate')) {
         rate = (body['rate'] as num).toDouble();
       } else {
-        debugPrint('⚠️ Unexpected exchange rate response format');
         return 1.0; // Fallback
       }
 
       // Cache the rate for future use
       _exchangeRateCache[currencyCode] = rate;
-      debugPrint('✅ Cached exchange rate for $currencyCode: $rate');
 
       return rate;
     } catch (e) {
-      debugPrint('❌ Exchange rate fetch failed: $e');
       return 1.0; // Fallback
     }
   }
@@ -239,9 +218,7 @@ class LocationNotifier extends Notifier<LocationState> {
         hasPermission: hasPermission,
         isServiceEnabled: serviceEnabled,
       );
-      debugPrint('✅ Location service: $serviceEnabled, permission: $permission');
     } catch (e) {
-      debugPrint('⚠️ Error checking location permission: $e');
       state = state.copyWith(hasPermission: false, isServiceEnabled: false);
     }
   }
@@ -281,7 +258,6 @@ class LocationNotifier extends Notifier<LocationState> {
 
       return position;
     } catch (e) {
-      debugPrint('⚠️ Error fetching position: $e');
       return null;  // Defensive: don't throw, return null
     }
   }
@@ -297,9 +273,8 @@ class LocationNotifier extends Notifier<LocationState> {
       final prefs = await SharedPreferences.getInstance();
       final isDismissed = prefs.getBool(_kBannerDismissedKey) ?? false;
       state = state.copyWith(isBannerDismissed: isDismissed);
-      debugPrint('✅ Loaded banner dismissal state: $isDismissed');
     } catch (e) {
-      debugPrint('⚠️ Failed to load banner dismissal preference: $e');
+      // Fail silently
     }
   }
 
@@ -309,9 +284,7 @@ class LocationNotifier extends Notifier<LocationState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_kBannerDismissedKey, true);
       state = state.copyWith(isBannerDismissed: true);
-      debugPrint('✅ Banner dismissed and persisted');
     } catch (e) {
-      debugPrint('⚠️ Failed to persist banner dismissal: $e');
       state = state.copyWith(isBannerDismissed: true);
     }
   }
@@ -322,9 +295,8 @@ class LocationNotifier extends Notifier<LocationState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_kBannerDismissedKey, false);
       state = state.copyWith(isBannerDismissed: false);
-      debugPrint('✅ Banner dismissal reset');
     } catch (e) {
-      debugPrint('⚠️ Failed to reset banner dismissal: $e');
+      // Fail silently
     }
   }
 
@@ -349,7 +321,6 @@ class LocationNotifier extends Notifier<LocationState> {
 
       return granted;
     } catch (e) {
-      debugPrint('⚠️ Error requesting location permission: $e');
       state = state.copyWith(hasPermission: false);
       return false;
     }
@@ -365,7 +336,7 @@ class LocationNotifier extends Notifier<LocationState> {
     try {
       await ph.openAppSettings();
     } catch (e) {
-      debugPrint('⚠️ Error opening app settings: $e');
+      // Fail silently
     }
   }
 
@@ -416,7 +387,7 @@ class LocationNotifier extends Notifier<LocationState> {
         await ph.openAppSettings();
       }
     } catch (e) {
-      debugPrint('⚠️ Error enabling location: $e');
+      // Fail silently
     }
   }
 
@@ -450,7 +421,7 @@ class LocationNotifier extends Notifier<LocationState> {
         );
       }
     } catch (e) {
-      debugPrint('⚠️ Error in requestPermissionIfNeeded: $e');
+      // Fail silently
     }
   }
 }

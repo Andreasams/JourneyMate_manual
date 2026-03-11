@@ -60,12 +60,9 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
   /// Pre-fetch search results for fast navigation to Search tab
   Future<void> _preFetchSearchResults() async {
     try {
-      debugPrint('⚙️ Settings: Pre-fetching search results...');
-
       // Check if cache is already fresh
       final searchNotifier = ref.read(searchStateProvider.notifier);
       if (searchNotifier.isCacheFresh()) {
-        debugPrint('⚙️ Settings: Cache is fresh, skipping pre-fetch');
         return;
       }
 
@@ -87,7 +84,6 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
           userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
         }
       } catch (e) {
-        debugPrint('⚙️ Settings: Location fetch failed: $e');
         // Continue without location
       }
 
@@ -122,13 +118,10 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
           scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        debugPrint('⚙️ Settings: Pre-fetch succeeded ($resultCount results, $fullMatchCount full matches)');
       } else {
-        debugPrint('⚙️ Settings: Pre-fetch failed: ${response.error}');
         // Fail silently - user will see loading shimmer on Search page
       }
     } catch (e) {
-      debugPrint('⚙️ Settings: Pre-fetch exception: $e');
       // Fail silently - don't block Settings page
     }
   }

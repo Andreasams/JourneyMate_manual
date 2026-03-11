@@ -93,7 +93,6 @@ class _AppSettingsInitiateFlowPageState
       // For non-English users: results overwritten when they select language (one "wasted" call)
       _fetchSearchResultsForLanguage('en');
     } catch (e) {
-      debugPrint('⚠️ App Settings page initialization error: $e');
       // Continue with defaults even if initialization fails
     }
   }
@@ -115,13 +114,11 @@ class _AppSettingsInitiateFlowPageState
         });
       }
 
-      debugPrint('✅ Language updated to: $newLanguageCode');
-
       // Start search API call immediately (fire-and-forget)
       // Handles rapid language changes by tracking latest selection
       _fetchSearchResultsForLanguage(newLanguageCode);
     } catch (e) {
-      debugPrint('⚠️ Failed to persist language: $e');
+      // Fail silently
     }
   }
 
@@ -130,8 +127,6 @@ class _AppSettingsInitiateFlowPageState
     try {
       // Track this as the latest language being fetched
       _latestLanguageCode = languageCode;
-
-      debugPrint('🔧 Setup: Fetching search results for $languageCode...');
 
       // Save notifier before async operations (safe even if widget unmounted)
       final searchNotifier = ref.read(searchStateProvider.notifier);
@@ -150,7 +145,6 @@ class _AppSettingsInitiateFlowPageState
           userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
         }
       } catch (e) {
-        debugPrint('🔧 Setup: Location fetch failed: $e');
         // Continue without location
       }
 
@@ -169,7 +163,6 @@ class _AppSettingsInitiateFlowPageState
       // Only store results if this is still the latest language
       // (handles rapid language changes - ignore stale responses)
       if (_latestLanguageCode != languageCode) {
-        debugPrint('🔧 Setup: Ignoring stale results for $languageCode (latest: $_latestLanguageCode)');
         return;
       }
 
@@ -190,13 +183,10 @@ class _AppSettingsInitiateFlowPageState
           scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        debugPrint('🔧 Setup: Fetch succeeded for $languageCode ($resultCount results, $fullMatchCount full matches)');
       } else {
-        debugPrint('🔧 Setup: Fetch failed for $languageCode: ${response.error}');
         // Fail silently - user will see shimmer on Search page if needed
       }
     } catch (e) {
-      debugPrint('🔧 Setup: Fetch exception for $languageCode: $e');
       // Fail silently - don't block setup flow
     }
   }
@@ -217,9 +207,7 @@ class _AppSettingsInitiateFlowPageState
       // Update localeProvider for immediate app-wide locale change
       ref.read(localeProvider.notifier).setLocale(_currentLanguageCode);
 
-      debugPrint('✅ Setup complete: language=$_currentLanguageCode persisted');
     } catch (e) {
-      debugPrint('⚠️ Failed to persist language during setup: $e');
       // Continue navigation - don't block user flow on persistence error
     }
 
@@ -256,10 +244,7 @@ class _AppSettingsInitiateFlowPageState
         timestamp: DateTime.now().toIso8601String(),
       );
 
-      debugPrint(
-          '✅ Tracked appSettingsInitiateFlowPage view: ${duration.inSeconds}s');
     } catch (e) {
-      debugPrint('⚠️ Failed to track page view: $e');
       // Fail silently — analytics should never block user flow
     }
   }

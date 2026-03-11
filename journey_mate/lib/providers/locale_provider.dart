@@ -36,7 +36,6 @@ class LocaleNotifier extends Notifier<Locale> {
   /// Synchronous initialization from pre-read SharedPreferences values
   void initializeFromPrefs({required String languageCode}) {
     state = Locale(languageCode);
-    debugPrint('✅ Locale initialized: $languageCode');
   }
 
   /// Initialize locale from SharedPreferences on app startup
@@ -47,9 +46,7 @@ class LocaleNotifier extends Notifier<Locale> {
       final prefs = await SharedPreferences.getInstance();
       final languageCode = prefs.getString('user_language_code') ?? 'en';
       state = Locale(languageCode);
-      debugPrint('✅ Locale initialized: $languageCode');
     } catch (e) {
-      debugPrint('⚠️ Failed to load locale from preferences: $e');
       // Keep default 'en' locale
     }
   }
@@ -64,6 +61,5 @@ class LocaleNotifier extends Notifier<Locale> {
   /// - Immediate language change (even before translations load)
   void setLocale(String languageCode) {
     state = Locale(languageCode);
-    debugPrint('🌐 Locale changed: $languageCode');
   }
 }

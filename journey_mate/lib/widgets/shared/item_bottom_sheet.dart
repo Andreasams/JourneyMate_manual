@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import '../../services/api_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../theme/app_colors.dart';
@@ -414,17 +413,13 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
         throw Exception('Menu item ID not found');
       }
 
-      final response = await http.get(
-        Uri.parse('https://wvb8ww.buildship.run/menuItem').replace(
-          queryParameters: {
-            'menu_item_id': menuItemId.toString(),
-            'language_code': targetLanguageCode,
-          },
-        ),
+      final response = await ApiService.instance.getSingleMenuItem(
+        menuItemId: int.parse(menuItemId.toString()),
+        languageCode: targetLanguageCode,
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
+      if (response.succeeded && response.jsonBody != null) {
+        final data = response.jsonBody as Map<String, dynamic>;
 
         // Cache the fetched data
         _languageDataCache[targetLanguageCode] = data;
@@ -437,7 +432,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
           });
         }
       } else {
-        throw Exception('Failed to load language data: ${response.statusCode}');
+        throw Exception(response.error ?? 'Failed to load language data');
       }
     } catch (e) {
       // Show error message
@@ -475,16 +470,12 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
     setState(() => _isLoadingLanguage = true);
 
     try {
-      final url = Uri.parse('https://wvb8ww.buildship.run/getExchangeRates')
-          .replace(queryParameters: {
-        'to_currency': newCurrencyCode,
-        'from_currency': 'DKK',
-      });
+      final response = await ApiService.instance.getExchangeRate(
+        toCurrency: newCurrencyCode,
+      );
 
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (response.succeeded && response.jsonBody != null) {
+        final data = response.jsonBody;
 
         final double? rate = (data is List && data.isNotEmpty)
             ? (data[0]['rate'] as num?)?.toDouble()

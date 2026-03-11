@@ -144,7 +144,6 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
       await _notifyFilterCount(filters.length);
       await _notifyCalculatedHeight(filters);
     } catch (e) {
-      debugPrint('Error in _calculateMetricsAndNotify: $e');
       await _notifyErrorState();
     }
   }
@@ -276,7 +275,6 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
         return _flattenFilters(widget.filters as List<dynamic>);
       }
     } catch (e) {
-      debugPrint('Error converting filters: $e');
     }
     return [];
   }
@@ -290,7 +288,6 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
         _traverseFilterTree(filter, flatList);
       }
     } catch (e) {
-      debugPrint('Error in _flattenFilters: $e');
     }
 
     return flatList;
@@ -373,7 +370,6 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
       final availableFilters = _filterAvailableFilters(filtersList);
       return _sortFiltersByPredefinedOrder(availableFilters);
     } catch (e) {
-      debugPrint('Error in _getOrganizedPaymentFilters: $e');
       return [];
     }
   }
@@ -421,7 +417,6 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
 
       return _buildPaymentOptionsContainer(paymentFilters);
     } catch (e) {
-      debugPrint('Error in build method: $e');
       return _buildErrorState();
     }
   }
@@ -448,7 +443,6 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
     try {
       return filters.map((filter) => _buildPaymentButton(filter)).toList();
     } catch (e) {
-      debugPrint('Error in _buildPaymentButtons: $e');
       return [_buildErrorWidget()];
     }
   }

@@ -57,11 +57,6 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
       final analyticsState = ref.read(analyticsProvider);
       _cachedDeviceId = analyticsState.deviceId;
       _cachedSessionId = analyticsState.sessionId ?? '';
-
-      final gallery = ref.read(businessProvider).currentBusiness?['gallery'];
-      if (gallery == null) {
-        debugPrint('GalleryFullPage: No gallery data available');
-      }
     });
   }
 

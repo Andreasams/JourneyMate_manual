@@ -95,7 +95,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         _preFetchSearchResults('da');
       }
     } catch (e) {
-      debugPrint('⚠️ Welcome page initialization error: $e');
       // Still show buttons even if initialization fails
       if (mounted) {
         setState(() {
@@ -112,12 +111,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   /// Pre-fetch search results for returning users (fire-and-forget)
   Future<void> _preFetchSearchResults(String languageCode) async {
     try {
-      debugPrint('👋 Welcome: Pre-fetching search results for returning user...');
-
       // Check if cache is already fresh
       final searchNotifier = ref.read(searchStateProvider.notifier);
       if (searchNotifier.isCacheFresh()) {
-        debugPrint('👋 Welcome: Cache is fresh, skipping pre-fetch');
         return;
       }
 
@@ -135,7 +131,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
         }
       } catch (e) {
-        debugPrint('👋 Welcome: Location fetch failed: $e');
         // Continue without location
       }
 
@@ -168,13 +163,10 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        debugPrint('👋 Welcome: Pre-fetch succeeded ($resultCount results)');
       } else {
-        debugPrint('👋 Welcome: Pre-fetch failed: ${response.error}');
         // Fail silently - user will see loading shimmer on Search page
       }
     } catch (e) {
-      debugPrint('👋 Welcome: Pre-fetch exception: $e');
       // Fail silently - don't block Welcome page
     }
   }
@@ -214,7 +206,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       router.go('/search');
 
     } catch (e) {
-      debugPrint('❌ Danish direct flow error: $e');
       if (context.mounted) {
         _showErrorDialog();
       }
@@ -231,8 +222,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     final searchNotifier = ref.read(searchStateProvider.notifier);
     final hasFreshCache = searchNotifier.isCacheFresh();
 
-    debugPrint('👋 Welcome: Continue tapped (cache fresh: $hasFreshCache)');
-
     // Navigate immediately (analytics tracked in dispose, don't block navigation)
     context.go('/search');
 
@@ -245,8 +234,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   /// Background search fetch for returning users (non-blocking)
   Future<void> _fetchSearchResultsBackground() async {
     try {
-      debugPrint('👋 Welcome: Fetching search results in background...');
-
       // Save notifier before async operations (safe even if widget unmounted)
       final searchNotifier = ref.read(searchStateProvider.notifier);
 
@@ -265,7 +252,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         );
         userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
       } catch (e) {
-        debugPrint('👋 Welcome: Location fetch failed: $e');
         // Continue without location
       }
 
@@ -298,12 +284,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        debugPrint('👋 Welcome: Background fetch succeeded ($resultCount results)');
-      } else {
-        debugPrint('👋 Welcome: Background fetch failed: ${response.error}');
       }
     } catch (e) {
-      debugPrint('👋 Welcome: Background fetch exception: $e');
       // Fail silently - SearchPage will handle error state
     }
   }
@@ -364,9 +346,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         timestamp: DateTime.now().toIso8601String(),
       );
 
-      debugPrint('✅ Tracked welcomePage view: ${duration.inSeconds}s');
     } catch (e) {
-      debugPrint('⚠️ Failed to track page view: $e');
       // Fail silently - analytics should never block user flow
     }
   }

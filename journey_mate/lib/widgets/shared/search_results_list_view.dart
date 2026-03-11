@@ -178,7 +178,6 @@ class _SearchResultsListViewState
         businessId: businessId,
         languageCode: languageCode,
       ).catchError((error) {
-        debugPrint('⚠️ Pre-load failed for business $businessId: $error');
         _preloadedProfileIds.remove(businessId); // Allow retry
         return ApiCallResponse.failure(error.toString());
       }),
@@ -509,7 +508,6 @@ class _SearchResultsListViewState
     }
 
     // Backup path: Re-group by section
-    debugPrint('⚠️ Documents not properly ordered. Re-grouping client-side...');
 
     // Group into three lists
     final fullMatch = <dynamic>[];
@@ -633,8 +631,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   // ---------------------------------------------------------------------------
 
   static const double _imageSize = AppConstants.logoCircleSize; // 50px per design spec
-  static const String _placeholderImageUrl =
-      'https://tlqfuazpshfaozdvmcbh.supabase.co/storage/v1/object/public/profilepic_restaurants/placeholder.webp';
+  static const String _placeholderImageUrl = AppConstants.kPlaceholderImageUrl;
 
   // ---------------------------------------------------------------------------
   // JSON Field Extraction
@@ -1212,7 +1209,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
                 );
               },
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppRadius.chip),
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
                   width: 100,
@@ -1270,7 +1267,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
             widget.onBusinessTap?.call(businessId);
           } else {
-            debugPrint('❌ Invalid businessId: $businessId');
             // Show error to user
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

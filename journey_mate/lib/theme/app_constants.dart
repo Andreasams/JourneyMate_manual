@@ -37,6 +37,10 @@ class AppConstants {
   static const double logoCircleSize = 50.0;
   static const double cardPadding = 14.0;
 
+  // Placeholder images
+  static const String kPlaceholderImageUrl =
+      'https://tlqfuazpshfaozdvmcbh.supabase.co/storage/v1/object/public/profilepic_restaurants/placeholder.webp';
+
   // Animation durations
   static const Duration animationFast = Duration(milliseconds: 200);
   static const Duration animationNormal = Duration(milliseconds: 300);

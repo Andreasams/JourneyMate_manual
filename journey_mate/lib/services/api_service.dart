@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 /// API response wrapper
@@ -110,9 +109,7 @@ class ApiService {
 
   /// Clears all cached responses
   void clearCache() {
-    final count = _cache.length;
     _cache.clear();
-    debugPrint('🧹 API cache cleared ($count entries removed)');
   }
 
   // ============================================================
@@ -240,7 +237,21 @@ class ApiService {
     required String languageCode,
   }) {
     return _makeGetRequest('/menuItem', {
-      'menuItemId': menuItemId,
+      'menu_item_id': menuItemId,
+      'language_code': languageCode,
+    });
+  }
+
+  // ============================================================
+  // ENDPOINT #14: GET_MENU_PACKAGE
+  // ============================================================
+
+  Future<ApiCallResponse> getMenuPackage({
+    required int packageId,
+    required String languageCode,
+  }) {
+    return _makeGetRequest('/menupackage', {
+      'packageId': packageId,
       'languageCode': languageCode,
     });
   }

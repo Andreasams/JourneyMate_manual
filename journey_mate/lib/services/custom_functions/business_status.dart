@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import '../../theme/app_colors.dart';
 
 /// Determines the current business status (open/closed/opening soon/closing soon)
 /// and returns the appropriate status text and color.
@@ -27,8 +27,8 @@ Map<String, dynamic> determineStatusAndColor(
   dynamic translationsCache,
 ) {
   const soonThresholdMinutes = 30;
-  const openColor = Color(0xFF1a9456); // AppColors.success
-  const closedColor = Color(0xFFC9403A); // AppColors.red
+  const openColor = AppColors.success;
+  const closedColor = AppColors.red;
 
   // Helper: Get localized message from translation cache
   String getLocalizedMessage(String key, String defaultValue) {

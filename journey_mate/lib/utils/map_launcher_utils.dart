@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:map_launcher/map_launcher.dart';
 
 /// Opens the user's preferred maps app with a marker at the given coordinates.
@@ -29,7 +28,6 @@ Future<String?> openInPreferredMaps({
 
     return preferred.mapName;
   } catch (e) {
-    debugPrint('Error opening maps: $e');
     return null;
   }
 }

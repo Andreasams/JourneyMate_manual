@@ -275,7 +275,6 @@ class HeroSectionWidget extends ConsumerWidget {
         final hexColor = logoColorHex.replaceAll('#', '');
         return Color(int.parse('FF$hexColor', radix: 16));
       } catch (e) {
-        debugPrint('⚠️ Invalid logo color: $logoColorHex');
       }
     }
     return AppColors.accent;

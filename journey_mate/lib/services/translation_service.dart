@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/app_providers.dart';
 import '../providers/locale_provider.dart';
@@ -86,6 +86,9 @@ String td(WidgetRef ref, String key) {
   }
 
   // Last resort: return the key itself
-  debugPrint('⚠️ td: Missing translation key "$key"');
+  assert(() {
+    debugPrint('[td] Missing translation key: "$key" for lang "$lang"');
+    return true;
+  }());
   return key;
 }

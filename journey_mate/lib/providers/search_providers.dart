@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'provider_state_classes.dart';
@@ -255,7 +254,6 @@ class SearchStateNotifier extends Notifier<SearchState> {
   /// Invalidate cached search results (sets timestamp to null)
   void invalidateCache() {
     state = state.copyWithNullable(clearFetchTime: true);
-    debugPrint('🔍 Search cache invalidated');
   }
 
   /// Mark search as inactive (results cleared)

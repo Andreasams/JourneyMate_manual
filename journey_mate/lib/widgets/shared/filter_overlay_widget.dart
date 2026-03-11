@@ -370,7 +370,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   void _handleActiveFilterChanges(FilterOverlayWidget oldWidget) {
     if (!listEquals(oldWidget.activeFilterIds, widget.activeFilterIds)) {
       _receivedActiveIdsAfterSearch = true;
-      debugPrint('🔍 FilterOverlay: Received ${widget.activeFilterIds.length} active filters');
       setState(() {});
     }
   }
@@ -964,7 +963,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     final filter = _findFilterById(filterId);
 
     if (filter == null) {
-      debugPrint('⚠️ _toggleFilter: Filter $filterId not found in _filterMap!');
       return;
     }
 
@@ -1107,7 +1105,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         );
       }
     } catch (e) {
-      debugPrint('❌ FilterOverlay: Error in _executeSearchAndTrackAnalytics: $e');
     }
   }
 

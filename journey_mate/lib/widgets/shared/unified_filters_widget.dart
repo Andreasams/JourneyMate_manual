@@ -219,7 +219,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       _buildMenuItemMap(normalizedData);
       _extractCategories(normalizedData);
     } catch (e) {
-      debugPrint('⚠️ Failed to extract menu data: $e');
       _clearMenuDataCache();
     }
   }
@@ -856,7 +855,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       timestamp: DateTime.now().toIso8601String(),
     ).catchError(
       (error) {
-        debugPrint('⚠️ Failed to track $eventName: $error');
         return ApiCallResponse.failure('Analytics tracking failed: $error');
       },
     );

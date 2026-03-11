@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'provider_state_classes.dart';
 import '../services/api_service.dart';
@@ -55,13 +54,10 @@ class FilterNotifier extends AsyncNotifier<FilterState> {
           foodDrinkTypes: foodDrinkTypes is List ? foodDrinkTypes : [],
         ));
 
-        debugPrint('✅ Filters loaded for $languageCode: ${lookupMap.length} items');
       } else {
-        debugPrint('⚠️ Failed to load filters: API returned error');
         state = AsyncData(FilterState.initial());
       }
     } catch (e, stackTrace) {
-      debugPrint('⚠️ Error loading filters: $e');
       state = AsyncError(e, stackTrace);
     }
   }

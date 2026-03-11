@@ -114,7 +114,7 @@ class _LanguageSelectorButtonState
     'ko': '한국어',
     'nl': 'Nederlands',
     'pl': 'Polski',
-    'uk': 'українець',
+    'uk': 'Українська',
     'zh': '中文',
   };
 
@@ -174,7 +174,6 @@ class _LanguageSelectorButtonState
     final now = DateTime.now();
     if (_lastLanguageChangeTime != null &&
         now.difference(_lastLanguageChangeTime!) < _languageChangeCooldown) {
-      debugPrint('⏱️ Language change debounced (too soon after last change)');
       return;
     }
     _lastLanguageChangeTime = now;
@@ -192,7 +191,6 @@ class _LanguageSelectorButtonState
       // Persist language to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_language_code', newLanguageCode);
-      debugPrint('✅ Language saved to preferences: $newLanguageCode');
 
       // ✅ OPTIMIZATION 2: Set locale immediately (triggers app-wide rebuild)
       ref.read(localeProvider.notifier).setLocale(newLanguageCode);
@@ -205,8 +203,6 @@ class _LanguageSelectorButtonState
         ref.read(filterProvider.notifier).loadFiltersForLanguage(newLanguageCode),
       ], eagerError: true);
 
-      debugPrint('✅ Translations and filters loaded in parallel for $newLanguageCode');
-
       // ✅ OPTIMIZATION 4: Notify parent immediately to trigger page rebuild
       widget.onLanguageSelected(newLanguageCode);
 
@@ -218,17 +214,14 @@ class _LanguageSelectorButtonState
       Future.microtask(() {
         // Invalidate search cache (results are language-specific)
         ref.read(searchStateProvider.notifier).invalidateCache();
-        debugPrint('🌍 Search cache invalidated');
 
         // Auto-suggest currency for new language
         ref.read(localizationProvider.notifier)
-            .updateCurrencyForLanguageChange(newLanguageCode)
-            .then((_) => debugPrint('💰 Currency auto-suggestion completed for $newLanguageCode'));
+            .updateCurrencyForLanguageChange(newLanguageCode);
       });
 
       // ✅ OPTIMIZATION 6: No success SnackBar (silent success, better UX)
     } catch (e) {
-      debugPrint('❌ Error changing language: $e');
 
       // ✅ OPTIMIZATION 7: Revert optimistic display language on error
       if (mounted) {

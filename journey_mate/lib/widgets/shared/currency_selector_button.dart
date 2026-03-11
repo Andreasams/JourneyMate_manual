@@ -175,12 +175,10 @@ class _CurrencySelectorButtonState
           },
           timestamp: DateTime.now().toIso8601String(),
         ).catchError((e) {
-          debugPrint('⚠️ Analytics tracking failed: $e');
           return ApiCallResponse.failure('Analytics failed');
         }),
       );
     } catch (e) {
-      debugPrint('❌ Currency update failed: $e');
       // Graceful degradation - keep current currency
     }
   }
@@ -199,8 +197,6 @@ class _CurrencySelectorButtonState
       );
 
       if (!response.succeeded) {
-        debugPrint('⚠️ Exchange rate API failed: ${response.statusCode}');
-
         // Track failed currency change (fire-and-forget)
         unawaited(
           ApiService.instance.postAnalytics(
@@ -231,10 +227,8 @@ class _CurrencySelectorButtonState
         return rate.toDouble();
       }
 
-      debugPrint('⚠️ Unexpected exchange rate response format');
       return 1.0; // Fallback
     } catch (e) {
-      debugPrint('❌ Exchange rate fetch failed: $e');
       return 1.0; // Fallback
     }
   }
@@ -253,10 +247,9 @@ class _CurrencySelectorButtonState
       if (!availableCurrencies.contains(currentCurrency)) {
         final defaultCurrency = availableCurrencies.first;
         await _updateCurrency(defaultCurrency);
-        debugPrint('💱 Auto-switched currency to $defaultCurrency for language $newLanguageCode');
       }
     } catch (e) {
-      debugPrint('❌ Error updating currency for language change: $e');
+      // Fail silently
     }
   }
 

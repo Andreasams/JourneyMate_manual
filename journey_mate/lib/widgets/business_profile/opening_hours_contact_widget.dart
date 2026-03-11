@@ -284,7 +284,6 @@ class _OpeningHoursContactWidgetState
       },
     )
         .catchError((e) {
-      debugPrint('Analytics error: $e');
       return ApiCallResponse.failure('Analytics failed');
     });
   }
@@ -307,7 +306,6 @@ class _OpeningHoursContactWidgetState
       },
     )
         .catchError((e) {
-      debugPrint('Analytics error: $e');
       return ApiCallResponse.failure('Analytics failed');
     });
   }

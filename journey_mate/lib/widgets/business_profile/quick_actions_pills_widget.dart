@@ -195,7 +195,6 @@ class QuickActionsPillsWidget extends ConsumerWidget {
         }
       }
     } catch (e) {
-      debugPrint('❌ Error launching phone dialer: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(td(ref, 'error_cannot_make_call'))),
@@ -237,7 +236,6 @@ class QuickActionsPillsWidget extends ConsumerWidget {
         }
       }
     } catch (e) {
-      debugPrint('❌ Error launching website: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(td(ref, 'error_cannot_open_website'))),
@@ -279,7 +277,6 @@ class QuickActionsPillsWidget extends ConsumerWidget {
         }
       }
     } catch (e) {
-      debugPrint('❌ Error launching booking: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(td(ref, 'error_cannot_open_booking'))),

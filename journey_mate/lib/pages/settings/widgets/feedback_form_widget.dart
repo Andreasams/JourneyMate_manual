@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../../../services/api_service.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_spacing.dart';
@@ -28,9 +27,6 @@ class FeedbackFormWidget extends ConsumerStatefulWidget {
 }
 
 class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
-  // API endpoint
-  static const String _apiEndpoint = 'https://wvb8ww.buildship.run/feedbackform';
-
   // Topic keys (for translation lookup)
   static const List<String> _topicKeys = [
     'feedback_topic_wrong_info',
@@ -125,26 +121,16 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
     final topicLabel = td(ref, _selectedTopic!);
 
     try {
-      final body = <String, dynamic>{
-        'topic': topicLabel, // Localized label (e.g., "Bug" or "Fejl")
-        'message': _messageController.text.trim(),
-        'allowContact': _requireContact,
-        'languageCode': languageCode,
-      };
-
-      // Add name and contact only if requireContact is true
-      if (_requireContact) {
-        body['name'] = _nameController.text.trim();
-        body['contact'] = _contactController.text.trim();
-      }
-
-      final response = await http.post(
-        Uri.parse(_apiEndpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(body),
+      final response = await ApiService.instance.submitFeedback(
+        topic: topicLabel, // Localized label (e.g., "Bug" or "Fejl")
+        message: _messageController.text.trim(),
+        allowContact: _requireContact,
+        name: _requireContact ? _nameController.text.trim() : null,
+        contact: _requireContact ? _contactController.text.trim() : null,
+        languageCode: languageCode,
       );
 
-      if (response.statusCode == 200) {
+      if (response.succeeded) {
         setState(() {
           _isSubmitted = true;
           _submissionError = null;

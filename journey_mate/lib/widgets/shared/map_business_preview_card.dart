@@ -9,6 +9,7 @@ import '../../services/custom_functions/distance_calculator.dart';
 import '../../services/custom_functions/price_formatter.dart';
 import '../../utils/search_result_helpers.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_constants.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -40,8 +41,7 @@ class _MapBusinessPreviewCardState
     extends ConsumerState<MapBusinessPreviewCard>
     with SingleTickerProviderStateMixin {
   static const double _imageSize = 56.0;
-  static const String _placeholderImageUrl =
-      'https://tlqfuazpshfaozdvmcbh.supabase.co/storage/v1/object/public/profilepic_restaurants/placeholder.webp';
+  static const String _placeholderImageUrl = AppConstants.kPlaceholderImageUrl;
 
   String? _statusText;
   Color? _statusColor;
