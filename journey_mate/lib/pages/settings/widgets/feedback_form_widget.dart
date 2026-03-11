@@ -8,6 +8,7 @@ import '../../../theme/app_typography.dart';
 import '../../../theme/app_radius.dart';
 import '../../../theme/app_constants.dart';
 import '../../../services/translation_service.dart';
+import '../../../widgets/shared/app_checkbox.dart';
 
 /// Feedback form widget for user feedback submission
 ///
@@ -391,48 +392,31 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         ),
         SizedBox(height: AppSpacing.sm),
 
-        // Checkbox row
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Checkbox(
-              value: _requireContact,
-              onChanged: (value) {
-                setState(() {
-                  _requireContact = value ?? false;
-                  // Clear conditional errors when unchecking
-                  if (!_requireContact) {
-                    _nameError = null;
-                    _contactError = null;
-                  }
-                });
-              },
-              activeColor: AppColors.accent,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-            ),
-            SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _requireContact = !_requireContact;
-                    if (!_requireContact) {
-                      _nameError = null;
-                      _contactError = null;
-                    }
-                  });
-                },
-                child: Padding(
-                  padding: EdgeInsets.only(top: 2), // Align with checkbox
-                  child: Text(
-                    td(ref, 'feedback_form_checkbox_label'),
-                    style: AppTypography.body.copyWith(color: AppColors.textPrimary),
-                  ),
+        // Checkbox row (tapping anywhere on the row toggles)
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _requireContact = !_requireContact;
+              // Clear conditional errors when unchecking
+              if (!_requireContact) {
+                _nameError = null;
+                _contactError = null;
+              }
+            });
+          },
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppCheckbox(isSelected: _requireContact),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  td(ref, 'feedback_form_checkbox_label'),
+                  style: AppTypography.body.copyWith(color: AppColors.textPrimary),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

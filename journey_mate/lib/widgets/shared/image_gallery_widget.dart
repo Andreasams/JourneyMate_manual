@@ -331,7 +331,7 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
                 Navigator.of(context).pop();
               }
             },
-            borderRadius: BorderRadius.circular(AppRadius.button), // 14px
+            borderRadius: BorderRadius.circular(AppRadius.button), // 12px
             child: Container(
               padding: EdgeInsets.all(AppSpacing.sm), // 8px padding
               decoration: BoxDecoration(

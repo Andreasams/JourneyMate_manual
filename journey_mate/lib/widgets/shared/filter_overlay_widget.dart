@@ -13,6 +13,7 @@ import '../../providers/app_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
+import 'app_checkbox.dart';
 
 /// FilterSelectionType enum for tracking current selection mode
 enum FilterSelectionType { none, neighborhood, shoppingArea, trainStation }
@@ -151,7 +152,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   final Color _accentColor = AppColors.accent; // Orange - active selections
 
   // Interactive button states (touch feedback)
-  static const Color _buttonPressedColor = Color(0xFFdcdee0); // Light grey
+  static const Color _buttonPressedColor = AppColors.buttonPressed;
 
   // Column backgrounds
   final Color _leftColumnBackgroundColor = AppColors.bgSurface;
@@ -1436,10 +1437,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     String displayText,
   ) {
     final isItemColumn = filterType == 'item';
-    const checkboxSize = 18.0; // Same size for both columns
-    const checkboxRadius = AppRadius.checkbox; // 5px for both
     final checkboxGap = isItemColumn ? AppSpacing.sm : 7.0; // 8px : 7px
-    const checkIconSize = 11.0; // Same size for both
 
     return GestureDetector(
       onTap: isActive ? () => _handleFilterSelection(filter) : null,
@@ -1450,29 +1448,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         ),
         child: Row(
           children: [
-            // Custom checkbox (Container-based, like sort_bottom_sheet.dart)
-            Container(
-              width: checkboxSize,
-              height: checkboxSize,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? (isActive ? _accentColor : _textDisabledColor)
-                    : _whiteColor,
-                border: isSelected
-                    ? null
-                    : Border.all(
-                        color: isActive
-                            ? const Color(0xFFCCCCCC) // #ccc from JSX
-                            : _textDisabledColor,
-                        width: 1.5,
-                      ),
-                borderRadius: BorderRadius.circular(checkboxRadius),
-              ),
-              child: isSelected
-                  ? const Icon(Icons.check,
-                      size: checkIconSize, color: _whiteColor)
-                  : null,
-            ),
+            AppCheckbox(isSelected: isSelected, isEnabled: isActive),
             SizedBox(width: checkboxGap),
             // Label text (existing styling)
             Expanded(
@@ -1587,7 +1563,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.filter), // 10px
+          borderRadius: BorderRadius.circular(AppRadius.filter), // 12px
           side: BorderSide(color: _accentColor, width: 1.5),
         ),
       ),
@@ -1619,7 +1595,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.filter), // 10px
+          borderRadius: BorderRadius.circular(AppRadius.filter), // 12px
           side: BorderSide(color: AppColors.border, width: 1.5),
         ),
       ),

@@ -409,7 +409,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           child: CircularProgressIndicator(),
                         ),
                         error: (e, _) => Center(
-                          child: Text('Failed to load filters: $e'),
+                          child: Text(td(ref, 'error_load_filters')),
                         ),
                       ),
                     ),
@@ -438,7 +438,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       height: 4,
       decoration: BoxDecoration(
         color: AppColors.border,
-        borderRadius: BorderRadius.circular(2),
+        borderRadius: BorderRadius.circular(AppRadius.handle),
       ),
     );
   }
@@ -724,8 +724,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             Center(
               child: Text(
                 count > 0 && !isActive ? '$label ($count)' : label,
-                style: AppTypography.bodyLg.copyWith(
-                  fontSize: 13.5,
+                style: AppTypography.bodySmMedium.copyWith(
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                   color: isActive ? AppColors.bgCard : AppColors.textSecondary,
                 ),
@@ -837,7 +836,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.accent,
-        borderRadius: BorderRadius.circular(20), // Pill shape
+        borderRadius: BorderRadius.circular(AppRadius.pill), // Pill shape
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.12),
@@ -850,7 +849,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         color: Colors.transparent,
         child: InkWell(
           onTap: _openSortBottomSheet,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.mlg, vertical: AppSpacing.sm),
             child: Row(
@@ -890,7 +889,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           color: _onlyOpen ? AppColors.greenBorder : AppColors.border,
           width: 1.5,
         ),
-        borderRadius: BorderRadius.circular(20), // Pill shape
+        borderRadius: BorderRadius.circular(AppRadius.pill), // Pill shape
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.12),
@@ -908,7 +907,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ref.read(searchStateProvider).currentSearchText;
             _executeSearch(searchText);
           },
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: AppSpacing.mlg,
@@ -926,7 +925,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     border: _onlyOpen
                         ? null
                         : Border.all(color: AppColors.border, width: 1.5),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppRadius.checkbox),
                   ),
                   child: _onlyOpen
                       ? Icon(Icons.check, size: 10, color: Colors.white)

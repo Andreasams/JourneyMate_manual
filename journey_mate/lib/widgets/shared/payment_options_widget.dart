@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui' as ui;
+import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
@@ -16,7 +18,7 @@ import '../../theme/app_typography.dart';
 ///
 /// This is a display-only widget - buttons are non-interactive (onPressed: null).
 /// Payment methods shown here are informational context, not actionable filters.
-class PaymentOptionsWidget extends StatefulWidget {
+class PaymentOptionsWidget extends ConsumerStatefulWidget {
   const PaymentOptionsWidget({
     super.key,
     this.width,
@@ -39,10 +41,10 @@ class PaymentOptionsWidget extends StatefulWidget {
   final Future Function(double height)? onHeightCalculated;
 
   @override
-  State<PaymentOptionsWidget> createState() => _PaymentOptionsWidgetState();
+  ConsumerState<PaymentOptionsWidget> createState() => _PaymentOptionsWidgetState();
 }
 
-class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
+class _PaymentOptionsWidgetState extends ConsumerState<PaymentOptionsWidget> {
   /// =========================================================================
   /// CONSTANTS
   /// =========================================================================
@@ -515,7 +517,7 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
       width: widget.width,
       height: widget.height ?? _defaultErrorHeight,
       alignment: Alignment.center,
-      child: const Text('Error displaying payment options.'),
+      child: Text(td(ref, 'error_display_payment_options')),
     );
   }
 
@@ -523,7 +525,7 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
   Widget _buildErrorWidget() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      child: const Text('Error loading payment options'),
+      child: Text(td(ref, 'error_load_payment_options')),
     );
   }
 }

@@ -22,6 +22,14 @@ class AppTypography {
   //   h6 (16) — sub-section labels (e.g. inside collapsibles)
   // ============================================================
 
+  /// 28/w800 — hero titles (welcome page)
+  static const TextStyle hero = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w800,
+    color: AppColors.textPrimary,
+    height: 1.2,
+  );
+
   /// 26/w700 — app-section entry titles (Search, Settings)
   static const TextStyle h1 = TextStyle(
     fontSize: 26,

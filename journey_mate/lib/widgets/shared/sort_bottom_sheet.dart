@@ -9,6 +9,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
 import './search_bar_widget.dart';
+import 'app_checkbox.dart';
 
 /// Sort Bottom Sheet
 /// Allows users to change sort order and toggle "only open" filter
@@ -231,7 +232,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               height: 4,
               decoration: BoxDecoration(
                 color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppRadius.handle),
               ),
             ),
           ),
@@ -283,22 +284,10 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             child: Row(
               children: [
                 // Checkbox - green when selected
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: _onlyOpen ? AppColors.green : Colors.transparent,
-                    border: _onlyOpen
-                        ? null
-                        : Border.all(
-                            color: AppColors.border,
-                            width: 1.5,
-                          ),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: _onlyOpen
-                      ? Icon(Icons.check, size: 11, color: Colors.white)
-                      : null,
+                AppCheckbox(
+                  isSelected: _onlyOpen,
+                  size: 20,
+                  activeColor: AppColors.green,
                 ),
                 SizedBox(width: AppSpacing.sm),
                 // Label
@@ -317,9 +306,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                 if (_onlyOpen)
                   Text(
                     '${widget.openPlacesCount} ${td(ref, 'sort_places_label')}',
-                    style: AppTypography.bodyLg.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                    style: AppTypography.bodySmMedium.copyWith(
                       color: AppColors.green,
                     ),
                   ),
@@ -443,7 +430,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             height: 4,
             decoration: BoxDecoration(
               color: AppColors.border,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(AppRadius.handle),
             ),
           ),
           SizedBox(height: AppSpacing.md),

@@ -490,7 +490,7 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
           });
         }
       } else {
-        throw Exception(response.error ?? 'Failed to load language data');
+        throw Exception(response.error ?? td(ref, 'error_load_language'));
       }
     } catch (e) {
       if (context.mounted) {
@@ -501,7 +501,7 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Could not load language: $e'),
+            content: Text(td(ref, 'error_load_language')),
             duration: const Duration(seconds: 3),
             backgroundColor: AppColors.error.withValues(alpha: 0.9),
           ),
@@ -557,7 +557,7 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Could not update currency'),
+            content: Text(td(ref, 'error_update_currency')),
             duration: const Duration(seconds: 3),
             backgroundColor: AppColors.error.withValues(alpha: 0.9),
           ),

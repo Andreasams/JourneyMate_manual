@@ -6,6 +6,7 @@ import '../../providers/app_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/locale_provider.dart';
+import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import 'overlay_dropdown_selector.dart';
 
@@ -234,7 +235,7 @@ class _LanguageSelectorButtonState
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Failed to change language'),
+            content: Text(td(ref, 'error_change_language')),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 2),
           ),

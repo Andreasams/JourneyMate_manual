@@ -304,7 +304,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           style: AppTypography.h4,
         ),
         content: Text(
-          'Could not load restaurants. Please check your internet connection and try again.',
+          td(ref, 'error_load_restaurants'),
           style: AppTypography.bodyLg,
         ),
         actions: [
@@ -381,19 +381,13 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 child: Text(
                   td(ref, 'onboarding_title_welcome_prefix'), // "Welcome to"
                   textAlign: TextAlign.center,
-                  style: AppTypography.h1.copyWith(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: AppTypography.hero,
                 ),
               ),
               Text(
                 'JourneyMate', // Hardcoded - never translated
                 textAlign: TextAlign.center,
-                style: AppTypography.h1.copyWith(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: AppTypography.hero,
               ),
 
               const SizedBox(height: AppSpacing.huge),

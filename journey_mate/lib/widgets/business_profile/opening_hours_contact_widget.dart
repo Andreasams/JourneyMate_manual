@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../providers/business_providers.dart';
@@ -393,7 +394,7 @@ class _OpeningHoursContactWidgetState
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.bgSurface, // #fafafa
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadius.button),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

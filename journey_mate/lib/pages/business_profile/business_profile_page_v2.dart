@@ -218,7 +218,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Failed to load business profile';
+        _errorMessage = td(ref, 'error_load_business_profile');
       });
     }
   }

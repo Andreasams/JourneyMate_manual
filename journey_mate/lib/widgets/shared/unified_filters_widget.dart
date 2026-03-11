@@ -126,7 +126,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   static const double _buttonBorderRadius = AppRadius.chip;
   static const double _buttonSpacing = AppSpacing.sm;
 
-  static const Color _containerColor = Color(0x1957636C);
   static const double _containerBorderRadius = AppRadius.button;
   static const EdgeInsets _containerPadding = EdgeInsets.fromLTRB(16, 18, 16, 18);
 
@@ -1068,7 +1067,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
     return Container(
       width: widget.width,
       decoration: BoxDecoration(
-        color: _containerColor,
         borderRadius: BorderRadius.circular(_containerBorderRadius),
       ),
       padding: _containerPadding,
