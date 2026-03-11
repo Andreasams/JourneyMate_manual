@@ -29,6 +29,9 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'action_booking': 'Book',
     'action_map': 'Map',
     'choose_map_app': 'Choose map app',
+    'map_select_app': 'Choose navigation',
+    'map_app_google': 'Google Maps',
+    'map_app_apple': 'Apple Maps',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Unable to open phone app',
@@ -113,6 +116,9 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'action_booking': 'Book',
     'action_map': 'Kort',
     'choose_map_app': 'V\u00e6lg kortapp',
+    'map_select_app': 'V\u00e6lg navigation',
+    'map_app_google': 'Google Maps',
+    'map_app_apple': 'Apple Maps',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Kan ikke \u00e5bne telefon-app',
@@ -197,6 +203,9 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'action_booking': 'Buchen',
     'action_map': 'Karte',
     'choose_map_app': 'Karten-App w\u00e4hlen',
+    'map_select_app': 'Navigation w\u00e4hlen',
+    'map_app_google': 'Google Maps',
+    'map_app_apple': 'Apple Maps',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Telefon-App kann nicht ge\u00f6ffnet werden',
@@ -281,6 +290,9 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'action_booking': 'R\u00e9server',
     'action_map': 'Carte',
     'choose_map_app': "Choisir l'app de carte",
+    'map_select_app': 'Choisir la navigation',
+    'map_app_google': 'Google Maps',
+    'map_app_apple': 'Apple Maps',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': "Impossible d'ouvrir l'application t\u00e9l\u00e9phone",
@@ -365,6 +377,9 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'action_booking': 'Prenota',
     'action_map': 'Mappa',
     'choose_map_app': 'Scegli app mappe',
+    'map_select_app': 'Scegli navigazione',
+    'map_app_google': 'Google Maps',
+    'map_app_apple': 'Apple Maps',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': "Impossibile aprire l'app telefono",
@@ -449,6 +464,9 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'action_booking': 'Bestill',
     'action_map': 'Kart',
     'choose_map_app': 'Velg kartapp',
+    'map_select_app': 'Velg navigasjon',
+    'map_app_google': 'Google Maps',
+    'map_app_apple': 'Apple Maps',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Kan ikke \u00e5pne telefonappen',
@@ -533,6 +551,9 @@ const Map<String, Map<String, String>> kBusinessProfileFallbackTranslations = {
     'action_booking': 'Boka',
     'action_map': 'Karta',
     'choose_map_app': 'V\u00e4lj kartapp',
+    'map_select_app': 'V\u00e4lj navigering',
+    'map_app_google': 'Google Maps',
+    'map_app_apple': 'Apple Maps',
 
     // Quick Actions - Error Messages
     'error_cannot_make_call': 'Kan inte \u00f6ppna telefonappen',
