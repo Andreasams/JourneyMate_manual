@@ -129,6 +129,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// Scoring filter IDs from most recent search
   List<int> _currentScoringFilterIds = [];
 
+  /// Whether a search API call is currently in flight
+  bool _isSearching = false;
+
   /// Debounce timer for search execution
   Timer? _debounceTimer;
 
@@ -1009,6 +1012,15 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// =========================================================================
 
   Future<void> _executeSearchAndTrackAnalytics() async {
+    // Clear stale count and show loading state while new results are fetched
+    if (mounted) {
+      setState(() {
+        _isSearching = true;
+        _optimisticResultCount = null;
+        _optimisticFullMatchCount = null;
+      });
+    }
+
     try {
       // Generate filter session ID if needed
       final searchState = ref.read(searchStateProvider);
@@ -1091,6 +1103,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
         if (mounted) {
           setState(() {
+            _isSearching = false;
             _optimisticResultCount = resultCount;
             _optimisticFullMatchCount = fullMatchCount;
             _currentScoringFilterIds = scoringFilterIds;
@@ -1106,6 +1119,11 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         );
       }
     } catch (_) { // ignore: empty_catches
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+      }
     }
   }
 
@@ -1193,6 +1211,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   String _getResultsButtonText() {
+    if (_isSearching) return '...';
     if (widget.searchTerm?.isNotEmpty == true) {
       return _getSearchResultsText();
     }
@@ -1549,9 +1568,10 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     final hasValidCount = count != null && count > 0;
     final hasSelectedFilters = _selectedFilterIds.isNotEmpty;
 
-    final shouldHighlight = hasSearchResults
-        ? hasValidCount
-        : (hasSelectedFilters && hasValidCount);
+    final shouldHighlight = !_isSearching &&
+        (hasSearchResults
+            ? hasValidCount
+            : (hasSelectedFilters && hasValidCount));
 
     return ButtonStyle(
       backgroundColor:

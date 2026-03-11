@@ -28,7 +28,7 @@ class SortBottomSheet extends ConsumerStatefulWidget {
   final bool onlyOpen;
   final int? selectedStation;
   final int openPlacesCount; // Count of open places matching current filters
-  final void Function(String sortBy, bool onlyOpen, int? station)
+  final Future<void> Function(String sortBy, bool onlyOpen, int? station)
       onSortChanged;
 
   @override
@@ -39,6 +39,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   late String _selectedSort;
   late bool _onlyOpen;
   late int? _selectedStation; // Track selected station locally for immediate visual feedback
+  bool _isSearching = false;
   String _view = 'options'; // 'options' or 'stations'
 
   final TextEditingController _stationSearchController = TextEditingController();
@@ -261,9 +262,15 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            setState(() => _onlyOpen = !_onlyOpen);
-            widget.onSortChanged(_selectedSort, _onlyOpen, widget.selectedStation);
+          onTap: () async {
+            setState(() {
+              _onlyOpen = !_onlyOpen;
+              _isSearching = true;
+            });
+            await widget.onSortChanged(_selectedSort, _onlyOpen, widget.selectedStation);
+            if (mounted) {
+              setState(() => _isSearching = false);
+            }
           },
           borderRadius: BorderRadius.circular(AppRadius.chip),
           child: Container(
@@ -305,7 +312,9 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                 // Count display when selected
                 if (_onlyOpen)
                   Text(
-                    '${widget.openPlacesCount} ${td(ref, 'sort_places_label')}',
+                    _isSearching
+                        ? '...'
+                        : '${ref.watch(searchStateProvider).visibleResultCount} ${td(ref, 'sort_places_label')}',
                     style: AppTypography.bodySmMedium.copyWith(
                       color: AppColors.green,
                     ),

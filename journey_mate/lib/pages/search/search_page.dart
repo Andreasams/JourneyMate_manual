@@ -474,7 +474,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         onlyOpen: _onlyOpen,
         selectedStation: _selectedStation,
         openPlacesCount: openPlacesCount,
-        onSortChanged: (sortBy, onlyOpen, station) {
+        onSortChanged: (sortBy, onlyOpen, station) async {
           setState(() {
             _currentSort = _normalizeSort(sortBy);
             _onlyOpen = onlyOpen;
@@ -482,7 +482,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           });
           // Save search text to local variable to avoid ref access after unmount
           final searchText = ref.read(searchStateProvider).currentSearchText;
-          _executeSearch(searchText);
+          await _executeSearch(searchText);
         },
       ),
     );
