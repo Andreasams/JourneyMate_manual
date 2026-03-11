@@ -1111,10 +1111,10 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
         child: Text(
           text,
           style: isSelected
-              ? AppTypography.bodyLg.copyWith(
+              ? AppTypography.bodyLgMedium.copyWith(
                   color: _ColorConstants.selectedTextColor,
                 )
-              : AppTypography.bodyLg.copyWith(
+              : AppTypography.bodyLgMedium.copyWith(
                   color: _ColorConstants.unselectedTextColor,
                 ),
         ),
@@ -1143,7 +1143,7 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
       ),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.chip),
+          borderRadius: BorderRadius.circular(AppRadius.filter),
           side: isSelected
               ? (selectedBorder ?? BorderSide.none)
               : (unselectedBorder ?? BorderSide.none),

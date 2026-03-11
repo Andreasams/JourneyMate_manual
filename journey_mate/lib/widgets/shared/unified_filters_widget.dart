@@ -115,7 +115,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   /// =========================================================================
 
   static const Color _selectedColor = AppColors.accent;
-  static const Color _unselectedColor = AppColors.bgCard;
+  static const Color _unselectedColor = AppColors.bgSurface;
   static const Color _selectedTextColor = AppColors.bgPage;
   static const Color _unselectedTextColor = AppColors.textPrimary;
   static final Color _borderColor = AppColors.border;

@@ -704,7 +704,7 @@ GestureDetector(
       vertical: AppSpacing.sm,  // 8px
     ),
     decoration: BoxDecoration(
-      color: _selected ? AppColors.accent : Colors.white,
+      color: _selected ? AppColors.accent : AppColors.bgPage,
       borderRadius: BorderRadius.circular(AppRadius.filter),  // 10px
       border: Border.all(
         color: _selected ? AppColors.accent : AppColors.border,
@@ -713,7 +713,7 @@ GestureDetector(
     child: Text(
       'Category',
       style: AppTypography.bodySmMedium.copyWith(
-        color: _selected ? Colors.white : AppColors.textSecondary,
+        color: _selected ? AppColors.bgPage : AppColors.textSecondary,
       ),
     ),
   ),
