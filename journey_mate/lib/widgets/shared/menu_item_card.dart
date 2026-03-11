@@ -126,7 +126,7 @@ class MenuItemCard extends ConsumerWidget {
                   imageUrl!,
                   width: 133,
                   height: 75,
-                  fit: BoxFit.contain,
+                  fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => const SizedBox(
                     width: 133,
                     height: 75,
