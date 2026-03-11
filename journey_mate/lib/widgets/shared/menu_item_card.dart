@@ -4,13 +4,12 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
-import '../../services/translation_service.dart';
 import '../../services/custom_functions/price_formatter.dart';
 
 /// Pure display component for individual menu items within MenuDishesListView.
 ///
-/// Shows menu item name, description, price, dietary preference badges,
-/// and allergen warning indicators with zero state management dependencies.
+/// Shows menu item name, description, price, and dietary preference badges.
+/// Allergen information is handled by the bottom sheet (tap to open).
 ///
 /// Design Source: Menu Full Page JSX + MenuDishesListView patterns
 class MenuItemCard extends ConsumerWidget {
@@ -21,8 +20,6 @@ class MenuItemCard extends ConsumerWidget {
     this.price,
     this.currencyCode,
     this.dietaryPreferenceIds = const [],
-    this.allergenIds = const [],
-    this.hasAllergenOverride = false,
     this.onTap,
   });
 
@@ -41,22 +38,11 @@ class MenuItemCard extends ConsumerWidget {
   /// Dietary preference IDs this item satisfies (e.g., [100, 101] for Vegan, Vegetarian)
   final List<int> dietaryPreferenceIds;
 
-  /// Allergen IDs present in this item
-  final List<int> allergenIds;
-
-  /// Whether allergens can be removed on request (overrides allergen display logic)
-  final bool hasAllergenOverride;
-
   /// Callback when card is tapped
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showAllergenWarning =
-        allergenIds.isNotEmpty && !hasAllergenOverride;
-    final hasBadgesOrWarning =
-        dietaryPreferenceIds.isNotEmpty || showAllergenWarning;
-
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.card),
@@ -120,49 +106,15 @@ class MenuItemCard extends ConsumerWidget {
               ),
             ],
 
-            // Dietary badges + Allergen warning (if any exist)
-            if (hasBadgesOrWarning) ...[
+            // Dietary preference badges (if any)
+            if (dietaryPreferenceIds.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: [
-                  // Dietary preference badges
-                  if (dietaryPreferenceIds.isNotEmpty)
-                    Expanded(
-                      child: Wrap(
-                        spacing: AppSpacing.xs,
-                        runSpacing: AppSpacing.xs,
-                        children: dietaryPreferenceIds
-                            .map((id) => _buildDietaryBadge(id))
-                            .toList(),
-                      ),
-                    ),
-
-                  // Allergen warning
-                  if (showAllergenWarning)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (dietaryPreferenceIds.isNotEmpty)
-                          const SizedBox(width: AppSpacing.sm),
-                        Icon(
-                          Icons.warning_amber_rounded,
-                          size: 16,
-                          color: AppColors.error,
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          td(
-                            ref,
-                            'menu_contains_allergens',
-                          ).replaceAll('{count}', '${allergenIds.length}'),
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.error,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
+              Wrap(
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
+                children: dietaryPreferenceIds
+                    .map((id) => _buildDietaryBadge(id))
+                    .toList(),
               ),
             ],
           ],
