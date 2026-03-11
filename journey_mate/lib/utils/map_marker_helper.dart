@@ -5,7 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../theme/app_colors.dart';
 import 'search_result_helpers.dart';
 
-/// Generates Google Maps-style teardrop pin markers with a utensils icon.
+/// Generates map pin markers: a round ball with a short pointer at the bottom.
 ///
 /// Pins are color-coded by match status and drawn as vector paths on Canvas.
 /// Selected pins get a white halo effect. Generated bitmaps are cached
@@ -16,9 +16,9 @@ class MapMarkerHelper {
   /// Cache key: "color.value-selected-size-devicePixelRatio"
   static final Map<String, BitmapDescriptor> _cache = {};
 
-  /// Creates a teardrop pin marker with utensils icon.
+  /// Creates a pin marker: round ball with a short pointer at the bottom.
   ///
-  /// Uses PictureRecorder + Canvas to draw a pin shape with fork-and-knife.
+  /// Uses PictureRecorder + Canvas to draw a clean pin shape.
   /// Selected markers are slightly larger with a white halo.
   static Future<BitmapDescriptor> createDotMarker({
     required Color color,
@@ -32,10 +32,10 @@ class MapMarkerHelper {
     }
 
     final scale = devicePixelRatio;
-    // Pin proportions: width = size, height = size * 1.35
+    // Pin proportions: width = size, height = size * 1.15 (ball + short pointer)
     final effectiveSize = selected ? size * 1.2 : size;
     final pinWidth = effectiveSize * scale;
-    final pinHeight = effectiveSize * 1.35 * scale;
+    final pinHeight = effectiveSize * 1.15 * scale;
     // Extra padding for selected halo
     final padding = selected ? 3.0 * scale : 1.0 * scale;
     final canvasWidth = pinWidth + padding * 2;
@@ -47,21 +47,20 @@ class MapMarkerHelper {
     // Center the pin horizontally, align to top with padding
     final cx = canvasWidth / 2;
     final circleRadius = pinWidth / 2;
-    final circleCenter = Offset(cx, padding + circleRadius);
     final tipY = padding + pinHeight;
 
     if (selected) {
-      // White halo behind the pin
-      _drawPinPath(canvas, cx, padding, circleRadius + 2 * scale,
-          tipY + 2 * scale, Paint()..color = Colors.white);
+      // White halo behind the pin — subtract haloWidth from topPadding so the
+      // circle center stays fixed and the halo expands uniformly in all directions.
+      const haloWidth = 2.0;
+      _drawPinPath(canvas, cx, padding - haloWidth * scale,
+          circleRadius + haloWidth * scale, tipY + haloWidth * scale,
+          Paint()..color = Colors.white);
     }
 
     // Pin body
     _drawPinPath(
         canvas, cx, padding, circleRadius, tipY, Paint()..color = color);
-
-    // Utensils icon (white fork and knife in the circle area)
-    _drawUtensils(canvas, circleCenter, circleRadius, scale);
 
     final picture = recorder.endRecording();
     final image = await picture.toImage(
@@ -102,58 +101,6 @@ class MapMarkerHelper {
     path.close();
 
     canvas.drawPath(path, paint);
-  }
-
-  /// Draws a simplified fork-and-knife icon inside the circle area.
-  static void _drawUtensils(
-    Canvas canvas,
-    Offset center,
-    double radius,
-    double scale,
-  ) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0 * scale
-      ..strokeCap = StrokeCap.round;
-
-    final iconRadius = radius * 0.45;
-    final cx = center.dx;
-    final cy = center.dy;
-
-    // Fork (left side): three short tines + handle
-    final forkX = cx - iconRadius * 0.4;
-    final tineTop = cy - iconRadius;
-    final tineBottom = cy - iconRadius * 0.2;
-    final handleBottom = cy + iconRadius;
-    final tineSpacing = iconRadius * 0.3;
-
-    // Three tines
-    for (var i = -1; i <= 1; i++) {
-      final tx = forkX + i * tineSpacing;
-      canvas.drawLine(Offset(tx, tineTop), Offset(tx, tineBottom), paint);
-    }
-    // Fork handle
-    canvas.drawLine(
-        Offset(forkX, tineBottom), Offset(forkX, handleBottom), paint);
-
-    // Knife (right side): blade + handle
-    final knifeX = cx + iconRadius * 0.4;
-    final bladeTop = cy - iconRadius;
-    final bladeBottom = cy - iconRadius * 0.1;
-
-    // Blade (slightly thicker)
-    final bladePaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8 * scale
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-        Offset(knifeX, bladeTop), Offset(knifeX, bladeBottom), bladePaint);
-
-    // Knife handle
-    canvas.drawLine(
-        Offset(knifeX, bladeBottom), Offset(knifeX, handleBottom), paint);
   }
 
   /// Returns the marker color based on match variant.
