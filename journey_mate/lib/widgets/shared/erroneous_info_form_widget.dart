@@ -213,9 +213,7 @@ class _ErroneousInfoFormWidgetState
         // "Reporting information for" label
         Text(
           td(ref, 'erroneous_info_subtitle_reporting_for'),
-          style: AppTypography.bodyLg.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.bodyLg,
         ),
         const SizedBox(height: AppSpacing.sm),
 
@@ -236,11 +234,11 @@ class _ErroneousInfoFormWidgetState
             children: [
               Text(
                 businessName,
-                style: AppTypography.h5,
+                style: AppTypography.h6,
               ),
               Text(
                 address,
-                style: AppTypography.bodyLg.copyWith(
+                style: AppTypography.body.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -252,9 +250,7 @@ class _ErroneousInfoFormWidgetState
         // Help text
         Text(
           td(ref, 'erroneous_info_subtitle_main'),
-          style: AppTypography.bodyLg.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
+          style: AppTypography.bodyLg,
         ),
       ],
     );
@@ -286,11 +282,9 @@ class _ErroneousInfoFormWidgetState
         // Subtitle
         Text(
           td(ref, 'erroneous_info_subtitle_message'),
-          style: AppTypography.bodyLg.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
+          style: AppTypography.body,
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.sm + 2),
 
         // Text area with minimum 5 visible lines
         TextField(
@@ -390,7 +384,7 @@ class _ErroneousInfoFormWidgetState
           Text(
             td(ref, 'erroneous_info_success_message'),
             textAlign: TextAlign.center,
-            style: AppTypography.h5.copyWith(
+            style: AppTypography.h6.copyWith(
               color: AppColors.success,
             ),
           ),
@@ -398,8 +392,7 @@ class _ErroneousInfoFormWidgetState
           Text(
             td(ref, 'contact_form_success_navigate_away'),
             textAlign: TextAlign.center,
-            style: AppTypography.bodyLg.copyWith(
-              fontWeight: FontWeight.w300,
+            style: AppTypography.body.copyWith(
               color: AppColors.success.withValues(alpha: 0.8),
             ),
           ),
