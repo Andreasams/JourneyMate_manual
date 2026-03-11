@@ -1961,7 +1961,7 @@ class _MenuItem extends ConsumerWidget {
                         children: [
                           Text(
                             itemTitle,
-                            style: AppTypography.bodyMedium,
+                            style: AppTypography.h6,
                             maxLines: titleMaxLines,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1969,9 +1969,7 @@ class _MenuItem extends ConsumerWidget {
                             const SizedBox(height: _titleDescriptionSpacing),
                             Text(
                               description,
-                              style: AppTypography.body.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                              style: AppTypography.bodyMedium,
                               maxLines: _descriptionMaxLines,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1981,8 +1979,8 @@ class _MenuItem extends ConsumerWidget {
                             opacity: _isZeroPrice(displayPrice) ? 0.0 : 1.0,
                             child: Text(
                               _isZeroPrice(displayPrice) ? '0 kr' : displayPrice,
-                              style: AppTypography.bodySm.copyWith(
-                                fontWeight: FontWeight.w500,
+                              style: AppTypography.bodyLgMedium.copyWith(
+                                fontWeight: FontWeight.w600,
                                 color: AppColors.accent,
                               ),
                             ),
