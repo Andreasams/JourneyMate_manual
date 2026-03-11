@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_constants.dart';
+import '../../providers/filter_providers.dart';
 import '../../widgets/shared/language_selector_button.dart';
 import '../../widgets/shared/currency_selector_button.dart';
 
@@ -206,6 +208,10 @@ class _AppSettingsInitiateFlowPageState
 
       // Update localeProvider for immediate app-wide locale change
       ref.read(localeProvider.notifier).setLocale(_currentLanguageCode);
+
+      // Discard pre-cached filters for languages user didn't choose
+      if (_currentLanguageCode != 'da') unawaited(FilterNotifier.clearCacheForLanguage('da'));
+      if (_currentLanguageCode != 'en') unawaited(FilterNotifier.clearCacheForLanguage('en'));
 
     } catch (e) {
       // Continue navigation - don't block user flow on persistence error

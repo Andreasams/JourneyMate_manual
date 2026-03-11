@@ -11,20 +11,20 @@ import 'providers/locale_provider.dart';
 import 'widgets/app_lifecycle_observer.dart';
 import 'widgets/activity_scope.dart';
 
-/// Main entry point — optimized for fast startup with translation caching.
+/// Main entry point — optimized for fast startup with translation + filter caching.
 ///
-/// Strategy: Show welcome page in <200ms with translations loaded instantly on ALL launches.
+/// Strategy: Show welcome page in <200ms with translations and filters loaded instantly.
 /// 1. Single SharedPreferences.getInstance() call
-/// 2. Batch-read all stored keys + cached translations (7-day cache with versioning)
+/// 2. Batch-read all stored keys + cached translations + cached filters (7-day cache with versioning)
 /// 3. AnalyticsService.initializeWithPrefs() (only async: UUID write on first launch)
 /// 4. Synchronous provider initialization:
-///    - FIRST LAUNCH: Welcome page fallbacks (5 keys, instant display)
-///    - SUBSEQUENT LAUNCHES: Full cached translations (<100ms)
+///    - FIRST LAUNCH: Welcome page fallbacks, no filter cache yet
+///    - SUBSEQUENT LAUNCHES: Full cached translations + filters (<100ms)
 /// 5. runApp() — user sees welcome page with full translations immediately
-/// 6. Background: refresh translations if stale (>7 days or version mismatch), load filters, check location
+/// 6. Background: refresh stale caches; first launch dual-fetches Danish + English filters
 ///
-/// CACHE VERSIONING: Increment TranslationsCacheNotifier._cacheVersion when adding new features
-/// to force cache refresh for all users (prevents 7-day wait for new translation keys)
+/// CACHE VERSIONING: Increment _cacheVersion in TranslationsCacheNotifier / FilterNotifier
+/// to force cache refresh for all users (prevents 7-day wait for new keys)
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -46,6 +46,15 @@ void main() async {
   // Load cached translations from SharedPreferences (if available)
   final cachedTranslations = await TranslationsCacheNotifier.loadFromCache(storedLanguage);
   final isCacheFresh = await TranslationsCacheNotifier.isCacheFresh(storedLanguage);
+
+  // Load cached filters from SharedPreferences (returning users only)
+  final hasStoredLanguage = prefs.getString('user_language_code') != null;
+  final cachedFilters = hasStoredLanguage
+      ? await FilterNotifier.loadFromCache(storedLanguage)
+      : null;
+  final isFilterCacheFresh = hasStoredLanguage
+      ? await FilterNotifier.isCacheFresh(storedLanguage)
+      : false;
 
   // ── 3. Initialize AnalyticsService (only async op: UUID write on first launch) ──
   await AnalyticsService.instance.initializeWithPrefs(prefs);
@@ -82,6 +91,11 @@ void main() async {
     storedLanguage,
   );
 
+  // Initialize filter state from cache (returning users get instant filters)
+  if (cachedFilters != null) {
+    container.read(filterProvider.notifier).initializeFromPrefs(cachedFilters);
+  }
+
   // ── 5. Register lifecycle observer ──
   final appObserver = AppLifecycleObserver(container: container);
   WidgetsBinding.instance.addObserver(appObserver);
@@ -96,8 +110,14 @@ void main() async {
     ),
   );
 
-  // ── 7. Background: refresh translations + load filters (skip translations if cache is fresh) ──
-  unawaited(_loadAppDataInBackground(container, storedLanguage, isCacheFresh));
+  // ── 7. Background: refresh translations + filters (skip if caches are fresh) ──
+  unawaited(_loadAppDataInBackground(
+    container,
+    storedLanguage,
+    isCacheFresh,
+    isFilterCacheFresh,
+    !hasStoredLanguage,
+  ));
 
   // ── 8. Background: check location permission + service status ──
   unawaited(container.read(locationProvider.notifier).checkPermission());
@@ -111,26 +131,40 @@ void main() async {
 }
 
 /// Loads translations and filters in the background with retry logic.
-/// App is already visible — cached translations are shown immediately.
+/// App is already visible — cached data is shown immediately.
+///
 /// [skipTranslations] - If true, skip translation refresh (cache is fresh)
+/// [skipFilters] - If true, skip filter refresh (cache is fresh)
+/// [isFirstLaunch] - If true, dual-fetch filters for Danish (state) + English (cache-only)
 Future<void> _loadAppDataInBackground(
   ProviderContainer container,
   String languageCode,
   bool skipTranslations,
+  bool skipFilters,
+  bool isFirstLaunch,
 ) async {
   const maxAttempts = 3;
   const retryDelay = Duration(seconds: 2);
 
   for (int attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      if (skipTranslations) {
-        await container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode)
-            .timeout(const Duration(seconds: 10));
-      } else {
-        await Future.wait([
-          container.read(translationsCacheProvider.notifier).loadTranslations(languageCode),
-          container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode),
-        ]).timeout(const Duration(seconds: 10));
+      final futures = <Future>[];
+
+      if (!skipTranslations) {
+        futures.add(container.read(translationsCacheProvider.notifier).loadTranslations(languageCode));
+      }
+
+      if (isFirstLaunch) {
+        // First launch: load Danish (sets provider state) + cache English (cache-only)
+        futures.add(container.read(filterProvider.notifier).loadFiltersForLanguage('da'));
+        futures.add(container.read(filterProvider.notifier).fetchAndCacheOnly('en'));
+      } else if (!skipFilters) {
+        // Returning user, stale cache: refresh from API
+        futures.add(container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode));
+      }
+
+      if (futures.isNotEmpty) {
+        await Future.wait(futures).timeout(const Duration(seconds: 10));
       }
 
       return; // Success

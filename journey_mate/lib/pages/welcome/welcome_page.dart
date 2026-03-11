@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_constants.dart';
+import '../../providers/filter_providers.dart';
 
 /// Welcome/Onboarding Page
 ///
@@ -194,6 +196,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       // 1. Save language preference
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_language_code', 'da');
+
+      // 1b. Discard English filter cache (user chose Danish path)
+      unawaited(FilterNotifier.clearCacheForLanguage('en'));
 
       // 2. Load Danish translations
       await ref.read(translationsCacheProvider.notifier).loadTranslations('da');
