@@ -81,9 +81,7 @@ class MenuItemCard extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     name,
-                    style: AppTypography.bodyLg.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTypography.h6,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -102,6 +100,7 @@ class MenuItemCard extends ConsumerWidget {
                           ) ??
                           '${price!.round()} ${currencyCode!}',
                       style: AppTypography.bodyLgMedium.copyWith(
+                        fontWeight: FontWeight.w600,
                         color: AppColors.accent,
                       ),
                       textAlign: TextAlign.right,
@@ -115,9 +114,7 @@ class MenuItemCard extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 description!,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTypography.bodyMedium,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
