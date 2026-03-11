@@ -997,7 +997,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
           header,
           style: AppTypography.h6,
         ),
-        const SizedBox(height: AppSpacing.md),
         Text(
           description,
           style: AppTypography.body,
@@ -1037,7 +1036,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
           _getUIText('info_header_allergens'),
           style: AppTypography.h6,
         ),
-        const SizedBox(height: AppSpacing.md),
         Text(
           _getUIText('menu_dishes_filter_allergens_subtitle'),
           style: AppTypography.body,
@@ -1079,7 +1077,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeaderRow(),
-          const SizedBox(height: _sectionSpacing),
+          const SizedBox(height: AppSpacing.xs),
           _buildFilterSection(
             header: _getUIText('menu_dishes_filter_restrictions_title'),
             description: _getUIText('menu_dishes_filter_restrictions_subtitle'),
