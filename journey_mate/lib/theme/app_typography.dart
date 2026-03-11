@@ -130,8 +130,16 @@ class AppTypography {
     height: 1.45,
   );
 
-  /// 15/w700 — bold card names, section labels
+  /// 15/w600 — emphasized card names, section labels
   static const TextStyle bodyHeavy = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+    height: 1.45,
+  );
+
+  /// 15/w700 — bold card names, section labels
+  static const TextStyle bodyExtraHeavy = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,

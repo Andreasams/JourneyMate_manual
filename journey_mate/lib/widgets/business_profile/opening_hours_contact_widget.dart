@@ -538,7 +538,7 @@ class _OpeningHoursContactWidgetState
         ),
         Text(
           cutoffText,
-          style: AppTypography.bodyHeavy.copyWith(
+          style: AppTypography.bodyExtraHeavy.copyWith(
             color: AppColors.textTertiary,
           ),
         ),
@@ -679,7 +679,7 @@ class _OpeningHoursContactWidgetState
             onLongPress: onLongPress,
             child: Text(
               value,
-              style: AppTypography.bodyHeavy.copyWith(
+              style: AppTypography.bodyExtraHeavy.copyWith(
                 color: valueColor,
               ),
             ),
