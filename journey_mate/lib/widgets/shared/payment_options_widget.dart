@@ -274,7 +274,7 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
       else if (widget.filters is List) {
         return _flattenFilters(widget.filters as List<dynamic>);
       }
-    } catch (e) {
+    } catch (_) { // ignore: empty_catches
     }
     return [];
   }
@@ -287,7 +287,7 @@ class _PaymentOptionsWidgetState extends State<PaymentOptionsWidget> {
       for (var filter in filters) {
         _traverseFilterTree(filter, flatList);
       }
-    } catch (e) {
+    } catch (_) { // ignore: empty_catches
     }
 
     return flatList;

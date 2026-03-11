@@ -140,7 +140,7 @@ class _PackageCoursesDisplayState
     try {
       _buildMenuItemLookupMap();
       _findSelectedPackage();
-    } catch (e) {
+    } catch (_) { // ignore: empty_catches
     }
   }
 

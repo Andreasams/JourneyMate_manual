@@ -1104,7 +1104,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           scoringFilterIds,
         );
       }
-    } catch (e) {
+    } catch (_) { // ignore: empty_catches
     }
   }
 

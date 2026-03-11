@@ -287,7 +287,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
           }
         }
       }
-    } catch (e) {
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -299,7 +299,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   void _incrementSessionItemClicks() {
     try {
       ref.read(analyticsProvider.notifier).incrementItemClick();
-    } catch (e) {
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -307,7 +307,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   void _incrementSessionPackageClicks() {
     try {
       ref.read(analyticsProvider.notifier).incrementPackageClick();
-    } catch (e) {
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -315,7 +315,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   void _addViewedCategoryToSession(int categoryId) {
     try {
       ref.read(analyticsProvider.notifier).recordCategoryViewed(categoryId);
-    } catch (e) {
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -323,7 +323,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   void _updateSessionScrollDepth(int scrollPercent) {
     try {
       ref.read(analyticsProvider.notifier).updateDeepestScroll(scrollPercent);
-    } catch (e) {
+    } catch (_) { // ignore: empty_catches
     }
   }
 
