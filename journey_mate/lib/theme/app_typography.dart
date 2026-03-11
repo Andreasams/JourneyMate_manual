@@ -70,10 +70,10 @@ class AppTypography {
     height: 1.3,
   );
 
-  /// 16/w700 — sub-section labels (e.g. inside collapsibles)
+  /// 16/w600 — sub-section labels (e.g. inside collapsibles)
   static const TextStyle h6 = TextStyle(
     fontSize: 16,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
   );
