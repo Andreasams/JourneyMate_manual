@@ -317,6 +317,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => MapSelectionSheet(
         availableMaps: availableMaps,
