@@ -115,7 +115,8 @@ class FilterNotifier extends AsyncNotifier<FilterState> {
           foodDrinkTypes: foodDrinkTypesList,
         ));
 
-        // Persist to cache for next launch
+        // Persist to cache for next launch (fire-and-forget — if app is killed
+        // before write completes, next launch detects empty cache and fetches from API)
         _saveToCache(languageCode, filters, foodDrinkTypesList);
 
       } else {

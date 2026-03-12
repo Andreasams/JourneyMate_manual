@@ -88,8 +88,12 @@ void main() async {
     storedLanguage,
   );
 
-  // Initialize filter state from cache (returning users get instant filters)
-  // On first launch, cachedFilters has filtersForLanguage == null, so this is a no-op
+  // Initialize filter state from cache (returning users get instant filters).
+  // IMPORTANT: filterProvider is an AsyncNotifier — its build() returns a Future
+  // that completes on the next microtask. We must await it first, otherwise
+  // build()'s completion overwrites our cached state with FilterState.initial().
+  // (This costs one microtask — nanoseconds — since build() does no real async work.)
+  await container.read(filterProvider.future);
   container.read(filterProvider.notifier).initializeFromPrefs(cachedFilters);
 
   // ── 5. Register lifecycle observer ──
