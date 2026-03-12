@@ -348,12 +348,12 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
                 Navigator.of(context).pop();
               }
             },
-            borderRadius: BorderRadius.circular(AppRadius.button), // 12px
+            customBorder: const CircleBorder(),
             child: Container(
               padding: EdgeInsets.all(AppSpacing.sm), // 8px padding
               decoration: BoxDecoration(
                 color: AppColors.bgCard.withValues(alpha: 0.8), // Semi-transparent white
-                borderRadius: BorderRadius.circular(AppRadius.button),
+                shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.close,

@@ -1067,6 +1067,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
     return Container(
       width: widget.width,
       decoration: BoxDecoration(
+        color: AppColors.bgInput,
         borderRadius: BorderRadius.circular(_containerBorderRadius),
       ),
       padding: _containerPadding,

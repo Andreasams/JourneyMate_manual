@@ -254,8 +254,12 @@ class _LanguageSelectorButtonState
     // This ensures instant visual feedback when language changes
     final displayLanguage = _displayLanguageCode ?? widget.currentLanguageCode;
 
+    final availableLanguages = _languageOrder
+        .where((lang) => lang != displayLanguage)
+        .toList();
+
     return OverlayDropdownSelector<String>(
-      items: _languageOrder,
+      items: availableLanguages,
       selectedItem: displayLanguage,
       onItemSelected: _handleLanguageSelection,
       itemDisplayBuilder: _getLanguageDisplayName,

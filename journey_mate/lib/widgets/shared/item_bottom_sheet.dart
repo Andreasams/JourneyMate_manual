@@ -902,7 +902,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       children: [
         Text(
           _getUITextFromApi('info_header_dietary'),
-          style: AppTypography.bodyMedium,
+          style: AppTypography.bodyExtraHeavy,
         ),
         Text(
           dietaryText ?? '',
@@ -929,7 +929,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       children: [
         Text(
           _getUITextFromApi('info_header_allergens'),
-          style: AppTypography.bodyMedium,
+          style: AppTypography.bodyExtraHeavy,
         ),
         Text(
           allergyText ?? '',
@@ -978,6 +978,8 @@ class _ModifierGroupDisplay extends ConsumerWidget {
   final dynamic translationsCache;
   final String currentLanguage;
 
+  /// Bullet character for modifier item lists (reusable across sheets)
+  static const String bulletPrefix = '\u2022 ';
   static const double _headerBottomSpacing = 2.0;
   static const double _constraintBottomSpacing = 8.0;
   static const double _modifierItemSpacing = 2.0;
@@ -1131,7 +1133,7 @@ class _ModifierGroupDisplay extends ConsumerWidget {
       children: [
         Expanded(
           child: Text(
-            displayText,
+            '$bulletPrefix$displayText',
             style: AppTypography.body.copyWith(
               color: AppColors.textPrimary,
             ),

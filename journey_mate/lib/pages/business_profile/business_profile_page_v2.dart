@@ -63,7 +63,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   // ============================================================================
 
   DateTime? _pageStartTime;
-  bool _isLoading = false;
+  bool _isLoading = true; // Start true so shimmer shows on first frame
   String? _errorMessage;
   bool _menuLoadFailed = false;
   bool _menuSessionStarted = false;

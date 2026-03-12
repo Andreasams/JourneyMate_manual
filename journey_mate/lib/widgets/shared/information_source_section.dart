@@ -133,7 +133,7 @@ class _InformationSourceSectionState extends State<InformationSourceSection> {
     return Text(
       widget.disclaimerText,
       style: AppTypography.body.copyWith(
-        color: AppColors.textSecondary,
+        color: AppColors.textPrimary,
       ),
     );
   }
@@ -143,7 +143,7 @@ class _InformationSourceSectionState extends State<InformationSourceSection> {
     return Text(
       widget.journeymateText,
       style: AppTypography.body.copyWith(
-        color: AppColors.textSecondary,
+        color: AppColors.textPrimary,
       ),
     );
   }
