@@ -545,7 +545,7 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
       final prefix = td(ref, isPlural
           ? 'filter_dietary_prefix_plural'
           : 'filter_dietary_prefix_singular');
-      final dietaryList = _joinList(dietaryFilters, and);
+      final dietaryList = _joinDietaryList(dietaryFilters, and, lang);
       return '$itemCountText$prefix$dietaryList.';
     }
 
@@ -561,7 +561,7 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
     final prefix = td(ref, isPlural
         ? 'filter_dietary_prefix_plural'
         : 'filter_dietary_prefix_singular');
-    final dietaryList = _joinList(dietaryFilters, and);
+    final dietaryList = _joinDietaryList(dietaryFilters, and, lang);
     final andAreFreeFrom = td(ref, 'filter_and_are_free_from');
     final allergenList = _formatAllergenList(allergensToShow, and, lang);
 
@@ -574,17 +574,22 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
     if (key == null) return null;
     final name = td(ref, key);
     if (name.isEmpty || name.startsWith('⚠️')) return null;
-    var result = _applyCase(name, lang);
-    // German grammatical suffix
-    if (lang == 'de') {
-      result += (_visibleItemCount != 1) ? ' sind' : ' ist';
-    }
-    return result;
+    return _applyCase(name, lang);
   }
 
   /// Applies lowercase for languages that require it in sentence context.
   String _applyCase(String text, String lang) {
     return _lowercaseLanguages.contains(lang) ? text.toLowerCase() : text;
+  }
+
+  /// Joins dietary names and appends the German copula once at the end.
+  /// For non-German languages, delegates to [_joinList] unchanged.
+  String _joinDietaryList(List<String> items, String conjunction, String lang) {
+    final joined = _joinList(items, conjunction);
+    if (lang == 'de') {
+      return '$joined ${_visibleItemCount != 1 ? 'sind' : 'ist'}';
+    }
+    return joined;
   }
 
   /// Joins a list with a conjunction before the last item.
