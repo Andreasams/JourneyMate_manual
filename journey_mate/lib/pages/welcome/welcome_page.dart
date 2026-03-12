@@ -16,6 +16,7 @@ import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_constants.dart';
 import '../../providers/filter_providers.dart';
+import '../../providers/locale_provider.dart';
 
 /// Welcome/Onboarding Page
 ///
@@ -189,8 +190,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   }
 
   /// Handle "Fortsæt på dansk" button → Danish quick path
-  /// Saves preferences and navigates immediately
-  /// Search results already pre-fetched on page load (optimized for Danish users)
+  /// Loads Danish translations + filters from disk cache (pre-cached at boot),
+  /// navigates immediately, and cleans up English cache in background.
   Future<void> _handleDanishDirect() async {
     try {
       // Capture router before async operations
@@ -200,20 +201,35 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_language_code', 'da');
 
-      // 1b. Load Danish filters (background may have loaded English)
-      unawaited(ref.read(filterProvider.notifier).loadFiltersForLanguage('da'));
-      // Discard English filter cache (user chose Danish path)
-      unawaited(FilterNotifier.clearCacheForLanguage('en'));
+      // 2. Load Danish translations from disk cache (pre-cached at boot → instant)
+      //    Falls back to API if cache miss (e.g. background fetch hadn't finished)
+      final cachedTranslations = await TranslationsCacheNotifier.loadFromCache('da');
+      if (cachedTranslations.isNotEmpty) {
+        ref.read(translationsCacheProvider.notifier).initializeFromPrefs(cachedTranslations, 'da');
+      } else {
+        await ref.read(translationsCacheProvider.notifier).loadTranslations('da');
+      }
 
-      // 2. Load Danish translations
-      await ref.read(translationsCacheProvider.notifier).loadTranslations('da');
+      // 3. Load Danish filters from disk cache (pre-cached at boot → instant)
+      //    Falls back to API if cache miss
+      final cachedFilters = await FilterNotifier.loadFromCache('da');
+      if (cachedFilters.filtersForLanguage != null) {
+        ref.read(filterProvider.notifier).initializeFromPrefs(cachedFilters);
+      } else {
+        unawaited(ref.read(filterProvider.notifier).loadFiltersForLanguage('da'));
+      }
 
-      // 3. Set currency to DKK
+      // 4. Set currency to DKK
       await ref.read(localizationProvider.notifier).setCurrency('DKK', 1.0);
 
-      // Navigate immediately - search results already cached from page load
-      // (Pre-fetched with 'da' in _initialize for all new users)
+      // 5. Update locale for app-wide change
+      ref.read(localeProvider.notifier).setLocale('da');
+
+      // Navigate immediately — search results already cached from page load
       router.go('/search');
+
+      // 6. Background cleanup: discard English cache (user chose Danish)
+      unawaited(FilterNotifier.clearCacheForLanguage('en'));
 
     } catch (e) {
       if (context.mounted) {

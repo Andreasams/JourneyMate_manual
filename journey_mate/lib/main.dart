@@ -151,11 +151,13 @@ Future<void> _loadAppDataInBackground(
       }
 
       if (isFirstLaunch) {
-        // First launch: load filters for user's language (sets provider state)
-        // + pre-cache Danish for welcome page's "Fortsæt på dansk" path
+        // First launch: load English into provider state + pre-cache Danish to disk.
+        // Both languages ready instantly — whichever path the user picks on the
+        // welcome page (Danish direct or English setup) has zero wait.
         futures.add(container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode));
         if (languageCode != 'da') {
           futures.add(container.read(filterProvider.notifier).fetchAndCacheOnly('da'));
+          futures.add(container.read(translationsCacheProvider.notifier).fetchAndCacheOnly('da'));
         }
       } else if (!skipFilters) {
         // Returning user, stale cache: refresh from API

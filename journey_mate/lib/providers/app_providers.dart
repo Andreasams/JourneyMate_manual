@@ -303,6 +303,24 @@ class TranslationsCacheNotifier extends Notifier<Map<String, String>> {
     }
   }
 
+  /// Fetch translations from API and cache to SharedPreferences only.
+  /// Does NOT update provider state. Used on first launch to pre-cache
+  /// a second language (e.g. Danish) while provider state holds the primary (English).
+  Future<void> fetchAndCacheOnly(String languageCode) async {
+    try {
+      final response =
+          await ApiService.instance.getUiTranslations(languageCode: languageCode);
+
+      if (response.succeeded && response.jsonBody is Map) {
+        final translations = Map<String, String>.from(response.jsonBody);
+        // Cache only — don't set provider state
+        await _saveToCache(languageCode, translations);
+      }
+    } catch (e) {
+      // Fail silently — this is a background pre-cache
+    }
+  }
+
   /// Save translations to SharedPreferences cache with version metadata
   Future<void> _saveToCache(String languageCode, Map<String, String> translations) async {
     try {
