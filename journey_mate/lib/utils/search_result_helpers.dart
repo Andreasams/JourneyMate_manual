@@ -52,7 +52,7 @@ String? getMatchVariant(dynamic businessData, List<int> scoringFilterIds) {
   if (matchCount is! num) return null;
 
   if (matchCount >= scoringFilterIds.length) return MatchVariant.full;
-  if (matchCount > 0) return MatchVariant.partial;
+  if (matchCount >= scoringFilterIds.length - 1) return MatchVariant.partial;
   return MatchVariant.none;
 }
 
