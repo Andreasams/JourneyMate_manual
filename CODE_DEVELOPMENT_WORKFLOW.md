@@ -169,9 +169,9 @@ Text('Welcome to JourneyMate')
 
 **Before adding new translation key:**
 1. Check if key exists in _reference/BUILDSHIP_API_REFERENCE.md → GET /languageText
-2. If new key needed, add to all 7 languages via Supabase
+2. If new key needed, add to all 15 languages via Supabase
 
-**Reference:** ARCHITECTURE.md → Translation System (lines 1674-1817)
+**Reference:** ARCHITECTURE.md → Translation System (lines 1738-1893)
 
 ### Step 2.5: Analytics (Fire-and-Forget)
 

@@ -240,7 +240,7 @@ See existing tests in `journey_mate/test/` for examples.
 
 All backend calls go through `ApiService.instance` singleton.
 
-**Full API contracts:** See `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines, 12 endpoints)
+**Full API contracts:** See `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines, 13 endpoints)
 
 **Example (v9 API):**
 ```dart

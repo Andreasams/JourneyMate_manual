@@ -18,7 +18,7 @@ Read these documents IN ORDER at the start of every session:
 1. **CLAUDE.md** (this file) — Session rules, critical decisions, quick reference
 2. **ARCHITECTURE.md** — How the app is built (state management, patterns, pitfalls)
 3. **DESIGN_SYSTEM_flutter.md** — Design tokens (colors, spacing, typography)
-4. **_reference/BUILDSHIP_API_REFERENCE.md** — API contracts for all 12 endpoints
+4. **_reference/BUILDSHIP_API_REFERENCE.md** — API contracts for all 13 endpoints
 5. **_reference/PROVIDERS_REFERENCE.md** — Riverpod provider catalog
 
 **Time:** 60 minutes to productive (10 + 45 + 15 + 5 + 5) | **Task-specific:** See [NAVIGATION_GUIDE.md](NAVIGATION_GUIDE.md) for 10-30 minute targeted reading
@@ -98,7 +98,7 @@ These decisions have been confirmed and must not be re-debated:
 
 3. **Filter panel is bottom sheet** — Use `showModalBottomSheet`, not FlutterFlow's 3-column inline overlay. Tab selection is local state in sheet widget.
 
-4. **Translation: 100% Supabase** — Ultimate goal is zero hardcoded translations. All text from `ui_translations` table. Single source of truth for all 7 languages.
+4. **Translation: 100% Supabase** — Ultimate goal is zero hardcoded translations. All text from `ui_translations` table. 15 languages with complete infrastructure, 7 active in UI. To activate: add to `_languageOrder` in `language_selector_button.dart`. Single source: `language_currency_config.dart`.
 
 5. **Portrait-only iPhone, all orientations iPad** — iPhone locked to portrait for optimal restaurant discovery UX. iPad supports all orientations for table/counter browsing.
 
@@ -123,6 +123,8 @@ These decisions have been confirmed and must not be re-debated:
 15. **Business Profile v2 is the active route** — Router serves `BusinessProfilePageV2` (not v1). The v2 page reads from a flat `businessInfo` API response, merges top-level `filters` into the business map, and computes `status_open`/`closing_time`/`price_range` client-side from `openWindows` data. Analytics events use v2 naming: `business_profile_viewed`, `share_button_clicked`, `menu_session_started`, `menu_session_ended`. See `_reference/BUILDSHIP_API_REFERENCE.md` GET /businessProfile for full API structure.
 
 16. **Google Maps API key via xcconfig build-time injection** — API key is read from `Info.plist` at runtime, populated from `Secrets.xcconfig` at build time. Codemagic generates `Secrets.xcconfig` from encrypted environment variables (never committed to git). `AppDelegate.swift` reads key with `Bundle.main.infoDictionary` and calls `GMSServices.provideAPIKey()`. Fresh clones: xcconfig `#include` produces a warning (not error) if file missing — safe for local dev without key. Two pages use Google Maps: business information page (`/business/:id/information`) and search map view (list/map toggle on search page). Commits `172a66e`, `e35de89`, `c545543`.
+
+17. **SharedPreferences cache for translations + filters** — Per-language caching with 7-day TTL and version bumping. Stale-while-revalidate: cached data loads instantly (no spinner), background refresh if stale. First launch dual-fetches Danish + English filters in parallel. Increment `_cacheVersion` in `TranslationsCacheNotifier`/`FilterNotifier` when adding new keys to force refresh for all users. Commit `827de8e`.
 
 ---
 

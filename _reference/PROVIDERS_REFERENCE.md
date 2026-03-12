@@ -416,7 +416,12 @@ class FilterState {
 
 ### Persistence
 
-- **No persistence** (loaded from API on startup or language change)
+- **SharedPreferences cache** with per-language keys (commit `827de8e`)
+- **Cache keys:** `filters_{lang}`, `filters_{lang}_foodDrinkTypes`, `filters_{lang}_timestamp`, `filters_{lang}_version`
+- **7-day TTL** with version bumping (`_cacheVersion` constant — increment to force refresh for all users)
+- **Stale-while-revalidate:** Cached data loads instantly; background refresh if stale (no spinner flash)
+- **Dual-language preload:** First launch pre-caches both Danish (`da`) and English (`en`) filters in parallel
+- **Cache cleanup:** When user selects a language on setup, unused language caches are cleared
 
 ### Methods
 
@@ -440,6 +445,17 @@ bool loaded = ref.read(filterProvider.notifier).isLoaded();
 
 // Clear
 ref.read(filterProvider.notifier).clear();
+
+// Cache methods (static — callable without provider container)
+final cached = await FilterNotifier.loadFromCache('da');       // Load from SharedPreferences
+final fresh = await FilterNotifier.isCacheFresh('da');         // Check TTL + version
+await FilterNotifier.clearCacheForLanguage('en');              // Remove cache entries
+
+// Synchronous initialization from cache (main.dart startup)
+container.read(filterProvider.notifier).initializeFromPrefs(cachedFilterState);
+
+// Background pre-cache (fetches API + saves to SharedPreferences, no state update)
+await ref.read(filterProvider.notifier).fetchAndCacheOnly('en');
 ```
 
 ### Usage Example
@@ -464,10 +480,17 @@ class FilterBottomSheet extends ConsumerWidget {
 
 ### Initialization
 
-Called in `main.dart` (optional, can lazy-load on first access):
+Cache-first initialization in `main.dart` (commit `827de8e`):
 ```dart
-// Not initialized in main.dart by default
-// Loads when first accessed or when language changes
+// 1. Load cached filters from SharedPreferences (returning users)
+final cachedFilters = await FilterNotifier.loadFromCache(storedLanguage);
+final isFilterCacheFresh = await FilterNotifier.isCacheFresh(storedLanguage);
+
+// 2. Initialize filter state synchronously from cache (instant, no spinner)
+container.read(filterProvider.notifier).initializeFromPrefs(cachedFilters);
+
+// 3. Background: refresh if stale, or dual-fetch da+en on first launch
+unawaited(_loadAppDataInBackground(container, storedLanguage, ...));
 ```
 
 ---

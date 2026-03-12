@@ -7,6 +7,8 @@ Source: `_reference/_buildship/` — actual BuildShip node scripts
 All endpoints call BuildShip, which mediates all Supabase/Typesense access.
 **No direct Supabase SDK calls from Flutter.**
 
+**ApiService centralization (commit `e79ec2c`):** All 13 endpoints are accessed exclusively through `ApiService.instance` methods. Direct `http.post()`/`http.get()` calls from widgets are prohibited. Form submissions (`submitContactUs()`, `submitFeedback()`) and bottom sheet data fetches (`getSingleMenuItem()`, `getMenuPackage()`) were centralized into ApiService — see ARCHITECTURE.md Common Pitfall #38.
+
 ---
 
 ## 1. SEARCH (`SEARCH_SCRIPT_GENERATOR`) — v9.2

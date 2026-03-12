@@ -17,24 +17,24 @@ This document explains **how the JourneyMate app is built**. Read this to unders
 - **Need a specific section?** Use alphabetical index below for direct access
 
 **Section Index (Alphabetical):**
-- [Analytics Architecture](#analytics-architecture) (lines 1844-1918) — Fire-and-forget, ActivityScope, 47 event types
-- [API Service Pattern](#api-service-pattern) (lines 1387-1521) — Singleton, cache, BuildShip integration, graceful degradation, BusinessCache
-- [Code Quality Standards](#code-quality-standards) (lines 1921-2040) — Flutter analyze, design tokens, algorithms
-- [Code Review Checklist](#code-review-checklist) (lines 2043-2137) — Pre-commit checklist (⚠️ use before every commit)
-- [Common Pitfalls](#common-pitfalls) (lines 2140-3589) — 37 anti-patterns with fixes (⚠️ read before first commit)
-- [Design Token System](#design-token-system) (lines 1831-1841) — Quick lookup tables for colors, spacing, typography
-- [Documentation Philosophy](#documentation-philosophy) (lines 3592-3605) — Three types of docs, when to update
-- [Key Architectural Decisions](#key-architectural-decisions) (lines 3635-3668) — CityID, favorites, filters, translations, engagement
-- [Location Permission Pattern](#location-permission-pattern) (lines 1604-1682) — Three methods, when to use what, Settings fallback
+- [Analytics Architecture](#analytics-architecture) (lines 1909-1983) — Fire-and-forget, ActivityScope, 47 event types
+- [API Service Pattern](#api-service-pattern) (lines 1394-1575) — Singleton, cache, BuildShip integration, graceful degradation, BusinessCache, SharedPreferences Cache Pattern
+- [Code Quality Standards](#code-quality-standards) (lines 1986-2105) — Flutter analyze, design tokens, algorithms
+- [Code Review Checklist](#code-review-checklist) (lines 2108-2202) — Pre-commit checklist (⚠️ use before every commit)
+- [Common Pitfalls](#common-pitfalls) (lines 2205-3731) — 39 anti-patterns with fixes (⚠️ read before first commit)
+- [Design Token System](#design-token-system) (lines 1896-1906) — Quick lookup tables for colors, spacing, typography
+- [Documentation Philosophy](#documentation-philosophy) (lines 3734-3747) — Three types of docs, when to update
+- [Key Architectural Decisions](#key-architectural-decisions) (lines 3781-3815) — CityID, favorites, filters, translations, engagement
+- [Location Permission Pattern](#location-permission-pattern) (lines 1657-1735) — Three methods, when to use what, Settings fallback
 - [Philosophy](#philosophy) (lines 41-83) — Five core principles (design tokens, state, translations, analytics, widgets)
-- [Pre-Loading Architecture](#pre-loading-architecture) (lines 1524-1601) — Safe async pattern for instant page loads
-- [Project Structure](#project-structure) (lines 86-157) — File organization, 12 pages, 36 widgets, 8 providers
-- [Provider Initialization Order](#provider-initialization-order) (lines 3608-3632) — Critical startup sequence in main.dart
-- [References](#references) (lines 3671-3684) — Links to other documentation files
-- [State Management](#state-management) (lines 160-357) — When to use what, provider catalog, Riverpod 3.x patterns, ref.listen
-- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 1039-1384) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
-- [Translation System](#translation-system) (lines 1685-1828) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages
-- [Widget Patterns](#widget-patterns) (lines 360-1036) — Self-contained widgets, page wrappers, bottom sheets, BottomSheetHeader, contact utils, cross-page reuse, MenuSectionWidget, TabbedGalleryWidget, MenuScrollController, map view
+- [Pre-Loading Architecture](#pre-loading-architecture) (lines 1577-1654) — Safe async pattern for instant page loads
+- [Project Structure](#project-structure) (lines 86-157) — File organization, 12 pages, 30 widgets, 8 providers
+- [Provider Initialization Order](#provider-initialization-order) (lines 3750-3778) — Critical startup sequence in main.dart (cache-first)
+- [References](#references) (lines 3818-3831) — Links to other documentation files
+- [State Management](#state-management) (lines 159-357) — When to use what, provider catalog, Riverpod 3.x patterns, ref.listen
+- [Swipe Gesture Patterns](#swipe-gesture-patterns) (lines 1046-1391) — 8 patterns for dismissible UI, adaptive thresholds, nested gestures
+- [Translation System](#translation-system) (lines 1738-1893) — Dynamic td() function, 344 keys, 4-step fallback chain, 15 languages (7 active)
+- [Widget Patterns](#widget-patterns) (lines 359-1043) — Self-contained widgets, page wrappers, bottom sheets, BottomSheetHeader, contact utils, cross-page reuse, MenuSectionWidget, TabbedGalleryWidget, MenuScrollController, map view
 
 ---
 
@@ -61,7 +61,7 @@ JourneyMate was migrated from FlutterFlow to production Flutter with five core a
 ### 3. Single Source of Truth for Translations (Maintainability)
 - **100% dynamic** from Supabase `ui_translations` table via BuildShip API
 - **344 app keys** in Supabase (0 legacy keys remaining)
-- **15 languages** in Supabase, **7 fallback languages** hardcoded in app (en, da, de, fr, it, no, sv)
+- **15 languages** in Supabase, **15 fallback languages** hardcoded in app (all have complete infrastructure, 7 active in UI)
 - **Zero hardcoded strings** in production code
 
 **Why:** Translations update without app releases. Content team controls all text.
@@ -107,9 +107,10 @@ journey_mate/
 │   │       ├── distance_calculator.dart # returnDistance() + formatDistanceText()
 │   │       ├── hours_formatter.dart   # openClosesAt(), daysDayOpeningHour()
 │   │       ├── price_formatter.dart   # convertAndFormatPriceRange()
-│   │       └── allergen_formatter.dart # Allergen ID-to-name mapping, named key lookups
+│   │       ├── allergen_formatter.dart # Allergen ID-to-name mapping, named key lookups
+│   │       └── language_currency_config.dart # Language→currency mapping for all 15 languages
 │   ├── utils/                         # Shared utility functions
-│   │   ├── map_launcher_utils.dart    # openInPreferredMaps() — priority-based map app selection
+│   │   ├── map_launcher_utils.dart    # Venue-aware URL building for Google Maps / Apple Maps
 │   │   ├── map_marker_helper.dart     # Teardrop pin marker generation (Canvas, cached)
 │   │   ├── search_result_helpers.dart # Shared lat/lng extraction from result documents
 │   │   └── menu_language_currency_utils.dart # MenuOption, computeLanguageOptions, computeCurrencyOptions
@@ -138,7 +139,7 @@ journey_mate/
 │   │       ├── contact_us_page.dart   # Contact form wrapper
 │   │       ├── share_feedback_page.dart # Feedback form wrapper
 │   │       └── missing_place_page.dart # Missing place form wrapper
-│   ├── widgets/                       # 36 shared widgets
+│   ├── widgets/                       # 30 shared widgets
 │   │   ├── shared/                    # Reusable components (includes InformationSourceSection accordion)
 │   │   ├── activity_scope.dart        # Automatic engagement tracking
 │   │   └── app_lifecycle_observer.dart # App state lifecycle hooks
@@ -147,8 +148,6 @@ journey_mate/
 │   │   ├── app_spacing.dart           # 8 spacing constants
 │   │   ├── app_typography.dart        # 21 text styles
 │   │   ├── app_radius.dart            # 7 border radius constants
-│   │   ├── app_button_styles.dart     # Button style presets
-│   │   ├── app_input_decorations.dart # Input decoration presets
 │   │   └── app_constants.dart         # Misc constants (CityID, etc.)
 │   └── router/
 │       └── app_router.dart            # go_router 17.x route definitions (11 routes)
@@ -645,12 +644,20 @@ Search page supports list/map toggle via page-local `_ViewMode` enum. Each mode 
 - `search_results_map_view.dart` — Google Maps widget with markers
 - `map_business_preview_card.dart` — Bottom card shown on marker tap
 - `map_marker_helper.dart` — Teardrop pin marker generation (vector Canvas drawing, cached)
-- `map_launcher_utils.dart` — `openInPreferredMaps()` shared utility (Google Maps > Apple Maps > first available)
+- `map_launcher_utils.dart` — Venue-aware URL building for Google Maps / Apple Maps
+- `map_selection_sheet.dart` — Bottom sheet for choosing map app (Google Maps / Apple Maps)
 - `search_result_helpers.dart` — Shared lat/lng extraction from result documents
+
+**Map Selection UX (Commit `cf10d08`):**
+When user taps the Map quick action pill, a `MapSelectionSheet` bottom sheet appears with two rows: Google Maps and Apple Maps. This replaces the previous auto-pick pattern (`openInPreferredMaps()`).
+
+- **Venue-aware:** Uses the business's `google_maps_url` field when available (opens the actual Google Maps listing, not a generic pin). Falls back to address-based search URL when `google_maps_url` is null.
+- **Apple Maps:** Always address-based search (no venue URL available).
+- **URL building:** `map_launcher_utils.dart` now exports `buildGoogleMapsUrl()` and `buildAppleMapsUrl()` functions instead of auto-launching.
 
 **API integration:** Map mode sends `geoBoundsJson` parameter (format: `{"ne_lat":55.72,"ne_lng":12.62,"sw_lat":55.65,"sw_lng":12.50}`) which BuildShip converts to a Typesense geo polygon filter. This is ANDed with all other filters but does NOT affect sort order.
 
-**Reference:** Commit `c545543` — search map view implementation, `f4d1948` — teardrop pins + open-only chip, `ba77b79` — map launcher utility
+**Reference:** Commit `c545543` — search map view implementation, `f4d1948` — teardrop pins + open-only chip, `cf10d08` — map selection sheet + venue-aware URLs
 
 ### Bottom Sheet Pattern
 
@@ -1396,7 +1403,7 @@ All backend calls go through `ApiService.instance` singleton.
 - **Base URL:** `https://wvb8ww.buildship.run`
 - **Response Wrapper:** `ApiCallResponse(statusCode, jsonBody, error)`
 - **Built-in Caching:** GET requests cached by URI (opt-in with `cache: true`)
-- **13 Endpoints:** All BuildShip operations documented in `_reference/BUILDSHIP_API_REFERENCE.md`
+- **13 Endpoints, 17 ApiService methods:** All BuildShip operations documented in `_reference/BUILDSHIP_API_REFERENCE.md`. All HTTP calls (including form submissions and bottom sheet data fetches) go through `ApiService.instance` — no direct `http.post()`/`http.get()` from widgets (commit `e79ec2c`).
 
 ### Usage Pattern
 
@@ -1518,6 +1525,52 @@ BusinessCache.instance.clear();
 - Avoids unnecessary Riverpod overhead for a pure data cache
 
 **Reference:** Commit `ae9ad82` — in-memory LRU cache for business preview data
+
+### SharedPreferences Cache Pattern
+
+Reusable pattern shared by `TranslationsCacheNotifier` and `FilterNotifier` for persisting API data across app launches.
+
+**Per-language cache keys:**
+| Key | Purpose |
+|-----|---------|
+| `{resource}_{lang}` | Serialized JSON data (e.g., `filters_da`, `translations_da`) |
+| `{resource}_{lang}_timestamp` | Unix milliseconds of last successful fetch |
+| `{resource}_{lang}_version` | Cache structure version (increment to force refresh) |
+
+**Strategy: Stale-while-revalidate**
+1. **Startup:** Load cached data from SharedPreferences synchronously — user sees content instantly (no spinner)
+2. **Freshness check:** If cache is <7 days old AND version matches, skip API refresh
+3. **Stale cache:** If cache is >7 days old or version mismatches, show cached data immediately, then refresh from API in background
+4. **No cache (first launch):** Show loading state, fetch from API, save to cache
+
+**Dual-language preload (first launch only):**
+When no stored language preference exists, `main.dart` pre-caches both Danish (`da`) and English (`en`) filters in parallel via `fetchAndCacheOnly()`. This ensures instant filter display whichever language the user picks on the welcome page.
+
+**Cache cleanup:**
+- `welcome_page.dart` clears English filter cache when user takes the Danish quick path
+- `app_settings_initiate_flow_page.dart` clears unused language caches on setup completion
+
+**Loading strategy:**
+```dart
+// In main.dart (before runApp)
+final cachedFilters = await FilterNotifier.loadFromCache(storedLanguage);
+final isFilterCacheFresh = await FilterNotifier.isCacheFresh(storedLanguage);
+
+// Synchronous initialization — consumers never see AsyncLoading
+container.read(filterProvider.notifier).initializeFromPrefs(cachedFilters);
+
+// Background refresh (only if stale)
+if (!isFilterCacheFresh) {
+  await container.read(filterProvider.notifier).loadFiltersForLanguage(storedLanguage);
+}
+```
+
+**Key static methods (callable without provider container):**
+- `loadFromCache(String lang)` → `FilterState` — Deserialize from SharedPreferences
+- `isCacheFresh(String lang)` → `bool` — Check TTL (7 days) + version match
+- `clearCacheForLanguage(String lang)` — Remove all cache entries for a language
+
+**Reference:** Commit `827de8e` — filter caching with SharedPreferences
 
 ---
 
@@ -1760,12 +1813,24 @@ ref.read(localeProvider.notifier).setLocale('da');
 // All td(ref, key) calls return new language text
 ```
 
+### Language Infrastructure: 15 Languages, 7 Active (Commit `8eb4a47`)
+
+All 15 languages have complete infrastructure (currency mapping, fallback translations, formatting rules, cache clearing), but only 7 are active in the language selector UI.
+
+**Single source of truth:** `language_currency_config.dart` — maps language codes to default currencies, currency symbols, language names, and menu formatting rules for all 15 languages. Eliminates duplicated currency mapping between `settings_providers.dart` and `currency_selector_button.dart`.
+
+**To activate a new language:** Add its language code to `_languageOrder` in `language_selector_button.dart`. No other changes needed — infrastructure is already in place.
+
+**All 15 languages:** en, da, de, es, fi, fr, it, ja, ko, nl, no, pl, sv, uk, zh
+**7 active in UI:** en, da, de, fr, it, no, sv
+
 ### Translation Stats
 
 - **344 app keys** (search, business profile, menu, settings, etc.)
 - **0 legacy keys** (all FlutterFlow migration keys cleaned up — commit `9f7a6bb`)
 - **15 languages in Supabase:** en, da, de, es, fi, fr, it, ja, ko, nl, no, pl, sv, uk, zh
-- **7 fallback languages in app:** en, da, de, fr, it, no, sv (hardcoded in `kWelcomeFallbackTranslations` and `kBusinessProfileFallbackTranslations`)
+- **15 languages with complete infrastructure**, 7 active via `_languageOrder` in `language_selector_button.dart`
+- **15 fallback languages in app:** All 15 have hardcoded fallbacks in `kWelcomeFallbackTranslations` and `kBusinessProfileFallbackTranslations` (commit `8eb4a47` added 8 inactive languages)
 - **~5,160 translation rows** in Supabase (344 keys x 15 languages)
 - **Storage:** Supabase `ui_translations` table
 - **API:** BuildShip `GET /languageText` endpoint
@@ -1832,7 +1897,7 @@ final formattedDate = _formatLocalizedDate(business['last_reviewed_at'], current
 
 **Full reference:** See **DESIGN_SYSTEM_flutter.md** — Complete token catalog with color palettes, spacing scale, typography styles, border radii, input decorations, button styles, and copy-paste UI patterns.
 
-**Source files:** `journey_mate/lib/theme/` (8 files: `app_colors.dart`, `app_spacing.dart`, `app_typography.dart`, `app_radius.dart`, `app_constants.dart`, `app_button_styles.dart`, `app_input_decorations.dart`, `app_theme.dart`)
+**Source files:** `journey_mate/lib/theme/` (6 files: `app_colors.dart`, `app_spacing.dart`, `app_typography.dart`, `app_radius.dart`, `app_constants.dart`, `app_theme.dart`)
 
 **Critical Rules:**
 - Orange (`AppColors.accent`) ONLY for CTAs/interactive elements (never match status)
@@ -3555,37 +3620,114 @@ final label = td(ref, 'dietary_${keyName}_cap');  // "dietary_glutenfree_cap"
 
 **Reference:** Commit `26d738e` — "fix: migrate dietary/allergen translation keys to named system and port filter summary"
 
-### Pitfall #37: Open-In-Maps Must Use Priority-Based Map Selection, Not URI Schemes
+### Pitfall #37: Open-In-Maps Must Use MapSelectionSheet, Not Auto-Pick or URI Schemes
 
-**Context:** Using `maps:` URI scheme only opens Apple Maps. Using `availableMaps.first` picks whichever app is installed first (unpredictable). Both approaches provide poor UX.
+**Context:** Auto-picking a map app (`openInPreferredMaps()`) or using `maps:` URI scheme gives users no choice. The correct pattern is a bottom sheet that lets users choose their preferred map app, with venue-aware URLs.
 
-❌ **Bad:**
+❌ **Bad — auto-pick without user consent:**
 ```dart
-// Only works for Apple Maps
-launchUrl(Uri.parse('maps:?q=$lat,$lng'));
-
-// Unpredictable: picks first installed map app
-final maps = await MapLauncher.installedMaps;
-await maps.first.showMarker(...);
-```
-
-✅ **Good — Use shared utility:**
-```dart
-import '../utils/map_launcher_utils.dart';
-
+// Old pattern: auto-picks Google Maps > Apple Maps > first available
 final mapName = await openInPreferredMaps(
   latitude: lat, longitude: lng, title: businessName,
 );
-if (mapName == null && context.mounted) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('No maps app available')),
-  );
-}
 ```
 
-**Rule:** Always use `openInPreferredMaps()` from `map_launcher_utils.dart`. Priority: Google Maps > Apple Maps > first available. Returns app name for analytics, null on failure.
+❌ **Bad — URI scheme only opens Apple Maps:**
+```dart
+launchUrl(Uri.parse('maps:?q=$lat,$lng'));
+```
 
-**Reference:** Commit `ba77b79` — "fix: open in maps with Google Maps priority and Apple Maps fallback"
+✅ **Good — MapSelectionSheet with venue-aware URLs:**
+```dart
+import '../widgets/shared/map_selection_sheet.dart';
+
+MapSelectionSheet.show(
+  context: context,
+  ref: ref,
+  businessName: businessName,
+  address: fullAddress,
+  googleMapsUrl: business['google_maps_url'],  // Opens actual listing when available
+  latitude: lat,
+  longitude: lng,
+);
+```
+
+**Rule:** Always use `MapSelectionSheet` for open-in-maps. It shows Google Maps and Apple Maps rows. When `google_maps_url` is available, Google Maps opens the actual venue listing (not a generic pin). Apple Maps always uses address-based search.
+
+**Reference:** Commit `cf10d08` — MapSelectionSheet with venue-aware URLs (supersedes `ba77b79`)
+
+### Pitfall #38: All HTTP Calls Must Go Through ApiService
+
+**Context:** Widgets should never make direct `http.post()` or `http.get()` calls. All API communication must go through `ApiService.instance` for consistent error handling, caching, and base URL management.
+
+❌ **Bad — direct HTTP from widget:**
+```dart
+final response = await http.post(
+  Uri.parse('https://wvb8ww.buildship.run/submitContactUs'),
+  body: jsonEncode({'name': name, 'email': email, 'message': message}),
+);
+```
+
+✅ **Good — through ApiService:**
+```dart
+final response = await ApiService.instance.submitContactUs(
+  name: name,
+  email: email,
+  message: message,
+);
+```
+
+**Centralized methods (commit `e79ec2c`):**
+- `submitContactUs()` — Contact form submission
+- `submitFeedback()` — Feedback form submission
+- `getSingleMenuItem()` — Single menu item details for bottom sheet
+- `getMenuPackage()` — Menu package details for bottom sheet
+
+**Rule:** Search for `http.post` or `http.get` in widget files — if found, move to `ApiService`. Direct HTTP calls are only permitted inside `api_service.dart`.
+
+**Reference:** Commit `e79ec2c` — centralize form submissions and bottom sheet API calls
+
+### Pitfall #39: Optimistic UI Counts Must Clear on Search
+
+**Context:** When a new search is triggered (e.g., toggling "open now" in sort sheet), the result count from the previous search becomes stale. Showing stale counts while the new search is in-flight misleads users.
+
+❌ **Bad — show stale count during search:**
+```dart
+// Count from previous search flashes before new count arrives
+Text('$resultCount results')
+```
+
+✅ **Good — clear to null, show "..." while searching, read fresh count from provider:**
+```dart
+bool _isSearching = false;
+
+Future<void> _onSortChanged() async {
+  setState(() {
+    _isSearching = true;
+    _resultCount = null;  // Clear stale count
+  });
+
+  await ref.read(searchStateProvider.notifier).performSearch();
+
+  if (mounted) {
+    setState(() {
+      _isSearching = false;
+      _resultCount = ref.read(searchStateProvider).totalResults;  // Fresh from provider
+    });
+  }
+}
+
+// In build:
+Text(_isSearching ? '...' : '${_resultCount ?? "..."} results')
+```
+
+**Key patterns:**
+- Use `_isSearching` flag to track in-flight state
+- Make `onSortChanged` callback `async` so it can `await` the search
+- Read fresh count from provider after search completes (not from stale props passed at sheet open)
+- Show "..." placeholder during loading
+
+**Reference:** Commit `5c2c27c` — prevent stale result counts in filter and sort bottom sheets
 
 ---
 
@@ -3612,19 +3754,23 @@ JourneyMate maintains **three types of documentation**:
 Providers MUST initialize in this exact order at app startup:
 
 ```dart
-1. AnalyticsService.initialize()     // Device ID first
-2. ProviderContainer()                // Create container
-3. analyticsProvider.initialize()     // Analytics notifier
-4. accessibilityProvider.load()       // Accessibility settings
-5. localeProvider.initialize()        // Load language preference
-6. localizationProvider.load()        // Load currency preference
-7. translationsCacheProvider.load()   // Load translations (3 retries, 2s delay)
-8. filterProvider.load()              // Load filters (parallel with translations)
-9. locationProvider.checkPermission() // Check location permission
-10. AppLifecycleObserver.register()   // Hook app lifecycle
-11. UncontrolledProviderScope(...)    // Wrap app with container
-12. ActivityScope(...)                // Wrap with engagement tracking
+1. SharedPreferences.getInstance()   // Single instance for all reads
+2. Load cached translations + filters from SharedPreferences (instant, no API)
+3. AnalyticsService.initialize()     // Device ID first
+4. ProviderContainer()                // Create container
+5. analyticsProvider.initialize()     // Analytics notifier
+6. accessibilityProvider.load()       // Accessibility settings
+7. localeProvider.initialize()        // Load language preference
+8. localizationProvider.load()        // Load currency preference
+9. translationsCacheProvider.initializeFromPrefs()  // Cached translations (instant)
+10. filterProvider.initializeFromPrefs()             // Cached filters (instant)
+11. AppLifecycleObserver.register()   // Hook app lifecycle
+12. runApp() → UncontrolledProviderScope + ActivityScope
+13. Background: refresh stale translations/filters, dual-fetch da+en on first launch
+14. Background: locationProvider.checkPermission()
 ```
+
+**Cache-first startup (commit `827de8e`):** Steps 9-10 use SharedPreferences cache for instant display. Background refresh (step 13) only hits the API if cache is stale (>7 days) or version mismatches. First launch has no cache — dual-fetches Danish + English filters in parallel.
 
 **Retry Logic:** Translations and filters retry 3 times with 2-second delays (handles early network unavailability).
 
@@ -3652,7 +3798,8 @@ Providers MUST initialize in this exact order at app startup:
 ### Translation: 100% Supabase (0% Hardcoded)
 - Ultimate goal: zero hardcoded translations
 - All text from Supabase `ui_translations` table
-- Single source of truth for all 7 languages
+- 15 languages with complete infrastructure, 7 active via `_languageOrder` in `language_selector_button.dart`
+- To activate a new language: add its code to `_languageOrder` — infrastructure already in place (`language_currency_config.dart`)
 - Content team controls all text without app releases
 
 ### Portrait-Only iPhone, All Orientations iPad
@@ -3671,7 +3818,7 @@ Providers MUST initialize in this exact order at app startup:
 ## References
 
 - **Development Process:** `CODE_DEVELOPMENT_WORKFLOW.md` (systematic workflow for writing code)
-- **API Contracts:** `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines, 12 endpoints)
+- **API Contracts:** `_reference/BUILDSHIP_API_REFERENCE.md` (523 lines, 13 endpoints)
 - **Provider Catalog:** `_reference/PROVIDERS_REFERENCE.md` (797 lines, 8 providers)
 - **Design Tokens:** `DESIGN_SYSTEM_flutter.md` (869 lines, colors/spacing/typography)
 - **Quick Start:** `CLAUDE.md` (streamlined session primer)

@@ -1,6 +1,6 @@
 # JourneyMate — Directory Structure
 
-**Last Updated:** March 7, 2026
+**Last Updated:** March 12, 2026
 
 This document describes the organization of the JourneyMate project directory.
 
@@ -108,12 +108,17 @@ lib/pages/settings/
 - `search_results_map_view.dart` — Google Maps map view for search results (commit `c545543`)
 - `map_business_preview_card.dart` — Preview card shown on map marker tap (commit `c545543`)
 - `bottom_sheet_header.dart` — Shared header with swipe bar + action buttons for all bottom sheets (commit `80ae4b6`)
+- `map_selection_sheet.dart` — Bottom sheet for choosing Google Maps or Apple Maps (commit `cf10d08`)
+
+**Deleted widgets (commit `e79ec2c` — unused/consolidated):**
+- `allergies_filter_widget.dart`, `contact_details_widget.dart`, `dietary_preferences_filter_widgets.dart`, `dietary_restrictions_filter_widget.dart`, `menu_item_card.dart`, `user_feedback_buttons_page.dart`, `user_feedback_buttons_topic.dart`
 
 **Utility files in `lib/utils/`:**
 - `map_marker_helper.dart` — Marker icon generation for Google Maps (commit `c545543`)
 - `search_result_helpers.dart` — Shared lat/lng extraction from search result documents (commit `c545543`)
 
 **Utility files in `lib/services/custom_functions/`:**
+- `language_currency_config.dart` — Single source of truth for language→currency mapping, 15 languages (commit `8eb4a47`)
 - `contact_utils.dart` — `formatPhoneForDial()`, `ensureHttpsUrl()` shared contact formatting (commit `932e351`)
 
 **Pattern established March 2, 2026 (commit 6d5b8d4):** Page-specific widgets live near their pages, not in shared/ directory.
@@ -128,7 +133,7 @@ API contracts, provider references, and endpoint specifications.
 **Structure:**
 ```
 _reference/
-├── BUILDSHIP_API_REFERENCE.md          # API contracts for 12 BuildShip endpoints
+├── BUILDSHIP_API_REFERENCE.md          # API contracts for 13 BuildShip endpoints
 ├── PROVIDERS_REFERENCE.md              # Riverpod provider catalog
 ├── _buildship/                         # Individual BuildShip endpoint specs
 │   └── SEARCH_NODE_v9.2.ts            # Full search endpoint reference (920 lines, v9.2 with geo bounds)
