@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/filter_providers.dart';
@@ -60,11 +58,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   int _lastSearchPageSize = 20;
   static const int _listPageSize = 20;
   static const int _mapPageSize = 200;
-
-  /// Current map viewport bounds for geo-filtered search.
-  /// Only set when in map view after user manually pans/zooms.
-  /// Cleared when switching back to list view.
-  LatLngBounds? _mapViewportBounds;
 
   // Filter overlay state
   int _activeFilterTab = 0;
@@ -165,7 +158,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     });
   }
 
-  Future<void> _executeSearch(String query, {int? pageSize, LatLngBounds? geoBounds}) async {
+  Future<void> _executeSearch(String query, {int? pageSize}) async {
     final effectivePageSize = pageSize ??
         (_viewMode == _ViewMode.map ? _mapPageSize : _listPageSize);
     final currentRequestId = ++_requestId;
@@ -184,19 +177,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final languageCode = Localizations.localeOf(context).languageCode;
 
     try {
-      // Encode geo bounds as JSON for viewport-filtered map search.
-      // Uses the geoBounds parameter if explicitly passed, otherwise falls
-      // back to the stored _mapViewportBounds (set by map pan/zoom).
-      final effectiveBounds = geoBounds ?? _mapViewportBounds;
-      final geoBoundsJson = (_viewMode == _ViewMode.map && effectiveBounds != null)
-          ? json.encode({
-              'ne_lat': effectiveBounds.northeast.latitude,
-              'ne_lng': effectiveBounds.northeast.longitude,
-              'sw_lat': effectiveBounds.southwest.latitude,
-              'sw_lng': effectiveBounds.southwest.longitude,
-            })
-          : null;
-
       final response = await ApiService.instance.search(
         filters: searchState.filtersUsedForSearch,
         cityId: AppConstants.kDefaultCityId.toString(),
@@ -212,7 +192,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         pageSize: effectivePageSize,
         neighbourhoodId: searchState.selectedNeighbourhoodId,
         shoppingAreaId: searchState.selectedShoppingAreaId,
-        geoBounds: geoBoundsJson,
       );
 
       // Ignore if newer request already started
@@ -764,11 +743,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     if (_viewMode == newMode) return;
     setState(() => _viewMode = newMode);
 
-    // Clear viewport bounds when leaving map view — list search is unbounded
-    if (newMode == _ViewMode.list) {
-      _mapViewportBounds = null;
-    }
-
     final neededPageSize = newMode == _ViewMode.map ? _mapPageSize : _listPageSize;
     if (_lastSearchPageSize != neededPageSize) {
       final query = ref.read(searchStateProvider).currentSearchText;
@@ -1216,11 +1190,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       return SearchResultsMapView(
         onBusinessTap: (businessId) {
           context.push('/business/$businessId');
-        },
-        onViewportChanged: (bounds) {
-          _mapViewportBounds = bounds;
-          final query = ref.read(searchStateProvider).currentSearchText;
-          _executeSearch(query, geoBounds: bounds);
         },
       );
     }

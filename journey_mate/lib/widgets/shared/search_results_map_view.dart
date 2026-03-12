@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -22,15 +20,10 @@ class SearchResultsMapView extends ConsumerStatefulWidget {
   const SearchResultsMapView({
     super.key,
     this.onBusinessTap,
-    this.onViewportChanged,
   });
 
   /// Called when a business is selected (navigate to profile).
   final void Function(int businessId)? onBusinessTap;
-
-  /// Called when the user manually moves/zooms the map and the camera settles.
-  /// Provides the visible region bounds for viewport-based search.
-  final void Function(LatLngBounds bounds)? onViewportChanged;
 
   @override
   ConsumerState<SearchResultsMapView> createState() =>
@@ -54,22 +47,9 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
   /// Subscription for search state changes — closed in dispose().
   late final ProviderSubscription<SearchState> _searchListener;
 
-  /// Suppresses onCameraIdle callback during programmatic camera animations
-  /// (e.g. fitBounds, marker tap centering) to prevent infinite fetch loops.
-  bool _suppressViewportCallback = false;
-
-  /// Debounce timer for rapid pan/zoom camera movements.
-  Timer? _viewportDebounce;
-
-  /// Last viewport bounds reported to parent, used to skip no-op re-fetches.
-  LatLngBounds? _lastReportedBounds;
-
   // Copenhagen default center
   static const LatLng _defaultCenter = LatLng(55.6761, 12.5683);
   static const double _defaultZoom = 12.0;
-
-  /// Minimum change in degrees before a viewport change triggers re-fetch.
-  static const double _significantChangeThreshold = 0.001;
 
   @override
   void initState() {
@@ -79,19 +59,14 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
     _searchListener = ref.listenManual(searchStateProvider, (previous, next) {
       final documents = extractDocuments(next.searchResults);
       _documents = documents;
-      // Clear selection when results change
+      // Clear selection — new results always re-fit camera to show markers
       _selectedBusinessId = null;
-      // Don't re-fit camera if user has manually panned (viewport search active).
-      // The user intentionally moved to this viewport — re-fitting would undo that.
-      final shouldFitCamera = _lastReportedBounds == null;
-      _rebuildMarkersAndFit(documents, next.scoringFilterIds,
-          fitCamera: shouldFitCamera);
+      _rebuildMarkersAndFit(documents, next.scoringFilterIds);
     }, fireImmediately: true);
   }
 
   @override
   void dispose() {
-    _viewportDebounce?.cancel();
     _searchListener.close();
     _mapController?.dispose();
     super.dispose();
@@ -102,7 +77,7 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
   // ---------------------------------------------------------------------------
 
   /// Rebuilds markers and optionally fits camera bounds.
-  /// When [fitCamera] is false (e.g. after viewport-based search), markers are
+  /// When [fitCamera] is false (e.g. user has manually panned), markers are
   /// rebuilt but the camera stays where the user positioned it.
   void _rebuildMarkersAndFit(
       List<dynamic> documents, List<int> scoringFilterIds,
@@ -200,8 +175,6 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
 
   void _fitBounds() {
     if (_lastBounds != null && _mapController != null) {
-      // Suppress viewport callback to prevent fetch→fitBounds→fetch loop
-      _suppressViewportCallback = true;
       _mapController!.animateCamera(
         CameraUpdate.newLatLngBounds(_lastBounds!, 48.0),
       );
@@ -228,11 +201,10 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
     final scoringFilterIds = ref.read(searchStateProvider).scoringFilterIds;
     _buildMarkers(_documents, scoringFilterIds);
 
-    // Center map on selected marker (suppress viewport callback)
+    // Center map on selected marker
     final lat = (doc['latitude'] as num?)?.toDouble();
     final lng = (doc['longitude'] as num?)?.toDouble();
     if (lat != null && lng != null) {
-      _suppressViewportCallback = true;
       _mapController?.animateCamera(
         CameraUpdate.newLatLng(LatLng(lat, lng)),
       );
@@ -250,50 +222,6 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
 
   void _onMapTap(LatLng position) {
     _clearSelection();
-  }
-
-  // ---------------------------------------------------------------------------
-  // Viewport change detection
-  // ---------------------------------------------------------------------------
-
-  /// Called by GoogleMap.onCameraIdle after every camera movement settles.
-  /// Debounces rapid pan/zoom, skips programmatic animations, and reports
-  /// significant viewport changes to the parent via [onViewportChanged].
-  void _onCameraIdle() {
-    // Skip if this idle was triggered by a programmatic camera animation
-    if (_suppressViewportCallback) {
-      _suppressViewportCallback = false;
-      return;
-    }
-
-    // Skip if no callback is registered
-    if (widget.onViewportChanged == null) return;
-
-    // Debounce: cancel any pending callback and wait 500ms
-    _viewportDebounce?.cancel();
-    _viewportDebounce = Timer(const Duration(milliseconds: 500), () async {
-      if (!mounted || _mapController == null) return;
-
-      final bounds = await _mapController!.getVisibleRegion();
-
-      // Skip if viewport hasn't changed significantly
-      if (!_isSignificantChange(bounds)) return;
-
-      _lastReportedBounds = bounds;
-      widget.onViewportChanged?.call(bounds);
-    });
-  }
-
-  /// Returns true if the new bounds differ from the last reported bounds
-  /// by more than [_significantChangeThreshold] degrees in any direction.
-  bool _isSignificantChange(LatLngBounds bounds) {
-    if (_lastReportedBounds == null) return true;
-
-    final prev = _lastReportedBounds!;
-    return (bounds.northeast.latitude - prev.northeast.latitude).abs() > _significantChangeThreshold ||
-        (bounds.northeast.longitude - prev.northeast.longitude).abs() > _significantChangeThreshold ||
-        (bounds.southwest.latitude - prev.southwest.latitude).abs() > _significantChangeThreshold ||
-        (bounds.southwest.longitude - prev.southwest.longitude).abs() > _significantChangeThreshold;
   }
 
   // ---------------------------------------------------------------------------
@@ -342,7 +270,6 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
             // Fit bounds once map is ready (markers already built via listener)
             _fitBounds();
           },
-          onCameraIdle: _onCameraIdle,
           onTap: _onMapTap,
         ),
 
