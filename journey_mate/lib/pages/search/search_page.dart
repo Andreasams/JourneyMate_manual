@@ -1205,7 +1205,23 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       );
     }
 
-    // Empty state
+    // Map view — Google Map with dot markers for each search result.
+    // Shown even when results are empty so the map persists without markers;
+    // the "no results" message only appears in the list tab.
+    if (_viewMode == _ViewMode.map) {
+      return SearchResultsMapView(
+        onBusinessTap: (businessId) {
+          context.push('/business/$businessId');
+        },
+        onViewportChanged: (bounds) {
+          _mapViewportBounds = bounds;
+          final query = ref.read(searchStateProvider).currentSearchText;
+          _executeSearch(query, geoBounds: bounds);
+        },
+      );
+    }
+
+    // Empty state (list view only — map view handles this by showing no markers)
     final searchResults = searchState.searchResults;
     final bool isEmpty = searchResults == null ||
         extractDocuments(searchResults).isEmpty;
@@ -1233,20 +1249,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ),
           ],
         ),
-      );
-    }
-
-    // Map view — Google Map with dot markers for each search result
-    if (_viewMode == _ViewMode.map) {
-      return SearchResultsMapView(
-        onBusinessTap: (businessId) {
-          context.push('/business/$businessId');
-        },
-        onViewportChanged: (bounds) {
-          _mapViewportBounds = bounds;
-          final query = ref.read(searchStateProvider).currentSearchText;
-          _executeSearch(query, geoBounds: bounds);
-        },
       );
     }
 
