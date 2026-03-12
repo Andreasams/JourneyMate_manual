@@ -67,6 +67,7 @@ class _SearchResultsListViewState
   final Set<int> _preloadedBusinessIds = {}; // For gallery images
   final Set<int> _preloadedProfileIds = {}; // For API profile data
   dynamic _lastPreloadedResults;
+  final ScrollController _listScrollController = ScrollController();
 
   // ---------------------------------------------------------------------------
   // Analytics
@@ -122,6 +123,7 @@ class _SearchResultsListViewState
   @override
   void dispose() {
     _scrollStopTimer?.cancel();
+    _listScrollController.dispose();
     _preloadedProfileIds.clear();
     super.dispose();
   }
@@ -290,7 +292,9 @@ class _SearchResultsListViewState
         return false;
       },
       child: ListView.separated(
-        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0), // 16px top per JSX
+        controller: _listScrollController,
+        primary: false,
+        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.xxxl), // 16px top per JSX
         itemCount: documents.length,
         separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
         itemBuilder: (context, index) {
@@ -559,7 +563,9 @@ class _SearchResultsListViewState
         return false;
       },
       child: ListView(
-        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 32.0),
+        controller: _listScrollController,
+        primary: false,
+        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.xxxl),
         children: items,
       ),
     );
@@ -622,13 +628,13 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   String? _statusText;
   Color? _statusColor;
   bool _isExpanded = false;
-  final PageController _galleryPageController = PageController();
 
   // ---------------------------------------------------------------------------
   // Constants
   // ---------------------------------------------------------------------------
 
   static const double _imageSize = AppConstants.logoCircleSize; // 50px per design spec
+  static const double _galleryThumbSize = 100.0;
   static const String _placeholderImageUrl = AppConstants.kPlaceholderImageUrl;
 
   // ---------------------------------------------------------------------------
@@ -708,12 +714,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadStatus());
     }
-  }
-
-  @override
-  void dispose() {
-    _galleryPageController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadStatus() async {
@@ -1175,7 +1175,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         .toList();
 
     return SizedBox(
-      height: 100,
+      height: _galleryThumbSize,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: displayImages.length,
@@ -1204,12 +1204,12 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
                 borderRadius: BorderRadius.circular(AppRadius.chip),
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover, // Changed from contain to cover to fill space
+                  width: _galleryThumbSize,
+                  height: _galleryThumbSize,
+                  fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    width: 100,
-                    height: 100,
+                    width: _galleryThumbSize,
+                    height: _galleryThumbSize,
                     color: AppColors.bgInput,
                     child: Center(
                       child: SizedBox(
@@ -1223,8 +1223,8 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
                     ),
                   ),
                   errorWidget: (context, url, error) => Container(
-                    width: 100,
-                    height: 100,
+                    width: _galleryThumbSize,
+                    height: _galleryThumbSize,
                     color: AppColors.border,
                     child: Icon(
                       Icons.image_not_supported,
@@ -1271,7 +1271,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         },
         style: OutlinedButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.bgCard,
           side: BorderSide(
             color: AppColors.border,
             width: 1.5,

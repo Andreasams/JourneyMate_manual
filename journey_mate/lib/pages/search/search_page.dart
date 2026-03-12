@@ -46,7 +46,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   // Local state
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounceTimer;
-  ScrollController? _scrollController;
   DateTime? _pageStartTime;
   bool _isLoading = false;
   String? _errorMessage;
@@ -108,7 +107,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void dispose() {
     _trackPageView();
     _debounceTimer?.cancel();
-    _scrollController?.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -118,7 +116,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final duration = DateTime.now().difference(_pageStartTime!);
 
     final analytics = AnalyticsService.instance;
-    ApiService.instance.postAnalytics(
+    unawaited(ApiService.instance.postAnalytics(
       eventType: 'page_viewed',
       deviceId: analytics.deviceId ?? '',
       sessionId: analytics.currentSessionId ?? '',
@@ -128,7 +126,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         'pageName': 'searchPage',
         'durationSeconds': duration.inSeconds,
       },
-    );
+    ));
   }
 
   Future<void> _initialize() async {
@@ -788,7 +786,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: _viewMode == _ViewMode.list ? AppColors.bgInput : Colors.white,
+                color: _viewMode == _ViewMode.list ? AppColors.bgInput : AppColors.bgCard,
                 border: Border.all(color: AppColors.border, width: 1.5),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(8),
@@ -815,7 +813,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: _viewMode == _ViewMode.map ? AppColors.bgInput : Colors.white,
+                  color: _viewMode == _ViewMode.map ? AppColors.bgInput : AppColors.bgCard,
                   border: Border.all(color: AppColors.border, width: 1.5),
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(8),
