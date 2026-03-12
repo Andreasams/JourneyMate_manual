@@ -881,7 +881,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   Widget _buildInfoHeader() {
     return Text(
       _getUITextFromApi('info_header_additional'),
-      style: AppTypography.h5,
+      style: AppTypography.h6,
     );
   }
 
@@ -902,7 +902,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       children: [
         Text(
           _getUITextFromApi('info_header_dietary'),
-          style: AppTypography.h6,
+          style: AppTypography.bodyMedium,
         ),
         Text(
           dietaryText ?? '',
@@ -929,7 +929,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       children: [
         Text(
           _getUITextFromApi('info_header_allergens'),
-          style: AppTypography.h6,
+          style: AppTypography.bodyMedium,
         ),
         Text(
           allergyText ?? '',
@@ -1086,7 +1086,7 @@ class _ModifierGroupDisplay extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: _headerBottomSpacing),
       child: Text(
         typeLabel,
-        style: AppTypography.h5,
+        style: AppTypography.h6,
       ),
     );
   }
