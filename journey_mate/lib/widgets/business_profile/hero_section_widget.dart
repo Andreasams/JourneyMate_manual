@@ -142,8 +142,7 @@ class HeroSectionWidget extends ConsumerWidget {
                   if (statusText != null && statusText.isNotEmpty)
                     Text(
                       statusText,
-                      style: AppTypography.bodyLgHeavy.copyWith(
-                        fontWeight: FontWeight.w600,
+                      style: AppTypography.body.copyWith(
                         color: statusColor ?? AppColors.green,
                       ),
                     ),

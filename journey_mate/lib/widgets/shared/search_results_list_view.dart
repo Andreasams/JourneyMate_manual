@@ -881,9 +881,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           statusText,
           style: AppTypography.bodySm.copyWith(
             color: statusColor,
-            fontWeight: statusText.toLowerCase() == 'closed'
-                ? FontWeight.w600
-                : FontWeight.w400,
           ),
         ),
         if (timingText != null && timingText.isNotEmpty) ...[
