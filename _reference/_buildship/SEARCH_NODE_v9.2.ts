@@ -172,6 +172,60 @@ const isTrainStation  = (id: number) => id >= 10000 && id < 20000;
 const isShoppingArea  = (id: number) => id >= 20000;
 const isComposite     = (id: number) => id >= 592000 && id <= 602999;
 
+/**
+ * Parent-child filter relationships where selecting a child implies the parent.
+ *
+ * When both parent and child are in scoringFilters, the parent is redundant —
+ * the child alone represents the combined selection. This mirrors the
+ * deduplication already done in filter_count_helper.dart and
+ * selected_filters_btns.dart on the Flutter side.
+ *
+ * Used by deduplicateParentChildCombos() to collapse these into logical filters
+ * for accurate matchCount / missedFilters / scoringFilterIds.length.
+ */
+const PARENT_CHILD_RELATIONSHIPS: Record<number, number[]> = {
+  56: [585, 586],        // Bakery → [With seating, With café]
+  58: [158, 159],        // Café → [With in-house bakery, In bookstore]
+  55: [588],             // Food truck → [Other]
+  100: [196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207], // Sharing menu → courses
+  101: [184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195], // Multi-course → courses
+};
+
+/**
+ * Deduplicate parent+child combos in scoring filters.
+ *
+ * When both a parent (e.g. 56=Bakery) and a child (e.g. 585=With café) are
+ * selected, they represent ONE logical filter. This function:
+ * - Removes redundant parents from the filter list
+ * - Tracks which children are active combos (need both parent+child in doc)
+ *
+ * @returns logicalFilters - scoring filter IDs with redundant parents removed
+ * @returns activeCombos   - Map<childId, parentId> for children that form combos
+ */
+function deduplicateParentChildCombos(scoringFilters: number[]): {
+  logicalFilters: number[];
+  activeCombos: Map<number, number>;
+} {
+  const filterSet = new Set(scoringFilters);
+  const parentsToRemove = new Set<number>();
+  const activeCombos = new Map<number, number>();
+
+  for (const [parentStr, children] of Object.entries(PARENT_CHILD_RELATIONSHIPS)) {
+    const parentId = Number(parentStr);
+    if (!filterSet.has(parentId)) continue;
+
+    for (const childId of children) {
+      if (filterSet.has(childId)) {
+        parentsToRemove.add(parentId);
+        activeCombos.set(childId, parentId);
+      }
+    }
+  }
+
+  const logicalFilters = scoringFilters.filter(id => !parentsToRemove.has(id));
+  return { logicalFilters, activeCombos };
+}
+
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -606,7 +660,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
 
       if (!searchResults.hits || !Array.isArray(searchResults.hits)) {
         return {
-          documents: [], scoringFilterIds: scoringFilters, activeids: [],
+          documents: [], scoringFilterIds: deduplicateParentChildCombos(scoringFilters).logicalFilters, activeids: [],
           resultCount: 0, fullMatchCount: 0, pagination: emptyPagination,
         };
       }
@@ -634,7 +688,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
       const totalPages = Math.ceil(totalResultsFromTypesense / pageSize);
       return {
         documents,
-        scoringFilterIds: scoringFilters,
+        scoringFilterIds: deduplicateParentChildCombos(scoringFilters).logicalFilters,
         activeids,
         resultCount: totalResultsFromTypesense,
         fullMatchCount,
@@ -725,7 +779,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
 
       return {
         documents,
-        scoringFilterIds: scoringFilters,
+        scoringFilterIds: deduplicateParentChildCombos(scoringFilters).logicalFilters,
         activeids,
         resultCount: totalResultsFromTypesense,
         fullMatchCount,
@@ -741,7 +795,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
   } catch (error) {
     console.error('Typesense search error:', error);
     return {
-      documents: [], scoringFilterIds: scoringFilters, activeids: [],
+      documents: [], scoringFilterIds: deduplicateParentChildCombos(scoringFilters).logicalFilters, activeids: [],
       resultCount: 0, fullMatchCount: 0, pagination: emptyPagination,
     };
   }
@@ -796,8 +850,11 @@ async function getFullMatchData(
   } catch (error) {
     console.error('fullMatchData query failed, falling back to page-level data:', error);
     // Fallback: count on current page, use main query facets
+    // Use logicalFilters.length (not raw scoringFilters.length) since
+    // annotateMatchFields computes matchCount against deduplicated filters.
+    const { logicalFilters } = deduplicateParentChildCombos(scoringFilters);
     const fullMatchCount = currentPageDocs.filter(
-      (doc: any) => doc.matchCount === scoringFilters.length
+      (doc: any) => doc.matchCount === logicalFilters.length
     ).length;
     return { fullMatchCount, activeids: fallbackActiveids };
   }
@@ -852,24 +909,38 @@ function normalizeDocuments(
 }
 
 function annotateMatchFields(documents: any[], scoringFilters: number[]): any[] {
+  const { logicalFilters, activeCombos } = deduplicateParentChildCombos(scoringFilters);
+
   return documents.map((doc: any) => {
     const docFilters: number[] = Array.isArray(doc.filters) ? doc.filters : [];
     const docComposites: number[] = Array.isArray(doc.dietary_menu_filters)
       ? doc.dietary_menu_filters : [];
 
-    const matchedFilters = scoringFilters.filter(f =>
-      isComposite(f) ? docComposites.includes(f) : docFilters.includes(f)
-    );
-    const missedFilters = scoringFilters.filter(f =>
-      isComposite(f) ? !docComposites.includes(f) : !docFilters.includes(f)
-    );
+    const matchedFilters: number[] = [];
+    const missedFilters: number[] = [];
+
+    for (const f of logicalFilters) {
+      if (activeCombos.has(f)) {
+        // Combo child: matched only if BOTH parent AND child are in doc.filters
+        const parentId = activeCombos.get(f)!;
+        if (docFilters.includes(parentId) && docFilters.includes(f)) {
+          matchedFilters.push(f);
+        } else {
+          missedFilters.push(f);
+        }
+      } else if (isComposite(f)) {
+        (docComposites.includes(f) ? matchedFilters : missedFilters).push(f);
+      } else {
+        (docFilters.includes(f) ? matchedFilters : missedFilters).push(f);
+      }
+    }
 
     // Section tag for Flutter: determines which UI section this card belongs to.
-    // fullMatch    = all scoring filters present
+    // fullMatch    = all logical filters present
     // partialMatch = exactly 1 filter missing AND at least 1 matched
     // others       = 2+ filters missing, or 0 matched
     const section: string =
-      matchedFilters.length === scoringFilters.length ? 'fullMatch' :
+      matchedFilters.length === logicalFilters.length ? 'fullMatch' :
       missedFilters.length === 1 && matchedFilters.length > 0 ? 'partialMatch' :
       'others';
 

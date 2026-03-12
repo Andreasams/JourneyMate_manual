@@ -1318,7 +1318,9 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           if (filterId is int) {
             final filter = state.filterLookupMap[filterId];
             if (filter != null && filter['name'] != null) {
-              missedNames.add(filter['name'] as String);
+              missedNames.add(
+                _buildCombinedFilterName(filterId, filter, state.filterLookupMap),
+              );
             }
           }
         }
@@ -1371,6 +1373,52 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
+
+  /// Builds display name for a missed filter, combining parent+child names
+  /// for known parent-child combos. Mirrors selected_filters_btns._getDisplayName().
+  ///
+  /// - Bakery children (585, 586): "$parentName ${lowercaseChild}"
+  /// - All other children (158, 159, 588, 184-207): "$parentName: $childName"
+  /// - Non-combo filters: plain filter name
+  static const _comboParentChildren = <int, List<int>>{
+    56: [585, 586],
+    58: [158, 159],
+    55: [588],
+    100: [196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207],
+    101: [184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195],
+  };
+  static const _bakeryChildIds = {585, 586};
+  static final _allComboChildIds =
+      _comboParentChildren.values.expand((list) => list).toSet();
+
+  String _buildCombinedFilterName(
+    int filterId,
+    dynamic filter,
+    Map<int, dynamic> filterLookupMap,
+  ) {
+    final childName = filter['name'] as String;
+
+    if (!_allComboChildIds.contains(filterId)) return childName;
+
+    // Look up parent name from the lookup map
+    final parentId = filter['parent_id'] as int?;
+    if (parentId == null) return childName;
+
+    final parentFilter = filterLookupMap[parentId];
+    final parentName = parentFilter?['name'] as String?;
+    if (parentName == null) return childName;
+
+    // Bakery children: "Bageri med café" (lowercase, no colon)
+    if (_bakeryChildIds.contains(filterId)) {
+      final lowercased = childName.isNotEmpty
+          ? childName[0].toLowerCase() + childName.substring(1)
+          : childName;
+      return '$parentName $lowercased';
+    }
+
+    // All others: "Parent: Child"
+    return '$parentName: $childName';
+  }
 
   // _formatAddress() removed - address now only shown in expanded state via _buildFullAddress()
 }
