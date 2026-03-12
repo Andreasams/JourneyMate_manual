@@ -1,7 +1,7 @@
 # JourneyMate Flutter Design System
 
-**Version:** 1.1 - March 2026
-**Last Updated:** March 2026
+**Version:** 1.2 - March 2026
+**Last Updated:** 2026-03-12
 **Implementation:** `journey_mate/lib/theme/` (design token source files)
 
 **Purpose:** Complete Flutter implementation reference for the JourneyMate design system. Every design decision from the JSX design system has been translated to Flutter/Dart patterns.
@@ -886,4 +886,214 @@ AppTypography.bodyLgMedium  // Correct
 
 ---
 
-**Status:** Complete — All design tokens implemented | **Source of truth:** `journey_mate/lib/theme/` | **Last verified:** 2026-03-10
+## 11. Bottom Sheet Design Guide
+
+**Source file:** `journey_mate/lib/widgets/shared/bottom_sheet_header.dart`
+**Last verified:** 2026-03-12
+
+Bottom sheets are the primary overlay pattern in JourneyMate. This guide defines the shared foundation and the named variants.
+
+### 11.1 Foundation (Every Bottom Sheet)
+
+These rules apply to **every** bottom sheet in the app, no exceptions.
+
+#### Drag Handle
+
+Always present. Signals drag-to-dismiss.
+
+| Property | Value | Token |
+|----------|-------|-------|
+| Width | 40px | Hardcoded |
+| Height | 4px | Hardcoded |
+| Color (light bg) | `AppColors.border` | — |
+| Color (dark bg) | `Colors.white` @ 40% alpha | For full-screen galleries |
+| Border radius | 2px | `AppRadius.handle` |
+| Position | Top-center, 8px from top | `BottomSheetHeader.swipeBarTopPadding` |
+
+#### Container Decoration
+
+```dart
+Container(
+  decoration: BottomSheetHeader.sheetDecoration(), // bgCard + top corners
+  // or with custom bg:
+  decoration: BottomSheetHeader.sheetDecoration(color: AppColors.bgPage),
+)
+```
+
+| Property | Value | Token |
+|----------|-------|-------|
+| Background | `AppColors.bgCard` (default) | Overridable via `color` param |
+| Top corners | 20px | `AppRadius.bottomSheet` |
+
+#### showModalBottomSheet Call
+
+```dart
+showModalBottomSheet(
+  context: context,
+  isScrollControlled: true,      // Always
+  backgroundColor: Colors.transparent, // Always (shows rounded corners)
+  builder: (context) => MySheet(...),
+);
+```
+
+### 11.2 Close / Action Buttons (Optional)
+
+When present, close and action buttons must use identical styling. Position and presence vary per sheet.
+
+#### Button Style
+
+| Property | Value | Token |
+|----------|-------|-------|
+| Container size | 40x40px | `BottomSheetHeader.actionButtonSize` |
+| Background | `AppColors.bgSurface` | — |
+| Border radius | 20px (circle) | `BottomSheetHeader.actionButtonBorderRadius` |
+| Icon size | 24px | `BottomSheetHeader.actionIconSize` |
+| Icon color | `AppColors.textPrimary` | — |
+| Edge offset | 12px from top and side | `BottomSheetHeader.actionButtonPosition` |
+
+#### Via BottomSheetHeader
+
+```dart
+// Close button top-right
+BottomSheetHeader(
+  rightAction: BottomSheetAction(
+    icon: Icons.close,
+    onPressed: () => Navigator.of(context).pop(),
+  ),
+)
+
+// Close left + menu right (with image)
+BottomSheetHeader(
+  leftAction: BottomSheetAction(icon: Icons.close, onPressed: onClose),
+  rightAction: BottomSheetAction(icon: Icons.more_horiz, onPressed: onMenu),
+  image: CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
+)
+```
+
+#### Manual (When Not Using BottomSheetHeader)
+
+For sheets that build custom headers (e.g. MapSelectionSheet), match the same icon/size/color:
+
+```dart
+GestureDetector(
+  onTap: () => Navigator.of(context).pop(),
+  child: Icon(Icons.close, size: 24, color: AppColors.textPrimary),
+)
+```
+
+### 11.3 Title Typography
+
+| Sheet complexity | Style | Example |
+|------------------|-------|---------|
+| Full-featured (scrollable, multi-section) | `AppTypography.h4` | Sort, Description, Package, Item |
+| Lightweight (few options, compact) | `AppTypography.h6` | Map selection |
+| Form-based | `AppTypography.h3` | Erroneous info report |
+
+Title is always left-aligned with `AppSpacing.lg` (16px) horizontal padding.
+
+### 11.4 Named Variants
+
+#### Content Sheet (with Image Header)
+
+Used for: **ItemBottomSheet**, **PackageBottomSheet**
+
+- Image header: 200px tall, fills width, clipped to top corners
+- Close button: **left** (user navigated into detail)
+- Menu button: **right** (three-dot `Icons.more_horiz`)
+- Height: 90% of screen (`0.90`)
+- Nested navigation supported (Package → Item detail)
+
+```dart
+BottomSheetHeader(
+  leftAction: BottomSheetAction(icon: Icons.close, onPressed: onClose),
+  rightAction: BottomSheetAction(icon: Icons.more_horiz, onPressed: onMenu),
+  image: CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover),
+)
+```
+
+#### Text Sheet
+
+Used for: **DescriptionSheet**
+
+- No image
+- Close button: **right**
+- Self-sizing: min 40% / max 80% of screen height
+- Scrollable when content exceeds max height
+- Auto-linkified text (URLs, emails, phone numbers)
+
+```dart
+BottomSheetHeader(
+  rightAction: BottomSheetAction(
+    icon: Icons.close,
+    onPressed: () => Navigator.of(context).pop(),
+  ),
+)
+```
+
+#### Selection Sheet
+
+Used for: **SortBottomSheet**, **MapSelectionSheet**
+
+- No image
+- Close button: varies (Sort has none; Map has right)
+- Custom header (does not use BottomSheetHeader widget)
+- Drag handle built manually to same spec
+- Fixed height based on content
+
+#### Multi-Column Sheet
+
+Used for: **FilterOverlayWidget**
+
+- No image, no close button
+- Custom header with drag handle
+- DraggableScrollableSheet: `initial: 0.84, min: 0.4, max: 0.95`
+- 3-column hierarchical layout with tabs
+
+#### Form Sheet
+
+Used for: **ErroneousInfoFormWidget**
+
+- No image
+- Close button: **left** (via BottomSheetHeader)
+- Max height: 80% of screen
+- Scrollable form content
+- Three-state UI: default / success / error
+
+#### Gallery Sheet (Full-Screen)
+
+Used for: **ImageGalleryWidget**
+
+- Full-screen black background (no rounded corners)
+- Drag handle: **white @ 40% alpha** (visible on dark bg)
+- Close button: **top-left**, semi-transparent `bgCard` @ 80% alpha background
+- Positioned 60px from top (avoids iPhone gesture area)
+
+### 11.5 Complete Inventory
+
+| Sheet | File | Header | Close Btn | Title | Image |
+|-------|------|--------|-----------|-------|-------|
+| ItemBottomSheet | `item_bottom_sheet.dart` | BottomSheetHeader | Left | h4 | Yes (200px) |
+| PackageBottomSheet | `package_bottom_sheet.dart` | BottomSheetHeader | Left | h4 | Yes (200px) |
+| DescriptionSheet | `description_sheet.dart` | BottomSheetHeader | Right | h4 | No |
+| ErroneousInfoFormWidget | `erroneous_info_form_widget.dart` | BottomSheetHeader | Left | h3 | No |
+| SortBottomSheet | `sort_bottom_sheet.dart` | Custom | None | h4 | No |
+| FilterOverlayWidget | `filter_overlay_widget.dart` | Custom | None | Custom | No |
+| MapSelectionSheet | `map_selection_sheet.dart` | Custom | Right | h6 | No |
+| ImageGalleryWidget | `image_gallery_widget.dart` | Custom (dark) | Left | None | Full-screen |
+
+### 11.6 Decision Checklist (New Bottom Sheets)
+
+When creating a new bottom sheet:
+
+1. **Drag handle:** Always include (40px, `AppColors.border`, `AppRadius.handle`)
+2. **Container:** Use `BottomSheetHeader.sheetDecoration()`
+3. **showModalBottomSheet:** Always `isScrollControlled: true`, `backgroundColor: Colors.transparent`
+4. **Close button needed?** If yes, use `BottomSheetAction` with `Icons.close`, 24px, `AppColors.textPrimary`
+5. **Close button position:** Left = user navigated into detail; Right = user opened an overlay
+6. **Image header?** If yes, use `BottomSheetHeader(image: ...)` with 200px height
+7. **Title style:** h4 for standard sheets, h6 for lightweight, h3 for forms
+8. **Use BottomSheetHeader widget?** Preferred unless you need a custom layout (like SortBottomSheet's submenu navigation)
+
+---
+
+**Status:** Complete — All design tokens implemented | **Source of truth:** `journey_mate/lib/theme/` | **Last verified:** 2026-03-12
