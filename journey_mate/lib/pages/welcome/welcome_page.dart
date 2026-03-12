@@ -76,16 +76,18 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       final languageCode = prefs.getString('user_language_code');
       final isReturningUser = languageCode != null && languageCode.isNotEmpty;
 
-      // Request location permission if never asked (shows iOS dialog on first launch)
-      ref.read(locationProvider.notifier).requestPermissionIfNeeded();
-
-      // Update UI state
+      // Update UI state immediately (buttons visible while permission dialog shows)
       if (mounted) {
         setState(() {
           _isReturningUser = isReturningUser;
           _buttonsVisible = true;
         });
       }
+
+      // Request location permission if never asked (shows iOS dialog on first launch)
+      // Awaited so location state is resolved before pre-fetch — ensures "near me"
+      // sort works on the first search results the user sees.
+      await ref.read(locationProvider.notifier).requestPermissionIfNeeded();
 
       // Pre-fetch search results (fire-and-forget)
       if (isReturningUser) {
@@ -163,6 +165,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           resultCount,
           fullMatchCount,
           scoringFilterIds,
+          fetchedWithLocation: userLocation != null,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
       } else {
@@ -287,6 +290,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           resultCount,
           fullMatchCount,
           scoringFilterIds,
+          fetchedWithLocation: userLocation != null,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
       }

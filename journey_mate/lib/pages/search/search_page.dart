@@ -139,10 +139,15 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     // Pre-fetch location for immediate availability
     await locationNotifier.getCurrentPosition();
 
-    // Load initial results if no cached results
+    // Load initial results, or re-fetch if cached results lack location data.
+    // The welcome page pre-fetches results, but if location wasn't available yet
+    // those results are sorted alphabetically instead of by "near me".
     final searchState = ref.read(searchStateProvider);
+    final locationState = ref.read(locationProvider);
+    final needsFresh = searchState.searchResults == null ||
+        (locationState.isLocationUsable && !searchState.fetchedWithLocation);
 
-    if (searchState.searchResults == null) {
+    if (needsFresh) {
       await _executeSearch('');
     }
   }
@@ -232,6 +237,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           resultCount,
           fullMatchCount,
           scoringFilterIds,
+          fetchedWithLocation: position != null,
         );
 
         _lastSearchPageSize = effectivePageSize;
@@ -437,7 +443,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: AppColors.border,
+        color: AppColors.dragHandle,
         borderRadius: BorderRadius.circular(AppRadius.handle),
       ),
     );

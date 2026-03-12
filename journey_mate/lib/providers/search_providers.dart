@@ -31,8 +31,9 @@ class SearchStateNotifier extends Notifier<SearchState> {
     dynamic results,
     int count,
     int fullMatchCount,
-    List<int> scoringFilterIds,
-  ) {
+    List<int> scoringFilterIds, {
+    bool fetchedWithLocation = false,
+  }) {
     // Normalize input: extract documents array if full response object passed
     dynamic normalizedResults = results;
     if (results is Map && results.containsKey('documents')) {
@@ -59,6 +60,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
       scoringFilterIds: List<int>.from(scoringFilterIds),
       hasActiveSearch: true,
       lastFetchTime: DateTime.now(),
+      fetchedWithLocation: fetchedWithLocation,
     );
   }
 

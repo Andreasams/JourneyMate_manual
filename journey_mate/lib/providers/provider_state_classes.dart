@@ -187,6 +187,7 @@ class SearchState {
   final int? selectedShoppingAreaId; // Shopping area filter ID routed from overlay (API param, not in filters array)
   final DateTime? lastRefinementTime;
   final DateTime? lastFetchTime; // Timestamp of most recent search API call
+  final bool fetchedWithLocation; // Whether the cached results were fetched with GPS coordinates
 
   const SearchState({
     required this.searchResults,
@@ -207,6 +208,7 @@ class SearchState {
     this.selectedShoppingAreaId,
     this.lastRefinementTime,
     this.lastFetchTime,
+    this.fetchedWithLocation = false,
   });
 
   factory SearchState.initial() {
@@ -249,6 +251,7 @@ class SearchState {
     int? selectedShoppingAreaId,
     DateTime? lastRefinementTime,
     DateTime? lastFetchTime,
+    bool? fetchedWithLocation,
   }) {
     return SearchState(
       searchResults: searchResults ?? this.searchResults,
@@ -269,6 +272,7 @@ class SearchState {
       selectedShoppingAreaId: selectedShoppingAreaId ?? this.selectedShoppingAreaId,
       lastRefinementTime: lastRefinementTime ?? this.lastRefinementTime,
       lastFetchTime: lastFetchTime ?? this.lastFetchTime,
+      fetchedWithLocation: fetchedWithLocation ?? this.fetchedWithLocation,
     );
   }
 
@@ -292,6 +296,7 @@ class SearchState {
     int? selectedShoppingAreaId,
     DateTime? lastRefinementTime,
     DateTime? lastFetchTime,
+    bool? fetchedWithLocation,
     bool clearResults = false,
     bool clearActiveFilterIds = false,
     bool clearScoringFilterIds = false,
@@ -319,6 +324,7 @@ class SearchState {
       selectedShoppingAreaId: clearShoppingAreaId ? null : (selectedShoppingAreaId ?? this.selectedShoppingAreaId),
       lastRefinementTime: clearRefinementTime ? null : (lastRefinementTime ?? this.lastRefinementTime),
       lastFetchTime: clearFetchTime ? null : (lastFetchTime ?? this.lastFetchTime),
+      fetchedWithLocation: fetchedWithLocation ?? this.fetchedWithLocation,
     );
   }
 }
