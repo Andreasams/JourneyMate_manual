@@ -139,19 +139,19 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
             const SizedBox(height: AppSpacing.sm),
             Text(
               td(ref, 'settings_page_subtitle_localization'), // "Configure your language, currency, and location preferences"
-              style: AppTypography.bodyLg,
+              style: AppTypography.body,
             ),
             const SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
             // Language Section
             Text(
               td(ref, 'settings_language_description'), // "Language"
-              style: AppTypography.bodyLgMedium.copyWith(fontWeight: FontWeight.w600),
+              style: AppTypography.h6,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               td(ref, 'settings_current_language_info'), // "Select your preferred language..."
-              style: AppTypography.bodyLg,
+              style: AppTypography.body,
             ),
             const SizedBox(height: AppSpacing.sm),
             LanguageSelectorButton(
@@ -169,12 +169,12 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
             // Currency Section
             Text(
               td(ref, 'settings_currency_description'), // "Currency"
-              style: AppTypography.bodyLgMedium.copyWith(fontWeight: FontWeight.w600),
+              style: AppTypography.h6,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               td(ref, 'currency_display_prefix'), // "We can display prices..."
-              style: AppTypography.bodyLg,
+              style: AppTypography.body,
             ),
             const SizedBox(height: AppSpacing.sm),
             const CurrencySelectorButton(
@@ -196,12 +196,12 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
             if (currentLanguage == 'en') ...[
               Text(
                 td(ref, 'distance_unit_title'), // "Distance Units"
-                style: AppTypography.bodyLgMedium.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.h6,
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 td(ref, 'distance_unit_description'),
-                style: AppTypography.bodyLg,
+                style: AppTypography.body,
               ),
               const SizedBox(height: AppSpacing.sm),
               const DistanceUnitSelectorButton(
@@ -214,12 +214,12 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
             // Location Section
             Text(
               td(ref, 'filter_location'), // "Location"
-              style: AppTypography.bodyLgMedium.copyWith(fontWeight: FontWeight.w600),
+              style: AppTypography.h6,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               td(ref, 'location_description_permission'), // "Allow JourneyMate to show nearby restaurants..."
-              style: AppTypography.bodyLg,
+              style: AppTypography.body,
             ),
             // Intentionally larger spacing (lg instead of xs) for visual breathing room
             // above the location sharing button — do not reduce to match other sections

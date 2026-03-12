@@ -287,8 +287,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
           }
         }
       }
-    } catch (e) {
-      debugPrint('⚠️ Failed to extract business_id: $e');
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -300,8 +299,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   void _incrementSessionItemClicks() {
     try {
       ref.read(analyticsProvider.notifier).incrementItemClick();
-    } catch (e) {
-      debugPrint('⚠️ Failed to increment session item clicks: $e');
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -309,8 +307,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   void _incrementSessionPackageClicks() {
     try {
       ref.read(analyticsProvider.notifier).incrementPackageClick();
-    } catch (e) {
-      debugPrint('⚠️ Failed to increment session package clicks: $e');
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -318,8 +315,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   void _addViewedCategoryToSession(int categoryId) {
     try {
       ref.read(analyticsProvider.notifier).recordCategoryViewed(categoryId);
-    } catch (e) {
-      debugPrint('⚠️ Failed to add viewed category to session: $e');
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -327,8 +323,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
   void _updateSessionScrollDepth(int scrollPercent) {
     try {
       ref.read(analyticsProvider.notifier).updateDeepestScroll(scrollPercent);
-    } catch (e) {
-      debugPrint('⚠️ Failed to update session scroll depth: $e');
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -1966,7 +1961,7 @@ class _MenuItem extends ConsumerWidget {
                         children: [
                           Text(
                             itemTitle,
-                            style: AppTypography.bodyMedium,
+                            style: AppTypography.h6,
                             maxLines: titleMaxLines,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1974,7 +1969,7 @@ class _MenuItem extends ConsumerWidget {
                             const SizedBox(height: _titleDescriptionSpacing),
                             Text(
                               description,
-                              style: AppTypography.body.copyWith(
+                              style: AppTypography.bodyMedium.copyWith(
                                 color: AppColors.textSecondary,
                               ),
                               maxLines: _descriptionMaxLines,
@@ -1986,7 +1981,7 @@ class _MenuItem extends ConsumerWidget {
                             opacity: _isZeroPrice(displayPrice) ? 0.0 : 1.0,
                             child: Text(
                               _isZeroPrice(displayPrice) ? '0 kr' : displayPrice,
-                              style: AppTypography.bodySm.copyWith(
+                              style: AppTypography.bodyLgMedium.copyWith(
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.accent,
                               ),

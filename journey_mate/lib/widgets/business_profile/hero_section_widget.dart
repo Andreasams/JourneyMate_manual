@@ -142,7 +142,7 @@ class HeroSectionWidget extends ConsumerWidget {
                   if (statusText != null && statusText.isNotEmpty)
                     Text(
                       statusText,
-                      style: AppTypography.bodyLgHeavy.copyWith(
+                      style: AppTypography.body.copyWith(
                         color: statusColor ?? AppColors.green,
                       ),
                     ),
@@ -153,7 +153,7 @@ class HeroSectionWidget extends ConsumerWidget {
                     Flexible(
                       child: Text(
                         timingText,
-                        style: AppTypography.bodyLg,
+                        style: AppTypography.body,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -170,7 +170,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       Flexible(
                         child: Text(
                           businessType,
-                          style: AppTypography.bodyLg,
+                          style: AppTypography.body,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -184,7 +184,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       ],
                       Text(
                         priceRangeText,
-                        style: AppTypography.bodyLg,
+                        style: AppTypography.body,
                       ),
                     ],
                     if (distanceText != null) ...[
@@ -197,7 +197,7 @@ class HeroSectionWidget extends ConsumerWidget {
                       ],
                       Text(
                         distanceText,
-                        style: AppTypography.bodyLg,
+                        style: AppTypography.body,
                       ),
                     ],
                   ],
@@ -209,7 +209,7 @@ class HeroSectionWidget extends ConsumerWidget {
               if (addressText.isNotEmpty)
                 Text(
                   addressText,
-                  style: AppTypography.bodyLg,
+                  style: AppTypography.body,
                 ),
             ],
           ),
@@ -274,8 +274,7 @@ class HeroSectionWidget extends ConsumerWidget {
       try {
         final hexColor = logoColorHex.replaceAll('#', '');
         return Color(int.parse('FF$hexColor', radix: 16));
-      } catch (e) {
-        debugPrint('⚠️ Invalid logo color: $logoColorHex');
+      } catch (_) { // ignore: empty_catches
       }
     }
     return AppColors.accent;

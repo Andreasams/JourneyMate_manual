@@ -507,9 +507,7 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
       // Auto-scroll to keep selected category visible
       // Only for scroll updates, not user taps
       _autoScrollToSelection(categoryId, menuId);
-    } catch (e, stackTrace) {
-      debugPrint('Error parsing visibleSelection: $e');
-      debugPrint('Stack trace: $stackTrace');
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -672,8 +670,7 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
           curve: Curves.easeInOut,
         );
       }
-    } catch (e) {
-      debugPrint('Error scrolling item into view: $e');
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -728,7 +725,6 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
 
       return [];
     } catch (e) {
-      debugPrint('Error extracting categories data: $e');
       return [];
     }
   }
@@ -1143,7 +1139,7 @@ class _MenuCategoriesRowsState extends ConsumerState<MenuCategoriesRows> {
       ),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.chip),
+          borderRadius: BorderRadius.circular(AppRadius.filter),
           side: isSelected
               ? (selectedBorder ?? BorderSide.none)
               : (unselectedBorder ?? BorderSide.none),

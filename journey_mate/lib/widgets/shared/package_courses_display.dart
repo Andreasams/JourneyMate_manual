@@ -101,7 +101,6 @@ class _PackageCoursesDisplayState
   static const String _menuItemIdKey = 'menu_item_id';
   static const String _categoryTypeKey = 'category_type';
   static const String _packageIdKey = 'package_id';
-  static const String _packageNameKey = 'package_name';
   static const String _coursesKey = 'courses';
   static const String _courseNameKey = 'course_name';
   static const String _courseDescriptionKey = 'course_description';
@@ -141,9 +140,7 @@ class _PackageCoursesDisplayState
     try {
       _buildMenuItemLookupMap();
       _findSelectedPackage();
-      _logProcessingResults();
-    } catch (e) {
-      debugPrint('Error processing menu data: $e');
+    } catch (_) { // ignore: empty_catches
     }
   }
 
@@ -174,15 +171,6 @@ class _PackageCoursesDisplayState
     if (category is! Map<String, dynamic>) return false;
     return category[_categoryTypeKey] == _menuPackageType &&
         category[_packageIdKey] == widget.packageId;
-  }
-
-  /// Logs processing results for debugging
-  void _logProcessingResults() {
-    debugPrint('Menu items loaded: ${_menuItemMap.length}');
-    debugPrint('Package found: ${_selectedPackage != null}');
-    if (_selectedPackage != null) {
-      debugPrint('Package name: ${_selectedPackage![_packageNameKey]}');
-    }
   }
 
   /// =========================================================================

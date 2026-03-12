@@ -72,15 +72,11 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
     // Check if cached results are fresh
     final searchNotifier = ref.read(searchStateProvider.notifier);
     if (searchNotifier.isCacheFresh()) {
-      debugPrint('🚀 NavBar: Using fresh cached results, navigating immediately');
-
       // Navigate immediately without API call
       if (!context.mounted) return;
       context.go('/search');
       return;
     }
-
-    debugPrint('🚀 NavBar: Cache stale or missing, fetching in background...');
 
     // Navigate immediately (don't block on API)
     if (!context.mounted) return;
@@ -141,10 +137,8 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
         // Generate new filter session ID
         ref.read(searchStateProvider.notifier).generateNewFilterSessionId();
 
-        debugPrint('🚀 NavBar: Background fetch completed ($resultCount results, $fullMatchCount full matches)');
       }
     } catch (e) {
-      debugPrint('🚀 NavBar: Background fetch failed: $e');
       // Fail silently - SearchPage will handle error state
     }
   }

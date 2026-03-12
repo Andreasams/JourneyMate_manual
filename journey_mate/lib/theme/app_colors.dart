@@ -92,6 +92,9 @@ class AppColors {
   /// Dot separator - Small decorative dots between inline items (e.g. hero row)
   static const Color dotSeparator = Color(0xFFD0D0D0);
 
+  /// Button pressed - Light grey touch feedback / disabled state
+  static const Color buttonPressed = Color(0xFFdcdee0);
+
   // ============================================================
   // SEMANTIC COLORS (Aliases for clarity)
   // ============================================================

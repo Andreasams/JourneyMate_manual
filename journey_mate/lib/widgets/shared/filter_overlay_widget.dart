@@ -13,6 +13,7 @@ import '../../providers/app_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
+import 'app_checkbox.dart';
 
 /// FilterSelectionType enum for tracking current selection mode
 enum FilterSelectionType { none, neighborhood, shoppingArea, trainStation }
@@ -128,6 +129,9 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// Scoring filter IDs from most recent search
   List<int> _currentScoringFilterIds = [];
 
+  /// Whether a search API call is currently in flight
+  bool _isSearching = false;
+
   /// Debounce timer for search execution
   Timer? _debounceTimer;
 
@@ -151,7 +155,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   final Color _accentColor = AppColors.accent; // Orange - active selections
 
   // Interactive button states (touch feedback)
-  static const Color _buttonPressedColor = Color(0xFFdcdee0); // Light grey
+  static const Color _buttonPressedColor = AppColors.buttonPressed;
 
   // Column backgrounds
   final Color _leftColumnBackgroundColor = AppColors.bgSurface;
@@ -370,7 +374,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   void _handleActiveFilterChanges(FilterOverlayWidget oldWidget) {
     if (!listEquals(oldWidget.activeFilterIds, widget.activeFilterIds)) {
       _receivedActiveIdsAfterSearch = true;
-      debugPrint('🔍 FilterOverlay: Received ${widget.activeFilterIds.length} active filters');
       setState(() {});
     }
   }
@@ -964,7 +967,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     final filter = _findFilterById(filterId);
 
     if (filter == null) {
-      debugPrint('⚠️ _toggleFilter: Filter $filterId not found in _filterMap!');
       return;
     }
 
@@ -1010,6 +1012,15 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// =========================================================================
 
   Future<void> _executeSearchAndTrackAnalytics() async {
+    // Clear stale count and show loading state while new results are fetched
+    if (mounted) {
+      setState(() {
+        _isSearching = true;
+        _optimisticResultCount = null;
+        _optimisticFullMatchCount = null;
+      });
+    }
+
     try {
       // Generate filter session ID if needed
       final searchState = ref.read(searchStateProvider);
@@ -1092,6 +1103,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
         if (mounted) {
           setState(() {
+            _isSearching = false;
             _optimisticResultCount = resultCount;
             _optimisticFullMatchCount = fullMatchCount;
             _currentScoringFilterIds = scoringFilterIds;
@@ -1106,8 +1118,12 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           scoringFilterIds,
         );
       }
-    } catch (e) {
-      debugPrint('❌ FilterOverlay: Error in _executeSearchAndTrackAnalytics: $e');
+    } catch (_) { // ignore: empty_catches
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+      }
     }
   }
 
@@ -1195,6 +1211,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   String _getResultsButtonText() {
+    if (_isSearching) return '...';
     if (widget.searchTerm?.isNotEmpty == true) {
       return _getSearchResultsText();
     }
@@ -1439,10 +1456,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     String displayText,
   ) {
     final isItemColumn = filterType == 'item';
-    const checkboxSize = 18.0; // Same size for both columns
-    const checkboxRadius = AppRadius.checkbox; // 5px for both
     final checkboxGap = isItemColumn ? AppSpacing.sm : 7.0; // 8px : 7px
-    const checkIconSize = 11.0; // Same size for both
 
     return GestureDetector(
       onTap: isActive ? () => _handleFilterSelection(filter) : null,
@@ -1453,29 +1467,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         ),
         child: Row(
           children: [
-            // Custom checkbox (Container-based, like sort_bottom_sheet.dart)
-            Container(
-              width: checkboxSize,
-              height: checkboxSize,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? (isActive ? _accentColor : _textDisabledColor)
-                    : _whiteColor,
-                border: isSelected
-                    ? null
-                    : Border.all(
-                        color: isActive
-                            ? const Color(0xFFCCCCCC) // #ccc from JSX
-                            : _textDisabledColor,
-                        width: 1.5,
-                      ),
-                borderRadius: BorderRadius.circular(checkboxRadius),
-              ),
-              child: isSelected
-                  ? const Icon(Icons.check,
-                      size: checkIconSize, color: _whiteColor)
-                  : null,
-            ),
+            AppCheckbox(isSelected: isSelected, isEnabled: isActive),
             SizedBox(width: checkboxGap),
             // Label text (existing styling)
             Expanded(
@@ -1576,9 +1568,10 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     final hasValidCount = count != null && count > 0;
     final hasSelectedFilters = _selectedFilterIds.isNotEmpty;
 
-    final shouldHighlight = hasSearchResults
-        ? hasValidCount
-        : (hasSelectedFilters && hasValidCount);
+    final shouldHighlight = _isSearching ||
+        (hasSearchResults
+            ? hasValidCount
+            : (hasSelectedFilters && hasValidCount));
 
     return ButtonStyle(
       backgroundColor:
@@ -1590,7 +1583,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.filter), // 10px
+          borderRadius: BorderRadius.circular(AppRadius.filter), // 12px
           side: BorderSide(color: _accentColor, width: 1.5),
         ),
       ),
@@ -1622,7 +1615,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       minimumSize: WidgetStateProperty.all(const Size(0, _footerButtonHeight)),
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.filter), // 10px
+          borderRadius: BorderRadius.circular(AppRadius.filter), // 12px
           side: BorderSide(color: AppColors.border, width: 1.5),
         ),
       ),

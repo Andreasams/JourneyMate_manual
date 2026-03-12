@@ -467,11 +467,11 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
 
   /// Languages where dietary/allergen names should be lowercased in context.
   static const Set<String> _lowercaseLanguages = {
-    'da', 'en', 'es', 'de', 'fr', 'nl', 'no', 'sv', 'it', 'pl', 'fi',
+    'da', 'en', 'es', 'de', 'fr', 'nl', 'no', 'sv', 'it', 'pl', 'fi', 'uk',
   };
 
   /// Languages where no space is needed before the count number.
-  static const Set<String> _noSpaceBeforeCount = {'zh', 'ja'};
+  static const Set<String> _noSpaceBeforeCount = {'zh', 'ja', 'ko'};
 
   /// Builds the filter summary string shown above the toggle when filters
   /// are active. Ported from FlutterFlow's generateFilterSummary.

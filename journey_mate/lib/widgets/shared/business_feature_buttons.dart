@@ -207,8 +207,6 @@ class _BusinessFeatureButtonsState
   Future<void> _calculateAndNotifyMetrics() async {
     try {
       final organizedFilters = _getOrganizedFilters();
-      debugPrint(
-          '📋 Filters to display: ${organizedFilters.map((f) => f['name']).toList()}');
 
       await widget.onInitialCount(organizedFilters.length);
 
@@ -227,7 +225,6 @@ class _BusinessFeatureButtonsState
 
       await widget.onHeightCalculated?.call(metrics.height);
     } catch (e) {
-      debugPrint('Error in _calculateAndNotifyMetrics: $e');
       await widget.onInitialCount(0);
       await widget.onHeightCalculated?.call(0.0);
     }
@@ -290,9 +287,6 @@ class _BusinessFeatureButtonsState
     if (rowCount > 1) {
       totalHeight += (rowCount - 1) * _buttonRunSpacing;
     }
-
-    debugPrint(
-        '📐 Height calc: $rowCount rows, ${filters.length} filters, height=$totalHeight, containerWidth=$containerWidth');
 
     return (height: totalHeight, rowCount: rowCount);
   }
@@ -404,12 +398,10 @@ class _BusinessFeatureButtonsState
         },
         loading: () => [],
         error: (e, _) {
-          debugPrint('Error loading filters: $e');
           return [];
         },
       );
     } catch (e) {
-      debugPrint('Error converting filters: $e');
       return [];
     }
   }
@@ -488,7 +480,6 @@ class _BusinessFeatureButtonsState
 
       return false;
     } catch (e) {
-      debugPrint('Error in _shouldHideFilter: $e');
       return false;
     }
   }
@@ -585,7 +576,6 @@ class _BusinessFeatureButtonsState
 
       return visibleFilters;
     } catch (e) {
-      debugPrint('Error in _getOrganizedFilters: $e');
       return [];
     }
   }
@@ -614,7 +604,6 @@ class _BusinessFeatureButtonsState
       }
       return null;
     } catch (e) {
-      debugPrint('Error getting filter description: $e');
       return null;
     }
   }
@@ -686,7 +675,6 @@ class _BusinessFeatureButtonsState
 
       return filterName;
     } catch (e) {
-      debugPrint('Error in _getDisplayName: $e');
       return '';
     }
   }
@@ -782,7 +770,6 @@ class _BusinessFeatureButtonsState
         ),
       );
     } catch (e) {
-      debugPrint('Error in build method: $e');
       return SizedBox(width: widget.width, height: 0);
     }
   }
@@ -918,7 +905,6 @@ class _BusinessFeatureButtonsState
         );
       }).toList();
     } catch (e) {
-      debugPrint('Error in _buildFilterButtons: $e');
       return [];
     }
   }
@@ -1018,12 +1004,8 @@ class _BusinessFeatureButtonsState
     // Track analytics event
     _trackFilterInfoClick(filterId, filterName, description);
 
-    try {
-      if (widget.onFilterTap != null) {
-        await widget.onFilterTap!(filterId, filterName, description);
-      }
-    } catch (e) {
-      debugPrint('Error in button onPressed: $e');
+    if (widget.onFilterTap != null) {
+      await widget.onFilterTap!(filterId, filterName, description);
     }
   }
 

@@ -134,7 +134,7 @@ class FilterTitlesRow extends ConsumerWidget {
                 color: isSelected ? AppColors.accent : AppColors.border,
                 width: 1.5,
               ),
-              borderRadius: BorderRadius.circular(AppRadius.filter), // 10px
+              borderRadius: BorderRadius.circular(AppRadius.filter), // 12px
             ),
             alignment: Alignment.center,
             child: Row(
@@ -143,8 +143,7 @@ class FilterTitlesRow extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: AppTypography.bodyLg.copyWith(
-                    fontSize: 13.5,
+                  style: AppTypography.bodySmMedium.copyWith(
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected ? AppColors.bgCard : AppColors.textSecondary,
                   ),

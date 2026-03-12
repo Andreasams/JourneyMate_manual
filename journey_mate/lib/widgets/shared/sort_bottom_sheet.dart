@@ -9,6 +9,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
 import './search_bar_widget.dart';
+import 'app_checkbox.dart';
 
 /// Sort Bottom Sheet
 /// Allows users to change sort order and toggle "only open" filter
@@ -27,7 +28,7 @@ class SortBottomSheet extends ConsumerStatefulWidget {
   final bool onlyOpen;
   final int? selectedStation;
   final int openPlacesCount; // Count of open places matching current filters
-  final void Function(String sortBy, bool onlyOpen, int? station)
+  final Future<void> Function(String sortBy, bool onlyOpen, int? station)
       onSortChanged;
 
   @override
@@ -38,6 +39,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
   late String _selectedSort;
   late bool _onlyOpen;
   late int? _selectedStation; // Track selected station locally for immediate visual feedback
+  bool _isSearching = false;
   String _view = 'options'; // 'options' or 'stations'
 
   final TextEditingController _stationSearchController = TextEditingController();
@@ -231,7 +233,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               height: 4,
               decoration: BoxDecoration(
                 color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppRadius.handle),
               ),
             ),
           ),
@@ -260,9 +262,15 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            setState(() => _onlyOpen = !_onlyOpen);
-            widget.onSortChanged(_selectedSort, _onlyOpen, widget.selectedStation);
+          onTap: () async {
+            setState(() {
+              _onlyOpen = !_onlyOpen;
+              _isSearching = true;
+            });
+            await widget.onSortChanged(_selectedSort, _onlyOpen, widget.selectedStation);
+            if (mounted) {
+              setState(() => _isSearching = false);
+            }
           },
           borderRadius: BorderRadius.circular(AppRadius.chip),
           child: Container(
@@ -283,22 +291,10 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             child: Row(
               children: [
                 // Checkbox - green when selected
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: _onlyOpen ? AppColors.green : Colors.transparent,
-                    border: _onlyOpen
-                        ? null
-                        : Border.all(
-                            color: AppColors.border,
-                            width: 1.5,
-                          ),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: _onlyOpen
-                      ? Icon(Icons.check, size: 11, color: Colors.white)
-                      : null,
+                AppCheckbox(
+                  isSelected: _onlyOpen,
+                  size: 20,
+                  activeColor: AppColors.green,
                 ),
                 SizedBox(width: AppSpacing.sm),
                 // Label
@@ -314,12 +310,10 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                   ),
                 ),
                 // Count display when selected
-                if (_onlyOpen)
+                if (_onlyOpen && !_isSearching)
                   Text(
-                    '${widget.openPlacesCount} ${td(ref, 'sort_places_label')}',
-                    style: AppTypography.bodyLg.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                    '${ref.watch(searchStateProvider).visibleResultCount} ${td(ref, 'sort_places_label')}',
+                    style: AppTypography.bodySmMedium.copyWith(
                       color: AppColors.green,
                     ),
                   ),
@@ -443,7 +437,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             height: 4,
             decoration: BoxDecoration(
               color: AppColors.border,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(AppRadius.handle),
             ),
           ),
           SizedBox(height: AppSpacing.md),

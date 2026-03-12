@@ -178,7 +178,6 @@ class _SearchResultsListViewState
         businessId: businessId,
         languageCode: languageCode,
       ).catchError((error) {
-        debugPrint('⚠️ Pre-load failed for business $businessId: $error');
         _preloadedProfileIds.remove(businessId); // Allow retry
         return ApiCallResponse.failure(error.toString());
       }),
@@ -410,9 +409,7 @@ class _SearchResultsListViewState
           ],
           Text(
             td(ref, labelKey),
-            style: AppTypography.bodyLg.copyWith(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+            style: AppTypography.bodySmHeavy.copyWith(
               color: color,
               letterSpacing: 0.5,
             ),
@@ -509,7 +506,6 @@ class _SearchResultsListViewState
     }
 
     // Backup path: Re-group by section
-    debugPrint('⚠️ Documents not properly ordered. Re-grouping client-side...');
 
     // Group into three lists
     final fullMatch = <dynamic>[];
@@ -633,8 +629,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   // ---------------------------------------------------------------------------
 
   static const double _imageSize = AppConstants.logoCircleSize; // 50px per design spec
-  static const String _placeholderImageUrl =
-      'https://tlqfuazpshfaozdvmcbh.supabase.co/storage/v1/object/public/profilepic_restaurants/placeholder.webp';
+  static const String _placeholderImageUrl = AppConstants.kPlaceholderImageUrl;
 
   // ---------------------------------------------------------------------------
   // JSON Field Extraction
@@ -802,7 +797,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   Widget _buildImage() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.logoSmall), // 13px per JSX
+      borderRadius: BorderRadius.circular(AppRadius.logoSmall), // 12px
       child: CachedNetworkImage(
         imageUrl: _profilePicture ?? _placeholderImageUrl,
         width: _imageSize,
@@ -860,7 +855,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
             _businessName ?? 'Business',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.bodyMedium,
+            style: AppTypography.bodyHeavy,
           ),
         ),
         if (distanceText != null) ...[
@@ -886,9 +881,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           statusText,
           style: AppTypography.bodySm.copyWith(
             color: statusColor,
-            fontWeight: statusText.toLowerCase() == 'closed'
-                ? FontWeight.w600
-                : FontWeight.w400,
           ),
         ),
         if (timingText != null && timingText.isNotEmpty) ...[
@@ -1086,8 +1078,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     return Text(
       fullAddress,
-      style: AppTypography.bodyLg.copyWith(
-        fontSize: 12.5,
+      style: AppTypography.bodySm.copyWith(
         color: AppColors.textTertiary,
       ),
     );
@@ -1097,8 +1088,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
     if (_openingHours == null) {
       return Text(
         td(ref, 'hours_no_data'),
-        style: AppTypography.bodyLg.copyWith(
-          fontSize: 12.5,
+        style: AppTypography.bodySm.copyWith(
           color: AppColors.textSecondary,
         ),
       );
@@ -1109,8 +1099,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     return Text(
       '${td(ref, 'today_prefix')} $todayStr', // Space between label and time
-      style: AppTypography.bodyLg.copyWith(
-        fontSize: 12.5,
+      style: AppTypography.bodySm.copyWith(
         color: AppColors.textSecondary,
       ),
     );
@@ -1212,7 +1201,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
                 );
               },
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppRadius.chip),
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
                   width: 100,
@@ -1270,7 +1259,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
             widget.onBusinessTap?.call(businessId);
           } else {
-            debugPrint('❌ Invalid businessId: $businessId');
             // Show error to user
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -1377,8 +1365,7 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
           Expanded(
             child: Text(
               missedNames.isNotEmpty ? '$matchesText · $missingText' : matchesText,
-              style: AppTypography.bodyLg.copyWith(
-                fontSize: 12,
+              style: AppTypography.bodySm.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),

@@ -359,7 +359,6 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
       },
     )
         .catchError((e) {
-      debugPrint('Analytics error: $e');
       return ApiCallResponse.failure('Analytics failed');
     });
   }

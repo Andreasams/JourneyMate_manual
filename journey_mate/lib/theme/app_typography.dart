@@ -22,6 +22,14 @@ class AppTypography {
   //   h6 (16) — sub-section labels (e.g. inside collapsibles)
   // ============================================================
 
+  /// 28/w800 — hero titles (welcome page)
+  static const TextStyle hero = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w800,
+    color: AppColors.textPrimary,
+    height: 1.2,
+  );
+
   /// 26/w700 — app-section entry titles (Search, Settings)
   static const TextStyle h1 = TextStyle(
     fontSize: 26,
@@ -62,10 +70,10 @@ class AppTypography {
     height: 1.3,
   );
 
-  /// 16/w700 — sub-section labels (e.g. inside collapsibles)
+  /// 16/w600 — sub-section labels (e.g. inside collapsibles)
   static const TextStyle h6 = TextStyle(
     fontSize: 16,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
   );
@@ -122,8 +130,16 @@ class AppTypography {
     height: 1.45,
   );
 
-  /// 15/w700 — bold card names, section labels
+  /// 15/w600 — emphasized card names, section labels
   static const TextStyle bodyHeavy = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+    height: 1.45,
+  );
+
+  /// 15/w700 — bold card names, section labels
+  static const TextStyle bodyExtraHeavy = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,

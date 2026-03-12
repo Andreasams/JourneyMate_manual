@@ -57,14 +57,13 @@ class BottomSheetHeader extends StatelessWidget {
 
   // ---- Public constants (reusable by consuming widgets) --------------------
 
-  static const double swipeBarWidth = 80.0;
+  static const double swipeBarWidth = 40.0;
   static const double swipeBarHeight = 4.0;
   static const double swipeBarTopPadding = 8.0;
   static const double actionButtonSize = 40.0;
   static const double actionButtonPosition = 12.0;
   static const double actionIconSize = 24.0;
   static const double actionButtonBorderRadius = 20.0;
-  static const double swipeBarBorderRadius = 20.0;
 
   /// Canonical container decoration for JourneyMate bottom sheets.
   static BoxDecoration sheetDecoration({Color? color}) => BoxDecoration(
@@ -104,8 +103,8 @@ class BottomSheetHeader extends StatelessWidget {
                 width: swipeBarWidth,
                 height: swipeBarHeight,
                 decoration: BoxDecoration(
-                  color: AppColors.textPrimary,
-                  borderRadius: BorderRadius.circular(swipeBarBorderRadius),
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(AppRadius.handle),
                 ),
               ),
             ),

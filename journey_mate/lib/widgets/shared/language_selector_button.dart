@@ -6,6 +6,7 @@ import '../../providers/app_providers.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/locale_provider.dart';
+import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import 'overlay_dropdown_selector.dart';
 
@@ -95,8 +96,11 @@ class _LanguageSelectorButtonState
   // Language Configuration
   // ─────────────────────────────────────────────────────────────────────────────
 
-  // Language names in their native form (MUST NOT be translated)
+  // Language names in their native form (MUST NOT be translated).
+  // All 15 database languages included for name resolution;
+  // only those in _languageOrder appear in the dropdown.
   static const Map<String, String> _languageNames = {
+    // ── Active ──
     'en': 'English',
     'da': 'Dansk',
     'de': 'Deutsch',
@@ -104,6 +108,15 @@ class _LanguageSelectorButtonState
     'it': 'Italiano',
     'no': 'Norsk',
     'sv': 'Svenska',
+    // ── Inactive (ready for activation) ──
+    'es': 'Español',
+    'fi': 'Suomi',
+    'ja': '日本語',
+    'ko': '한국어',
+    'nl': 'Nederlands',
+    'pl': 'Polski',
+    'uk': 'Українська',
+    'zh': '中文',
   };
 
   // Language order (same as FlutterFlow)
@@ -162,7 +175,6 @@ class _LanguageSelectorButtonState
     final now = DateTime.now();
     if (_lastLanguageChangeTime != null &&
         now.difference(_lastLanguageChangeTime!) < _languageChangeCooldown) {
-      debugPrint('⏱️ Language change debounced (too soon after last change)');
       return;
     }
     _lastLanguageChangeTime = now;
@@ -180,7 +192,6 @@ class _LanguageSelectorButtonState
       // Persist language to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_language_code', newLanguageCode);
-      debugPrint('✅ Language saved to preferences: $newLanguageCode');
 
       // ✅ OPTIMIZATION 2: Set locale immediately (triggers app-wide rebuild)
       ref.read(localeProvider.notifier).setLocale(newLanguageCode);
@@ -193,8 +204,6 @@ class _LanguageSelectorButtonState
         ref.read(filterProvider.notifier).loadFiltersForLanguage(newLanguageCode),
       ], eagerError: true);
 
-      debugPrint('✅ Translations and filters loaded in parallel for $newLanguageCode');
-
       // ✅ OPTIMIZATION 4: Notify parent immediately to trigger page rebuild
       widget.onLanguageSelected(newLanguageCode);
 
@@ -206,17 +215,14 @@ class _LanguageSelectorButtonState
       Future.microtask(() {
         // Invalidate search cache (results are language-specific)
         ref.read(searchStateProvider.notifier).invalidateCache();
-        debugPrint('🌍 Search cache invalidated');
 
         // Auto-suggest currency for new language
         ref.read(localizationProvider.notifier)
-            .updateCurrencyForLanguageChange(newLanguageCode)
-            .then((_) => debugPrint('💰 Currency auto-suggestion completed for $newLanguageCode'));
+            .updateCurrencyForLanguageChange(newLanguageCode);
       });
 
       // ✅ OPTIMIZATION 6: No success SnackBar (silent success, better UX)
     } catch (e) {
-      debugPrint('❌ Error changing language: $e');
 
       // ✅ OPTIMIZATION 7: Revert optimistic display language on error
       if (mounted) {
@@ -229,7 +235,7 @@ class _LanguageSelectorButtonState
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Failed to change language'),
+            content: Text(td(ref, 'error_change_language')),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 2),
           ),

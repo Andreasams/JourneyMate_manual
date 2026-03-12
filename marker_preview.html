@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Map Marker Preview</title>
+<style>
+  body { background: #f0f0f0; font-family: sans-serif; padding: 40px; }
+  h2 { color: #333; margin-bottom: 8px; }
+  .row { display: flex; gap: 40px; align-items: flex-end; margin-bottom: 48px; flex-wrap: wrap; }
+  .marker-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  label { font-size: 12px; color: #666; text-align: center; }
+  .section { background: white; border-radius: 12px; padding: 32px; margin-bottom: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .map-bg { background: #e8e0d8; border-radius: 12px; padding: 32px; }
+</style>
+</head>
+<body>
+
+<h1 style="color:#333">Map Marker Preview</h1>
+
+<div class="section">
+  <h2>New design — clean ball + short pointer</h2>
+  <div class="map-bg">
+    <div class="row" id="new-markers"></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Old design — teardrop (for comparison)</h2>
+  <div class="map-bg">
+    <div class="row" id="old-markers"></div>
+  </div>
+</div>
+
+<script>
+// Colors matching AppColors
+const COLORS = {
+  green:         { hex: '#4CAF50', label: 'Full match\n(green)' },
+  accent:        { hex: '#FF6B2C', label: 'Partial / no filters\n(brand orange)' },
+  gray:          { hex: '#9E9E9E', label: 'No match\n(gray)' },
+};
+
+function drawMarker(canvas, { color, selected, heightRatio, drawUtensils, size = 48 }) {
+  const dpr = window.devicePixelRatio || 2;
+  const scale = dpr;
+
+  const effectiveSize = selected ? size * 1.2 : size;
+  const pinWidth  = effectiveSize * scale;
+  const pinHeight = effectiveSize * heightRatio * scale;
+  const padding   = (selected ? 3.0 : 1.0) * scale;
+  const cw = pinWidth  + padding * 2;
+  const ch = pinHeight + padding * 2;
+
+  canvas.width  = Math.ceil(cw);
+  canvas.height = Math.ceil(ch);
+  canvas.style.width  = Math.ceil(cw / dpr) + 'px';
+  canvas.style.height = Math.ceil(ch / dpr) + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const cx     = cw / 2;
+  const radius = pinWidth / 2;
+  const tipY   = padding + pinHeight;
+
+  function drawPinAt(topPad, r, ty, col) {
+    const cy = topPad + r;
+    const dist = ty - cy;
+    const raw = Math.asin(Math.min(r / dist, 1));
+    const tangentAngle = Math.max(0.3, Math.min(1.2, raw));
+
+    const startAngle = Math.PI / 2 - tangentAngle;
+    const sweep      = -(Math.PI + 2 * tangentAngle);
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, startAngle, startAngle + sweep, true);
+    ctx.lineTo(cx, ty);
+    ctx.closePath();
+    ctx.fillStyle = col;
+    ctx.fill();
+  }
+
+  if (selected) {
+    // Subtract haloWidth from topPadding so circle center stays fixed
+    // and halo expands uniformly on all sides (including the top).
+    const hw = 2;
+    drawPinAt(padding - hw * scale, radius + hw * scale, tipY + hw * scale, 'white');
+  }
+
+  drawPinAt(padding, radius, tipY, color);
+
+  if (drawUtensils) {
+    // Legacy utensils drawing
+    const cy = padding + radius;
+    const iconRadius = radius * 0.45;
+    const forkX = cx - iconRadius * 0.4;
+    const tineTop = cy - iconRadius;
+    const tineBottom = cy - iconRadius * 0.2;
+    const handleBottom = cy + iconRadius;
+    const tineSpacing = iconRadius * 0.3;
+
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1.0 * scale;
+    ctx.lineCap = 'round';
+
+    for (let i = -1; i <= 1; i++) {
+      const tx = forkX + i * tineSpacing;
+      ctx.beginPath(); ctx.moveTo(tx, tineTop); ctx.lineTo(tx, tineBottom); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.moveTo(forkX, tineBottom); ctx.lineTo(forkX, handleBottom); ctx.stroke();
+
+    const knifeX = cx + iconRadius * 0.4;
+    ctx.lineWidth = 1.8 * scale;
+    ctx.beginPath(); ctx.moveTo(knifeX, cy - iconRadius); ctx.lineTo(knifeX, cy - iconRadius * 0.1); ctx.stroke();
+    ctx.lineWidth = 1.0 * scale;
+    ctx.beginPath(); ctx.moveTo(knifeX, cy - iconRadius * 0.1); ctx.lineTo(knifeX, handleBottom); ctx.stroke();
+  }
+}
+
+function buildRow(containerId, heightRatio, drawUtensils) {
+  const row = document.getElementById(containerId);
+
+  Object.entries(COLORS).forEach(([key, { hex, label }]) => {
+    [false, true].forEach(selected => {
+      const group = document.createElement('div');
+      group.className = 'marker-group';
+
+      const canvas = document.createElement('canvas');
+      drawMarker(canvas, { color: hex, selected, heightRatio, drawUtensils, size: 36 });
+
+      const lbl = document.createElement('label');
+      lbl.textContent = (selected ? '● selected\n' : '○ normal\n') + label;
+      lbl.style.whiteSpace = 'pre';
+
+      group.appendChild(canvas);
+      group.appendChild(lbl);
+      row.appendChild(group);
+    });
+  });
+}
+
+buildRow('new-markers', 1.15, false);
+buildRow('old-markers', 1.35, true);
+</script>
+</body>
+</html>

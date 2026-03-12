@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import '../../services/api_service.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -472,17 +471,13 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
     });
 
     try {
-      final response = await http.get(
-        Uri.parse('https://wvb8ww.buildship.run/menupackage').replace(
-          queryParameters: {
-            'packageId': widget.packageId.toString(),
-            'languageCode': targetLanguageCode,
-          },
-        ),
+      final response = await ApiService.instance.getMenuPackage(
+        packageId: widget.packageId,
+        languageCode: targetLanguageCode,
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
+      if (response.succeeded && response.jsonBody != null) {
+        final data = response.jsonBody as Map<String, dynamic>;
 
         // Cache the fetched data
         _languageDataCache[targetLanguageCode] = data;
@@ -495,7 +490,7 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
           });
         }
       } else {
-        throw Exception('Failed to load language data: ${response.statusCode}');
+        throw Exception(response.error ?? td(ref, 'error_load_language'));
       }
     } catch (e) {
       if (context.mounted) {
@@ -506,7 +501,7 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Could not load language: $e'),
+            content: Text(td(ref, 'error_load_language')),
             duration: const Duration(seconds: 3),
             backgroundColor: AppColors.error.withValues(alpha: 0.9),
           ),
@@ -529,16 +524,12 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
     setState(() => _isLoadingLanguage = true);
 
     try {
-      final url = Uri.parse('https://wvb8ww.buildship.run/getExchangeRates')
-          .replace(queryParameters: {
-        'to_currency': newCurrencyCode,
-        'from_currency': 'DKK',
-      });
+      final response = await ApiService.instance.getExchangeRate(
+        toCurrency: newCurrencyCode,
+      );
 
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (response.succeeded && response.jsonBody != null) {
+        final data = response.jsonBody;
 
         final double? rate = (data is List && data.isNotEmpty)
             ? (data[0]['rate'] as num?)?.toDouble()
@@ -566,7 +557,7 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Could not update currency'),
+            content: Text(td(ref, 'error_update_currency')),
             duration: const Duration(seconds: 3),
             backgroundColor: AppColors.error.withValues(alpha: 0.9),
           ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../../../services/api_service.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_spacing.dart';
@@ -9,6 +8,7 @@ import '../../../theme/app_typography.dart';
 import '../../../theme/app_radius.dart';
 import '../../../theme/app_constants.dart';
 import '../../../services/translation_service.dart';
+import '../../../widgets/shared/app_checkbox.dart';
 
 /// Feedback form widget for user feedback submission
 ///
@@ -28,9 +28,6 @@ class FeedbackFormWidget extends ConsumerStatefulWidget {
 }
 
 class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
-  // API endpoint
-  static const String _apiEndpoint = 'https://wvb8ww.buildship.run/feedbackform';
-
   // Topic keys (for translation lookup)
   static const List<String> _topicKeys = [
     'feedback_topic_wrong_info',
@@ -125,26 +122,16 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
     final topicLabel = td(ref, _selectedTopic!);
 
     try {
-      final body = <String, dynamic>{
-        'topic': topicLabel, // Localized label (e.g., "Bug" or "Fejl")
-        'message': _messageController.text.trim(),
-        'allowContact': _requireContact,
-        'languageCode': languageCode,
-      };
-
-      // Add name and contact only if requireContact is true
-      if (_requireContact) {
-        body['name'] = _nameController.text.trim();
-        body['contact'] = _contactController.text.trim();
-      }
-
-      final response = await http.post(
-        Uri.parse(_apiEndpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(body),
+      final response = await ApiService.instance.submitFeedback(
+        topic: topicLabel, // Localized label (e.g., "Bug" or "Fejl")
+        message: _messageController.text.trim(),
+        allowContact: _requireContact,
+        name: _requireContact ? _nameController.text.trim() : null,
+        contact: _requireContact ? _contactController.text.trim() : null,
+        languageCode: languageCode,
       );
 
-      if (response.statusCode == 200) {
+      if (response.succeeded) {
         setState(() {
           _isSubmitted = true;
           _submissionError = null;
@@ -190,7 +177,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           // Main subtitle
           Text(
             td(ref, 'feedback_form_subtitle_main'),
-            style: AppTypography.bodyLg,
+            style: AppTypography.body,
           ),
           SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
 
@@ -237,17 +224,14 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section title
         Text(
           td(ref, 'feedback_form_title_topic'),
-          style: AppTypography.bodyLgMedium.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.h6,
         ),
         SizedBox(height: AppSpacing.xs),
 
         // Section subtitle
         Text(
           td(ref, 'feedback_form_subtitle_topic'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -309,10 +293,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         RichText(
           text: TextSpan(
             text: td(ref, 'feedback_form_title_message'),
-            style: AppTypography.bodyLgMedium.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTypography.h6,
             children: [
               TextSpan(
                 text: ' *',
@@ -326,7 +307,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Subtitle
         Text(
           td(ref, 'feedback_form_subtitle_message'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
         SizedBox(height: AppSpacing.sm),
 
@@ -391,62 +372,42 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
         // Section title
         Text(
           td(ref, 'feedback_form_title_contact_consent'),
-          style: AppTypography.bodyLgMedium.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.h6,
         ),
         SizedBox(height: AppSpacing.xs),
 
         // Section subtitle
         Text(
           td(ref, 'feedback_form_subtitle_contact_consent'),
-          style: AppTypography.bodyLg,
+          style: AppTypography.body,
         ),
         SizedBox(height: AppSpacing.sm),
 
-        // Checkbox row
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Checkbox(
-              value: _requireContact,
-              onChanged: (value) {
-                setState(() {
-                  _requireContact = value ?? false;
-                  // Clear conditional errors when unchecking
-                  if (!_requireContact) {
-                    _nameError = null;
-                    _contactError = null;
-                  }
-                });
-              },
-              activeColor: AppColors.accent,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-            ),
-            SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _requireContact = !_requireContact;
-                    if (!_requireContact) {
-                      _nameError = null;
-                      _contactError = null;
-                    }
-                  });
-                },
-                child: Padding(
-                  padding: EdgeInsets.only(top: 2), // Align with checkbox
-                  child: Text(
-                    td(ref, 'feedback_form_checkbox_label'),
-                    style: AppTypography.body.copyWith(color: AppColors.textPrimary),
-                  ),
+        // Checkbox row (tapping anywhere on the row toggles)
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _requireContact = !_requireContact;
+              // Clear conditional errors when unchecking
+              if (!_requireContact) {
+                _nameError = null;
+                _contactError = null;
+              }
+            });
+          },
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppCheckbox(isSelected: _requireContact),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  td(ref, 'feedback_form_checkbox_label'),
+                  style: AppTypography.body.copyWith(color: AppColors.textPrimary),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -465,10 +426,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             RichText(
               text: TextSpan(
                 text: td(ref, 'feedback_form_title_name'),
-                style: AppTypography.bodyLgMedium.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.h6,
                 children: [
                   TextSpan(
                     text: ' *',
@@ -541,10 +499,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             RichText(
               text: TextSpan(
                 text: td(ref, 'feedback_form_title_contact'),
-                style: AppTypography.bodyLgMedium.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.h6,
                 children: [
                   TextSpan(
                     text: ' *',
@@ -558,7 +513,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
             // Subtitle
             Text(
               td(ref, 'feedback_form_subtitle_contact'),
-              style: AppTypography.bodyLg,
+              style: AppTypography.body,
             ),
             SizedBox(height: AppSpacing.sm),
 
@@ -716,7 +671,7 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
           Expanded(
             child: Text(
               _submissionError!,
-              style: AppTypography.bodyLg.copyWith(color: AppColors.error),
+              style: AppTypography.body.copyWith(color: AppColors.error),
             ),
           ),
         ],

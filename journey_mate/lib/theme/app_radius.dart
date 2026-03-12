@@ -1,34 +1,50 @@
-/// Border Radii - Standard corner radius scale
+/// Border Radii — Unified scale: 2 · 4 · 8 · 12 · 16 · 20
+///
+/// Every radius in the app maps to one of these six values.
+/// Semantic names give context; the underlying scale keeps visuals
+/// consistent.
 class AppRadius {
   AppRadius._();
 
-  /// 7-8px - Chips
+  // ── 2px ──────────────────────────────────────────────────────
+  /// Drag handles in bottom sheets
+  static const double handle = 2.0;
+
+  // ── 4px ──────────────────────────────────────────────────────
+  /// Checkbox corners (filter columns, sort sheet, feedback form)
+  static const double checkbox = 4.0;
+
+  // ── 8px ──────────────────────────────────────────────────────
+  /// Chips, facility tags, payment badges
   static const double chip = 8.0;
 
-  /// 5px - Checkbox (filter columns 2 & 3)
-  static const double checkbox = 5.0;
+  /// Facility / payment containers (same visual weight as chips)
+  static const double facility = 8.0;
 
-  /// 9px - Facilities/payments
-  static const double facility = 9.0;
+  // ── 12px ─────────────────────────────────────────────────────
+  /// Filter buttons, tab selectors
+  static const double filter = 12.0;
 
-  /// 10px - Filter buttons, gallery inner corners
-  static const double filter = 10.0;
-
-  /// 12px - Input fields
+  /// Text inputs, text areas, dropdowns
   static const double input = 12.0;
 
-  /// 13px - Logo circle (50x50px)
-  static const double logoSmall = 13.0;
+  /// Primary / secondary action buttons
+  static const double button = 12.0;
 
-  /// 14px - Primary buttons
-  static const double button = 14.0;
+  /// Small logo containers (50×50)
+  static const double logoSmall = 12.0;
 
-  /// 16px - Cards
+  // ── 16px ─────────────────────────────────────────────────────
+  /// Cards (search results, settings, match cards)
   static const double card = 16.0;
 
-  /// 18px - Profile logo
-  static const double logoLarge = 18.0;
+  /// Large logo / avatar containers
+  static const double logoLarge = 16.0;
 
-  /// 22px - Bottom sheets (top only)
-  static const double bottomSheet = 22.0;
+  // ── 20px ─────────────────────────────────────────────────────
+  /// Bottom sheet top corners
+  static const double bottomSheet = 20.0;
+
+  /// Pill-shaped floating buttons (sort, open-only)
+  static const double pill = 20.0;
 }

@@ -30,6 +30,7 @@ class JourneyMateApp extends ConsumerWidget {
       theme: theme,
       locale: locale, // ✅ Set locale dynamically
       supportedLocales: const [
+        // ── Active languages ──
         Locale('en'), // English
         Locale('da'), // Danish
         Locale('de'), // German
@@ -37,6 +38,15 @@ class JourneyMateApp extends ConsumerWidget {
         Locale('it'), // Italian
         Locale('no'), // Norwegian
         Locale('sv'), // Swedish
+        // ── Inactive languages (ready for activation) ──
+        Locale('es'), // Spanish
+        Locale('fi'), // Finnish
+        Locale('ja'), // Japanese
+        Locale('ko'), // Korean
+        Locale('nl'), // Dutch
+        Locale('pl'), // Polish
+        Locale('uk'), // Ukrainian
+        Locale('zh'), // Chinese
       ],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:map_launcher/map_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../theme/app_colors.dart';
@@ -12,6 +13,7 @@ import '../../services/custom_functions/contact_utils.dart';
 import '../../services/translation_service.dart';
 import '../../services/api_service.dart';
 import '../../utils/map_launcher_utils.dart';
+import '../shared/map_selection_sheet.dart';
 
 /// Quick Actions Pills Widget - Horizontal scrollable row of action pills
 ///
@@ -46,9 +48,6 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     final phone = business['general_phone'] as String?;
     final website = business['website_url'] as String?;
     final bookingUrl = business['reservation_url'] as String?;
-    final latitude = (business['latitude'] as num?)?.toDouble();
-    final longitude = (business['longitude'] as num?)?.toDouble();
-    final businessName = business['business_name'] as String?;
 
     // Build action pills in fixed order: Call → Book → Map → Website
     // Missing pills are simply omitted; order is always preserved.
@@ -75,13 +74,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
         ref: ref,
         icon: Icons.place,
         label: td(ref, 'action_map'),
-        onTap: () => _handleMapTap(
-          context,
-          ref,
-          latitude,
-          longitude,
-          businessName ?? td(ref, 'business_type_default'),
-        ),
+        onTap: () => _handleMapTap(context, ref, business),
       ),
       if (website != null && website.isNotEmpty)
         _buildPill(
@@ -119,7 +112,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Colors.white,
+      color: AppColors.bgPage,
       borderRadius: BorderRadius.circular(AppRadius.filter),
       child: InkWell(
         onTap: onTap,
@@ -195,7 +188,6 @@ class QuickActionsPillsWidget extends ConsumerWidget {
         }
       }
     } catch (e) {
-      debugPrint('❌ Error launching phone dialer: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(td(ref, 'error_cannot_make_call'))),
@@ -237,7 +229,6 @@ class QuickActionsPillsWidget extends ConsumerWidget {
         }
       }
     } catch (e) {
-      debugPrint('❌ Error launching website: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(td(ref, 'error_cannot_open_website'))),
@@ -279,7 +270,6 @@ class QuickActionsPillsWidget extends ConsumerWidget {
         }
       }
     } catch (e) {
-      debugPrint('❌ Error launching booking: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(td(ref, 'error_cannot_open_booking'))),
@@ -291,10 +281,11 @@ class QuickActionsPillsWidget extends ConsumerWidget {
   Future<void> _handleMapTap(
     BuildContext context,
     WidgetRef ref,
-    double? latitude,
-    double? longitude,
-    String businessName,
+    Map<String, dynamic> business,
   ) async {
+    final latitude = (business['latitude'] as num?)?.toDouble();
+    final longitude = (business['longitude'] as num?)?.toDouble();
+
     if (latitude == null || longitude == null) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -304,35 +295,101 @@ class QuickActionsPillsWidget extends ConsumerWidget {
       return;
     }
 
-    final business = ref.read(businessProvider).currentBusiness;
-    final businessId = business?['business_id'] as int?;
-
-    final mapAppName = await openInPreferredMaps(
-      latitude: latitude,
-      longitude: longitude,
-      title: businessName,
-    );
-
-    if (mapAppName != null) {
-      // Track map tap (fire-and-forget)
-      final analyticsState = ref.read(analyticsProvider);
-      ApiService.instance.postAnalytics(
-        eventType: 'business_map_tapped',
-        deviceId: analyticsState.deviceId,
-        sessionId: analyticsState.sessionId ?? '',
-        userId: '',
-        timestamp: DateTime.now().toIso8601String(),
-        eventData: {
-          'business_id': businessId ?? 0,
-          'latitude': latitude,
-          'longitude': longitude,
-          'map_app': mapAppName,
-        },
-      );
-    } else {
+    final availableMaps = await getAvailableMapApps();
+    if (availableMaps.isEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(td(ref, 'error_no_map_app'))),
+        );
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    final businessName =
+        (business['business_name'] as String?) ?? td(ref, 'business_type_default');
+    final googleMapsUrl = business['google_maps_url'] as String?;
+    final street = business['street'] as String?;
+    final postalCode = business['postal_code'] as String?;
+    final city = business['postal_city'] as String?;
+    final businessId = business['business_id'] as int?;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => MapSelectionSheet(
+        availableMaps: availableMaps,
+        onMapSelected: (selectedMap) => _openMapAndTrack(
+          context: context,
+          ref: ref,
+          map: selectedMap,
+          latitude: latitude,
+          longitude: longitude,
+          businessName: businessName,
+          googleMapsUrl: googleMapsUrl,
+          street: street,
+          postalCode: postalCode,
+          city: city,
+          businessId: businessId,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openMapAndTrack({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AvailableMap map,
+    required double latitude,
+    required double longitude,
+    required String businessName,
+    String? googleMapsUrl,
+    String? street,
+    String? postalCode,
+    String? city,
+    int? businessId,
+  }) async {
+    try {
+      final opened = await openVenueInMapApp(
+        map: map,
+        latitude: latitude,
+        longitude: longitude,
+        businessName: businessName,
+        googleMapsUrl: googleMapsUrl,
+        street: street,
+        postalCode: postalCode,
+        city: city,
+      );
+
+      if (opened) {
+        // Track map tap (fire-and-forget)
+        final analyticsState = ref.read(analyticsProvider);
+        ApiService.instance.postAnalytics(
+          eventType: 'business_map_tapped',
+          deviceId: analyticsState.deviceId,
+          sessionId: analyticsState.sessionId ?? '',
+          userId: '',
+          timestamp: DateTime.now().toIso8601String(),
+          eventData: {
+            'business_id': businessId ?? 0,
+            'latitude': latitude,
+            'longitude': longitude,
+            'map_app': map.mapName,
+          },
+        );
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(td(ref, 'error_cannot_open_map'))),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(td(ref, 'error_cannot_open_map'))),
         );
       }
     }

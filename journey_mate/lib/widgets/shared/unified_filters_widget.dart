@@ -115,7 +115,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   /// =========================================================================
 
   static const Color _selectedColor = AppColors.accent;
-  static const Color _unselectedColor = AppColors.bgCard;
+  static const Color _unselectedColor = AppColors.bgSurface;
   static const Color _selectedTextColor = AppColors.bgPage;
   static const Color _unselectedTextColor = AppColors.textPrimary;
   static final Color _borderColor = AppColors.border;
@@ -126,7 +126,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   static const double _buttonBorderRadius = AppRadius.chip;
   static const double _buttonSpacing = AppSpacing.sm;
 
-  static const Color _containerColor = Color(0x1957636C);
   static const double _containerBorderRadius = AppRadius.button;
   static const EdgeInsets _containerPadding = EdgeInsets.fromLTRB(16, 18, 16, 18);
 
@@ -219,7 +218,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       _buildMenuItemMap(normalizedData);
       _extractCategories(normalizedData);
     } catch (e) {
-      debugPrint('⚠️ Failed to extract menu data: $e');
       _clearMenuDataCache();
     }
   }
@@ -856,7 +854,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
       timestamp: DateTime.now().toIso8601String(),
     ).catchError(
       (error) {
-        debugPrint('⚠️ Failed to track $eventName: $error');
         return ApiCallResponse.failure('Analytics tracking failed: $error');
       },
     );
@@ -1044,6 +1041,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
           padding: const EdgeInsets.only(top: _widgetTopPadding),
           child: Wrap(
             spacing: _buttonSpacing,
+            runSpacing: AppSpacing.sm,
             children: allergens
                 .map((allergen) => _buildAllergenButton(
                       text: allergen.value,
@@ -1069,7 +1067,6 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
     return Container(
       width: widget.width,
       decoration: BoxDecoration(
-        color: _containerColor,
         borderRadius: BorderRadius.circular(_containerBorderRadius),
       ),
       padding: _containerPadding,
@@ -1077,7 +1074,7 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeaderRow(),
-          const SizedBox(height: 0),
+          const SizedBox(height: AppSpacing.xs),
           _buildFilterSection(
             header: _getUIText('menu_dishes_filter_restrictions_title'),
             description: _getUIText('menu_dishes_filter_restrictions_subtitle'),

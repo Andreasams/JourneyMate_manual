@@ -88,7 +88,7 @@ class _InformationSourceSectionState extends State<InformationSourceSection> {
     return Text(
       widget.headerText,
       style: AppTypography.h6.copyWith(
-        color: AppColors.textSecondary,
+        color: AppColors.textPrimary,
       ),
     );
   }

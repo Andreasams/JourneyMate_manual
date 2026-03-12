@@ -35,7 +35,7 @@ import 'bottom_sheet_header.dart';
 ///
 /// Design:
 /// - Background: AppColors.bgCard
-/// - Top corners: AppRadius.bottomSheet (22px)
+/// - Top corners: AppRadius.bottomSheet (20px)
 /// - Swipe bar: 80×4px, centered, 8px top padding, AppColors.textPrimary
 /// - Close button: 40×40px circle, top-right, 12px from edges
 /// - Header height: 64px

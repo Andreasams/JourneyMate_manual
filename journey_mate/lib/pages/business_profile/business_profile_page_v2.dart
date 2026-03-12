@@ -102,8 +102,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
     final preview = BusinessCache.instance.getBusinessPreview(businessIdInt);
     if (preview != null) {
-      debugPrint('⚡ Showing cached preview: ${preview['business_name']}');
-
       // Show preview data immediately
       ref.read(businessProvider.notifier).setCurrentBusiness(
             business: preview,
@@ -161,7 +159,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // API top-level keys: businessInfo, filters, businessHours, openWindows, gallery, menuCategories
         final businessInfo = raw['businessInfo'] as Map<String, dynamic>?;
         if (businessInfo == null) {
-          debugPrint('❌ Business not found: id=$businessIdInt');
           setState(() {
             _errorMessage = 'Business not found';
             _isLoading = false;
@@ -201,11 +198,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
           // MenuDishesListView expects Map structure, not just items array
           ref.read(businessProvider.notifier).setMenuItems(menuData);
 
-          // Debug: Verify structure is correct
-          debugPrint('✅ Menu data stored: ${menuData.keys}');
-          debugPrint('✅ Categories count: ${(menuData['categories'] as List?)?.length}');
-          debugPrint('✅ Items count: ${(menuData['menu_items'] as List?)?.length}');
-
           final preferences = List<int>.from(menuData['availablePreferences'] ?? []);
           final restrictions = List<int>.from(menuData['availableRestrictions'] ?? []);
           ref.read(businessProvider.notifier).setDietaryOptions(
@@ -224,10 +216,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('❌ Error loading business data: $e');
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Failed to load business profile';
+        _errorMessage = td(ref, 'error_load_business_profile');
       });
     }
   }
@@ -690,7 +681,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
               eventData: {'pageName': 'businessProfile'},
             )
                 .catchError((e) {
-              debugPrint('Analytics error: $e');
               return ApiCallResponse.failure('Analytics failed');
             });
             if (mounted) {
@@ -738,7 +728,6 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       },
     )
         .catchError((e) {
-      debugPrint('Analytics error: $e');
       return ApiCallResponse.failure('Analytics failed');
     });
   }

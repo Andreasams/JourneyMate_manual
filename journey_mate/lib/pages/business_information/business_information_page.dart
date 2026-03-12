@@ -330,13 +330,9 @@ class _BusinessInformationPageState
         BusinessFeatureButtons(
           containerWidth:
               MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
-          onInitialCount: (int count) async {
-            debugPrint('Feature buttons count: $count');
-          },
+          onInitialCount: (int count) async {},
           onFilterTap: _showFacilitiesInfoSheet,
-          onHeightCalculated: (double height) async {
-            debugPrint('Feature buttons height: $height');
-          },
+          onHeightCalculated: (double height) async {},
         ),
         SizedBox(height: AppSpacing.xxl),
       ],
@@ -383,7 +379,6 @@ class _BusinessInformationPageState
       },
     )
         .catchError((e) {
-      debugPrint('Analytics error: $e');
       return ApiCallResponse.failure('Analytics failed');
     });
   }
@@ -408,12 +403,8 @@ class _BusinessInformationPageState
           filtersUsedForSearch:
               ref.watch(searchStateProvider).filtersUsedForSearch,
           filtersOfThisBusiness: ref.watch(businessProvider).businessFilterIds,
-          onInitialCount: (int count) async {
-            debugPrint('Payment options count: $count');
-          },
-          onHeightCalculated: (double height) async {
-            debugPrint('Payment widget height: $height');
-          },
+          onInitialCount: (int count) async {},
+          onHeightCalculated: (double height) async {},
         ),
         SizedBox(height: AppSpacing.xxl),
       ],
@@ -439,7 +430,6 @@ class _BusinessInformationPageState
             eventData: {'pageName': 'businessInformation'},
           )
               .catchError((e) {
-            debugPrint('Analytics error: $e');
             return ApiCallResponse.failure('Analytics failed');
           });
           if (mounted) {

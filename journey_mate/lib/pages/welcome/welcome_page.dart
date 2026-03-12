@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_constants.dart';
+import '../../providers/filter_providers.dart';
 
 /// Welcome/Onboarding Page
 ///
@@ -95,7 +97,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         _preFetchSearchResults('da');
       }
     } catch (e) {
-      debugPrint('⚠️ Welcome page initialization error: $e');
       // Still show buttons even if initialization fails
       if (mounted) {
         setState(() {
@@ -112,12 +113,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   /// Pre-fetch search results for returning users (fire-and-forget)
   Future<void> _preFetchSearchResults(String languageCode) async {
     try {
-      debugPrint('👋 Welcome: Pre-fetching search results for returning user...');
-
       // Check if cache is already fresh
       final searchNotifier = ref.read(searchStateProvider.notifier);
       if (searchNotifier.isCacheFresh()) {
-        debugPrint('👋 Welcome: Cache is fresh, skipping pre-fetch');
         return;
       }
 
@@ -135,7 +133,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
         }
       } catch (e) {
-        debugPrint('👋 Welcome: Location fetch failed: $e');
         // Continue without location
       }
 
@@ -168,13 +165,10 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        debugPrint('👋 Welcome: Pre-fetch succeeded ($resultCount results)');
       } else {
-        debugPrint('👋 Welcome: Pre-fetch failed: ${response.error}');
         // Fail silently - user will see loading shimmer on Search page
       }
     } catch (e) {
-      debugPrint('👋 Welcome: Pre-fetch exception: $e');
       // Fail silently - don't block Welcome page
     }
   }
@@ -203,6 +197,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_language_code', 'da');
 
+      // 1b. Discard English filter cache (user chose Danish path)
+      unawaited(FilterNotifier.clearCacheForLanguage('en'));
+
       // 2. Load Danish translations
       await ref.read(translationsCacheProvider.notifier).loadTranslations('da');
 
@@ -214,7 +211,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       router.go('/search');
 
     } catch (e) {
-      debugPrint('❌ Danish direct flow error: $e');
       if (context.mounted) {
         _showErrorDialog();
       }
@@ -231,8 +227,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     final searchNotifier = ref.read(searchStateProvider.notifier);
     final hasFreshCache = searchNotifier.isCacheFresh();
 
-    debugPrint('👋 Welcome: Continue tapped (cache fresh: $hasFreshCache)');
-
     // Navigate immediately (analytics tracked in dispose, don't block navigation)
     context.go('/search');
 
@@ -245,8 +239,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   /// Background search fetch for returning users (non-blocking)
   Future<void> _fetchSearchResultsBackground() async {
     try {
-      debugPrint('👋 Welcome: Fetching search results in background...');
-
       // Save notifier before async operations (safe even if widget unmounted)
       final searchNotifier = ref.read(searchStateProvider.notifier);
 
@@ -265,7 +257,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         );
         userLocation = 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})';
       } catch (e) {
-        debugPrint('👋 Welcome: Location fetch failed: $e');
         // Continue without location
       }
 
@@ -298,12 +289,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           scoringFilterIds,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
-        debugPrint('👋 Welcome: Background fetch succeeded ($resultCount results)');
-      } else {
-        debugPrint('👋 Welcome: Background fetch failed: ${response.error}');
       }
     } catch (e) {
-      debugPrint('👋 Welcome: Background fetch exception: $e');
       // Fail silently - SearchPage will handle error state
     }
   }
@@ -322,7 +309,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           style: AppTypography.h4,
         ),
         content: Text(
-          'Could not load restaurants. Please check your internet connection and try again.',
+          td(ref, 'error_load_restaurants'),
           style: AppTypography.bodyLg,
         ),
         actions: [
@@ -364,9 +351,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         timestamp: DateTime.now().toIso8601String(),
       );
 
-      debugPrint('✅ Tracked welcomePage view: ${duration.inSeconds}s');
     } catch (e) {
-      debugPrint('⚠️ Failed to track page view: $e');
       // Fail silently - analytics should never block user flow
     }
   }
@@ -401,19 +386,13 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 child: Text(
                   td(ref, 'onboarding_title_welcome_prefix'), // "Welcome to"
                   textAlign: TextAlign.center,
-                  style: AppTypography.h1.copyWith(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: AppTypography.hero,
                 ),
               ),
               Text(
                 'JourneyMate', // Hardcoded - never translated
                 textAlign: TextAlign.center,
-                style: AppTypography.h1.copyWith(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: AppTypography.hero,
               ),
 
               const SizedBox(height: AppSpacing.huge),

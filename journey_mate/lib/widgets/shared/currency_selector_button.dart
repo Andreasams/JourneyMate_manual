@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/locale_provider.dart';
 import '../../services/api_service.dart';
+import '../../services/custom_functions/language_currency_config.dart';
 import '../../services/translation_service.dart';
 import 'overlay_dropdown_selector.dart';
 
@@ -72,19 +73,10 @@ class _CurrencySelectorButtonState
   // Currency Configuration
   // ─────────────────────────────────────────────────────────────────────────────
 
-  /// Returns filtered currency codes based on language
-  /// Uses same logic as FlutterFlow getCurrencyOptionsForLanguage()
+  /// Returns filtered currency codes based on language.
+  /// Delegates to shared [getCurrenciesForLanguage] config (all 15 languages).
   static List<String> _getCurrenciesForLanguage(String languageCode) {
-    const currencyConfigByLanguage = {
-      'en': ['USD', 'GBP', 'DKK'],
-      'da': ['DKK'],
-      'de': ['EUR', 'DKK'],
-      'fr': ['EUR', 'DKK'],
-      'it': ['EUR', 'DKK'],
-      'no': ['NOK', 'DKK'],
-      'sv': ['SEK', 'DKK'],
-    };
-    return currencyConfigByLanguage[languageCode.toLowerCase()] ?? ['DKK'];
+    return getCurrenciesForLanguage(languageCode);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -126,6 +118,12 @@ class _CurrencySelectorButtonState
       'EUR': '€',
       'SEK': 'kr.',
       'NOK': 'kr.',
+      // ── Inactive language currencies (ready for activation) ──
+      'JPY': '¥',
+      'KRW': '₩',
+      'PLN': 'zł',
+      'UAH': '₴',
+      'CNY': '¥',
     };
 
     return symbols[currencyCode] ?? currencyCode;
@@ -177,12 +175,10 @@ class _CurrencySelectorButtonState
           },
           timestamp: DateTime.now().toIso8601String(),
         ).catchError((e) {
-          debugPrint('⚠️ Analytics tracking failed: $e');
           return ApiCallResponse.failure('Analytics failed');
         }),
       );
     } catch (e) {
-      debugPrint('❌ Currency update failed: $e');
       // Graceful degradation - keep current currency
     }
   }
@@ -201,8 +197,6 @@ class _CurrencySelectorButtonState
       );
 
       if (!response.succeeded) {
-        debugPrint('⚠️ Exchange rate API failed: ${response.statusCode}');
-
         // Track failed currency change (fire-and-forget)
         unawaited(
           ApiService.instance.postAnalytics(
@@ -233,10 +227,8 @@ class _CurrencySelectorButtonState
         return rate.toDouble();
       }
 
-      debugPrint('⚠️ Unexpected exchange rate response format');
       return 1.0; // Fallback
     } catch (e) {
-      debugPrint('❌ Exchange rate fetch failed: $e');
       return 1.0; // Fallback
     }
   }
@@ -255,10 +247,9 @@ class _CurrencySelectorButtonState
       if (!availableCurrencies.contains(currentCurrency)) {
         final defaultCurrency = availableCurrencies.first;
         await _updateCurrency(defaultCurrency);
-        debugPrint('💱 Auto-switched currency to $defaultCurrency for language $newLanguageCode');
       }
     } catch (e) {
-      debugPrint('❌ Error updating currency for language change: $e');
+      // Fail silently
     }
   }
 
