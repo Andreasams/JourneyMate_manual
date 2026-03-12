@@ -207,6 +207,23 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
               ? _buildSingleImageView()
               : _buildMultiImageView(),
 
+          // Drag handle (top-center, light for dark background)
+          Positioned(
+            top: AppSpacing.sm,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(AppRadius.handle),
+                ),
+              ),
+            ),
+          ),
+
           // Close button (top-left)
           _buildCloseButton(),
         ],
