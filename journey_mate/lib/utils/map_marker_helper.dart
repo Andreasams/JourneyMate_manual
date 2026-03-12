@@ -29,7 +29,7 @@ class MapMarkerHelper {
   static Future<BitmapDescriptor> createDotMarker({
     required Color color,
     bool selected = false,
-    double size = 9.0,
+    double size = 16.0,
     double devicePixelRatio = 2.0,
   }) async {
     final key = '${color.toARGB32()}-$selected-$size-$devicePixelRatio';
