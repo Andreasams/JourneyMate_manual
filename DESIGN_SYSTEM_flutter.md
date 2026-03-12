@@ -1,7 +1,7 @@
 # JourneyMate Flutter Design System
 
-**Version:** 1.1 - March 2026
-**Last Updated:** March 2026
+**Version:** 1.3 - March 2026
+**Last Updated:** 2026-03-12
 **Implementation:** `journey_mate/lib/theme/` (design token source files)
 
 **Purpose:** Complete Flutter implementation reference for the JourneyMate design system. Every design decision from the JSX design system has been translated to Flutter/Dart patterns.
@@ -133,18 +133,22 @@ const SizedBox(height: AppSpacing.sm)  // 8px
 
 ## 3. Border Radii (AppRadius)
 
-| Constant | Value | Usage |
-|----------|-------|-------|
-| `AppRadius.chip` | 8px | Small chips, tags |
-| `AppRadius.checkbox` | 5px | Filter checkboxes (columns 2 & 3) |
-| `AppRadius.facility` | 9px | Facility/payment badges |
-| `AppRadius.filter` | 10px | Filter buttons, gallery inner corners |
-| `AppRadius.input` | 12px | **Input fields** (most common) |
-| `AppRadius.logoSmall` | 13px | Small logo circles (50×50px) |
-| `AppRadius.button` | 14px | **Primary buttons** |
-| `AppRadius.card` | 16px | Cards, containers |
-| `AppRadius.logoLarge` | 18px | Profile page logos |
-| `AppRadius.bottomSheet` | 22px | Bottom sheets (top corners only) |
+**Unified scale: 2 · 4 · 8 · 12 · 16 · 20.** Every radius maps to one of six values. Semantic names give context; the underlying scale keeps visuals consistent. Overhauled in commit `c4066fc` (2026-03-11).
+
+| Scale | Constant | Value | Usage |
+|-------|----------|-------|-------|
+| 2px | `AppRadius.handle` | 2px | Drag handles in bottom sheets |
+| 4px | `AppRadius.checkbox` | 4px | Checkbox corners (filter columns, sort, feedback) |
+| 8px | `AppRadius.chip` | 8px | Chips, facility tags, payment badges |
+| 8px | `AppRadius.facility` | 8px | Facility / payment containers (same weight as chips) |
+| 12px | `AppRadius.filter` | 12px | Filter buttons, tab selectors |
+| 12px | `AppRadius.input` | 12px | Text inputs, text areas, dropdowns |
+| 12px | `AppRadius.button` | 12px | Primary / secondary action buttons |
+| 12px | `AppRadius.logoSmall` | 12px | Small logo containers (50×50) |
+| 16px | `AppRadius.card` | 16px | Cards (search results, settings, match cards) |
+| 16px | `AppRadius.logoLarge` | 16px | Large logo / avatar containers |
+| 20px | `AppRadius.bottomSheet` | 20px | Bottom sheet top corners |
+| 20px | `AppRadius.pill` | 20px | Pill-shaped floating buttons (sort, open-only) |
 
 ### Common Patterns
 
@@ -162,7 +166,7 @@ TextField(
 ElevatedButton(
   style: ElevatedButton.styleFrom(
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppRadius.button),  // 14px
+      borderRadius: BorderRadius.circular(AppRadius.button),  // 12px
     ),
   ),
 )
@@ -173,42 +177,75 @@ Container(
     borderRadius: BorderRadius.circular(AppRadius.card),  // 16px
   ),
 )
+
+// Pill button (sort, open-only)
+Container(
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(AppRadius.pill),  // 20px
+  ),
+)
 ```
+
+### Migration from Old Values
+
+| Old Value | New Value | Notes |
+|-----------|-----------|-------|
+| `checkbox: 5` | `checkbox: 4` | Tightened to match 4px step |
+| `facility: 9` | `facility: 8` | Aligned with chip (same visual weight) |
+| `filter: 10` | `filter: 12` | Aligned with input/button scale step |
+| `button: 14` | `button: 12` | Aligned with filter/input scale step |
+| `logoSmall: 13` | `logoSmall: 12` | Aligned with 12px scale step |
+| `logoLarge: 18` | `logoLarge: 16` | Aligned with card scale step |
+| `bottomSheet: 22` | `bottomSheet: 20` | Aligned with 20px scale step |
+| — | `handle: 2` | NEW (drag handles) |
+| — | `pill: 20` | NEW (pill-shaped floating buttons) |
 
 ---
 
 ## 4. Typography (AppTypography)
 
-**21-style type scale.** Headings: 6-level hierarchy (26→16, 2px steps, all w700). Body: 14/15/16 at w300–w700. All styles default to `textPrimary` with `height: 1.45`. Only `button` (white) and `price` (accent) differ.
+**23-style type scale.** Headings: 6-level hierarchy (26→16, 2px steps, h1–h5 w700, h6 w600) plus hero (28/w800). Body: 14/15/16 at w300–w700. All styles default to `textPrimary` with `height: 1.45`. Only `button` (white) and `price` (accent) differ.
 
 **Streamlined in commit `7f0c892` (2026-03-10):** Replaced 21 inconsistent styles with a clean, predictable scale. Heavy body variants added 2026-03-10.
-**Heading scale expanded in commit `8095eb9` (2026-03-10):** 6-level hierarchy (h1-h6), 2px steps, all w700. Removed h1Heavy and letterSpacing from headings.
+**Heading scale expanded in commit `8095eb9` (2026-03-10):** 6-level hierarchy (h1-h6), 2px steps. Removed h1Heavy and letterSpacing from headings.
+**Hero + body weight split (2026-03-11):** Added `hero` (28/w800) for welcome page titles (commit `c4066fc`). Softened `h6` from w700→w600 (commit `a9649cd`). Renamed `bodyHeavy` (w700) → `bodyExtraHeavy`, added new `bodyHeavy` at w600 (commit `3469f47`).
 
 ### Compact Reference
 
 ```
-HEADINGS — 6-level hierarchy, 2px steps, all w700/textPrimary
+HERO
+hero → 28/w800/1.2  — welcome page titles
+
+HEADINGS — 6-level hierarchy, 2px steps, h1–h5 w700, h6 w600
 h1 → 26/w700/1.2  — app-section entry titles (Search, Settings)
 h2 → 24/w700/1.2  — featured entity names (restaurant, coupon, blog)
 h3 → 22/w700/1.3  — sheet / overlay titles
 h4 → 20/w700/1.3  — section headings, sub-headings
 h5 → 18/w700/1.3  — AppBar titles (deliberately understated)
-h6 → 16/w700/1.3  — sub-section labels (e.g. inside collapsibles)
+h6 → 16/w600/1.3  — sub-section labels (e.g. inside collapsibles)
 
-BODY (3 sizes × 3–4 weights, all 1.45 line height, all textPrimary)
-                  Light(w300)    Regular(w400)  Medium(w500)   Heavy(w700)
-bodyLg (16px)     —              bodyLg         bodyLgMedium   bodyLgHeavy
-body   (15px)     bodyLight      body           bodyMedium     bodyHeavy
-bodySm (14px)     —              bodySm         bodySmMedium   bodySmHeavy
+BODY (3 sizes × 3–5 weights, all 1.45 line height, all textPrimary)
+                  Light(w300)    Regular(w400)  Medium(w500)   Heavy(w600)    ExtraHeavy(w700)
+bodyLg (16px)     —              bodyLg         bodyLgMedium   —              bodyLgHeavy
+body   (15px)     bodyLight      body           bodyMedium     bodyHeavy      bodyExtraHeavy
+bodySm (14px)     —              bodySm         bodySmMedium   —              bodySmHeavy
 
 UI
 button       → 18/w600/white/1.2
 price        → 14/w600/accent/1.45
 ```
 
+### Hero Title
+
+| Style | Size | Weight | Line Height | Role |
+|-------|------|--------|-------------|------|
+| `AppTypography.hero` | 28px | w800 | 1.2 | Welcome page titles |
+
+Added in commit `c4066fc` (2026-03-11) for large welcome page headings that need extra visual weight above h1.
+
 ### Headings — 2px Step System
 
-All headings use `w700` and `textPrimary`. No letterSpacing.
+All headings use `textPrimary`. No letterSpacing. h1–h5 use w700; h6 uses w600 (softened in commit `a9649cd`).
 
 | Style | Size | Weight | Line Height | Role |
 |-------|------|--------|-------------|------|
@@ -217,13 +254,13 @@ All headings use `w700` and `textPrimary`. No letterSpacing.
 | `AppTypography.h3` | 22px | w700 | 1.3 | Sheet / overlay titles |
 | `AppTypography.h4` | 20px | w700 | 1.3 | Section headings, sub-headings |
 | `AppTypography.h5` | 18px | w700 | 1.3 | AppBar titles (deliberately understated) |
-| `AppTypography.h6` | 16px | w700 | 1.3 | Sub-section labels (e.g. inside collapsibles) |
+| `AppTypography.h6` | 16px | w600 | 1.3 | Sub-section labels, settings subheadings |
 
 **Hierarchy logic:**
 - h1–h3 are all "page titles" in their respective contexts (app section, page, sheet)
 - h4 is for sectioning content within a page
 - h5 is deliberately small so AppBar titles don't compete with page headings
-- h6 bridges headings and body text for sub-section labels
+- h6 bridges headings and body text for sub-section labels (w600, lighter than other headings)
 
 ### Body Text (3 sizes × 3–4 weights)
 
@@ -237,7 +274,8 @@ All body styles: `color: textPrimary`, `height: 1.45`
 | `AppTypography.body` | 15px | w400 | Standard body text |
 | `AppTypography.bodyLight` | 15px | w300 | Light secondary text (last-updated rows, subtle metadata) |
 | `AppTypography.bodyMedium` | 15px | w500 | Card names, menu items |
-| `AppTypography.bodyHeavy` | 15px | w700 | Bold card names, section labels |
+| `AppTypography.bodyHeavy` | 15px | w600 | Emphasized card names, section labels |
+| `AppTypography.bodyExtraHeavy` | 15px | w700 | Bold card names (opening hours, contact values) |
 | `AppTypography.bodySm` | 14px | w400 | Helper text, card details |
 | `AppTypography.bodySmMedium` | 14px | w500 | Chips, status, distance |
 | `AppTypography.bodySmHeavy` | 14px | w700 | Bold small text, highlighted details |
@@ -268,7 +306,7 @@ All body styles: `color: textPrimary`, `height: 1.45`
 | `chip` | `bodySmMedium.copyWith(...)` | Was 12.5/w600, now use 14/w500 base |
 | `status` | `bodySmMedium.copyWith(...)` | Was 12.5/w600, now use 14/w500 base |
 | `viewToggle` | Removed | Was 13.5/w500 |
-| `cardRestaurantName` | `bodyHeavy` | Was 15.5/w700, now 15/w700 |
+| `cardRestaurantName` | `bodyExtraHeavy` | Was 15.5/w700, now 15/w700 (renamed from bodyHeavy) |
 | `menuItemName` | `bodyMedium.copyWith(fontWeight: FontWeight.w600)` | Was 15/w600 |
 | `price` | `price` | Size changed: was 13.5, now 14 |
 | `cardDetail` | `bodySm` | Same: 14/w400 |
@@ -285,7 +323,7 @@ Design system uses numeric weights (420-750). Flutter only supports 100-900 in i
 | 480-540 | `FontWeight.w500` | Medium |
 | 560-600 | `FontWeight.w600` | Semibold |
 | 620-680 | `FontWeight.w700` | Bold |
-| 700-750 | `FontWeight.w800` | Extra-bold (not used in heading scale) |
+| 700-750 | `FontWeight.w800` | Extra-bold (hero token only) |
 
 ### Common Patterns
 
@@ -458,7 +496,7 @@ ElevatedButton(
 **Generated style:**
 - Background: `accent` (orange)
 - Text: White, 16px, w600
-- Border radius: 14px
+- Border radius: 12px (`AppRadius.button`)
 - Padding: 24px horizontal, 14px vertical
 - No elevation
 - Disabled: #bbbbbb background
@@ -477,7 +515,7 @@ OutlinedButton(
 - Background: Transparent
 - Text: `textPrimary` (#0f0f0f), 16px, w600
 - Border: #e8e8e8
-- Border radius: 14px
+- Border radius: 12px (`AppRadius.button`)
 - Same padding as primary
 
 ### Full-Width Button Pattern
@@ -704,7 +742,7 @@ GestureDetector(
       vertical: AppSpacing.sm,  // 8px
     ),
     decoration: BoxDecoration(
-      color: _selected ? AppColors.accent : Colors.white,
+      color: _selected ? AppColors.accent : AppColors.bgPage,
       borderRadius: BorderRadius.circular(AppRadius.filter),  // 10px
       border: Border.all(
         color: _selected ? AppColors.accent : AppColors.border,
@@ -720,31 +758,42 @@ GestureDetector(
 )
 ```
 
-### Checkbox with Text
+### Checkbox with Text (AppCheckbox)
+
+**Use `AppCheckbox`** (commit `c4066fc`) for consistent checkbox styling across the app. Replaces manual `Checkbox` + `Row` patterns.
+
+**Source:** `journey_mate/lib/widgets/shared/app_checkbox.dart`
 
 ```dart
-Row(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Checkbox(
-      value: _checked,
-      onChanged: (value) => setState(() => _checked = value ?? false),
-      activeColor: AppColors.accent,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-    ),
-    SizedBox(width: AppSpacing.md),  // 12px
-    Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Label', style: AppTypography.bodyLgMedium),
-          SizedBox(height: AppSpacing.xs),  // 4px
-          Text('Description', style: AppTypography.bodySm),
-        ],
-      ),
-    ),
-  ],
+// Standard usage — tapping anywhere on the row toggles
+AppCheckbox(
+  value: _checked,
+  onChanged: (value) => setState(() => _checked = value),
+  label: td(ref, 'checkbox_label'),
+)
+```
+
+**AppCheckbox provides:**
+- Custom-drawn checkbox container (18×18px, `AppRadius.checkbox` corners)
+- Active: `AppColors.accent` fill + white check icon
+- Inactive: `AppColors.border` border
+- Full-row tap target (label + checkbox both toggle)
+- `AppTypography.body` label with `AppColors.textPrimary`
+
+**For manual cases** (when AppCheckbox doesn't fit), match the same spec:
+
+```dart
+Container(
+  width: 18,
+  height: 18,
+  decoration: BoxDecoration(
+    color: _checked ? AppColors.accent : Colors.transparent,
+    border: _checked ? null : Border.all(color: AppColors.border, width: 1.5),
+    borderRadius: BorderRadius.circular(AppRadius.checkbox),  // 4px
+  ),
+  child: _checked
+      ? Icon(Icons.check, size: 10, color: Colors.white)
+      : null,
 )
 ```
 
@@ -879,11 +928,13 @@ AppTypography.bodyLgMedium  // Correct
 | First gap (forms) | Custom `28` | 28px | After main subtitle |
 | **Page horizontal padding** | **`AppSpacing.xl`** | **20px** | **Standard for ALL pages** |
 | Input radius | `AppRadius.input` | 12px | |
-| Button radius | `AppRadius.button` | 14px | |
+| Button radius | `AppRadius.button` | 12px | Was 14px, aligned to 12px scale |
 | Card radius | `AppRadius.card` | 16px | |
+| Bottom sheet corners | `AppRadius.bottomSheet` | 20px | Was 22px, aligned to 20px scale |
+| Pill buttons | `AppRadius.pill` | 20px | Sort, open-only floating buttons |
 | Orange color | CTAs only | Never match status |
 | Green color | Match confirmation only | Never CTAs |
 
 ---
 
-**Status:** Complete — All design tokens implemented | **Source of truth:** `journey_mate/lib/theme/` | **Last verified:** 2026-03-10
+**Status:** Complete — All design tokens implemented | **Source of truth:** `journey_mate/lib/theme/` | **Last verified:** 2026-03-12

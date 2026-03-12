@@ -109,6 +109,7 @@ lib/pages/settings/
 - `map_business_preview_card.dart` — Preview card shown on map marker tap (commit `c545543`)
 - `bottom_sheet_header.dart` — Shared header with swipe bar + action buttons for all bottom sheets (commit `80ae4b6`)
 - `map_selection_sheet.dart` — Bottom sheet for choosing Google Maps or Apple Maps (commit `cf10d08`)
+- `app_checkbox.dart` — Consistent checkbox styling widget (accent fill, full-row tap target) (commit `c4066fc`)
 
 **Deleted widgets (commit `e79ec2c` — unused/consolidated):**
 - `allergies_filter_widget.dart`, `contact_details_widget.dart`, `dietary_preferences_filter_widgets.dart`, `dietary_restrictions_filter_widget.dart`, `menu_item_card.dart`, `user_feedback_buttons_page.dart`, `user_feedback_buttons_topic.dart`

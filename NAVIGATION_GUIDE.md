@@ -52,9 +52,9 @@ Each scenario below provides:
 **Read these sections:**
 1. **ARCHITECTURE.md** → Widget Patterns → Self-Contained ConsumerWidget (lines 361-406)
 2. **ARCHITECTURE.md** → Widget Patterns → ConsumerWidget vs ConsumerStatefulWidget (lines 473-507)
-3. **DESIGN_SYSTEM_flutter.md** → Colors (lines 39-90)
-4. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 93-130)
-5. **DESIGN_SYSTEM_flutter.md** → Typography (lines 180-320)
+3. **DESIGN_SYSTEM_flutter.md** → Colors (lines 39-92)
+4. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 96-132)
+5. **DESIGN_SYSTEM_flutter.md** → Typography (lines 205-376)
 6. **ARCHITECTURE.md** → Common Pitfall #8, #13, #15, #16, #20, #23 (lines 2294-2307, 2539-2594, 2635-2677, 2678-2728, 2879-2923, 3038-3104)
 7. **ARCHITECTURE.md** → Swipe Gesture Patterns (lines 1046-1391) — if widget has dismissible/swipeable UI
 
@@ -180,9 +180,9 @@ Each scenario below provides:
 
 **Read these sections:**
 1. **DESIGN_SYSTEM_flutter.md** → Colors (lines 39-92)
-2. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 93-130)
-3. **DESIGN_SYSTEM_flutter.md** → Typography (lines 180-320)
-4. **DESIGN_SYSTEM_flutter.md** → Border Radius (search for "AppRadius")
+2. **DESIGN_SYSTEM_flutter.md** → Spacing (lines 96-132)
+3. **DESIGN_SYSTEM_flutter.md** → Border Radii (lines 134-203) — unified 2·4·8·12·16·20 scale with migration table
+4. **DESIGN_SYSTEM_flutter.md** → Typography (lines 205-376) — 23-style scale including hero token, h6 w600, bodyHeavy/bodyExtraHeavy
 5. **ARCHITECTURE.md** → Code Quality Standards → Design Token Adherence (lines 1988-1996)
 6. **CLAUDE.md** → Code Review Checklist (lines 84-104)
 
@@ -197,9 +197,10 @@ Each scenario below provides:
 **Reference files:**
 - `journey_mate/lib/theme/app_colors.dart` — All 30 color constants
 - `journey_mate/lib/theme/app_spacing.dart` — All 8 spacing constants
-- `journey_mate/lib/theme/app_typography.dart` — All 17 text styles
+- `journey_mate/lib/theme/app_typography.dart` — All 23 text styles (including hero, bodyExtraHeavy)
+- `journey_mate/lib/theme/app_radius.dart` — Unified 2·4·8·12·16·20 radius scale (12 constants)
 - `journey_mate/lib/theme/app_theme.dart` — Centralized ThemeData (AppBar, buttons, inputs, cards)
-- `DESIGN_SYSTEM_flutter.md` — Complete design system documentation (869 lines)
+- `DESIGN_SYSTEM_flutter.md` — Complete design system documentation (940 lines)
 
 ---
 
@@ -370,6 +371,7 @@ Each scenario below provides:
 
 ## Navigation Guide Changelog
 
+**2026-03-12 (batch 2):** Design token overhaul — AppRadius unified to 2·4·8·12·16·20 scale (handle, pill NEW; 7 values realigned), AppTypography hero token (28/w800), h6 softened (w700→w600), bodyHeavy→bodyExtraHeavy rename + new bodyHeavy (w600), AppCheckbox widget, Category Chip bgPage fix, bottom sheet drag handle standardization (40px/border). DESIGN_SYSTEM_flutter.md Sections 3/4/7 rewritten, v1.3. ARCHITECTURE.md checklist updated (23-style scale). DIRECTORY_STRUCTURE.md added app_checkbox.dart. Scenario 7 reference files updated. Commits covered: 3469f47, c4066fc, a9649cd, fbf2589, 0e9baa1, 261dc0d, 75e59b1, c76ff2d, 47b3998
 **2026-03-12:** SharedPreferences cache pattern, 15-language infrastructure, map selection sheet, API centralization, stale counts fix. ARCHITECTURE.md: new SharedPreferences Cache Pattern section, Language Infrastructure subsection, MapSelectionSheet in map view, Pitfalls #38 (ApiService only) and #39 (stale counts), updated Pitfall #37 (MapSelectionSheet), updated API service (13 endpoints, 17 methods), updated provider init order (cache-first), updated translation decisions (15 languages). Scenario 3 (API: Pitfall #38 warning), Scenario 9 (filter: Pitfall #39 warning, cache pattern ref), Scenario 12 (15 languages, activation pattern, language_currency_config). All 12 scenario line refs recalculated (~140 lines added to ARCHITECTURE.md). Commits covered: 827de8e, 8eb4a47, cf10d08, e79ec2c, 5c2c27c
 **2026-03-10:** Typography overhaul (14-style type scale), 3 new widget patterns (MenuSectionWidget, TabbedGalleryWidget, MenuScrollController), 2 new pitfalls (#33 ref.read in dispose, #34 tab-jumping guard). DESIGN_SYSTEM_flutter.md Section 4 rewritten with migration table. All 12 scenario line refs recalculated (~160 lines added to ARCHITECTURE.md). Commits covered: 7f0c892, 51e2b58, a348fd4, 05029da, dd052b5
 **2026-03-09 (batch):** 3 documentation PRs merged: (1) Translation system — td() 4-step fallback chain, 344 keys, 0 legacy, 15 Supabase languages; (2) Widget patterns — BottomSheetHeader, contact_utils.dart, _buildSheetHandle fix; (3) Design tokens — dotSeparator color, BusinessCache LRU cache. All 12 scenario line refs recalculated (~150 lines added to ARCHITECTURE.md). Commits covered: 03a5073, 9f7a6bb, 9762445, 80ae4b6, 932e351, c777591, 9ffcefb, 645d8c4, 403a51a, ae9ad82
