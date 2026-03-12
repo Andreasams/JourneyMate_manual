@@ -734,7 +734,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
       padding: EdgeInsets.only(top: AppSpacing.xs), // 4px
       child: Text(
         displayPrice,
-        style: AppTypography.bodySm.copyWith(
+        style: AppTypography.bodyMedium.copyWith(
           fontWeight: FontWeight.w500,
           color: AppColors.accent,
         ),

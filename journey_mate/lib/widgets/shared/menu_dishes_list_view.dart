@@ -1981,7 +1981,7 @@ class _MenuItem extends ConsumerWidget {
                             opacity: _isZeroPrice(displayPrice) ? 0.0 : 1.0,
                             child: Text(
                               _isZeroPrice(displayPrice) ? '0 kr' : displayPrice,
-                              style: AppTypography.bodyLgMedium.copyWith(
+                              style: AppTypography.bodyMedium.copyWith(
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.accent,
                               ),
