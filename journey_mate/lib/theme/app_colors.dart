@@ -95,6 +95,9 @@ class AppColors {
   /// Button pressed - Light grey touch feedback / disabled state
   static const Color buttonPressed = Color(0xFFdcdee0);
 
+  /// Drag handle - Bottom sheet swipe indicators on light backgrounds
+  static const Color dragHandle = dotSeparator;
+
   // ============================================================
   // SEMANTIC COLORS (Aliases for clarity)
   // ============================================================

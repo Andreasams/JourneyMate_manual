@@ -103,7 +103,7 @@ class BottomSheetHeader extends StatelessWidget {
                 width: swipeBarWidth,
                 height: swipeBarHeight,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: AppColors.dragHandle,
                   borderRadius: BorderRadius.circular(AppRadius.handle),
                 ),
               ),

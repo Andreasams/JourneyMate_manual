@@ -232,7 +232,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: AppColors.dragHandle,
                 borderRadius: BorderRadius.circular(AppRadius.handle),
               ),
             ),
@@ -436,7 +436,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.border,
+              color: AppColors.dragHandle,
               borderRadius: BorderRadius.circular(AppRadius.handle),
             ),
           ),
