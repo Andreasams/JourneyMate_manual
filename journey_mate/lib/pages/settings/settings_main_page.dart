@@ -293,7 +293,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
         // Section header
         Text(
           header,
-          style: AppTypography.bodyLgMedium,
+          style: AppTypography.h6,
         ),
         const SizedBox(height: AppSpacing.sm),
 
