@@ -89,6 +89,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       _cachedDeviceId = analyticsState.deviceId;
       _cachedSessionId = analyticsState.sessionId ?? '';
 
+      // Reset dietary filters so each business visit starts fresh
+      ref.read(businessProvider.notifier).clearDietaryFilters();
+
       _trackMenuSessionStart();
       _loadCachedPreview();
       _loadBusinessData();
