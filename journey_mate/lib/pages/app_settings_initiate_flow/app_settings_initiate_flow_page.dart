@@ -209,6 +209,9 @@ class _AppSettingsInitiateFlowPageState
       // Update localeProvider for immediate app-wide locale change
       ref.read(localeProvider.notifier).setLocale(_currentLanguageCode);
 
+      // Load filters for chosen language (background may have loaded default 'en')
+      unawaited(ref.read(filterProvider.notifier).loadFiltersForLanguage(_currentLanguageCode));
+
       // Discard pre-cached filters for languages user didn't choose
       if (_currentLanguageCode != 'da') unawaited(FilterNotifier.clearCacheForLanguage('da'));
       if (_currentLanguageCode != 'en') unawaited(FilterNotifier.clearCacheForLanguage('en'));

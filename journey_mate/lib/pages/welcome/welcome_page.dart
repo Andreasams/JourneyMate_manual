@@ -200,7 +200,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_language_code', 'da');
 
-      // 1b. Discard English filter cache (user chose Danish path)
+      // 1b. Load Danish filters (background may have loaded English)
+      unawaited(ref.read(filterProvider.notifier).loadFiltersForLanguage('da'));
+      // Discard English filter cache (user chose Danish path)
       unawaited(FilterNotifier.clearCacheForLanguage('en'));
 
       // 2. Load Danish translations

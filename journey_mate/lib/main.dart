@@ -47,14 +47,11 @@ void main() async {
   final cachedTranslations = await TranslationsCacheNotifier.loadFromCache(storedLanguage);
   final isCacheFresh = await TranslationsCacheNotifier.isCacheFresh(storedLanguage);
 
-  // Load cached filters from SharedPreferences (returning users only)
-  final hasStoredLanguage = prefs.getString('user_language_code') != null;
-  final cachedFilters = hasStoredLanguage
-      ? await FilterNotifier.loadFromCache(storedLanguage)
-      : null;
-  final isFilterCacheFresh = hasStoredLanguage
-      ? await FilterNotifier.isCacheFresh(storedLanguage)
-      : false;
+  // Load cached filters from SharedPreferences
+  // Always try cache — returns FilterState.initial() when no cache exists
+  final isFirstLaunch = prefs.getString('user_language_code') == null;
+  final cachedFilters = await FilterNotifier.loadFromCache(storedLanguage);
+  final isFilterCacheFresh = await FilterNotifier.isCacheFresh(storedLanguage);
 
   // ── 3. Initialize AnalyticsService (only async op: UUID write on first launch) ──
   await AnalyticsService.instance.initializeWithPrefs(prefs);
@@ -92,9 +89,8 @@ void main() async {
   );
 
   // Initialize filter state from cache (returning users get instant filters)
-  if (cachedFilters != null) {
-    container.read(filterProvider.notifier).initializeFromPrefs(cachedFilters);
-  }
+  // On first launch, cachedFilters has filtersForLanguage == null, so this is a no-op
+  container.read(filterProvider.notifier).initializeFromPrefs(cachedFilters);
 
   // ── 5. Register lifecycle observer ──
   final appObserver = AppLifecycleObserver(container: container);
@@ -116,7 +112,7 @@ void main() async {
     storedLanguage,
     isCacheFresh,
     isFilterCacheFresh,
-    !hasStoredLanguage,
+    isFirstLaunch,
   ));
 
   // ── 8. Background: check location permission + service status ──
@@ -135,7 +131,7 @@ void main() async {
 ///
 /// [skipTranslations] - If true, skip translation refresh (cache is fresh)
 /// [skipFilters] - If true, skip filter refresh (cache is fresh)
-/// [isFirstLaunch] - If true, dual-fetch filters for Danish (state) + English (cache-only)
+/// [isFirstLaunch] - If true, load filters for user's language + pre-cache Danish
 Future<void> _loadAppDataInBackground(
   ProviderContainer container,
   String languageCode,
@@ -155,9 +151,12 @@ Future<void> _loadAppDataInBackground(
       }
 
       if (isFirstLaunch) {
-        // First launch: load Danish (sets provider state) + cache English (cache-only)
-        futures.add(container.read(filterProvider.notifier).loadFiltersForLanguage('da'));
-        futures.add(container.read(filterProvider.notifier).fetchAndCacheOnly('en'));
+        // First launch: load filters for user's language (sets provider state)
+        // + pre-cache Danish for welcome page's "Fortsæt på dansk" path
+        futures.add(container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode));
+        if (languageCode != 'da') {
+          futures.add(container.read(filterProvider.notifier).fetchAndCacheOnly('da'));
+        }
       } else if (!skipFilters) {
         // Returning user, stale cache: refresh from API
         futures.add(container.read(filterProvider.notifier).loadFiltersForLanguage(languageCode));
