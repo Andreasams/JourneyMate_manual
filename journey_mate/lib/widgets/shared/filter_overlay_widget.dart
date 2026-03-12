@@ -1568,7 +1568,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     final hasValidCount = count != null && count > 0;
     final hasSelectedFilters = _selectedFilterIds.isNotEmpty;
 
-    final shouldHighlight = !_isSearching &&
+    final shouldHighlight = _isSearching ||
         (hasSearchResults
             ? hasValidCount
             : (hasSelectedFilters && hasValidCount));

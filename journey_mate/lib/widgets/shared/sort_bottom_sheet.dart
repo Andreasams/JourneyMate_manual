@@ -310,11 +310,9 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
                   ),
                 ),
                 // Count display when selected
-                if (_onlyOpen)
+                if (_onlyOpen && !_isSearching)
                   Text(
-                    _isSearching
-                        ? '...'
-                        : '${ref.watch(searchStateProvider).visibleResultCount} ${td(ref, 'sort_places_label')}',
+                    '${ref.watch(searchStateProvider).visibleResultCount} ${td(ref, 'sort_places_label')}',
                     style: AppTypography.bodySmMedium.copyWith(
                       color: AppColors.green,
                     ),
