@@ -108,7 +108,7 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
           filled: false,
           prefixIcon: Icon(
             Icons.search,
-            size: 17,
+            size: 21,
             color: AppColors.textMuted,
           ),
           contentPadding: EdgeInsets.symmetric(

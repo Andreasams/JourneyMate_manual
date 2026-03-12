@@ -407,7 +407,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
               maxLines: 1,
             ),
             trailing: Icon(
-              Icons.chevron_right,
+              Icons.arrow_forward_ios,
               color: hasShoppingArea
                   ? AppColors.textSecondary.withValues(alpha: 0.5)
                   : AppColors.textSecondary,
@@ -445,7 +445,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
           Row(
             children: [
               IconButton(
-                icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                icon: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary),
                 onPressed: () {
                   _stationSearchController.clear();
                   setState(() {

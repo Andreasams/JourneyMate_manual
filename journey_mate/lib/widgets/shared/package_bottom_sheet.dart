@@ -1006,7 +1006,7 @@ class _ItemDetailPage extends ConsumerWidget {
         children: [
           BottomSheetHeader(
             leftAction: BottomSheetAction(
-              icon: Icons.arrow_back,
+              icon: Icons.arrow_back_ios_new,
               onPressed: onBack,
             ),
             image: hasImage ? _buildItemImage() : null,

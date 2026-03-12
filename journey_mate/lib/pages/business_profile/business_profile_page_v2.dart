@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
@@ -67,6 +68,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   String? _errorMessage;
   bool _menuLoadFailed = false;
   bool _menuSessionStarted = false;
+  bool _isApiLoaded = false;
 
   // Cached for safe use in dispose() — ref is invalid after unmount
   String _cachedDeviceId = '';
@@ -123,6 +125,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   Future<void> _loadBusinessData() async {
     setState(() {
       _isLoading = true;
+      _isApiLoaded = false;
       _errorMessage = null;
       _menuLoadFailed = false;
     });
@@ -217,10 +220,12 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
       setState(() {
         _isLoading = false;
+        _isApiLoaded = true;
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
+        _isApiLoaded = true;
         _errorMessage = td(ref, 'error_load_business_profile');
       });
     }
@@ -313,9 +318,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       backgroundColor: AppColors.bgPage,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
-        iconSize: 20,
-        padding: const EdgeInsets.all(4),
+        icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary),
         onPressed: () => context.pop(),
       ),
       actions: [
@@ -380,31 +383,51 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         _sectionDivider,
 
         // 6. Gallery — prop-based widget with caller-provided padding.
-        SliverToBoxAdapter(child: _buildGallerySection()),
+        SliverToBoxAdapter(
+          child: !_isApiLoaded
+              ? _buildSectionShimmer(titleWidth: 80, contentHeight: 120)
+              : _buildGallerySection(),
+        ),
 
         _sectionDivider,
 
         // 7. Menu (category chips + inline filter panel + items list)
         SliverToBoxAdapter(
-          child: _menuLoadFailed
-              ? _buildMenuErrorWidget()
-              : InlineMenuWidget(
-                  businessId: int.parse(widget.businessId),
-                ),
+          child: !_isApiLoaded
+              ? _buildSectionShimmer(titleWidth: 100, contentHeight: 160)
+              : _menuLoadFailed
+                  ? _buildMenuErrorWidget()
+                  : InlineMenuWidget(
+                      businessId: int.parse(widget.businessId),
+                    ),
         ),
 
         _sectionDivider,
 
         // 8. Facilities & Services
-        SliverToBoxAdapter(child: _buildFacilitiesSection()),
+        SliverToBoxAdapter(
+          child: !_isApiLoaded
+              ? _buildSectionShimmer(titleWidth: 140, contentHeight: 80)
+              : _buildFacilitiesSection(),
+        ),
 
         _sectionDivider,
 
         // 9. Payment Options
-        SliverToBoxAdapter(child: _buildPaymentsSection()),
+        SliverToBoxAdapter(
+          child: !_isApiLoaded
+              ? _buildSectionShimmer(titleWidth: 120, contentHeight: 60)
+              : _buildPaymentsSection(),
+        ),
 
         // 10. About (collapsible) — dividers conditional on description existing
-        if (_hasAboutContent) ...[
+        if (!_isApiLoaded) ...[
+          _sectionDivider,
+          SliverToBoxAdapter(
+            child: _buildSectionShimmer(titleWidth: 60, contentHeight: 60),
+          ),
+          _sectionDivider,
+        ] else if (_hasAboutContent) ...[
           _sectionDivider,
           SliverToBoxAdapter(child: _buildAboutSection()),
           _sectionDivider,
@@ -423,6 +446,44 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   SliverToBoxAdapter get _sectionDivider => const SliverToBoxAdapter(
         child: SizedBox(height: AppSpacing.xxl),
       );
+
+  /// Shimmer placeholder for a single section while API data loads.
+  /// Shows a title bar + content block matching section visual rhythm.
+  Widget _buildSectionShimmer({
+    required double titleWidth,
+    double titleHeight = 20.0,
+    double contentHeight = 80.0,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Shimmer.fromColors(
+        baseColor: AppColors.bgSurface,
+        highlightColor: AppColors.bgPage,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: titleWidth,
+              height: titleHeight,
+              decoration: BoxDecoration(
+                color: AppColors.bgInput,
+                borderRadius: BorderRadius.circular(AppRadius.chip),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Container(
+              width: double.infinity,
+              height: contentHeight,
+              decoration: BoxDecoration(
+                color: AppColors.bgInput,
+                borderRadius: BorderRadius.circular(AppRadius.chip),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   /// Whether the About section has content to display.
   bool get _hasAboutContent {
@@ -544,15 +605,11 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             pageName: 'businessProfile',
             onImageTap: (imageUrls, index, categoryKey) {
               if (context.mounted) {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => ImageGalleryWidget(
-                    currentIndex: index,
-                    imageUrls: imageUrls,
-                    categoryName: td(ref, 'tab_gallery'),
-                  ),
+                ImageGalleryWidget.show(
+                  context,
+                  imageUrls: imageUrls,
+                  currentIndex: index,
+                  categoryName: td(ref, 'tab_gallery'),
                 );
               }
             },

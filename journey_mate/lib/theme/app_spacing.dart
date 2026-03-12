@@ -14,9 +14,6 @@ class AppSpacing {
   /// 8px - Small spacing (label to input, between paragraphs)
   static const double sm = 8.0;
 
-  /// 10px - Section header bottom, partial match margin
-  static const double msm = 10.0;
-
   /// 12px - Medium spacing (heading to description, between chips)
   static const double md = 12.0;
 

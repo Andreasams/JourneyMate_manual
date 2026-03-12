@@ -68,9 +68,8 @@ class _ShareFeedbackPageState extends ConsumerState<ShareFeedbackPage> {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(
-            Icons.arrow_back_ios,
+            Icons.arrow_back_ios_new,
             color: AppColors.textPrimary,
-            size: 20,
           ),
           onPressed: () {
             Navigator.of(context).pop();

@@ -10,7 +10,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/shared/tabbed_gallery_widget.dart';
-import '../../widgets/shared/image_gallery_overlay_swipable_widget.dart';
+import '../../widgets/shared/image_gallery_widget.dart';
 
 /// Gallery Full Page - Dedicated full-screen photo gallery browsing
 ///
@@ -165,7 +165,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
   ///
   /// Key decisions:
   /// - limitToEightImages = false (show all images in full page view)
-  /// - onImageTap callback opens full-screen overlay with ImageGalleryOverlaySwipableWidget
+  /// - onImageTap callback opens full-screen gallery via ImageGalleryWidget.show()
   Widget _buildGalleryTabWidget(dynamic gallery) {
     return TabbedGalleryWidget(
       galleryData: gallery as Map<String, dynamic>,
@@ -177,10 +177,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
     );
   }
 
-  /// Show full-screen image gallery overlay
-  ///
-  /// Opens dialog with ImageGalleryOverlaySwipableWidget which wraps ImageGalleryWidget.
-  /// ⚠️ CRITICAL: Parameter is `currentIndex` (NOT initialIndex!) - see line 43 of overlay widget
+  /// Show full-screen image gallery via canonical bottom sheet presentation.
   Future<void> _showImageGalleryOverlay(
     List<String> imageUrls,
     int index,
@@ -188,15 +185,11 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
   ) async {
     if (!mounted) return;
 
-    await showDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierColor: Colors.black.withValues(alpha: 0.7), // Explicit alpha
-      builder: (context) => ImageGalleryOverlaySwipableWidget(
-        imageURLs: imageUrls,
-        imageIndex: index, // ← Overlay wrapper property name
-        tabCategory: _getCategoryDisplayName(categoryKey),
-      ),
+    await ImageGalleryWidget.show(
+      context,
+      imageUrls: imageUrls,
+      currentIndex: index,
+      categoryName: _getCategoryDisplayName(categoryKey),
     );
   }
 

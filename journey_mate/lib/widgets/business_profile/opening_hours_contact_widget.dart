@@ -418,7 +418,7 @@ class _OpeningHoursContactWidgetState
           td(ref, 'opening_hours_label'),
           style: AppTypography.h6,
         ),
-        SizedBox(height: AppSpacing.msm),
+        SizedBox(height: AppSpacing.md),
         // Days list
         Column(
           children: List.generate(7, (index) => Column(
@@ -639,7 +639,7 @@ class _OpeningHoursContactWidgetState
           td(ref, 'contact_label'),
           style: AppTypography.h6,
         ),
-        SizedBox(height: AppSpacing.msm),
+        SizedBox(height: AppSpacing.md),
         // Contact fields with dividers
         Column(
           children: List.generate(contactFields.length, (index) {

@@ -109,37 +109,60 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
             businessState.selectedDietaryPreferenceId != null ||
             businessState.excludedAllergyIds.isNotEmpty;
 
+    // Full-page mode: use LayoutBuilder so we can give the menu list a
+    // fixed viewport-sized height when filters are visible, allowing the
+    // entire page to scroll (title + filters + categories scroll off-screen).
+    if (widget.isFullPage) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final menuList = _buildMenuDishesListView(
+            originalCurrencyCode,
+            businessName,
+          );
+
+          final column = Column(
+            mainAxisSize: _showFilters ? MainAxisSize.min : MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTitleRow(lastReviewedAt, language),
+              SizedBox(height: AppSpacing.sm),
+              _buildFilterSection(hasActiveFilters),
+              _buildCategoryRows(business, menuCategories),
+              if (_showFilters)
+                SizedBox(height: constraints.maxHeight, child: menuList)
+              else
+                Expanded(child: menuList),
+            ],
+          );
+
+          // When filters are visible, wrap in SingleChildScrollView so the
+          // header (title + filters + categories) can scroll off-screen,
+          // leaving the full viewport for the menu list underneath.
+          if (_showFilters) {
+            return SingleChildScrollView(child: column);
+          }
+          return column;
+        },
+      );
+    }
+
+    // Inline mode (business profile): fixed max-height container.
     return Column(
-      mainAxisSize: widget.isFullPage ? MainAxisSize.max : MainAxisSize.min,
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── (1) Title row ──────────────────────────────────────────────────
         _buildTitleRow(lastReviewedAt, language),
         SizedBox(height: AppSpacing.sm),
-
-        // ── (2) Filter section ─────────────────────────────────────────────
         _buildFilterSection(hasActiveFilters),
-
-        // ── (3) MenuCategoriesRows ─────────────────────────────────────────
         _buildCategoryRows(business, menuCategories),
-
-        // ── (4) MenuDishesListView ─────────────────────────────────────────
-        if (widget.isFullPage)
-          Expanded(
-            child: _buildMenuDishesListView(
-              originalCurrencyCode,
-              businessName,
-            ),
-          )
-        else
-          Container(
-            constraints: const BoxConstraints(maxHeight: _menuListMaxHeight),
-            decoration: BoxDecoration(color: AppColors.bgCard),
-            child: _buildMenuDishesListView(
-              originalCurrencyCode,
-              businessName,
-            ),
+        Container(
+          constraints: const BoxConstraints(maxHeight: _menuListMaxHeight),
+          decoration: BoxDecoration(color: AppColors.bgCard),
+          child: _buildMenuDishesListView(
+            originalCurrencyCode,
+            businessName,
           ),
+        ),
       ],
     );
   }

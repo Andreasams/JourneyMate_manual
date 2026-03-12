@@ -13,6 +13,29 @@ class MatchVariant {
   static const String none = 'none';
 }
 
+/// Which match categories to show on the map.
+enum MapMatchVisibility { all, fullOnly, fullAndPartial }
+
+/// Counts how many documents fall into each match category.
+///
+/// Returns `{'full': n, 'partial': n, 'none': n}`.
+/// Used by the map filter bottom sheet to decide which options to show.
+Map<String, int> computeMatchCounts(
+    List<dynamic> documents, List<int> scoringFilterIds) {
+  int full = 0, partial = 0, none = 0;
+  for (final doc in documents) {
+    final variant = getMatchVariant(doc, scoringFilterIds);
+    if (variant == MatchVariant.full) {
+      full++;
+    } else if (variant == MatchVariant.partial) {
+      partial++;
+    } else {
+      none++;
+    }
+  }
+  return {'full': full, 'partial': partial, 'none': none};
+}
+
 /// Extracts the list of business documents from search results.
 ///
 /// After `updateSearchResults()` normalization, [searchResults] is already

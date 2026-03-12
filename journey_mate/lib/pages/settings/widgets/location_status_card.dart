@@ -133,7 +133,7 @@ class LocationStatusCard extends ConsumerWidget {
 
               // Chevron to indicate tappability
               Icon(
-                Icons.chevron_right,
+                Icons.arrow_forward_ios,
                 size: 18,
                 color: AppColors.textTertiary,
               ),

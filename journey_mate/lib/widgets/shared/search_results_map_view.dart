@@ -20,10 +20,14 @@ class SearchResultsMapView extends ConsumerStatefulWidget {
   const SearchResultsMapView({
     super.key,
     this.onBusinessTap,
+    this.matchVisibility = MapMatchVisibility.all,
   });
 
   /// Called when a business is selected (navigate to profile).
   final void Function(int businessId)? onBusinessTap;
+
+  /// Which match categories to display as markers.
+  final MapMatchVisibility matchVisibility;
 
   @override
   ConsumerState<SearchResultsMapView> createState() =>
@@ -41,8 +45,9 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
   /// Cached bounds from last marker build to avoid double iteration.
   LatLngBounds? _lastBounds;
 
-  /// Guards against concurrent/duplicate _buildMarkers calls.
-  bool _isBuilding = false;
+  /// Generation counter for latest-wins marker builds.
+  /// Each _buildMarkers call increments this; superseded builds exit early.
+  int _buildGeneration = 0;
 
   /// Subscription for search state changes — closed in dispose().
   late final ProviderSubscription<SearchState> _searchListener;
@@ -72,6 +77,15 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant SearchResultsMapView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.matchVisibility != widget.matchVisibility) {
+      final scoringFilterIds = ref.read(searchStateProvider).scoringFilterIds;
+      _rebuildMarkersAndFit(_documents, scoringFilterIds, fitCamera: false);
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Marker generation
   // ---------------------------------------------------------------------------
@@ -91,60 +105,85 @@ class _SearchResultsMapViewState extends ConsumerState<SearchResultsMapView> {
     });
   }
 
+  /// Returns true if a marker with the given [matchVariant] should be shown
+  /// under the current [MapMatchVisibility] setting.
+  bool _shouldShowMarker(String? matchVariant) {
+    switch (widget.matchVisibility) {
+      case MapMatchVisibility.all:
+        return true;
+      case MapMatchVisibility.fullOnly:
+        // Show full matches, or all when no scoring is active (null)
+        return matchVariant == null || matchVariant == MatchVariant.full;
+      case MapMatchVisibility.fullAndPartial:
+        return matchVariant == null ||
+            matchVariant == MatchVariant.full ||
+            matchVariant == MatchVariant.partial;
+    }
+  }
+
   /// Builds markers and computes camera bounds in a single pass over documents.
+  ///
+  /// Uses a generation counter (latest-wins) instead of a boolean guard so that
+  /// concurrent calls don't silently drop rebuilds — a newer call supersedes
+  /// any in-flight build.
   Future<void> _buildMarkers(
       List<dynamic> documents, List<int> scoringFilterIds) async {
-    if (_isBuilding) return;
-    _isBuilding = true;
+    final generation = ++_buildGeneration;
 
-    try {
-      final markers = <Marker>{};
-      final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    final markers = <Marker>{};
+    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
 
-      // Track bounds while iterating to avoid a second pass
-      double? minLat, maxLat, minLng, maxLng;
+    // Track bounds while iterating to avoid a second pass
+    double? minLat, maxLat, minLng, maxLng;
 
-      for (final doc in documents) {
-        if (doc is! Map) continue;
+    for (final doc in documents) {
+      if (doc is! Map) continue;
 
-        final lat = (doc['latitude'] as num?)?.toDouble();
-        final lng = (doc['longitude'] as num?)?.toDouble();
-        if (lat == null || lng == null) continue;
+      final lat = (doc['latitude'] as num?)?.toDouble();
+      final lng = (doc['longitude'] as num?)?.toDouble();
+      if (lat == null || lng == null) continue;
 
-        // Update bounds
-        minLat = minLat == null ? lat : (lat < minLat ? lat : minLat);
-        maxLat = maxLat == null ? lat : (lat > maxLat ? lat : maxLat);
-        minLng = minLng == null ? lng : (lng < minLng ? lng : minLng);
-        maxLng = maxLng == null ? lng : (lng > maxLng ? lng : maxLng);
+      final businessId = getBusinessId(doc);
+      final matchVariant = getMatchVariant(doc, scoringFilterIds);
 
-        final businessId = getBusinessId(doc);
-        final matchVariant = getMatchVariant(doc, scoringFilterIds);
-        final color = MapMarkerHelper.colorForMatchVariant(matchVariant);
-        final isSelected = businessId == _selectedBusinessId;
+      // Skip markers hidden by match visibility filter
+      if (!_shouldShowMarker(matchVariant)) continue;
 
-        final icon = await MapMarkerHelper.createDotMarker(
-          color: color,
-          selected: isSelected,
-          devicePixelRatio: devicePixelRatio,
-        );
+      // Update bounds (only for visible markers)
+      minLat = minLat == null ? lat : (lat < minLat ? lat : minLat);
+      maxLat = maxLat == null ? lat : (lat > maxLat ? lat : maxLat);
+      minLng = minLng == null ? lng : (lng < minLng ? lng : minLng);
+      maxLng = maxLng == null ? lng : (lng > maxLng ? lng : maxLng);
 
-        markers.add(Marker(
-          markerId: MarkerId('business_$businessId'),
-          position: LatLng(lat, lng),
-          icon: icon,
-          zIndexInt: isSelected ? 1 : 0,
-          onTap: () => _onMarkerTap(businessId),
-        ));
-      }
+      final color = MapMarkerHelper.colorForMatchVariant(matchVariant);
+      final isSelected = businessId == _selectedBusinessId;
 
-      // Compute bounds from accumulated min/max
-      _lastBounds = _computeBounds(minLat, maxLat, minLng, maxLng);
+      final icon = await MapMarkerHelper.createDotMarker(
+        color: color,
+        selected: isSelected,
+        devicePixelRatio: devicePixelRatio,
+      );
 
-      if (mounted) {
-        setState(() => _markers = markers);
-      }
-    } finally {
-      _isBuilding = false;
+      // Superseded by a newer build — exit early
+      if (_buildGeneration != generation) return;
+
+      markers.add(Marker(
+        markerId: MarkerId('business_$businessId'),
+        position: LatLng(lat, lng),
+        icon: icon,
+        zIndexInt: isSelected ? 1 : 0,
+        onTap: () => _onMarkerTap(businessId),
+      ));
+    }
+
+    // Only apply results if this is still the latest generation
+    if (_buildGeneration != generation) return;
+
+    // Compute bounds from accumulated min/max
+    _lastBounds = _computeBounds(minLat, maxLat, minLng, maxLng);
+
+    if (mounted) {
+      setState(() => _markers = markers);
     }
   }
 

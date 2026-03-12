@@ -8,22 +8,28 @@ import 'search_result_helpers.dart';
 /// Generates map pin markers: a round ball with a short pointer at the bottom.
 ///
 /// Pins are color-coded by match status and drawn as vector paths on Canvas.
-/// Selected pins get a white halo effect. Generated bitmaps are cached
-/// to avoid regeneration on every rebuild.
+/// All pins have a white border; selected pins are larger. Generated bitmaps
+/// are cached to avoid regeneration on every rebuild.
 class MapMarkerHelper {
   MapMarkerHelper._();
 
   /// Cache key: "color.value-selected-size-devicePixelRatio"
   static final Map<String, BitmapDescriptor> _cache = {};
 
+  /// Internal render multiplier — draws the canvas at 3x the display size
+  /// then tells [BitmapDescriptor] the true pixel ratio. This gives the
+  /// rasteriser enough pixels to produce smooth, anti-aliased curves.
+  static const double _renderScale = 3.0;
+
   /// Creates a pin marker: round ball with a short pointer at the bottom.
   ///
   /// Uses PictureRecorder + Canvas to draw a clean pin shape.
-  /// Selected markers are slightly larger with a white halo.
+  /// All markers get a white border; selected markers are larger.
+  /// Size difference is the only selection indicator.
   static Future<BitmapDescriptor> createDotMarker({
     required Color color,
     bool selected = false,
-    double size = 12.0,
+    double size = 9.0,
     double devicePixelRatio = 2.0,
   }) async {
     final key = '${color.toARGB32()}-$selected-$size-$devicePixelRatio';
@@ -31,13 +37,15 @@ class MapMarkerHelper {
       return _cache[key]!;
     }
 
-    final scale = devicePixelRatio;
+    // Render at _renderScale × devicePixelRatio for crisp edges
+    final scale = devicePixelRatio * _renderScale;
+    // Selected markers are larger — size difference is the selection indicator
+    final effectiveSize = selected ? size * 1.4 : size;
     // Pin proportions: width = size, height = size * 1.15 (ball + short pointer)
-    final effectiveSize = selected ? size * 1.2 : size;
     final pinWidth = effectiveSize * scale;
     final pinHeight = effectiveSize * 1.15 * scale;
-    // Extra padding for selected halo
-    final padding = selected ? 3.0 * scale : 1.0 * scale;
+    // Padding for white border (always present on all markers)
+    final padding = 3.0 * scale;
     final canvasWidth = pinWidth + padding * 2;
     final canvasHeight = pinHeight + padding * 2;
 
@@ -49,18 +57,21 @@ class MapMarkerHelper {
     final circleRadius = pinWidth / 2;
     final tipY = padding + pinHeight;
 
-    if (selected) {
-      // White halo behind the pin — subtract haloWidth from topPadding so the
-      // circle center stays fixed and the halo expands uniformly in all directions.
-      const haloWidth = 2.0;
-      _drawPinPath(canvas, cx, padding - haloWidth * scale,
-          circleRadius + haloWidth * scale, tipY + haloWidth * scale,
-          Paint()..color = Colors.white);
-    }
+    // White border behind the pin — always drawn for visual clarity
+    const borderWidth = 2.0;
+    _drawPinPath(
+      canvas,
+      cx,
+      padding - borderWidth * scale,
+      circleRadius + borderWidth * scale,
+      tipY + borderWidth * scale,
+      Paint()..color = Colors.white,
+    );
 
     // Pin body
     _drawPinPath(
-        canvas, cx, padding, circleRadius, tipY, Paint()..color = color);
+      canvas, cx, padding, circleRadius, tipY, Paint()..color = color,
+    );
 
     final picture = recorder.endRecording();
     final image = await picture.toImage(
@@ -70,7 +81,12 @@ class MapMarkerHelper {
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     final bytes = byteData!.buffer.asUint8List();
 
-    final descriptor = BitmapDescriptor.bytes(bytes);
+    // Tell the descriptor the true pixel ratio so it displays at
+    // the intended logical size despite the oversized bitmap.
+    final descriptor = BitmapDescriptor.bytes(
+      bytes,
+      imagePixelRatio: devicePixelRatio * _renderScale,
+    );
     _cache[key] = descriptor;
     return descriptor;
   }

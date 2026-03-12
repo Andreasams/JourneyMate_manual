@@ -27,6 +27,7 @@ import '../../widgets/shared/nav_bar_widget.dart';
 import '../../widgets/shared/restaurant_list_shimmer_widget.dart';
 import '../../widgets/shared/search_bar_widget.dart';
 import '../../widgets/shared/sort_bottom_sheet.dart';
+import '../../widgets/shared/map_filter_bottom_sheet.dart';
 
 /// Search Page - Main restaurant discovery page
 /// Phase 7.3.2 implementation
@@ -53,6 +54,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   bool _onlyOpen = false;
   int? _selectedStation;
   _ViewMode _viewMode = _ViewMode.list;
+  MapMatchVisibility _matchVisibility = MapMatchVisibility.all;
   /// Tracks the pageSize used for the most recent search.
   /// Map view needs all results (200); list view uses default (20).
   int _lastSearchPageSize = 20;
@@ -166,6 +168,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _matchVisibility = MapMatchVisibility.all;
     });
 
     final searchState = ref.read(searchStateProvider);
@@ -587,7 +590,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     bottom: 12.0,
                     right: AppSpacing.xl, // 20px per JSX
                     child: _viewMode == _ViewMode.map
-                        ? _buildOpenOnlyChip()
+                        ? _buildMapFloatingButton()
                         : _buildSortButton(),
                   ),
                 ],
@@ -928,6 +931,100 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
+  /// Floating button for map view — shows simple open-only chip when no scored
+  /// search is active, or a filter pill when scoring filters are present.
+  Widget _buildMapFloatingButton() {
+    final searchState = ref.watch(searchStateProvider);
+    if (searchState.scoringFilterIds.isEmpty) {
+      return _buildOpenOnlyChip();
+    }
+    return _buildMapFilterPill();
+  }
+
+  /// Accent pill button that opens the map filter bottom sheet.
+  Widget _buildMapFilterPill() {
+    // Label shows current match visibility
+    final String label;
+    switch (_matchVisibility) {
+      case MapMatchVisibility.all:
+        label = td(ref, 'map_filter_show_all');
+      case MapMatchVisibility.fullOnly:
+        label = td(ref, 'map_filter_show_full');
+      case MapMatchVisibility.fullAndPartial:
+        label = td(ref, 'map_filter_show_full_partial');
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.accent,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _openMapFilterBottomSheet,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.mlg, vertical: AppSpacing.sm),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.tune, size: 14, color: Colors.white),
+                SizedBox(width: AppSpacing.xs),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openMapFilterBottomSheet() {
+    final searchState = ref.read(searchStateProvider);
+    final documents = extractDocuments(searchState.searchResults);
+    final counts =
+        computeMatchCounts(documents, searchState.scoringFilterIds);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => MapFilterBottomSheet(
+        onlyOpen: _onlyOpen,
+        matchVisibility: _matchVisibility,
+        partialMatchCount: counts['partial'] ?? 0,
+        onOnlyOpenChanged: (onlyOpen) async {
+          setState(() => _onlyOpen = onlyOpen);
+          final searchText =
+              ref.read(searchStateProvider).currentSearchText;
+          await _executeSearch(searchText);
+        },
+        onMatchVisibilityChanged: (visibility) {
+          setState(() => _matchVisibility = visibility);
+        },
+      ),
+    );
+  }
+
   /// Get text for sort button - shows station name when station sort is active
   String _getSortButtonText() {
     if (_currentSort == 'station' && _selectedStation != null) {
@@ -1188,6 +1285,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     // the "no results" message only appears in the list tab.
     if (_viewMode == _ViewMode.map) {
       return SearchResultsMapView(
+        matchVisibility: _matchVisibility,
         onBusinessTap: (businessId) {
           context.push('/business/$businessId');
         },

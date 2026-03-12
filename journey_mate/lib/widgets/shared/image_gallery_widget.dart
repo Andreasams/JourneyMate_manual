@@ -9,10 +9,10 @@ library;
 /// - Close button (top-left, positioned 60px from top to avoid iPhone gesture area)
 /// - CachedNetworkImage with loading/error states
 ///
-/// Used by:
-/// - ImageGalleryOverlaySwipableWidget (Profile page)
-/// - MenuDishesListView (Menu page)
-/// - SearchResultsListView (Search page)
+/// Used by (via static `show()` method):
+/// - GalleryFullPage (dedicated gallery route)
+/// - BusinessProfilePageV2 (business profile gallery section)
+/// - SearchResultsListView (search result expanded card)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,26 +22,41 @@ import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
-import '../../theme/app_radius.dart';
 import '../../theme/app_constants.dart';
 
 class ImageGalleryWidget extends ConsumerStatefulWidget {
+  /// Opens the image gallery as a full-screen modal bottom sheet.
+  ///
+  /// This is the canonical way to present the gallery from any call site.
+  /// Ensures consistent presentation (swipe-to-dismiss, transparent barrier).
+  static Future<void> show(
+    BuildContext context, {
+    required List<String> imageUrls,
+    required int currentIndex,
+    required String categoryName,
+  }) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ImageGalleryWidget(
+        imageUrls: imageUrls,
+        currentIndex: currentIndex,
+        categoryName: categoryName,
+      ),
+    );
+  }
+
   const ImageGalleryWidget({
     super.key,
-    this.width,
-    this.height,
     required this.imageUrls,
     required this.currentIndex,
     required this.categoryName,
-    this.onClose,
   });
 
-  final double? width;
-  final double? height;
   final List<String> imageUrls;
   final int currentIndex;
   final String categoryName;
-  final Future Function(bool?)? onClose;
 
   @override
   ConsumerState<ImageGalleryWidget> createState() => _ImageGalleryWidgetState();
@@ -60,6 +75,9 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
 
   /// Prevents duplicate gallery_opened events on rebuilds
   bool _hasLoggedOpen = false;
+
+  /// Prevents duplicate gallery_closed events (close button + dispose)
+  bool _hasLoggedClose = false;
 
   /// Multiplier for creating infinite scroll effect in multi-image view.
   /// Used as: initialPage = _virtualMultiplier * imageCount + tappedIndex.
@@ -94,6 +112,9 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
 
   @override
   void dispose() {
+    // Fire gallery_closed on any dismiss path (swipe-to-dismiss, back gesture, etc.)
+    _fireGalleryClosedEvent();
+
     // Dispose PageController ONLY if it was created
     if (widget.imageUrls.length > 1) {
       _pageController.dispose();
@@ -150,6 +171,9 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
   }
 
   void _fireGalleryClosedEvent() {
+    if (_hasLoggedClose) return;
+    _hasLoggedClose = true;
+
     // Fire-and-forget analytics (don't await)
     ApiService.instance.postAnalytics(
       eventType: 'gallery_closed',
@@ -197,8 +221,6 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
     }
 
     return Container(
-      width: widget.width,
-      height: widget.height,
       color: Colors.black, // Fullscreen gallery backdrop
       child: Stack(
         children: [
@@ -206,23 +228,6 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
           widget.imageUrls.length == 1
               ? _buildSingleImageView()
               : _buildMultiImageView(),
-
-          // Drag handle (top-center, light for dark background)
-          Positioned(
-            top: AppSpacing.sm,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(AppRadius.handle),
-                ),
-              ),
-            ),
-          ),
 
           // Close button (top-left)
           _buildCloseButton(),
@@ -234,8 +239,6 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
   /// Builds empty state when no images available
   Widget _buildEmptyState() {
     return Container(
-      width: widget.width,
-      height: widget.height,
       color: Colors.black,
       child: Center(
         child: Text(
@@ -342,11 +345,7 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
           child: InkWell(
             onTap: () {
               _fireGalleryClosedEvent();
-              if (widget.onClose != null) {
-                widget.onClose!(true);
-              } else {
-                Navigator.of(context).pop();
-              }
+              Navigator.of(context).pop();
             },
             customBorder: const CircleBorder(),
             child: Container(

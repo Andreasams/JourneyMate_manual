@@ -218,7 +218,7 @@ class _MapBusinessPreviewCardState
                 Expanded(child: _buildInfo()),
                 const SizedBox(width: AppSpacing.sm),
                 Icon(
-                  Icons.chevron_right,
+                  Icons.arrow_forward_ios,
                   color: AppColors.textTertiary,
                   size: 20,
                 ),

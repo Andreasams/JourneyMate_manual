@@ -403,7 +403,7 @@ class _SearchResultsListViewState
         left: 0,  // JSX relies on content padding, not explicit
         right: 0,
         top: isFirst ? 0 : AppSpacing.xxl, // 0px first, 24px subsequent
-        bottom: AppSpacing.msm, // 10px per JSX
+        bottom: AppSpacing.md,
       ),
       child: Row(
         children: [
@@ -1188,16 +1188,11 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
               // Prevent taps from bubbling up to parent card GestureDetector
               behavior: HitTestBehavior.opaque,
               onTap: () {
-                // Open full-screen image gallery
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => ImageGalleryWidget(
-                    imageUrls: imageUrls,
-                    currentIndex: index,
-                    categoryName: td(ref, 'gallery_food'), // Food category
-                  ),
+                ImageGalleryWidget.show(
+                  context,
+                  imageUrls: imageUrls,
+                  currentIndex: index,
+                  categoryName: td(ref, 'gallery_food'),
                 );
               },
               child: ClipRRect(
@@ -1290,12 +1285,10 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(width: AppSpacing.xs),
-            Text(
-              '→',
-              style: AppTypography.bodySm.copyWith(
-                color: AppColors.textSecondary,
-              ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 18,
+              color: AppColors.textSecondary,
             ),
           ],
         ),
