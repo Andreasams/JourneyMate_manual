@@ -146,7 +146,7 @@ class ApiService {
       'sortBy': sortBy,
       'sortOrder': sortOrder,
       'selectedStation': selectedStation,
-      'onlyOpen': onlyOpen,
+      if (onlyOpen) 'onlyOpen': true,
       'category': category,
       'page': page,
       'pageSize': pageSize,
