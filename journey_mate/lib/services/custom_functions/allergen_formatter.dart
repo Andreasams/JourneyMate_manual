@@ -1,46 +1,15 @@
-import 'dart:convert';
+import 'localization_utils.dart';
 
-/// Helper function to get translations from cache
-String getTranslations(
-  String languageCode,
-  String translationKey,
-  dynamic translationsCache,
-) {
-  if (languageCode.isEmpty || translationKey.isEmpty) {
-    return translationKey;
-  }
-
-  if (translationsCache == null) {
-    return translationKey;
-  }
-
-  try {
-    Map<String, dynamic> translationsMap;
-
-    if (translationsCache is String) {
-      translationsMap = jsonDecode(translationsCache) as Map<String, dynamic>;
-    } else if (translationsCache is Map<String, dynamic>) {
-      translationsMap = translationsCache;
-    } else {
-      return translationKey;
-    }
-
-    final value = translationsMap[translationKey];
-    if (value is String && value.isNotEmpty) {
-      return value;
-    }
-
-    return translationKey;
-  } catch (e) {
-    return translationKey;
-  }
-}
+/// English-only fallback translations for allergen formatter strings.
+/// Primary source is Supabase ui_translations cache; these cover cache misses.
+const Map<String, String> _allergenFallbacks = {
+  'allergen_contains': 'Contains',
+  'conjunction_and': 'and',
+  'allergen_none': 'No allergens listed',
+  'allergen_info_none': 'No allergen information available',
+};
 
 /// Converts allergy IDs to a localized, formatted allergen list string.
-///
-/// This is a simplified implementation for Phase 7. Full implementation
-/// should be ported from _flutterflow_export/lib/flutter_flow/custom_functions.dart
-/// when needed.
 String? convertAllergiesToString(
   List<int>? allergyIDs,
   String currentLanguage,
@@ -48,10 +17,8 @@ String? convertAllergiesToString(
   dynamic translationsCache,
 ) {
   if (allergyIDs == null || allergyIDs.isEmpty) {
-    // Return fallback message
-    return isBeverage
-        ? 'No allergen information available'
-        : 'No allergens listed';
+    final key = isBeverage ? 'allergen_info_none' : 'allergen_none';
+    return getLocalizedString(key, currentLanguage, translationsCache, _allergenFallbacks);
   }
 
   // Map allergen IDs to translation keys (matches Supabase allergen ID order)
@@ -81,14 +48,15 @@ String? convertAllergiesToString(
       .map((key) => getTranslations(currentLanguage, key, translationsCache))
       .toList();
 
-  // Format as comma-separated list with "and" before last item
-  if (allergenNames.length == 1) {
-    return 'Contains ${allergenNames[0]}';
-  } else if (allergenNames.length == 2) {
-    return 'Contains ${allergenNames[0]} and ${allergenNames[1]}';
-  } else {
-    final allButLast = allergenNames.sublist(0, allergenNames.length - 1);
-    final last = allergenNames.last;
-    return 'Contains ${allButLast.join(', ')} and $last';
-  }
+  // Get localized prefix and conjunction
+  final prefix =
+      getLocalizedString('allergen_contains', currentLanguage, translationsCache, _allergenFallbacks);
+  final conjunction =
+      getLocalizedString('conjunction_and', currentLanguage, translationsCache, _allergenFallbacks);
+
+  // Format with language-specific conjunction and spacing rules
+  final joinedNames =
+      joinWithConjunction(allergenNames, conjunction, currentLanguage);
+
+  return formatPrefixedList(prefix, joinedNames, currentLanguage);
 }

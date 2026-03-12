@@ -1,46 +1,16 @@
-import 'dart:convert';
+import 'localization_utils.dart';
 
-/// Helper function to get translations from cache
-String getTranslations(
-  String languageCode,
-  String translationKey,
-  dynamic translationsCache,
-) {
-  if (languageCode.isEmpty || translationKey.isEmpty) {
-    return translationKey;
-  }
-
-  if (translationsCache == null) {
-    return translationKey;
-  }
-
-  try {
-    Map<String, dynamic> translationsMap;
-
-    if (translationsCache is String) {
-      translationsMap = jsonDecode(translationsCache) as Map<String, dynamic>;
-    } else if (translationsCache is Map<String, dynamic>) {
-      translationsMap = translationsCache;
-    } else {
-      return translationKey;
-    }
-
-    final value = translationsMap[translationKey];
-    if (value is String && value.isNotEmpty) {
-      return value;
-    }
-
-    return translationKey;
-  } catch (e) {
-    return translationKey;
-  }
-}
+/// English-only fallback translations for dietary formatter strings.
+/// Primary source is Supabase ui_translations cache; these cover cache misses.
+const Map<String, String> _dietaryFallbacks = {
+  'dietary_prefix_dish': 'This dish is',
+  'dietary_prefix_beverage': 'This beverage is',
+  'conjunction_and': 'and',
+  'dietary_restrictions_none': 'No dietary restrictions specified',
+  'dietary_info_none': 'Dietary information not specified',
+};
 
 /// Converts dietary preference IDs to a localized, formatted string.
-///
-/// This is a simplified implementation for Phase 7. Full implementation
-/// should be ported from _flutterflow_export/lib/flutter_flow/custom_functions.dart
-/// when needed.
 String? convertDietaryPreferencesToString(
   List<int>? dietaryIDs,
   String currentLanguage,
@@ -48,10 +18,8 @@ String? convertDietaryPreferencesToString(
   dynamic translationsCache,
 ) {
   if (dietaryIDs == null || dietaryIDs.isEmpty) {
-    // Return fallback message
-    return isBeverage
-        ? 'Dietary information not specified'
-        : 'No dietary restrictions specified';
+    final key = isBeverage ? 'dietary_info_none' : 'dietary_restrictions_none';
+    return getLocalizedString(key, currentLanguage, translationsCache, _dietaryFallbacks);
   }
 
   // Map dietary IDs to translation keys
@@ -82,17 +50,17 @@ String? convertDietaryPreferencesToString(
       .map((key) => getTranslations(currentLanguage, key, translationsCache))
       .toList();
 
-  // Format as comma-separated list with "and" before last item
+  // Get localized prefix and conjunction
+  final prefixKey =
+      isBeverage ? 'dietary_prefix_beverage' : 'dietary_prefix_dish';
   final prefix =
-      isBeverage ? 'This beverage is' : 'This dish is';
+      getLocalizedString(prefixKey, currentLanguage, translationsCache, _dietaryFallbacks);
+  final conjunction =
+      getLocalizedString('conjunction_and', currentLanguage, translationsCache, _dietaryFallbacks);
 
-  if (dietaryNames.length == 1) {
-    return '$prefix ${dietaryNames[0]}';
-  } else if (dietaryNames.length == 2) {
-    return '$prefix ${dietaryNames[0]} and ${dietaryNames[1]}';
-  } else {
-    final allButLast = dietaryNames.sublist(0, dietaryNames.length - 1);
-    final last = dietaryNames.last;
-    return '$prefix ${allButLast.join(', ')} and $last';
-  }
+  // Format with language-specific conjunction and spacing rules
+  final joinedNames =
+      joinWithConjunction(dietaryNames, conjunction, currentLanguage);
+
+  return formatPrefixedList(prefix, joinedNames, currentLanguage);
 }
