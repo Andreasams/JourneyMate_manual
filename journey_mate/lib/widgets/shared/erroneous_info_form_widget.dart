@@ -158,7 +158,7 @@ class _ErroneousInfoFormWidgetState
         width: widget.width,
         height: widget.height,
         decoration:
-            BottomSheetHeader.sheetDecoration(color: AppColors.bgPage),
+            BottomSheetHeader.sheetDecoration(color: AppColors.white),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

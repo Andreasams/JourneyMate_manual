@@ -147,7 +147,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   /// =========================================================================
 
   // Base colors
-  static const Color _whiteColor = AppColors.bgPage;
+  static const Color _whiteColor = AppColors.white;
   static const Color _blackColor = AppColors.textPrimary;
   static const Color _transparentColor = Colors.transparent;
 

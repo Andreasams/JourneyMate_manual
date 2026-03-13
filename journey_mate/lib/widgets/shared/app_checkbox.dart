@@ -99,7 +99,7 @@ class AppCheckbox extends StatelessWidget {
     if (isSelected) {
       fillColor = isEnabled ? resolvedActiveColor : resolvedDisabledColor;
     } else {
-      fillColor = AppColors.bgPage;
+      fillColor = AppColors.white;
     }
 
     // Determine border (only shown when unselected)
@@ -122,7 +122,7 @@ class AppCheckbox extends StatelessWidget {
         borderRadius: BorderRadius.circular(resolvedBorderRadius),
       ),
       child: isSelected
-          ? Icon(Icons.check, size: checkIconSize, color: AppColors.bgPage)
+          ? Icon(Icons.check, size: checkIconSize, color: AppColors.white)
           : null,
     );
   }

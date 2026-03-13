@@ -68,11 +68,15 @@ class AppColors {
   // NEUTRALS - UI Elements
   // ============================================================
 
-  /// Page background - Primary white background
-  static const Color bgPage = Color(0xFFFFFFFF);
+  /// Pure white - For UI elements that need true white (checkmarks, button text,
+  /// gradients, cards, bottom sheets, nav bar, shimmer highlights)
+  static const Color white = Color(0xFFFFFFFF);
 
-  /// Card background - Same as page (white cards)
-  static const Color bgCard = Color(0xFFFFFFFF);
+  /// Page background - Warm eggshell for scaffold/page backgrounds
+  static const Color bgPage = Color(0xFFFDFCFA);
+
+  /// Card background - Pure white cards pop against eggshell page
+  static const Color bgCard = white;
 
   /// Input background - Off-white for text fields
   static const Color bgInput = Color(0xFFF5F5F5);

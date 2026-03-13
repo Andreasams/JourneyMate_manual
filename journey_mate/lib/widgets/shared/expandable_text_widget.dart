@@ -173,7 +173,7 @@ class _ExpandableTextWidgetState extends ConsumerState<ExpandableTextWidget> {
   }
 
   Widget _buildCollapsedView() {
-    final backgroundColor = AppColors.bgPage;
+    final backgroundColor = AppColors.white;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

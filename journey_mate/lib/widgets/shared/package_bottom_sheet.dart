@@ -750,7 +750,7 @@ class _PackageBottomSheetState extends ConsumerState<PackageBottomSheet> {
 
   /// Gets sheet decoration with rounded top corners
   BoxDecoration _getSheetDecoration() {
-    return BottomSheetHeader.sheetDecoration(color: AppColors.bgPage);
+    return BottomSheetHeader.sheetDecoration(color: AppColors.white);
   }
 }
 
@@ -1001,7 +1001,7 @@ class _ItemDetailPage extends ConsumerWidget {
     final hasImage = _hasItemImage();
 
     return Container(
-      decoration: BottomSheetHeader.sheetDecoration(color: AppColors.bgPage),
+      decoration: BottomSheetHeader.sheetDecoration(color: AppColors.white),
       child: Column(
         children: [
           BottomSheetHeader(

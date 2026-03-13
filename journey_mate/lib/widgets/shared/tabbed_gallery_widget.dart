@@ -371,7 +371,7 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
 
     // Full-page mode: tab bar + expanded PageView
     return Container(
-      color: AppColors.bgPage,
+      color: AppColors.white,
       child: Column(
         children: [
           _buildTabBarContainer(),
@@ -388,7 +388,7 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
   Widget _buildTabBarContainer() {
     return Container(
       margin: const EdgeInsets.only(bottom: _tabBarBottomMargin),
-      color: AppColors.bgPage,
+      color: AppColors.white,
       child: _buildFixedTabBar(),
     );
   }

@@ -340,7 +340,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
             }
             return AppColors.accent;
           }),
-          foregroundColor: WidgetStateProperty.all(AppColors.bgPage),
+          foregroundColor: WidgetStateProperty.all(AppColors.white),
           overlayColor: WidgetStateProperty.all(Colors.transparent),
           elevation: WidgetStateProperty.all(0),
           minimumSize: WidgetStateProperty.all(Size.zero),
@@ -361,7 +361,7 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.bgPage),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
                 ),
               )
             : Text(td(ref, 'contact_form_button_submit')),

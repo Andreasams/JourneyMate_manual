@@ -779,7 +779,7 @@ class _BusinessFeatureButtonsState
   // ========================================
 
   Widget _buildCollapsedButtons(List<Widget> buttonChildren) {
-    final backgroundColor = AppColors.bgPage;
+    final backgroundColor = AppColors.white;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
