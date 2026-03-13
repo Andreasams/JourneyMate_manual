@@ -223,7 +223,7 @@ class _PackageCoursesDisplayState
     return Container(
       width: widget.width,
       height: widget.height,
-      color: AppColors.bgPage,
+      color: AppColors.white,
       padding: const EdgeInsets.symmetric(vertical: _listPadding),
       child: Text(
         td(ref, _errorPackageNotFoundKey),
@@ -241,7 +241,7 @@ class _PackageCoursesDisplayState
       width: widget.width,
       height: widget.height,
       decoration: BoxDecoration(
-        color: AppColors.bgPage,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(_containerBorderRadius),
       ),
       child: _buildScrollableContent(),

@@ -485,7 +485,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                       backgroundColor:
                           WidgetStateProperty.all(AppColors.accent),
                       foregroundColor:
-                          WidgetStateProperty.all(AppColors.bgPage),
+                          WidgetStateProperty.all(AppColors.white),
                       overlayColor:
                           WidgetStateProperty.all(Colors.transparent),
                       elevation: WidgetStateProperty.all(0),
@@ -515,7 +515,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                       onPressed: _handleDanishDirect,
                       style: ButtonStyle(
                         backgroundColor:
-                            WidgetStateProperty.all(AppColors.bgPage),
+                            WidgetStateProperty.all(AppColors.white),
                         foregroundColor:
                             WidgetStateProperty.all(AppColors.accent),
                         overlayColor:

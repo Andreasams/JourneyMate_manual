@@ -321,7 +321,7 @@ class _MissingLocationFormWidgetState
             }
             return AppColors.accent;
           }),
-          foregroundColor: WidgetStateProperty.all(AppColors.bgPage),
+          foregroundColor: WidgetStateProperty.all(AppColors.white),
           overlayColor: WidgetStateProperty.all(Colors.transparent),
           elevation: WidgetStateProperty.all(0),
           minimumSize: WidgetStateProperty.all(Size.zero),
@@ -342,7 +342,7 @@ class _MissingLocationFormWidgetState
                 height: 20.0,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.bgPage),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
                 ),
               )
             : Text(td(ref, 'missing_location_button_submit')),

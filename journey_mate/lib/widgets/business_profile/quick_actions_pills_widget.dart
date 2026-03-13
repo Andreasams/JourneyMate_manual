@@ -112,7 +112,7 @@ class QuickActionsPillsWidget extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: AppColors.bgPage,
+      color: AppColors.white,
       borderRadius: BorderRadius.circular(AppRadius.filter),
       child: InkWell(
         onTap: onTap,

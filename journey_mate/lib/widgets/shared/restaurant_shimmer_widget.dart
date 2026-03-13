@@ -41,7 +41,7 @@ class _RestaurantShimmerWidgetState extends State<RestaurantShimmerWidget>
 
   /// Shimmer animation colors
   static final Color _baseColor = AppColors.bgSurface;
-  static final Color _highlightColor = AppColors.bgPage;
+  static final Color _highlightColor = AppColors.white;
   static const Color _placeholderColor = AppColors.bgInput;
 
   /// Layout constants

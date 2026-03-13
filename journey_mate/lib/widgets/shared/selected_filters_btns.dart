@@ -624,8 +624,8 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              AppColors.bgPage,
-              AppColors.bgPage.withValues(alpha: 0.0),
+              AppColors.white,
+              AppColors.white.withValues(alpha: 0.0),
             ],
             stops: const [0.7, 1.0],
           ),
@@ -643,7 +643,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
       key: _clearButtonKey,
       onPressed: _handleClearAll,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.bgPage,
+        backgroundColor: AppColors.white,
         foregroundColor: AppColors.accent,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

@@ -458,7 +458,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       child: Shimmer.fromColors(
         baseColor: AppColors.bgSurface,
-        highlightColor: AppColors.bgPage,
+        highlightColor: AppColors.white,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
