@@ -389,7 +389,8 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
   Widget _buildTabBarContainer() {
     return Container(
       margin: const EdgeInsets.only(bottom: _tabBarBottomMargin),
-      color: AppColors.bgPage,
+      // Inline mode inherits white from SectionCard; full-page needs bgPage.
+      color: widget.limitToEightImages ? AppColors.bgCard : AppColors.bgPage,
       child: _buildFixedTabBar(),
     );
   }
@@ -629,7 +630,8 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
   Widget _buildViewAllLink() {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.lg),
-      child: Center(
+      child: SizedBox(
+        width: double.infinity,
         child: OutlinedButton(
           onPressed: _handleViewAllTap,
           style: OutlinedButton.styleFrom(

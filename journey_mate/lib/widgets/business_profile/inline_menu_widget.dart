@@ -40,7 +40,8 @@ class InlineMenuWidget extends ConsumerWidget {
           // ── "View on full page" button ─────────────────────────────────────
           Padding(
             padding: EdgeInsets.only(top: AppSpacing.lg),
-            child: Center(
+            child: SizedBox(
+              width: double.infinity,
               child: OutlinedButton(
                 onPressed: () => context.push('/business/$businessId/menu'),
                 style: OutlinedButton.styleFrom(
