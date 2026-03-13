@@ -770,13 +770,24 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   bottomLeft: Radius.circular(8),
                 ),
               ),
-              child: Text(
-                td(ref, 'view_toggle_list'), // Use translation key
-                textAlign: TextAlign.center,
-                style: AppTypography.bodySmMedium.copyWith(
-                  fontWeight: _viewMode == _ViewMode.list ? FontWeight.w600 : FontWeight.w500,
-                  color: _viewMode == _ViewMode.list ? AppColors.textPrimary : AppColors.textMuted,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.format_list_bulleted,
+                    size: 16,
+                    color: _viewMode == _ViewMode.list ? AppColors.textPrimary : AppColors.textMuted,
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    td(ref, 'view_toggle_list'), // Use translation key
+                    style: AppTypography.bodySmMedium.copyWith(
+                      fontWeight: _viewMode == _ViewMode.list ? FontWeight.w600 : FontWeight.w500,
+                      color: _viewMode == _ViewMode.list ? AppColors.textPrimary : AppColors.textMuted,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -797,13 +808,24 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     bottomRight: Radius.circular(8),
                   ),
                 ),
-                child: Text(
-                  td(ref, 'action_map'), // Use translation key
-                  textAlign: TextAlign.center,
-                  style: AppTypography.bodySmMedium.copyWith(
-                    fontWeight: _viewMode == _ViewMode.map ? FontWeight.w600 : FontWeight.w500,
-                    color: _viewMode == _ViewMode.map ? AppColors.textPrimary : AppColors.textMuted,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.map_outlined,
+                      size: 16,
+                      color: _viewMode == _ViewMode.map ? AppColors.textPrimary : AppColors.textMuted,
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      td(ref, 'action_map'), // Use translation key
+                      style: AppTypography.bodySmMedium.copyWith(
+                        fontWeight: _viewMode == _ViewMode.map ? FontWeight.w600 : FontWeight.w500,
+                        color: _viewMode == _ViewMode.map ? AppColors.textPrimary : AppColors.textMuted,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
