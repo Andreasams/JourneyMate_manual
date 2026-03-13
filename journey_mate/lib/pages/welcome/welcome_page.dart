@@ -389,7 +389,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     final hasTranslations = translationsCache.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: AppColors.bgPage,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(

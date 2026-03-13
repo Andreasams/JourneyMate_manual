@@ -88,7 +88,7 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
     return Container(
       height: AppConstants.searchBarHeight,
       decoration: BoxDecoration(
-        color: AppColors.bgInput,
+        color: AppColors.bgCard,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
           color: _hasFocus ? AppColors.accent : Colors.transparent,
