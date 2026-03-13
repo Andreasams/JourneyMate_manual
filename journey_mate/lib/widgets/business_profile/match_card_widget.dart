@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_icon_sizes.dart';
@@ -74,6 +75,12 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
     // Get business data
     final business = businessState.currentBusiness;
     if (business == null) return const SizedBox.shrink();
+
+    // Show shimmer while API data is loading (preview data has no 'filters' key;
+    // the key is only merged in after the businessProfile API call completes)
+    if (business is Map && !business.containsKey('filters')) {
+      return _buildShimmer();
+    }
 
     // Get business filters from API response
     final businessFilters = business['filters'] as List<dynamic>?;
@@ -204,7 +211,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
                               td(ref, 'match_card_matches')
                                   .replaceAll('{count}', matchedCount.toString())
                                   .replaceAll('{total}', totalCount.toString()),
-                              style: AppTypography.bodySmMedium.copyWith(
+                              style: AppTypography.bodyMedium.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textPrimary,
                               ),
@@ -251,6 +258,52 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
     );
   }
 
+  /// Shimmer placeholder while API filter data loads.
+  /// Matches the card's collapsed layout: rounded rect with a text-line placeholder.
+  Widget _buildShimmer() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Shimmer.fromColors(
+        baseColor: AppColors.bgSurface,
+        highlightColor: AppColors.white,
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.mlg,
+            vertical: AppSpacing.md,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(AppRadius.input),
+          ),
+          child: Row(
+            children: [
+              // Icon placeholder
+              Container(
+                width: AppIconSize.md,
+                height: AppIconSize.md,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              SizedBox(width: AppSpacing.sm),
+              // Text placeholder
+              Container(
+                width: 140,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(AppRadius.checkbox),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Build matched filter chip (green)
   Widget _buildMatchedChip(Map<String, dynamic> filter) {
     return Container(
@@ -274,7 +327,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
           SizedBox(width: AppSpacing.xs),
           Text(
             filter['filter_name'] ?? '',
-            style: AppTypography.bodySmMedium.copyWith(
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.green,
             ),
           ),
@@ -306,8 +359,7 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
           SizedBox(width: AppSpacing.xs),
           Text(
             filter['filter_name'] ?? '',
-            style: AppTypography.bodySmMedium.copyWith(
-              fontWeight: FontWeight.w500,
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.red,
             ),
           ),
