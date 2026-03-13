@@ -300,7 +300,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
         // Setting rows with dividers
         Container(
           decoration: BoxDecoration(
-            color: AppColors.bgCard,
+            color: AppColors.bgPage,
             borderRadius: BorderRadius.circular(AppRadius.button),
           ),
           child: Column(

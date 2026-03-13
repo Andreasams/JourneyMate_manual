@@ -157,7 +157,7 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
         _buildCategoryRows(business, menuCategories),
         Container(
           constraints: const BoxConstraints(maxHeight: _menuListMaxHeight),
-          decoration: BoxDecoration(color: AppColors.bgCard),
+          decoration: BoxDecoration(color: AppColors.bgPage),
           child: _buildMenuDishesListView(
             originalCurrencyCode,
             businessName,

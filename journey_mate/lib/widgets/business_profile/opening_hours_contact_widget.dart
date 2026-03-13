@@ -393,7 +393,7 @@ class _OpeningHoursContactWidgetState
         margin: const EdgeInsets.only(top: 14),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.bgSurface, // #fafafa
+          color: AppColors.bgInput, // #F5F5F5 — needs contrast against eggshell bgPage
           borderRadius: BorderRadius.circular(AppRadius.button),
         ),
         child: Column(
