@@ -20,6 +20,7 @@ import '../../widgets/shared/expandable_text_widget.dart';
 import '../../widgets/shared/business_feature_buttons.dart';
 import '../../widgets/shared/payment_options_widget.dart';
 import '../../widgets/shared/erroneous_info_form_widget.dart';
+import '../../widgets/shared/section_card.dart';
 import '../../widgets/business_profile/opening_hours_contact_widget.dart';
 import '../../widgets/shared/description_sheet.dart';
 
@@ -148,30 +149,36 @@ class _BusinessInformationPageState
 
           // Padded content below map
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: AppSpacing.xxl),
+                SizedBox(height: AppSpacing.md),
 
-                // Business name + open/closed status with opening hours
-                _buildTitleAndStatus(business),
-                SizedBox(height: AppSpacing.xxl),
+                // Card 1: Business name + open/closed status
+                SectionCard(child: _buildTitleAndStatus(business)),
+                SizedBox(height: AppSpacing.md),
 
-                // Description (conditional — returns SizedBox.shrink if empty)
+                // Card 2: Description (conditional)
                 _buildDescriptionSection(business),
 
-                // Opening hours table + contact links (self-contained with heading)
-                const OpeningHoursContactWidget(showTodayPreview: false),
-                SizedBox(height: AppSpacing.xxl),
+                // Card 3: Opening hours & contact
+                SectionCard(
+                  child: const OpeningHoursContactWidget(
+                    showTodayPreview: false,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.md),
 
-                // Features, services & amenities
-                _buildFeaturesSection(business),
+                // Card 4: Features, services & amenities
+                SectionCard(child: _buildFeaturesSection(business)),
+                SizedBox(height: AppSpacing.md),
 
-                // Payment options
-                _buildPaymentOptionsSection(),
+                // Card 5: Payment options
+                SectionCard(child: _buildPaymentOptionsSection()),
+                SizedBox(height: AppSpacing.md),
 
-                // Report incorrect info
+                // Report incorrect info (not carded)
                 _buildReportButton(),
                 SizedBox(height: AppSpacing.xxl),
               ],
@@ -297,20 +304,24 @@ class _BusinessInformationPageState
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          td(ref, 'about_description_label'), // "About"
-          style: AppTypography.h4,
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppSpacing.md),
+      child: SectionCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              td(ref, 'about_description_label'), // "About"
+              style: AppTypography.h4,
+            ),
+            SizedBox(height: AppSpacing.sm),
+            ExpandableTextWidget(
+              text: description,
+              businessId: int.tryParse(widget.businessId),
+            ),
+          ],
         ),
-        SizedBox(height: AppSpacing.sm),
-        ExpandableTextWidget(
-          text: description,
-          businessId: int.tryParse(widget.businessId),
-        ),
-        SizedBox(height: AppSpacing.xxl),
-      ],
+      ),
     );
   }
 
@@ -319,6 +330,10 @@ class _BusinessInformationPageState
   // ============================================================================
 
   Widget _buildFeaturesSection(Map<String, dynamic> business) {
+    // Container width = screen - outer padding (12*2) - card border (1.5*2) - card inner padding (12*2)
+    final cardContentWidth =
+        MediaQuery.of(context).size.width - (AppSpacing.md * 4) - 3;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -328,13 +343,11 @@ class _BusinessInformationPageState
         ),
         SizedBox(height: AppSpacing.sm),
         BusinessFeatureButtons(
-          containerWidth:
-              MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
+          containerWidth: cardContentWidth,
           onInitialCount: (int count) async {},
           onFilterTap: _showFacilitiesInfoSheet,
           onHeightCalculated: (double height) async {},
         ),
-        SizedBox(height: AppSpacing.xxl),
       ],
     );
   }
@@ -388,6 +401,10 @@ class _BusinessInformationPageState
   // ============================================================================
 
   Widget _buildPaymentOptionsSection() {
+    // Container width = screen - outer padding (12*2) - card border (1.5*2) - card inner padding (12*2)
+    final cardContentWidth =
+        MediaQuery.of(context).size.width - (AppSpacing.md * 4) - 3;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -397,8 +414,7 @@ class _BusinessInformationPageState
         ),
         SizedBox(height: AppSpacing.sm),
         PaymentOptionsWidget(
-          containerWidth:
-              MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
+          containerWidth: cardContentWidth,
           filters: ref.watch(filterProvider).value?.filtersForLanguage ?? [],
           filtersUsedForSearch:
               ref.watch(searchStateProvider).filtersUsedForSearch,
@@ -406,7 +422,6 @@ class _BusinessInformationPageState
           onInitialCount: (int count) async {},
           onHeightCalculated: (double height) async {},
         ),
-        SizedBox(height: AppSpacing.xxl),
       ],
     );
   }
