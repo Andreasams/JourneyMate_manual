@@ -73,7 +73,18 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF);
 
   /// Page background - Warm eggshell for scaffold/page backgrounds
-  static const Color bgPage = Color(0xFFFDFCFA);
+  /// ── Swap bgPage to test variants, then revert when done ──
+  /// Current (eggshell):        bgPageEggshell    #FDFCFA
+  /// Variant A (warmer cream):  bgPageWarmCream    #F7F5EF
+  /// Variant B (orange whisper):bgPageOrangeLight  #FDF4EC
+  /// Variant C (orange warm):   bgPageOrangeWarm   #F9EDE2
+  static const Color bgPage = bgPageWarmCream;
+
+  // Page background variants — for A/B testing card contrast
+  static const Color bgPageEggshell = Color(0xFFFDFCFA);
+  static const Color bgPageWarmCream = Color(0xFFF7F5EF);
+  static const Color bgPageOrangeLight = Color(0xFFFDF4EC);
+  static const Color bgPageOrangeWarm = Color(0xFFF9EDE2);
 
   /// Card background - Pure white cards pop against eggshell page
   static const Color bgCard = white;
