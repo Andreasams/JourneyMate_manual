@@ -28,9 +28,7 @@ class InlineMenuWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           MenuSectionWidget(
@@ -66,7 +64,6 @@ class InlineMenuWidget extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 }

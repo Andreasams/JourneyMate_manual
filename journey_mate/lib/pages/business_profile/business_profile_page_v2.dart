@@ -32,6 +32,7 @@ import '../../widgets/business_profile/inline_menu_widget.dart';
 import '../../widgets/business_profile/match_card_widget.dart';
 import '../../widgets/business_profile/opening_hours_contact_widget.dart';
 import '../../widgets/business_profile/quick_actions_pills_widget.dart';
+import '../../widgets/shared/section_card.dart';
 
 /// Business Profile Page V2 - Complete rewrite from JSX blueprint
 ///
@@ -356,13 +357,13 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         SliverPadding(
           padding: EdgeInsets.only(
             top: AppSpacing.lg,
-            left: AppSpacing.xxl,
-            right: AppSpacing.xxl,
+            left: AppSpacing.md,
+            right: AppSpacing.md,
           ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               // 1. Hero Section (logo, name, cuisine, status, address)
-              const HeroSectionWidget(),
+              const SectionCard(child: HeroSectionWidget()),
               const SizedBox(height: AppSpacing.xxl),
 
               // 2. Quick Actions Pills (Call, Website, Booking, Map)
@@ -375,7 +376,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
               // 4. Opening Hours & Contact
               // Hide today preview when closed — hero section already shows that status
-              _buildOpeningHoursSection(),
+              SectionCard(child: _buildOpeningHoursSection()),
             ]),
           ),
         ),
@@ -397,8 +398,13 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
               ? _buildSectionShimmer(titleWidth: 100, contentHeight: 160)
               : _menuLoadFailed
                   ? _buildMenuErrorWidget()
-                  : InlineMenuWidget(
-                      businessId: int.parse(widget.businessId),
+                  : Padding(
+                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      child: SectionCard(
+                        child: InlineMenuWidget(
+                          businessId: int.parse(widget.businessId),
+                        ),
+                      ),
                     ),
         ),
 
@@ -455,7 +461,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     double contentHeight = 80.0,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Shimmer.fromColors(
         baseColor: AppColors.bgSurface,
         highlightColor: AppColors.white,
@@ -497,7 +503,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   Widget _buildMenuErrorWidget() {
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.xxl,
+        horizontal: AppSpacing.md,
         vertical: AppSpacing.lg,
       ),
       child: Column(
@@ -590,34 +596,36 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            td(ref, 'tab_gallery'),
-            style: AppTypography.h4,
-          ),
-          SizedBox(height: AppSpacing.sm),
-          TabbedGalleryWidget(
-            galleryData: galleryData,
-            limitToEightImages: true,
-            pageName: 'businessProfile',
-            onImageTap: (imageUrls, index, categoryKey) {
-              if (context.mounted) {
-                ImageGalleryWidget.show(
-                  context,
-                  imageUrls: imageUrls,
-                  currentIndex: index,
-                  categoryName: td(ref, 'tab_gallery'),
-                );
-              }
-            },
-            onViewAllTap: businessId != null
-                ? () => context.push('/business/$businessId/gallery')
-                : null,
-          ),
-        ],
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: SectionCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              td(ref, 'tab_gallery'),
+              style: AppTypography.h4,
+            ),
+            SizedBox(height: AppSpacing.sm),
+            TabbedGalleryWidget(
+              galleryData: galleryData,
+              limitToEightImages: true,
+              pageName: 'businessProfile',
+              onImageTap: (imageUrls, index, categoryKey) {
+                if (context.mounted) {
+                  ImageGalleryWidget.show(
+                    context,
+                    imageUrls: imageUrls,
+                    currentIndex: index,
+                    categoryName: td(ref, 'tab_gallery'),
+                  );
+                }
+              },
+              onViewAllTap: businessId != null
+                  ? () => context.push('/business/$businessId/gallery')
+                  : null,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -626,38 +634,42 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 501-537
   Widget _buildFacilitiesSection() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            td(ref, 'facilities_heading'),
-            style: AppTypography.h4,
-          ),
-          SizedBox(height: AppSpacing.sm),
-          BusinessFeatureButtons(
-            containerWidth:
-                MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
-            onInitialCount: (int count) async {},
-            onFilterTap: (int filterId, String filterName,
-                String? filterDescription) async {
-              if (context.mounted) {
-                _trackFacilityInfoOpened(filterName, filterDescription);
-                await showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => DescriptionSheet(
-                    title: filterName,
-                    description: filterDescription,
-                    fallbackDescription:
-                        td(ref, 'no_description_available'),
-                  ),
-                );
-              }
-            },
-          ),
-        ],
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: SectionCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              td(ref, 'facilities_heading'),
+              style: AppTypography.h4,
+            ),
+            SizedBox(height: AppSpacing.sm),
+            BusinessFeatureButtons(
+              containerWidth: MediaQuery.of(context).size.width -
+                  (AppSpacing.md * 2) -
+                  (AppSpacing.md * 2) -
+                  3.0,
+              onInitialCount: (int count) async {},
+              onFilterTap: (int filterId, String filterName,
+                  String? filterDescription) async {
+                if (context.mounted) {
+                  _trackFacilityInfoOpened(filterName, filterDescription);
+                  await showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => DescriptionSheet(
+                      title: filterName,
+                      description: filterDescription,
+                      fallbackDescription:
+                          td(ref, 'no_description_available'),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -666,27 +678,31 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 542-550
   Widget _buildPaymentsSection() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            td(ref, 'about_payment_options_label'),
-            style: AppTypography.h4,
-          ),
-          SizedBox(height: AppSpacing.sm),
-          PaymentOptionsWidget(
-            containerWidth:
-                MediaQuery.of(context).size.width - (AppSpacing.xxl * 2),
-            filters:
-                ref.watch(filterProvider).value?.filtersForLanguage ?? [],
-            filtersUsedForSearch:
-                ref.watch(searchStateProvider).filtersUsedForSearch,
-            filtersOfThisBusiness:
-                ref.watch(businessProvider).businessFilterIds,
-            onInitialCount: (int count) async {},
-          ),
-        ],
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: SectionCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              td(ref, 'about_payment_options_label'),
+              style: AppTypography.h4,
+            ),
+            SizedBox(height: AppSpacing.sm),
+            PaymentOptionsWidget(
+              containerWidth: MediaQuery.of(context).size.width -
+                  (AppSpacing.md * 2) -
+                  (AppSpacing.md * 2) -
+                  3.0,
+              filters:
+                  ref.watch(filterProvider).value?.filtersForLanguage ?? [],
+              filtersUsedForSearch:
+                  ref.watch(searchStateProvider).filtersUsedForSearch,
+              filtersOfThisBusiness:
+                  ref.watch(businessProvider).businessFilterIds,
+              onInitialCount: (int count) async {},
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -703,21 +719,23 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     final businessIdInt = int.tryParse(widget.businessId);
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            td(ref, 'about_description_label'),
-            style: AppTypography.h4,
-          ),
-          SizedBox(height: AppSpacing.sm),
-          ExpandableTextWidget(
-            text: description,
-            businessId: businessIdInt,
-            textId: 'about',
-          ),
-        ],
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: SectionCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              td(ref, 'about_description_label'),
+              style: AppTypography.h4,
+            ),
+            SizedBox(height: AppSpacing.sm),
+            ExpandableTextWidget(
+              text: description,
+              businessId: businessIdInt,
+              textId: 'about',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -726,7 +744,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   /// JSX reference: business_profile.jsx lines 567-572
   Widget _buildReportLink() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Center(
         child: TextButton.icon(
           onPressed: () async {
