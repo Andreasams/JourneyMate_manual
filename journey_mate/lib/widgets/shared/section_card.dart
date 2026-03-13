@@ -4,10 +4,9 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 
-/// Reusable card wrapper matching the search results card styling.
+/// Reusable card wrapper for content sections.
 ///
-/// Applies a white background, neutral grey border (1.5px),
-/// 16px border radius, and 12px internal padding.
+/// Applies a white background, 16px border radius, and 12px internal padding.
 class SectionCard extends StatelessWidget {
   final Widget child;
 
@@ -19,10 +18,6 @@ class SectionCard extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.bgCard,
-        border: Border.all(
-          color: AppColors.border,
-          width: 1.5,
-        ),
         borderRadius: BorderRadius.circular(AppRadius.card),
       ),
       padding: const EdgeInsets.all(AppSpacing.md),
