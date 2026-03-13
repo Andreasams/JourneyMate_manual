@@ -196,20 +196,15 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
 
           // Form (hidden when submitted)
           if (!_isSubmitted) ...[
-            // Card 1: Topic + message
-            SectionCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTopicSection(),
-                  SizedBox(height: AppSpacing.xxl),
-                  _buildMessageField(),
-                ],
-              ),
-            ),
+            // Card 1: Topic selection
+            SectionCard(child: _buildTopicSection()),
             SizedBox(height: AppSpacing.md),
 
-            // Card 2: Contact consent + conditional fields
+            // Card 2: Message / "Tell us more"
+            SectionCard(child: _buildMessageField()),
+            SizedBox(height: AppSpacing.md),
+
+            // Card 3: Contact consent + conditional fields
             SectionCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

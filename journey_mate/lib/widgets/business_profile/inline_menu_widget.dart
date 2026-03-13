@@ -60,14 +60,14 @@ class InlineMenuWidget extends ConsumerWidget {
                   children: [
                     Text(
                       td(ref, 'menu_view_full_page'),
-                      style: AppTypography.bodySm.copyWith(
+                      style: AppTypography.body.copyWith(
                         color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                    SizedBox(width: AppSpacing.xs),
                     Icon(
                       Icons.arrow_forward_ios,
-                      size: 18,
+                      size: 12,
                       color: AppColors.textSecondary,
                     ),
                   ],

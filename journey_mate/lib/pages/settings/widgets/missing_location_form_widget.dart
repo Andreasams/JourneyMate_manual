@@ -197,19 +197,16 @@ class _MissingLocationFormWidgetState
           ),
           const SizedBox(height: AppSpacing.lg),
 
-          // Form card
-          SectionCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildBusinessNameSection(),
-                const SizedBox(height: AppSpacing.xxl),
-                _buildBusinessAddressSection(),
-                const SizedBox(height: AppSpacing.xxl),
-                _buildMessageSection(),
-              ],
-            ),
-          ),
+          // Card 1: Business name
+          SectionCard(child: _buildBusinessNameSection()),
+          const SizedBox(height: AppSpacing.md),
+
+          // Card 2: Business address
+          SectionCard(child: _buildBusinessAddressSection()),
+          const SizedBox(height: AppSpacing.md),
+
+          // Card 3: Message
+          SectionCard(child: _buildMessageSection()),
           const SizedBox(height: AppSpacing.huge),
 
           // Submit area (uncarded)

@@ -174,73 +174,74 @@ class _ContactUsFormWidgetState extends ConsumerState<ContactUsFormWidget> {
 
           // Form card (hidden when submitted)
           if (!_isSubmitted) ...[
+            // Card 1: Full name
             SectionCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Name field
-                  _buildFieldSection(
-                    title: td(ref, 'contact_form_title_name'),
-                    subtitle: null,
-                    controller: _nameController,
-                    error: _nameError,
-                    hint: td(ref, 'contact_form_hint_name'),
-                    maxLines: 1,
-                    onChanged: () {
-                      if (_nameError != null) {
-                        setState(() => _nameError = null);
-                      }
-                    },
-                  ),
-                  SizedBox(height: AppSpacing.xxl),
+              child: _buildFieldSection(
+                title: td(ref, 'contact_form_title_name'),
+                subtitle: null,
+                controller: _nameController,
+                error: _nameError,
+                hint: td(ref, 'contact_form_hint_name'),
+                maxLines: 1,
+                onChanged: () {
+                  if (_nameError != null) {
+                    setState(() => _nameError = null);
+                  }
+                },
+              ),
+            ),
+            SizedBox(height: AppSpacing.md),
 
-                  // Contact field (email or phone)
-                  _buildFieldSection(
-                    title: td(ref, 'contact_form_title_contact'),
-                    subtitle: td(ref, 'contact_form_subtitle_contact'),
-                    controller: _contactController,
-                    error: _contactError,
-                    hint: td(ref, 'contact_form_hint_contact'),
-                    maxLines: 1,
-                    onChanged: () {
-                      if (_contactError != null) {
-                        setState(() => _contactError = null);
-                      }
-                    },
-                  ),
-                  SizedBox(height: AppSpacing.xxl),
+            // Card 2: Email or phone
+            SectionCard(
+              child: _buildFieldSection(
+                title: td(ref, 'contact_form_title_contact'),
+                subtitle: td(ref, 'contact_form_subtitle_contact'),
+                controller: _contactController,
+                error: _contactError,
+                hint: td(ref, 'contact_form_hint_contact'),
+                maxLines: 1,
+                onChanged: () {
+                  if (_contactError != null) {
+                    setState(() => _contactError = null);
+                  }
+                },
+              ),
+            ),
+            SizedBox(height: AppSpacing.md),
 
-                  // Subject field
-                  _buildFieldSection(
-                    title: td(ref, 'contact_form_title_subject'),
-                    subtitle: td(ref, 'contact_form_subtitle_subject'),
-                    controller: _subjectController,
-                    error: _subjectError,
-                    hint: td(ref, 'contact_form_hint_subject'),
-                    maxLines: 1,
-                    onChanged: () {
-                      if (_subjectError != null) {
-                        setState(() => _subjectError = null);
-                      }
-                    },
-                  ),
-                  SizedBox(height: AppSpacing.xxl),
+            // Card 3: Subject
+            SectionCard(
+              child: _buildFieldSection(
+                title: td(ref, 'contact_form_title_subject'),
+                subtitle: td(ref, 'contact_form_subtitle_subject'),
+                controller: _subjectController,
+                error: _subjectError,
+                hint: td(ref, 'contact_form_hint_subject'),
+                maxLines: 1,
+                onChanged: () {
+                  if (_subjectError != null) {
+                    setState(() => _subjectError = null);
+                  }
+                },
+              ),
+            ),
+            SizedBox(height: AppSpacing.md),
 
-                  // Message field (multiline)
-                  _buildFieldSection(
-                    title: td(ref, 'contact_form_title_message'),
-                    subtitle: td(ref, 'contact_form_subtitle_message'),
-                    controller: _messageController,
-                    error: _messageError,
-                    hint: td(ref, 'contact_form_hint_message'),
-                    maxLines: 6,
-                    onChanged: () {
-                      if (_messageError != null) {
-                        setState(() => _messageError = null);
-                      }
-                    },
-                  ),
-                ],
+            // Card 4: Message
+            SectionCard(
+              child: _buildFieldSection(
+                title: td(ref, 'contact_form_title_message'),
+                subtitle: td(ref, 'contact_form_subtitle_message'),
+                controller: _messageController,
+                error: _messageError,
+                hint: td(ref, 'contact_form_hint_message'),
+                maxLines: 6,
+                onChanged: () {
+                  if (_messageError != null) {
+                    setState(() => _messageError = null);
+                  }
+                },
               ),
             ),
             SizedBox(height: 40),
