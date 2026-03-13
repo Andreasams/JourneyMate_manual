@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
@@ -36,30 +37,40 @@ class InlineMenuWidget extends ConsumerWidget {
             isFullPage: false,
           ),
 
-          // ── "View on full page" row ──────────────────────────────────────
+          // ── "View on full page" button ─────────────────────────────────────
           Padding(
             padding: EdgeInsets.only(top: AppSpacing.lg),
-            child: GestureDetector(
-              onTap: () => context.push('/business/$businessId/menu'),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 4),
-                    child: Text(
+            child: Center(
+              child: OutlinedButton(
+                onPressed: () => context.push('/business/$businessId/menu'),
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  backgroundColor: AppColors.bgCard,
+                  side: BorderSide(
+                    color: AppColors.border,
+                    width: 1.5,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.filter),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
                       td(ref, 'menu_view_full_page'),
-                      style: AppTypography.bodyLgMedium,
+                      style: AppTypography.bodySm.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 4),
-                    child: Icon(
-                      Icons.keyboard_arrow_right_sharp,
-                      color: AppColors.textPrimary,
-                      size: 20,
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 18,
+                      color: AppColors.textSecondary,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

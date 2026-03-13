@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../services/translation_service.dart';
@@ -628,27 +629,37 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
   Widget _buildViewAllLink() {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.lg),
-      child: GestureDetector(
-        onTap: _handleViewAllTap,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Text(
+      child: Center(
+        child: OutlinedButton(
+          onPressed: _handleViewAllTap,
+          style: OutlinedButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            backgroundColor: AppColors.bgCard,
+            side: BorderSide(
+              color: AppColors.border,
+              width: 1.5,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.filter),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
                 td(ref, 'gallery_view_all'),
-                style: AppTypography.bodyLgMedium,
+                style: AppTypography.bodySm.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Icon(
-                Icons.keyboard_arrow_right_sharp,
-                color: AppColors.textPrimary,
-                size: AppSpacing.xl,
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 18,
+                color: AppColors.textSecondary,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
