@@ -10,6 +10,7 @@ import '../../providers/settings_providers.dart';
 import '../../widgets/shared/language_selector_button.dart';
 import '../../widgets/shared/currency_selector_button.dart';
 import '../../widgets/shared/distance_unit_selector_button.dart';
+import '../../widgets/shared/section_card.dart';
 import 'widgets/location_status_card.dart';
 
 /// Localization Page (Phase 7.8)
@@ -124,120 +125,151 @@ class _LocalizationPageState extends ConsumerState<LocalizationPage> with Widget
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: AppSpacing.lg),
 
-            // Page title
-            Text(
-              td(ref, 'settings_page_title_localization'), // "Localization settings"
-              style: AppTypography.h4,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              td(ref, 'settings_page_subtitle_localization'), // "Configure your language, currency, and location preferences"
-              style: AppTypography.body,
-            ),
-            const SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
-
-            // Language Section
-            Text(
-              td(ref, 'settings_language_description'), // "Language"
-              style: AppTypography.h6,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              td(ref, 'settings_current_language_info'), // "Select your preferred language..."
-              style: AppTypography.body,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            LanguageSelectorButton(
-              width: double.infinity,
-              currentLanguageCode: currentLanguage,
-              onLanguageSelected: (String newLanguage) {
-                // Widget handles all state updates internally
-                // Just trigger a rebuild to show the new language
-                setState(() {});
-              },
-            ),
-
-            const SizedBox(height: AppSpacing.xxl), // Reduced from xxxl (32) to xxl (24)
-
-            // Currency Section
-            Text(
-              td(ref, 'settings_currency_description'), // "Currency"
-              style: AppTypography.h6,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              td(ref, 'currency_display_prefix'), // "We can display prices..."
-              style: AppTypography.body,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            const CurrencySelectorButton(
-              width: double.infinity,
-              height: 50.0,
-            ),
-
-            const SizedBox(height: AppSpacing.md),
-
-            // Exchange rate note
-            Text(
-              td(ref, 'currency_exchange_rate_disclaimer'), // "Exchange rates are updated once per 24 hours..."
-              style: AppTypography.bodySm,
-            ),
-
-            const SizedBox(height: AppSpacing.xxl), // 24px gap
-
-            // Distance Unit Section (ONLY visible when language is English)
-            if (currentLanguage == 'en') ...[
-              Text(
-                td(ref, 'distance_unit_title'), // "Distance Units"
-                style: AppTypography.h6,
+            // Page title + subtitle (uncarded)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    td(ref, 'settings_page_title_localization'), // "Localization settings"
+                    style: AppTypography.h4,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    td(ref, 'settings_page_subtitle_localization'), // "Configure your language, currency, and location preferences"
+                    style: AppTypography.body,
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                td(ref, 'distance_unit_description'),
-                style: AppTypography.body,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              const DistanceUnitSelectorButton(
-                width: double.infinity,
-                height: 50.0,
-              ),
-              const SizedBox(height: AppSpacing.xxl), // 24px gap before Location
-            ],
-
-            // Location Section
-            Text(
-              td(ref, 'filter_location'), // "Location"
-              style: AppTypography.h6,
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              td(ref, 'location_description_permission'), // "Allow JourneyMate to show nearby restaurants..."
-              style: AppTypography.body,
-            ),
-            // Intentionally larger spacing (lg instead of xs) for visual breathing room
-            // above the location sharing button — do not reduce to match other sections
             const SizedBox(height: AppSpacing.lg),
 
-            // Status card (tappable — handles permission request / settings)
-            const LocationStatusCard(),
-
-            // Privacy note (only when disabled)
-            if (!ref.watch(locationProvider).hasPermission) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                td(ref, 'settings_location_privacy_info'), // "Your location is exclusively u..."
-                style: AppTypography.bodySm.copyWith(
-                  color: AppColors.textTertiary,
-                ),
-                textAlign: TextAlign.center,
+            // Card 1: Language
+            SectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    td(ref, 'settings_language_description'), // "Language"
+                    style: AppTypography.h6,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    td(ref, 'settings_current_language_info'), // "Select your preferred language..."
+                    style: AppTypography.body,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  LanguageSelectorButton(
+                    width: double.infinity,
+                    currentLanguageCode: currentLanguage,
+                    onLanguageSelected: (String newLanguage) {
+                      // Widget handles all state updates internally
+                      // Just trigger a rebuild to show the new language
+                      setState(() {});
+                    },
+                  ),
+                ],
               ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Card 2: Currency
+            SectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    td(ref, 'settings_currency_description'), // "Currency"
+                    style: AppTypography.h6,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    td(ref, 'currency_display_prefix'), // "We can display prices..."
+                    style: AppTypography.body,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  const CurrencySelectorButton(
+                    width: double.infinity,
+                    height: 50.0,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    td(ref, 'currency_exchange_rate_disclaimer'), // "Exchange rates are updated once per 24 hours..."
+                    style: AppTypography.bodySm,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Card 3: Distance Units (ONLY visible when language is English)
+            if (currentLanguage == 'en') ...[
+              SectionCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      td(ref, 'distance_unit_title'), // "Distance Units"
+                      style: AppTypography.h6,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      td(ref, 'distance_unit_description'),
+                      style: AppTypography.body,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const DistanceUnitSelectorButton(
+                      width: double.infinity,
+                      height: 50.0,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
             ],
+
+            // Card 4: Location
+            SectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    td(ref, 'filter_location'), // "Location"
+                    style: AppTypography.h6,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    td(ref, 'location_description_permission'), // "Allow JourneyMate to show nearby restaurants..."
+                    style: AppTypography.body,
+                  ),
+                  // Intentionally larger spacing (lg instead of xs) for visual breathing room
+                  // above the location sharing button — do not reduce to match other sections
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Status card (tappable — handles permission request / settings)
+                  const LocationStatusCard(),
+
+                  // Privacy note (only when disabled)
+                  if (!ref.watch(locationProvider).hasPermission) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      td(ref, 'settings_location_privacy_info'), // "Your location is exclusively u..."
+                      style: AppTypography.bodySm.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ],
+              ),
+            ),
 
             const SizedBox(height: AppSpacing.xxxl),
           ],

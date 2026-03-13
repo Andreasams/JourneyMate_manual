@@ -18,6 +18,7 @@ import '../../theme/app_constants.dart';
 import '../../providers/filter_providers.dart';
 import '../../widgets/shared/language_selector_button.dart';
 import '../../widgets/shared/currency_selector_button.dart';
+import '../../widgets/shared/section_card.dart';
 
 /// App Settings Initiate Flow Page
 ///
@@ -278,69 +279,87 @@ class _AppSettingsInitiateFlowPageState
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(AppSpacing.xl),
+          padding: EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Main page title
-              Text(
-                td(ref, 'settings_localization_title'), // "Localization"
-                style: AppTypography.h4.copyWith(
-                  fontWeight: FontWeight.w500,
+              // Main page title + subtitle (uncarded)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      td(ref, 'settings_localization_title'), // "Localization"
+                      style: AppTypography.h4.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.sm),
+                    Text(
+                      td(ref, 'onboarding_language_currency_desc'), // "Select your preferred language..."
+                      style: AppTypography.bodySm.copyWith(
+                        fontWeight: FontWeight.w300,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: AppSpacing.sm),
+              SizedBox(height: AppSpacing.lg),
 
-              // Main subtitle
-              Text(
-                td(ref, 'onboarding_language_currency_desc'), // "Select your preferred language..."
-                style: AppTypography.bodySm.copyWith(
-                  fontWeight: FontWeight.w300,
-                  color: AppColors.textSecondary,
+              // Card 1: Language
+              SectionCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      td(ref, 'settings_language_label'), // "Language"
+                      style: AppTypography.bodyLgMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.sm),
+                    LanguageSelectorButton(
+                      currentLanguageCode: _currentLanguageCode,
+                      onLanguageSelected: _handleLanguageSelected,
+                      width: double.infinity,
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(height: 28), // Tighter first gap
-
-              // Language Section Title
-              Text(
-                td(ref, 'settings_language_label'), // "Language"
-                style: AppTypography.bodyLgMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: AppSpacing.sm),
-              LanguageSelectorButton(
-                currentLanguageCode: _currentLanguageCode,
-                onLanguageSelected: _handleLanguageSelected,
-                width: double.infinity,
-              ),
-              SizedBox(height: AppSpacing.xxl), // Increased section spacing
-
-              // Currency Section Title
-              Text(
-                td(ref, 'onboarding_currency_label'), // "Currency"
-                style: AppTypography.bodyLgMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: AppSpacing.sm),
-              const CurrencySelectorButton(
-                width: double.infinity,
-                height: 50.0,
               ),
               SizedBox(height: AppSpacing.md),
 
-              // Exchange Rate Note
-              Text(
-                td(ref,
-                    'currency_exchange_rate_disclaimer'), // "Exchange rates are updated once per 24 hours"
-                style: AppTypography.bodySm.copyWith(
-                  color: AppColors.textTertiary,
+              // Card 2: Currency
+              SectionCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      td(ref, 'onboarding_currency_label'), // "Currency"
+                      style: AppTypography.bodyLgMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.sm),
+                    const CurrencySelectorButton(
+                      width: double.infinity,
+                      height: 50.0,
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    Text(
+                      td(ref,
+                          'currency_exchange_rate_disclaimer'), // "Exchange rates are updated once per 24 hours"
+                      style: AppTypography.bodySm.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 40), // Space before button
 
-              // Complete Setup Button
+              // Complete Setup Button (uncarded)
               SizedBox(
                 width: double.infinity,
                 height: AppConstants.buttonHeight,
