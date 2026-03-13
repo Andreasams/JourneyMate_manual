@@ -813,7 +813,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.map_outlined,
+                      Icons.location_on,
                       size: 16,
                       color: _viewMode == _ViewMode.map ? AppColors.textPrimary : AppColors.textMuted,
                     ),
