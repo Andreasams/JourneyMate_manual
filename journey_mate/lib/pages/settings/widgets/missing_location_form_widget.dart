@@ -7,6 +7,7 @@ import '../../../theme/app_constants.dart';
 import '../../../theme/app_spacing.dart';
 import '../../../theme/app_typography.dart';
 import '../../../theme/app_radius.dart';
+import '../../../widgets/shared/section_card.dart';
 
 /// A form widget that allows users to report missing restaurant locations.
 ///
@@ -181,22 +182,37 @@ class _MissingLocationFormWidgetState
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
         AppSpacing.xl,
-        AppSpacing.xl,
-        AppSpacing.xl,
+        AppSpacing.md,
         bottomPadding,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildIntroductionSection(),
-          const SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
-          _buildBusinessNameSection(),
-          const SizedBox(height: AppSpacing.xxl), // Increased from xxxl (32) to xxl (24)
-          _buildBusinessAddressSection(),
-          const SizedBox(height: AppSpacing.xxl), // Increased from xxxl (32) to xxl (24)
-          _buildMessageSection(),
+          // Title + subtitle (uncarded)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            child: _buildIntroductionSection(),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Form card
+          SectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildBusinessNameSection(),
+                const SizedBox(height: AppSpacing.xxl),
+                _buildBusinessAddressSection(),
+                const SizedBox(height: AppSpacing.xxl),
+                _buildMessageSection(),
+              ],
+            ),
+          ),
           const SizedBox(height: AppSpacing.huge),
+
+          // Submit area (uncarded)
           _buildSubmitArea(),
         ],
       ),

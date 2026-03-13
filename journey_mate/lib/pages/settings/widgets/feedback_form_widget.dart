@@ -9,6 +9,7 @@ import '../../../theme/app_radius.dart';
 import '../../../theme/app_constants.dart';
 import '../../../services/translation_service.dart';
 import '../../../widgets/shared/app_checkbox.dart';
+import '../../../widgets/shared/section_card.dart';
 
 /// Feedback form widget for user feedback submission
 ///
@@ -159,27 +160,33 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
 
     return SingleChildScrollView(
       padding: EdgeInsets.only(
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
+        left: AppSpacing.md,
+        right: AppSpacing.md,
         top: AppSpacing.xl,
         bottom: bottomPadding,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Main title
-          Text(
-            td(ref, 'feedback_form_title_main'),
-            style: AppTypography.h4,
+          // Main title + subtitle (uncarded)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  td(ref, 'feedback_form_title_main'),
+                  style: AppTypography.h4,
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Text(
+                  td(ref, 'feedback_form_subtitle_main'),
+                  style: AppTypography.body,
+                ),
+              ],
+            ),
           ),
-          SizedBox(height: AppSpacing.sm),
-
-          // Main subtitle
-          Text(
-            td(ref, 'feedback_form_subtitle_main'),
-            style: AppTypography.body,
-          ),
-          SizedBox(height: 28), // xxxl (32) minus 4px for tighter first gap
+          SizedBox(height: AppSpacing.lg),
 
           // Success state
           if (_isSubmitted) _buildSuccessMessage(),
@@ -189,26 +196,38 @@ class _FeedbackFormWidgetState extends ConsumerState<FeedbackFormWidget> {
 
           // Form (hidden when submitted)
           if (!_isSubmitted) ...[
-            // Topic selection
-            _buildTopicSection(),
-            SizedBox(height: AppSpacing.xxl), // Increased from xl (20) to xxl (24)
+            // Card 1: Topic + message
+            SectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTopicSection(),
+                  SizedBox(height: AppSpacing.xxl),
+                  _buildMessageField(),
+                ],
+              ),
+            ),
+            SizedBox(height: AppSpacing.md),
 
-            // Message field
-            _buildMessageField(),
-            SizedBox(height: 26), // xxl (24) + 2px breathing room before checkbox
+            // Card 2: Contact consent + conditional fields
+            SectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildContactConsentSection(),
 
-            // Contact consent checkbox
-            _buildContactConsentSection(),
-
-            // Conditional contact fields (shown only if checkbox enabled)
-            if (_requireContact) ...[
-              SizedBox(height: AppSpacing.xxl), // Increased from xl (20) to xxl (24)
-              _buildContactFields(),
-            ],
+                  // Conditional contact fields (shown only if checkbox enabled)
+                  if (_requireContact) ...[
+                    SizedBox(height: AppSpacing.xxl),
+                    _buildContactFields(),
+                  ],
+                ],
+              ),
+            ),
 
             SizedBox(height: 40),
 
-            // Submit button
+            // Submit button (uncarded)
             _buildSubmitButton(),
           ],
         ],
