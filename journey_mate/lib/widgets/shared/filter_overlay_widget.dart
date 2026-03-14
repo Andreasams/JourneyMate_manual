@@ -159,8 +159,8 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   // Column backgrounds
   final Color _leftColumnBackgroundColor = AppColors.bgSurface;
-  static const Color _middleRightColumnBackgroundColor = AppColors.bgPage;
-  static const Color _categorySelectionBackgroundColor = AppColors.bgPage;
+  static const Color _middleRightColumnBackgroundColor = _whiteColor;
+  static const Color _categorySelectionBackgroundColor = _whiteColor;
 
   // Column dividers
   final Color _columnDividerColor = AppColors.border; // Light grey (#E8E8E8)
@@ -1257,7 +1257,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     }
 
     return Container(
-      color: AppColors.bgPage,
+      color: _whiteColor,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [

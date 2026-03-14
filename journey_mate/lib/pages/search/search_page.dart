@@ -281,7 +281,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             builder: (context, setBottomSheetState) {
               return Container(
                 decoration: BoxDecoration(
-                  color: AppColors.bgPage,
+                  color: AppColors.bgCard,
                   borderRadius: BorderRadius.vertical(
                     top: Radius.circular(AppRadius.bottomSheet),
                   ),
@@ -294,7 +294,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
                     // 3-tab header
                     Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.only(top: 12, bottom: 12),
                       child: FilterTitlesRow(
                         activeTabIndex: _activeFilterTab,
                         onTabChanged: (index) {
@@ -314,7 +314,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                             currentSearchState.selectedShoppingAreaId != null;
                         if (!hasFilters) return const SizedBox.shrink();
                         return Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                           child: filterState.when(
                             data: (state) => SelectedFiltersBtns(
                               filters: state.filtersForLanguage,
