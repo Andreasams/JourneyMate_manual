@@ -12,7 +12,6 @@ import '../../theme/app_constants.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
-import '../../models/lat_lng.dart';
 import '../../services/custom_functions/price_formatter.dart';
 import '../../services/custom_functions/business_status.dart';
 import '../../services/custom_functions/hours_formatter.dart';
@@ -980,13 +979,13 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
   }
 
   String? _getDistanceText() {
-    final userLocation = ref.read(locationProvider).currentPosition;
+    // Use precomputed distance fields from Typesense node v9.3.
+    // distanceFromStation is non-null only when sortBy=station with a valid
+    // station, so it naturally takes priority when present.
+    final rawMeters = _getField<int>('distanceFromStation')
+        ?? _getField<int>('distanceFromUser');
 
-    if (userLocation == null ||
-        _latitude == null ||
-        _longitude == null) {
-      return null;
-    }
+    if (rawMeters == null) return null;
 
     final languageCode = Localizations.localeOf(context).languageCode;
 
@@ -995,17 +994,12 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         ? ref.read(localizationProvider).distanceUnit
         : 'metric';
 
-    final userLatLng = LatLng(
-      userLocation.latitude,
-      userLocation.longitude,
-    );
-
-    final distance = returnDistance(
-      userLatLng,
-      _latitude!,
-      _longitude!,
-      distanceUnit,
-    );
+    // Convert meters → km, then to miles if imperial
+    var distance = rawMeters / 1000.0;
+    if (distanceUnit == 'imperial') {
+      distance = distance * 0.621371;
+    }
+    distance = double.parse(distance.toStringAsFixed(1));
 
     return formatDistanceText(distance, distanceUnit);
   }
