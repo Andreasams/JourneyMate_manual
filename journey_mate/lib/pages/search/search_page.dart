@@ -684,9 +684,32 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     // Use visibleResultCount (matches what SearchResultsListView displays)
     final count = searchState.visibleResultCount;
 
-    final title = hasActiveFiltersOrSearch
-        ? '${td(ref, 'feedback_page_search_results')} ($count)'
-        : td(ref, 'search_places_near_you');
+    String title;
+    if (hasActiveFiltersOrSearch) {
+      title = '${td(ref, 'feedback_page_search_results')} ($count)';
+    } else if (_currentSort == 'station' && _selectedStation != null) {
+      // Show "Places near [station]" when sorting by train station
+      final stationName = ref.read(filterProvider).whenOrNull(
+        data: (state) {
+          final data = state.filterLookupMap[_selectedStation];
+          return (data?['name'] as String?) ??
+                 (data?['filter_name'] as String?);
+        },
+      );
+      if (stationName != null) {
+        final template = td(ref, 'search_places_near_station');
+        // Use template if translation exists and contains placeholder,
+        // otherwise fall back to default
+        title = template != 'search_places_near_station' &&
+                template.contains('{station}')
+            ? template.replaceAll('{station}', stationName)
+            : td(ref, 'search_places_near_you');
+      } else {
+        title = td(ref, 'search_places_near_you');
+      }
+    } else {
+      title = td(ref, 'search_places_near_you');
+    }
 
     return Text(
       title,
