@@ -63,7 +63,6 @@ class _BusinessFeatureButtonsState
   static const double _iconSpacing = 6.0;
   // AppRadius.chip (8px) — unified chip radius across all chip-style buttons
   static const double _borderRadius = AppRadius.chip;
-  static const double _textMeasurementSafetyMargin = 4.0;
 
   // Text style for measurement
   static const TextStyle _buttonTextStyleUnselected = AppTypography.bodySm;
@@ -177,7 +176,9 @@ class _BusinessFeatureButtonsState
 
   bool _isExpanded = false;
   bool _hasOverflow = false;
+  bool _overflowMeasured = false;
   int _totalRowCount = 0;
+  final GlobalKey _wrapKey = GlobalKey();
 
   // ========================================
   // LIFECYCLE METHODS
@@ -198,6 +199,7 @@ class _BusinessFeatureButtonsState
     final dataChanged = oldWidget.containerWidth != widget.containerWidth;
 
     if (dataChanged) {
+      _overflowMeasured = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _calculateAndNotifyMetrics();
       });
@@ -220,11 +222,9 @@ class _BusinessFeatureButtonsState
         widget.containerWidth,
       );
 
-      // Update overflow state for expand/collapse UI
       if (mounted) {
         setState(() {
           _totalRowCount = metrics.rowCount;
-          _hasOverflow = metrics.rowCount > _maxRowsWhenCollapsed;
         });
       }
 
@@ -232,6 +232,23 @@ class _BusinessFeatureButtonsState
     } catch (e) {
       await widget.onInitialCount(0);
       await widget.onHeightCalculated?.call(0.0);
+    }
+  }
+
+  /// Measures actual Wrap height after layout to determine overflow.
+  void _measureOverflow() {
+    final renderBox =
+        _wrapKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null || !mounted) return;
+
+    final actualHeight = renderBox.size.height;
+    final overflow = actualHeight > _collapsedContentHeight;
+
+    if (overflow != _hasOverflow || !_overflowMeasured) {
+      setState(() {
+        _hasOverflow = overflow;
+        _overflowMeasured = true;
+      });
     }
   }
 
@@ -256,7 +273,6 @@ class _BusinessFeatureButtonsState
       width += _iconSpacing + _iconSize;
     }
 
-    width += _textMeasurementSafetyMargin;
     return width;
   }
 
@@ -759,6 +775,11 @@ class _BusinessFeatureButtonsState
 
   @override
   Widget build(BuildContext context) {
+    // Schedule post-layout overflow measurement
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _measureOverflow();
+    });
+
     try {
       final organizedFilters = _getOrganizedFilters();
 
@@ -768,11 +789,28 @@ class _BusinessFeatureButtonsState
 
       final buttonChildren = _buildFilterButtons(organizedFilters);
 
-      // 1-3 rows: render Wrap directly (no expand/collapse)
+      // Before measurement or 1-3 rows: render Wrap directly (no expand/collapse)
+      // Use an Offstage + keyed Wrap to measure actual height without showing it,
+      // then show the appropriate UI based on measurement result.
+      if (!_overflowMeasured) {
+        // First render: show buttons unconstrained, measure in post-frame
+        return SizedBox(
+          width: widget.width,
+          child: Wrap(
+            key: _wrapKey,
+            spacing: _buttonSpacing,
+            runSpacing: _buttonRunSpacing,
+            alignment: WrapAlignment.start,
+            children: buttonChildren,
+          ),
+        );
+      }
+
       if (!_hasOverflow) {
         return SizedBox(
           width: widget.width,
           child: Wrap(
+            key: _wrapKey,
             spacing: _buttonSpacing,
             runSpacing: _buttonRunSpacing,
             alignment: WrapAlignment.start,
