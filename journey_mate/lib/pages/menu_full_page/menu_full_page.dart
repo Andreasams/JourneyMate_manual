@@ -10,6 +10,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/shared/menu_section_widget.dart';
+import '../../widgets/shared/section_card.dart';
 
 /// Menu Full Page - Dedicated full-screen menu browsing experience
 ///
@@ -136,15 +137,23 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
         AppSpacing.xxl,
         0,
       ),
-      child: MenuSectionWidget(
-        businessId: int.parse(widget.businessId),
-        isFullPage: true,
-        // NOTE: onItemTapped/onPackageTapped/onCategoryViewed are intentionally
-        // NOT wired here — MenuDishesListView already tracks those analytics
-        // internally via analyticsProvider. Wiring them would double-count.
-        onFilterCountChanged: (count, hasFilters) => ref
-            .read(analyticsProvider.notifier)
-            .updateMenuSessionFilterMetrics(count, hasFilters),
+      child: Column(
+        children: [
+          Expanded(
+            child: SectionCard(
+              child: MenuSectionWidget(
+                businessId: int.parse(widget.businessId),
+                isFullPage: true,
+                // NOTE: onItemTapped/onPackageTapped/onCategoryViewed are intentionally
+                // NOT wired here — MenuDishesListView already tracks those analytics
+                // internally via analyticsProvider. Wiring them would double-count.
+                onFilterCountChanged: (count, hasFilters) => ref
+                    .read(analyticsProvider.notifier)
+                    .updateMenuSessionFilterMetrics(count, hasFilters),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

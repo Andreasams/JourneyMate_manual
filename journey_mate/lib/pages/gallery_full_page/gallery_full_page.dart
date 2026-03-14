@@ -9,6 +9,7 @@ import '../../services/translation_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/shared/section_card.dart';
 import '../../widgets/shared/tabbed_gallery_widget.dart';
 import '../../widgets/shared/image_gallery_widget.dart';
 
@@ -138,19 +139,27 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
     return Padding(
       padding: EdgeInsets.all(AppSpacing.xl),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // "Gallery" label
-          Text(
-            td(ref, 'tab_gallery'), // "Gallery"
-            style: AppTypography.h4.copyWith(
-              color: AppColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: AppSpacing.md),
-          // TabbedGalleryWidget takes remaining space
           Expanded(
-            child: _buildGalleryTabWidget(gallery),
+            child: SectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // "Gallery" label
+                  Text(
+                    td(ref, 'tab_gallery'), // "Gallery"
+                    style: AppTypography.h4.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  // TabbedGalleryWidget takes remaining space
+                  Expanded(
+                    child: _buildGalleryTabWidget(gallery),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
