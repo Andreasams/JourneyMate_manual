@@ -657,8 +657,6 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
   String? get _profilePicture => _getField<String>('profile_picture_url');
   String? get _businessName => _getField<String>('business_name');
-  double? get _latitude => _getField<double>('latitude');
-  double? get _longitude => _getField<double>('longitude');
   String? get _street => _getField<String>('street');
   String? get _neighbourhoodName => _getField<String>('neighbourhood_name');
   String? get _postalCode => _getField<String>('postal_code');
@@ -1038,6 +1036,10 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
         const SizedBox(height: AppSpacing.md),
         // Full address
         _buildFullAddress(),
+        // When sorting by station, card header shows station distance,
+        // so show user distance here to provide both data points.
+        if (_getField<int>('distanceFromStation') != null)
+          _buildDistanceFromUser(),
         const SizedBox(height: AppSpacing.xsm),
         // Today's hours
         _buildTodayHours(),
@@ -1072,6 +1074,31 @@ class _BusinessListItemState extends ConsumerState<_BusinessListItem> {
 
     return Text(
       fullAddress,
+      style: AppTypography.bodySm.copyWith(
+        color: AppColors.textTertiary,
+      ),
+    );
+  }
+
+  Widget _buildDistanceFromUser() {
+    final rawMeters = _getField<int>('distanceFromUser');
+    if (rawMeters == null) return const SizedBox.shrink();
+
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final distanceUnit = languageCode == 'en'
+        ? ref.read(localizationProvider).distanceUnit
+        : 'metric';
+
+    var distance = rawMeters / 1000.0;
+    if (distanceUnit == 'imperial') {
+      distance = distance * 0.621371;
+    }
+    distance = double.parse(distance.toStringAsFixed(1));
+
+    final formatted = formatDistanceText(distance, distanceUnit);
+    // translation_value already contains ":" — just add a space before the number
+    return Text(
+      '${td(ref, 'distance_from_you')} $formatted',
       style: AppTypography.bodySm.copyWith(
         color: AppColors.textTertiary,
       ),
