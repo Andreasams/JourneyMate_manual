@@ -99,10 +99,10 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
           width: 1.5,
         ),
       ),
-      alignment: Alignment.center,
       child: TextField(
         controller: _effectiveController,
         focusNode: _focusNode,
+        textAlignVertical: TextAlignVertical.center,
         onChanged: widget.onChanged,
         onSubmitted: widget.onSubmitted,
         autofocus: widget.autofocus,
