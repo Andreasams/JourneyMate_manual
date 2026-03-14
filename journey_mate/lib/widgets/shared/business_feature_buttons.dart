@@ -166,6 +166,11 @@ class _BusinessFeatureButtonsState
   static final List<int> _allSpecialParentChildren =
       _specialParentChildren.values.expand((list) => list).toList();
 
+  /// Food-related category parent IDs — always shown last in the chip list.
+  /// 12 = Meal types, 13 = Menu types (both live under Preferences title, id=3).
+  /// Cuisine categories (9, 10) are under Title 2 and never reach this widget.
+  static const Set<int> _foodRelatedParentIds = {12, 13};
+
   // ========================================
   // STATE VARIABLES
   // ========================================
@@ -566,8 +571,33 @@ class _BusinessFeatureButtonsState
         return true;
       }).toList();
 
-      // Sort by parent_id, then by name
+      // Sort chips by priority tier, then within each tier by parent group, then name.
+      //
+      // Tier 0 – match + description  (not food-related)
+      // Tier 1 – match only           (not food-related)
+      // Tier 2 – description only     (not food-related)
+      // Tier 3 – rest                 (not food-related)
+      // Tier 4-7 – same sub-order for food-related items (parent_id 12/13), always last
+      int _sortTier(Map<String, dynamic> filter) {
+        final filterId = filter['filter_id'] as int? ?? 0;
+        final parentId = filter['parent_id'] as int?;
+        final isFood = parentId != null && _foodRelatedParentIds.contains(parentId);
+        final isSelected = _isFilterSelected(filterId);
+        final hasDesc = _hasFilterDescription(filterId);
+
+        final base = switch ((isSelected, hasDesc)) {
+          (true, true) => 0,
+          (true, false) => 1,
+          (false, true) => 2,
+          _ => 3,
+        };
+        return isFood ? base + 4 : base;
+      }
+
       visibleFilters.sort((a, b) {
+        final tierCompare = _sortTier(a).compareTo(_sortTier(b));
+        if (tierCompare != 0) return tierCompare;
+        // Within same tier: keep category siblings together, then alphabetical
         final parentCompare =
             (a['parent_id'] ?? 0).compareTo(b['parent_id'] ?? 0);
         if (parentCompare != 0) return parentCompare;
