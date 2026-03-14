@@ -389,7 +389,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     final hasTranslations = translationsCache.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.bgPage,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -422,7 +422,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               // Mascot Image (always visible immediately)
               Center(
                 child: Image.asset(
-                  'assets/images/journeymate_mascot.png',
+                  'assets/images/JourneyMate Mascot - bg FDF4EC.png',
                   width: 180,
                   height: 180,
                   fit: BoxFit.contain,
