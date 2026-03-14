@@ -302,6 +302,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
           decoration: BoxDecoration(
             color: AppColors.bgPage,
             borderRadius: BorderRadius.circular(AppRadius.button),
+            border: Border.all(color: AppColors.border, width: 1.5),
           ),
           child: Column(
             children: rows,

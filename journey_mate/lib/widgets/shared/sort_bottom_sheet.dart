@@ -189,6 +189,7 @@ class _SortBottomSheetState extends ConsumerState<SortBottomSheet> {
             hintTextKey: 'search_placeholder_train_station',
             controller: _stationSearchController,
             onChanged: (text) => setState(() => _stationSearchText = text),
+            backgroundColor: AppColors.bgInput,
           ),
         ),
         Expanded(

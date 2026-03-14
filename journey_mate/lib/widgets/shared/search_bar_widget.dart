@@ -30,6 +30,7 @@ class SearchBarWidget extends ConsumerStatefulWidget {
     this.onSubmitted,
     this.controller,
     this.autofocus = false,
+    this.backgroundColor,
   });
 
   /// Translation key used for the placeholder text.
@@ -45,6 +46,9 @@ class SearchBarWidget extends ConsumerStatefulWidget {
   final TextEditingController? controller;
 
   final bool autofocus;
+
+  /// Optional background color override. Defaults to [AppColors.bgCard].
+  final Color? backgroundColor;
 
   @override
   ConsumerState<SearchBarWidget> createState() => _SearchBarWidgetState();
@@ -88,32 +92,46 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
     return Container(
       height: AppConstants.searchBarHeight,
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: widget.backgroundColor ?? AppColors.bgCard,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
           color: _hasFocus ? AppColors.accent : Colors.transparent,
           width: 1.5,
         ),
       ),
+      alignment: Alignment.center,
       child: TextField(
         controller: _effectiveController,
         focusNode: _focusNode,
         onChanged: widget.onChanged,
         onSubmitted: widget.onSubmitted,
         autofocus: widget.autofocus,
-        style: AppTypography.bodyLg,
+        style: AppTypography.bodyLg.copyWith(
+          color: AppColors.textSecondary,
+        ),
         decoration: InputDecoration(
           hintText: td(ref, widget.hintTextKey),
-          hintStyle: AppTypography.bodyLg,
+          hintStyle: AppTypography.bodyLg.copyWith(
+            color: AppColors.textSecondary,
+          ),
           filled: false,
+          isCollapsed: true,
           prefixIcon: Icon(
             Icons.search,
             size: 21,
             color: AppColors.textMuted,
           ),
-          contentPadding: EdgeInsets.symmetric(
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 44,
+            minHeight: AppConstants.searchBarHeight,
+          ),
+          suffixIconConstraints: const BoxConstraints(
+            minWidth: 44,
+            minHeight: AppConstants.searchBarHeight,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
-            vertical: AppSpacing.md,
+            vertical: 0,
           ),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,

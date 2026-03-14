@@ -150,30 +150,44 @@ String? convertAndFormatPriceRange(
   final symbol = rules['symbol'] as String;
   final isPrefix = rules['isPrefix'] as bool;
 
+  // When forceNoDecimals is true, round the converted prices to integers
+  // BEFORE formatting to avoid stripping decimal points from formatted strings
+  // (e.g., "$44.31" → "4431" bug when regex removed the decimal point).
+  final effectiveMinPrice =
+      forceNoDecimals ? (minPrice * exchangeRate).roundToDouble() : minPrice;
+  final effectiveMaxPrice =
+      forceNoDecimals ? (maxPrice * exchangeRate).roundToDouble() : maxPrice;
+  // When we pre-convert for forceNoDecimals, pass rate=1.0 to avoid double-conversion
+  final effectiveRate = forceNoDecimals ? 1.0 : exchangeRate;
+
   final formattedMin = convertAndFormatPrice(
-    minPrice,
-    originalCurrencyCode,
-    exchangeRate,
+    effectiveMinPrice,
+    forceNoDecimals ? targetCurrencyCode : originalCurrencyCode,
+    effectiveRate,
     targetCurrencyCode,
   );
 
   final formattedMax = convertAndFormatPrice(
-    maxPrice,
-    originalCurrencyCode,
-    exchangeRate,
+    effectiveMaxPrice,
+    forceNoDecimals ? targetCurrencyCode : originalCurrencyCode,
+    effectiveRate,
     targetCurrencyCode,
   );
 
   if (formattedMin == null || formattedMax == null) return null;
 
-  // Extract numeric parts
+  // Extract numeric parts (symbols and spaces removed, keep digits, commas, decimals)
   String minNumeric;
   String maxNumeric;
 
   if (forceNoDecimals) {
-    // For search results: extract only digits and commas (no decimals at all)
-    minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,]'), '').trim();
-    maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,]'), '').trim();
+    // Prices already rounded to integers above, but currency rules may still
+    // add decimals (e.g., EUR always formats with .00). Strip decimal portion.
+    minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,.]'), '').trim();
+    maxNumeric = formattedMax.replaceAll(RegExp(r'[^\d,.]'), '').trim();
+    // Remove trailing decimal portion (e.g., "44.00" → "44")
+    minNumeric = minNumeric.replaceAll(RegExp(r'\.\d*$'), '');
+    maxNumeric = maxNumeric.replaceAll(RegExp(r'\.\d*$'), '');
   } else {
     // For other contexts: preserve decimal points, remove symbols and spaces
     minNumeric = formattedMin.replaceAll(RegExp(r'[^\d,.]'), '').trim();
