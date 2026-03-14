@@ -364,7 +364,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
             delegate: SliverChildListDelegate([
               // 1. Hero Section (logo, name, cuisine, status, address)
               const SectionCard(child: HeroSectionWidget()),
-              const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.md),
 
               // 2. Quick Actions Pills (Call, Website, Booking, Map)
               const QuickActionsPillsWidget(),
