@@ -422,7 +422,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               // Mascot Image (always visible immediately)
               Center(
                 child: Image.asset(
-                  'assets/images/JourneyMate Mascot - bg FDF4EC.png',
+                  'assets/images/JourneyMate Mascot - bg F7F5EF.png',
                   width: 180,
                   height: 180,
                   fit: BoxFit.contain,

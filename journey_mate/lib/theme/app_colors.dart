@@ -78,7 +78,7 @@ class AppColors {
   /// Variant A (warmer cream):  bgPageWarmCream    #F7F5EF
   /// Variant B (orange whisper):bgPageOrangeLight  #FDF4EC
   /// Variant C (orange warm):   bgPageOrangeWarm   #F9EDE2
-  static const Color bgPage = bgPageOrangeLight;
+  static const Color bgPage = bgPageWarmCream;
 
   // Page background variants — for A/B testing card contrast
   static const Color bgPageEggshell = Color(0xFFFDFCFA);
