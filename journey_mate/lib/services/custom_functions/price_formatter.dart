@@ -82,10 +82,10 @@ String? convertAndFormatPrice(
   final originalCode = originalCurrencyCode.toUpperCase();
 
   // Convert price (skip conversion if same currency)
-  // Note: exchangeRate represents "DKK per 1 unit of target currency"
-  // Example: rate=8.5 for GBP means 1 GBP = 8.5 DKK, so divide to get GBP from DKK
+  // Note: exchangeRate represents "1 DKK = X target currency"
+  // Example: rate=0.1338 for EUR means 1 DKK = 0.1338 EUR, so multiply to get EUR from DKK
   final convertedPrice =
-      originalCode == targetCode ? basePrice : basePrice / exchangeRate;
+      originalCode == targetCode ? basePrice : basePrice * exchangeRate;
 
   // Get currency formatting rules from central function
   final rulesJson = getCurrencyFormattingRules(targetCode);
