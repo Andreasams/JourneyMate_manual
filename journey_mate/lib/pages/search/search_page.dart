@@ -294,7 +294,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
                     // 3-tab header
                     Padding(
-                      padding: EdgeInsets.only(top: 12, bottom: 12),
+                      padding: EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.xsm),
                       child: FilterTitlesRow(
                         activeTabIndex: _activeFilterTab,
                         onTabChanged: (index) {
@@ -313,24 +313,30 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                             currentSearchState.selectedNeighbourhoodId != null ||
                             currentSearchState.selectedShoppingAreaId != null;
                         if (!hasFilters) return const SizedBox.shrink();
-                        return Padding(
-                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-                          child: filterState.when(
-                            data: (state) => SelectedFiltersBtns(
-                              filters: state.filtersForLanguage,
-                              languageCode: Localizations.localeOf(context).languageCode,
-                              translationsCache: ref.watch(translationsCacheProvider),
-                              onClearAll: () {
-                                final searchText = ref.read(searchStateProvider).currentSearchText;
-                                _executeSearch(searchText);
-                              },
-                              onFilterRemoved: (_) {
-                                final searchText = ref.read(searchStateProvider).currentSearchText;
-                                _executeSearch(searchText);
-                              },
+                        // Force full width so SingleChildScrollView gets a
+                        // full-width viewport and chips stay left-aligned
+                        // (matches search page's CrossAxisAlignment.stretch)
+                        return SizedBox(
+                          width: double.infinity,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                            child: filterState.when(
+                              data: (state) => SelectedFiltersBtns(
+                                filters: state.filtersForLanguage,
+                                languageCode: Localizations.localeOf(context).languageCode,
+                                translationsCache: ref.watch(translationsCacheProvider),
+                                onClearAll: () {
+                                  final searchText = ref.read(searchStateProvider).currentSearchText;
+                                  _executeSearch(searchText);
+                                },
+                                onFilterRemoved: (_) {
+                                  final searchText = ref.read(searchStateProvider).currentSearchText;
+                                  _executeSearch(searchText);
+                                },
+                              ),
+                              loading: () => const SizedBox.shrink(),
+                              error: (_, _) => const SizedBox.shrink(),
                             ),
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, _) => const SizedBox.shrink(),
                           ),
                         );
                       },

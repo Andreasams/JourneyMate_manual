@@ -515,7 +515,7 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
 
     return Container(
       padding: EdgeInsets.only(
-        top: AppSpacing.md,      // 12px - matches spacing between other elements
+        top: AppSpacing.xsm,     // 6px - pairs with filter tabs bottom padding for 12px total
         bottom: AppSpacing.md,   // 12px - matches spacing between other elements
       ),
       decoration: BoxDecoration(

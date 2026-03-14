@@ -115,7 +115,7 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
             color: AppColors.textSecondary,
           ),
           filled: false,
-          isCollapsed: true,
+          isDense: true,
           prefixIcon: Icon(
             Icons.search,
             size: 21,
