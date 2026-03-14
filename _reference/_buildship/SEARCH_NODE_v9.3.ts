@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * JOURNEYMATE — TYPESENSE SEARCH NODE (v9.2)
+ * JOURNEYMATE — TYPESENSE SEARCH NODE (v9.3)
  * =============================================================================
  *
  * WHAT IT DOES
@@ -29,7 +29,8 @@
  *
  * OUTPUTS (NodeOutput)
  *   documents[]        — Restaurant docs, each annotated with:
- *                        matchCount, matchedFilters, missedFilters, section
+ *                        matchCount, matchedFilters, missedFilters, section,
+ *                        distanceFromUser, distanceFromStation
  *   scoringFilterIds   — Cleaned filter IDs used for scoring (echo for client).
  *   activeids          — Filter IDs present across full-match restaurants only (from
  *                        a dedicated facet query). Used by the app for filter chips —
@@ -38,6 +39,25 @@
  *   resultCount        — Total Typesense matches (pre open-now filtering).
  *   fullMatchCount     — Global count of restaurants matching ALL scoring filters.
  *   pagination         — { currentPage, totalPages, totalResults, hasMore }
+ *
+ * DISTANCE FIELDS (v9.3)
+ * ──────────────────────
+ *   Each document includes two precomputed distance fields (integer meters):
+ *
+ *   distanceFromUser    — Haversine distance from the user's GPS location to the
+ *                         restaurant. null if user location is unavailable.
+ *
+ *   distanceFromStation — Haversine distance from the selected train station to the
+ *                         restaurant. null unless sortBy=station with a valid station.
+ *
+ *   Distances are rounded to whole meters. The Flutter client is responsible for
+ *   unit conversion (metric/imperial) and display formatting — the node does not
+ *   know about display preferences.
+ *
+ *   This moves the per-card haversine computation from Flutter (where it ran on
+ *   every widget rebuild) to the node (computed once per search). It also enables
+ *   showing station distance as the primary distance label when sorting by station,
+ *   with user distance as an optional secondary label.
  *
  * SCORING SYSTEM  (v9.1 — section-safe)
  * ─────────────────────────────────────
@@ -75,7 +95,7 @@
  * ID RANGES
  *   1–9999         Standard filters (dietary, features)
  *   10000–19999    Train stations (offset by 10000)
- *   20000+         Shopping areas
+ *   20000-22000    Shopping areas
  *   592000–602999  Composite dietary menu filters → dietary_menu_filters field
  *
  * GEO BOUNDS FILTERING (v9.2)
@@ -111,6 +131,13 @@
  *
  * =============================================================================
  * CHANGELOG
+ *   v9.3 — Added precomputed distance fields (distanceFromUser, distanceFromStation)
+ *          to each document. Haversine calculation moved from Flutter client to node,
+ *          eliminating per-card recomputation on widget rebuilds. Enables showing
+ *          station-relative distance when sorting by train station, with user distance
+ *          available as a secondary label. Both fields are integer meters; null when
+ *          the relevant reference point is unavailable. Backward compatible: Flutter
+ *          formatting/unit logic stays client-side.
  *   v9.2 — Added geoBounds viewport filtering. New query parameter parsed into
  *          Typesense geo polygon filter on `location` field. Backward compatible:
  *          absent/invalid geoBounds is silently ignored.
@@ -169,7 +196,7 @@ const FULL_MATCH_BONUS = 10_000_000;
 const NON_DIETARY_SCORE = 200;
 
 const isTrainStation  = (id: number) => id >= 10000 && id < 20000;
-const isShoppingArea  = (id: number) => id >= 20000;
+const isShoppingArea  = (id: number) => id >= 20000 && id <= 22000;
 const isComposite     = (id: number) => id >= 592000 && id <= 602999;
 
 /**
@@ -383,6 +410,76 @@ function parseGeoBoundsFilter(geoBounds: string | null | undefined): string {
   }
 
   return '';
+}
+
+/**
+ * Haversine distance between two geographic points.
+ *
+ * @returns Distance in meters (whole integer, rounded).
+ *
+ * Uses the same formula as the Flutter returnDistance() in
+ * distance_calculator.dart, but returns raw meters instead of formatted km/mi.
+ * Unit conversion and display formatting stay in Flutter.
+ */
+function haversineMeters(
+  lat1: number, lng1: number,
+  lat2: number, lng2: number,
+): number {
+  const toRad = (deg: number) => deg * (Math.PI / 180);
+  const R = 6_371_000; // Earth's mean radius in meters
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+/**
+ * Attach precomputed distance fields to each document.
+ *
+ * distanceFromUser    — meters from user's GPS location (null if unavailable)
+ * distanceFromStation — meters from selected train station (null if not station sort)
+ *
+ * Called after annotateMatchFields, before enforceSectionOrder.
+ * Pure math on already-fetched data — negligible performance cost.
+ */
+function attachDistances(
+  documents: any[],
+  userLat: number | null,
+  userLng: number | null,
+  stationLat: number | null,
+  stationLng: number | null,
+): any[] {
+  const hasUser = userLat !== null && userLng !== null;
+  const hasStation = stationLat !== null && stationLng !== null;
+
+  // Fast path: no reference points available
+  if (!hasUser && !hasStation) {
+    return documents.map(doc => ({
+      ...doc,
+      distanceFromUser: null,
+      distanceFromStation: null,
+    }));
+  }
+
+  return documents.map(doc => {
+    const lat = doc.latitude;
+    const lng = doc.longitude;
+    const hasDocCoords = typeof lat === 'number' && typeof lng === 'number';
+
+    const distanceFromUser: number | null =
+      hasDocCoords && hasUser
+        ? haversineMeters(userLat!, userLng!, lat, lng)
+        : null;
+
+    const distanceFromStation: number | null =
+      hasDocCoords && hasStation
+        ? haversineMeters(stationLat!, stationLng!, lat, lng)
+        : null;
+
+    return { ...doc, distanceFromUser, distanceFromStation };
+  });
 }
 
 // =============================================================================
@@ -669,6 +766,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
       totalResultsFromTypesense = searchResults.found ?? 0;
       documents = normalizeDocuments(searchResults.hits, businessTypeField, tagsField, sanitizedLanguage, allLanguages);
       documents = annotateMatchFields(documents, scoringFilters);
+      documents = attachDistances(documents, userLat, userLng, stationLat, stationLng);
 
       // activeids scoped to full matches only; falls back to main query facets if no scoring filters
       const fullMatchData = await getFullMatchData(
@@ -737,6 +835,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
 
         let chunk = normalizeDocuments(searchResults.hits, businessTypeField, tagsField, sanitizedLanguage, allLanguages);
         chunk = annotateMatchFields(chunk, scoringFilters);
+        chunk = attachDistances(chunk, userLat, userLng, stationLat, stationLng);
 
         const openChunk = chunk.filter((doc: any) => {
           if (!doc?.open_windows || !Array.isArray(doc.open_windows)) return false;
