@@ -177,8 +177,9 @@ class SearchStateNotifier extends Notifier<SearchState> {
 
   /// Route filter IDs based on type, splitting them into the correct state fields:
   /// - is_neighborhood == true OR in neighbourhood hierarchy → selectedNeighbourhoodId (API param, not in filters array)
-  /// - id >= 20000 → selectedShoppingAreaId (API param, not in filters array)
-  /// - id >= 10000 && < 20000 → dropped (train stations handled via selectedStation param)
+  /// - id 20000–22000 → selectedShoppingAreaId (API param, not in filters array)
+  /// - id 10000–19999 → dropped (train stations handled via selectedStation param)
+  /// - id > 22000 → filtersUsedForSearch (includes composite dietary menu filters 592000+)
   /// - everything else → filtersUsedForSearch
   void setFiltersWithRouting(List<int> allIds, Map<int, dynamic> filterLookup) {
     final List<int> neighbourhoodIds = [];
@@ -186,9 +187,9 @@ class SearchStateNotifier extends Notifier<SearchState> {
     final regularFilters = <int>[];
 
     for (final id in allIds) {
-      if (id >= 20000) {
+      if (id >= 20000 && id <= 22000) {
         shoppingAreaId = id;
-      } else if (id >= 10000) {
+      } else if (id >= 10000 && id < 20000) {
         // Train station — skip (handled via selectedStation param)
         continue;
       } else {
