@@ -319,7 +319,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                         return SizedBox(
                           width: double.infinity,
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                            padding: EdgeInsets.zero,
                             child: filterState.when(
                               data: (state) => SelectedFiltersBtns(
                                 filters: state.filtersForLanguage,
@@ -804,7 +804,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: _viewMode == _ViewMode.list ? AppColors.bgInput : AppColors.bgCard,
+                color: _viewMode == _ViewMode.list ? AppColors.white : AppColors.bgInput,
                 border: Border.all(color: AppColors.border, width: 1.5),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(8),
@@ -818,14 +818,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   Icon(
                     Icons.format_list_bulleted,
                     size: 16,
-                    color: _viewMode == _ViewMode.list ? AppColors.textPrimary : AppColors.textMuted,
+                    color: _viewMode == _ViewMode.list ? AppColors.accent : AppColors.textPrimary,
                   ),
                   SizedBox(width: 6),
                   Text(
                     td(ref, 'view_toggle_list'), // Use translation key
                     style: AppTypography.bodySmMedium.copyWith(
                       fontWeight: _viewMode == _ViewMode.list ? FontWeight.w600 : FontWeight.w500,
-                      color: _viewMode == _ViewMode.list ? AppColors.textPrimary : AppColors.textMuted,
+                      color: _viewMode == _ViewMode.list ? AppColors.accent : AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -842,7 +842,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: _viewMode == _ViewMode.map ? AppColors.bgInput : AppColors.bgCard,
+                  color: _viewMode == _ViewMode.map ? AppColors.white : AppColors.bgInput,
                   border: Border.all(color: AppColors.border, width: 1.5),
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(8),
@@ -856,14 +856,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     Icon(
                       Icons.location_on,
                       size: 16,
-                      color: _viewMode == _ViewMode.map ? AppColors.textPrimary : AppColors.textMuted,
+                      color: _viewMode == _ViewMode.map ? AppColors.accent : AppColors.textPrimary,
                     ),
                     SizedBox(width: 6),
                     Text(
                       td(ref, 'action_map'), // Use translation key
                       style: AppTypography.bodySmMedium.copyWith(
                         fontWeight: _viewMode == _ViewMode.map ? FontWeight.w600 : FontWeight.w500,
-                        color: _viewMode == _ViewMode.map ? AppColors.textPrimary : AppColors.textMuted,
+                        color: _viewMode == _ViewMode.map ? AppColors.accent : AppColors.textPrimary,
                       ),
                     ),
                   ],
