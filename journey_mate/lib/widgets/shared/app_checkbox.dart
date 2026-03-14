@@ -46,6 +46,7 @@ class AppCheckbox extends StatelessWidget {
     this.checkIconSize = 11.0,
     this.borderRadius,
     this.borderWidth = 1.5,
+    this.showCheckIcon = true,
   });
 
   // ---------------------------------------------------------------------------
@@ -82,6 +83,10 @@ class AppCheckbox extends StatelessWidget {
 
   /// Border width for the unselected state. Default: 1.5
   final double borderWidth;
+
+  /// Whether to show the check icon when selected. Default: true.
+  /// When false, shows a solid filled square without the checkmark.
+  final bool showCheckIcon;
 
   // ---------------------------------------------------------------------------
   // BUILD
@@ -121,7 +126,7 @@ class AppCheckbox extends StatelessWidget {
         border: border,
         borderRadius: BorderRadius.circular(resolvedBorderRadius),
       ),
-      child: isSelected
+      child: (isSelected && showCheckIcon)
           ? Icon(Icons.check, size: checkIconSize, color: AppColors.white)
           : null,
     );

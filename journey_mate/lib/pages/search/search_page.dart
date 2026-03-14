@@ -258,9 +258,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Future<void> _openFilterOverlay() async {
-    // Get current state (needed for FilterOverlayWidget props)
+    // Get filter state (needed for FilterOverlayWidget props)
     final filterState = ref.read(filterProvider);
-    final searchState = ref.read(searchStateProvider);
 
     if (!mounted) return;
 
@@ -282,7 +281,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             builder: (context, setBottomSheetState) {
               return Container(
                 decoration: BoxDecoration(
-                  color: AppColors.bgCard,
+                  color: AppColors.bgPage,
                   borderRadius: BorderRadius.vertical(
                     top: Radius.circular(AppRadius.bottomSheet),
                   ),
@@ -306,97 +305,133 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                       ),
                     ),
 
+                    // Selected filter chips (visible only when filters are active)
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final currentSearchState = ref.watch(searchStateProvider);
+                        final hasFilters = currentSearchState.filtersUsedForSearch.isNotEmpty ||
+                            currentSearchState.selectedNeighbourhoodId != null ||
+                            currentSearchState.selectedShoppingAreaId != null;
+                        if (!hasFilters) return const SizedBox.shrink();
+                        return Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: filterState.when(
+                            data: (state) => SelectedFiltersBtns(
+                              filters: state.filtersForLanguage,
+                              languageCode: Localizations.localeOf(context).languageCode,
+                              translationsCache: ref.watch(translationsCacheProvider),
+                              onClearAll: () {
+                                final searchText = ref.read(searchStateProvider).currentSearchText;
+                                _executeSearch(searchText);
+                              },
+                              onFilterRemoved: (_) {
+                                final searchText = ref.read(searchStateProvider).currentSearchText;
+                                _executeSearch(searchText);
+                              },
+                            ),
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, _) => const SizedBox.shrink(),
+                          ),
+                        );
+                      },
+                    ),
+
                     // Filter content
                     Expanded(
-                      child: filterState.when(
-                        data: (state) => FilterOverlayWidget(
-                          filterData: state.filtersForLanguage,
-                          selectedTitleID: _mapTabIndexToTitleId(_activeFilterTab),
-                          activeFilterIds: searchState.activeFilterIds,
-                          selectedFilterIds: searchState.filtersUsedForSearch,
-                          onSearchCompleted: (activeIds, count, fullMatchCount, documents, scoringFilterIds) async {
-                            // Update active filter IDs
-                            ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
+                      child: Consumer(
+                        builder: (context, ref, _) {
+                          final currentSearchState = ref.watch(searchStateProvider);
+                          return filterState.when(
+                            data: (state) => FilterOverlayWidget(
+                              filterData: state.filtersForLanguage,
+                              selectedTitleID: _mapTabIndexToTitleId(_activeFilterTab),
+                              activeFilterIds: currentSearchState.activeFilterIds,
+                              selectedFilterIds: currentSearchState.filtersUsedForSearch,
+                              onSearchCompleted: (activeIds, count, fullMatchCount, documents, scoringFilterIds) async {
+                                // Update active filter IDs
+                                ref.read(searchStateProvider.notifier).updateActiveFilterIds(activeIds);
 
-                            // Update search results with restaurant documents
-                            ref.read(searchStateProvider.notifier).updateSearchResults(
-                              documents,
-                              count,
-                              fullMatchCount,
-                              scoringFilterIds,
-                            );
-
-                            if (mounted) {
-                              setState(() {
-                                // Trigger rebuild with new search results
-                              });
-                            }
-                          },
-                          onCloseOverlay: (selectedIds) async {
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                            }
-                          },
-                          searchTerm: searchState.currentSearchText,
-                          mayLoad: true,
-                          resultCount: searchState.visibleResultCount,
-                          activeTabIndex: _activeFilterTab,
-                          onShoppingAreaSelected: () {
-                            // Reset sort to nearest if currently using station sort
-                            if (_currentSort == 'station') {
-                              setState(() {
-                                _currentSort = 'nearest';
-                                _selectedStation = null;
-                              });
-                              // Trigger new search with updated sort
-                              final currentSearchText = ref.read(searchStateProvider).currentSearchText;
-                              _executeSearch(currentSearchText);
-                            }
-                          },
-                          onNeighbourhoodSelected: () {
-                            // Check if selected station is still valid for the new neighbourhood(s)
-                            if (_currentSort == 'station' && _selectedStation != null) {
-                              final searchState = ref.read(searchStateProvider);
-                              final neighbourhoodIds = searchState.selectedNeighbourhoodId;
-
-                              if (neighbourhoodIds != null && neighbourhoodIds.isNotEmpty) {
-                                // Check if station belongs to any of the selected neighbourhoods
-                                final filterState = ref.read(filterProvider);
-                                final isStationInNeighbourhood = filterState.when(
-                                  data: (state) {
-                                    final stationData = state.filterLookupMap[_selectedStation];
-                                    if (stationData != null) {
-                                      final neighbourhoodId1 = stationData['neighbourhood_id_1'] as int?;
-                                      final neighbourhoodId2 = stationData['neighbourhood_id_2'] as int?;
-                                      return neighbourhoodIds.any((nId) =>
-                                          neighbourhoodId1 == nId || neighbourhoodId2 == nId);
-                                    }
-                                    return false;
-                                  },
-                                  loading: () => true, // Keep station while loading
-                                  error: (e, s) => true, // Keep station on error
+                                // Update search results with restaurant documents
+                                ref.read(searchStateProvider.notifier).updateSearchResults(
+                                  documents,
+                                  count,
+                                  fullMatchCount,
+                                  scoringFilterIds,
                                 );
 
-                                // Reset to nearest if station is not in any selected neighbourhood
-                                if (!isStationInNeighbourhood) {
+                                if (mounted) {
+                                  setState(() {
+                                    // Trigger rebuild with new search results
+                                  });
+                                }
+                              },
+                              onCloseOverlay: (selectedIds) async {
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                }
+                              },
+                              searchTerm: currentSearchState.currentSearchText,
+                              mayLoad: true,
+                              resultCount: currentSearchState.visibleResultCount,
+                              activeTabIndex: _activeFilterTab,
+                              onShoppingAreaSelected: () {
+                                // Reset sort to nearest if currently using station sort
+                                if (_currentSort == 'station') {
                                   setState(() {
                                     _currentSort = 'nearest';
                                     _selectedStation = null;
                                   });
                                   // Trigger new search with updated sort
-                                  final currentSearchText = searchState.currentSearchText;
+                                  final currentSearchText = ref.read(searchStateProvider).currentSearchText;
                                   _executeSearch(currentSearchText);
                                 }
-                              }
-                            }
-                          },
-                        ),
-                        loading: () => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                        error: (e, _) => Center(
-                          child: Text(td(ref, 'error_load_filters')),
-                        ),
+                              },
+                              onNeighbourhoodSelected: () {
+                                // Check if selected station is still valid for the new neighbourhood(s)
+                                if (_currentSort == 'station' && _selectedStation != null) {
+                                  final searchState = ref.read(searchStateProvider);
+                                  final neighbourhoodIds = searchState.selectedNeighbourhoodId;
+
+                                  if (neighbourhoodIds != null && neighbourhoodIds.isNotEmpty) {
+                                    // Check if station belongs to any of the selected neighbourhoods
+                                    final filterState = ref.read(filterProvider);
+                                    final isStationInNeighbourhood = filterState.when(
+                                      data: (state) {
+                                        final stationData = state.filterLookupMap[_selectedStation];
+                                        if (stationData != null) {
+                                          final neighbourhoodId1 = stationData['neighbourhood_id_1'] as int?;
+                                          final neighbourhoodId2 = stationData['neighbourhood_id_2'] as int?;
+                                          return neighbourhoodIds.any((nId) =>
+                                              neighbourhoodId1 == nId || neighbourhoodId2 == nId);
+                                        }
+                                        return false;
+                                      },
+                                      loading: () => true, // Keep station while loading
+                                      error: (e, s) => true, // Keep station on error
+                                    );
+
+                                    // Reset to nearest if station is not in any selected neighbourhood
+                                    if (!isStationInNeighbourhood) {
+                                      setState(() {
+                                        _currentSort = 'nearest';
+                                        _selectedStation = null;
+                                      });
+                                      // Trigger new search with updated sort
+                                      final currentSearchText = searchState.currentSearchText;
+                                      _executeSearch(currentSearchText);
+                                    }
+                                  }
+                                }
+                              },
+                            ),
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            error: (e, _) => Center(
+                              child: Text(td(ref, 'error_load_filters')),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],

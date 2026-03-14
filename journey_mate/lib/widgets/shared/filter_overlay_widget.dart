@@ -159,8 +159,8 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   // Column backgrounds
   final Color _leftColumnBackgroundColor = AppColors.bgSurface;
-  static const Color _middleRightColumnBackgroundColor = _whiteColor;
-  static const Color _categorySelectionBackgroundColor = _whiteColor;
+  static const Color _middleRightColumnBackgroundColor = AppColors.bgPage;
+  static const Color _categorySelectionBackgroundColor = AppColors.bgPage;
 
   // Column dividers
   final Color _columnDividerColor = AppColors.border; // Light grey (#E8E8E8)
@@ -1257,7 +1257,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     }
 
     return Container(
-      color: _whiteColor,
+      color: AppColors.bgPage,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [
@@ -1458,6 +1458,22 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     final isItemColumn = filterType == 'item';
     final checkboxGap = isItemColumn ? AppSpacing.sm : 7.0; // 8px : 7px
 
+    // Non-search-triggering parents show filled orange without checkmark
+    // to signal "expanded but not yet filtering"
+    bool showCheckIcon = true;
+    if (filterType == 'item' && isSelected) {
+      final filterId = filter['id'] as int;
+      final hasSubitems = _getSubItems(filterId).isNotEmpty;
+      if (hasSubitems && !_isSearchableParentItem(filterId)) {
+        final anySubSelected = _getSubItems(filterId).any(
+          (sub) => _selectedFilterIds.contains(sub['id'] as int),
+        );
+        if (!anySubSelected) {
+          showCheckIcon = false;
+        }
+      }
+    }
+
     return GestureDetector(
       onTap: isActive ? () => _handleFilterSelection(filter) : null,
       child: Container(
@@ -1467,7 +1483,7 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         ),
         child: Row(
           children: [
-            AppCheckbox(isSelected: isSelected, isEnabled: isActive),
+            AppCheckbox(isSelected: isSelected, isEnabled: isActive, showCheckIcon: showCheckIcon),
             SizedBox(width: checkboxGap),
             // Label text (existing styling)
             Expanded(
