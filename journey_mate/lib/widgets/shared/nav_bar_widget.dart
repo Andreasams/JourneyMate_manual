@@ -203,7 +203,7 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
     required bool isActive,
     required VoidCallback onTap,
   }) {
-    final color = isActive ? AppColors.accent : AppColors.white;
+    final color = isActive ? AppColors.accent : AppColors.textPrimary;
 
     return InkWell(
       splashColor: Colors.transparent,

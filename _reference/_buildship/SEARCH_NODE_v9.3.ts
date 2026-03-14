@@ -817,7 +817,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
       const currentMinutes = nowCph.getHours() * 60 + nowCph.getMinutes();
 
       for (let round = 0; round < MAX_OVERFETCH_ROUNDS; round++) {
-        const chunkSize = pageSize * OVERFETCH_MULTIPLIER;
+        const chunkSize = Math.min(pageSize * OVERFETCH_MULTIPLIER, 250);
         const searchParameters = {
           ...baseSearchParameters,
           page: tsPage,
@@ -874,7 +874,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
       fullMatchCount = fullMatchData.fullMatchCount;
       activeids = fullMatchData.activeids;
 
-      const hasMore = documents.length >= collectTarget && tsPage <= Math.ceil(tsFound / (pageSize * OVERFETCH_MULTIPLIER));
+      const hasMore = documents.length >= collectTarget && tsPage <= Math.ceil(tsFound / Math.min(pageSize * OVERFETCH_MULTIPLIER, 250));
 
       return {
         documents,
