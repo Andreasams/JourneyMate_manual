@@ -94,6 +94,11 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   /// Override exchange rate fetched within this sheet (null = use widget prop)
   double? _overrideExchangeRate;
 
+  /// Cache of exchange rates fetched or known within this sheet session.
+  /// Seeded with DKK (1.0) and the user's chosen currency rate at init.
+  /// Prevents redundant API calls when toggling between currencies.
+  late Map<String, double> _exchangeRateCache;
+
   /// Effective currency: local override takes precedence over widget prop
   String get _effectiveCurrency => _overrideCurrency ?? widget.chosenCurrency;
 
@@ -132,6 +137,12 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
     // Reset currency overrides
     _overrideCurrency = null;
     _overrideExchangeRate = null;
+
+    // Seed exchange rate cache with known rates
+    _exchangeRateCache = {
+      'DKK': 1.0,
+      widget.chosenCurrency: widget.exchangeRate,
+    };
   }
 
   /// Checks if the item has changed (different menu_item_id)
@@ -267,7 +278,9 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   /// MENU HANDLERS
   /// =========================================================================
 
-  /// Shows the action menu with available options
+  /// Shows the action menu with available options.
+  /// Pre-fetches exchange rates and language data on menu open so selections
+  /// appear instant when the user picks an option.
   void _showActionMenu() {
     final menuOptions = _computeMenuOptions();
 
@@ -275,6 +288,9 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
     if (menuOptions.isEmpty) {
       return;
     }
+
+    // Pre-fetch data for all options not yet cached
+    _prefetchMenuData(menuOptions);
 
     showMenu<String>(
       context: context,
@@ -456,13 +472,15 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
   /// Handles currency switching with inline exchange rate fetching
   ///
   /// This is self-contained within the sheet - does not update parent state.
-  /// Fetches exchange rate from API and stores locally in _overrideCurrency
-  /// and _overrideExchangeRate.
+  /// Checks _exchangeRateCache first for instant switching, falls back to
+  /// API fetch if rate not yet cached.
   Future<void> _handleCurrencySwitch(String newCurrencyCode) async {
-    if (newCurrencyCode == 'DKK') {
+    // Check cache first — instant switch if rate is known
+    final cachedRate = _exchangeRateCache[newCurrencyCode];
+    if (cachedRate != null) {
       setState(() {
-        _overrideCurrency = 'DKK';
-        _overrideExchangeRate = 1.0;
+        _overrideCurrency = newCurrencyCode;
+        _overrideExchangeRate = cachedRate;
       });
       return;
     }
@@ -482,6 +500,7 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
             : null;
 
         if (rate != null && context.mounted) {
+          _exchangeRateCache[newCurrencyCode] = rate;
           setState(() {
             _overrideCurrency = newCurrencyCode;
             _overrideExchangeRate = rate;
@@ -508,6 +527,58 @@ class _ItemBottomSheetState extends ConsumerState<ItemBottomSheet> {
           ),
         );
       }
+    }
+  }
+
+  /// Pre-fetches exchange rates and language data for menu options not yet
+  /// cached. Called when the 3-dot menu is tapped so selections appear instant.
+  void _prefetchMenuData(List<MenuOption> options) {
+    for (final option in options) {
+      if (option.type == 'currency') {
+        if (_exchangeRateCache.containsKey(option.code)) continue;
+        _fetchAndCacheRate(option.code);
+      } else if (option.type == 'language') {
+        if (_languageDataCache.containsKey(option.code)) continue;
+        _fetchAndCacheLanguage(option.code);
+      }
+    }
+  }
+
+  /// Fetches and caches an exchange rate in the background.
+  Future<void> _fetchAndCacheRate(String currencyCode) async {
+    try {
+      final response = await ApiService.instance.getExchangeRate(
+        toCurrency: currencyCode,
+      );
+      if (response.succeeded && response.jsonBody != null) {
+        final data = response.jsonBody;
+        final double? rate = (data is List && data.isNotEmpty)
+            ? (data[0]['rate'] as num?)?.toDouble()
+            : null;
+        if (rate != null) {
+          _exchangeRateCache[currencyCode] = rate;
+        }
+      }
+    } catch (_) {
+      // Silently fail — _handleCurrencySwitch will retry if needed
+    }
+  }
+
+  /// Fetches and caches language data for a menu item in the background.
+  Future<void> _fetchAndCacheLanguage(String languageCode) async {
+    try {
+      final menuItemId = _currentItemData['menu_item_id'];
+      if (menuItemId == null) return;
+
+      final response = await ApiService.instance.getSingleMenuItem(
+        menuItemId: int.parse(menuItemId.toString()),
+        languageCode: languageCode,
+      );
+      if (response.succeeded && response.jsonBody != null) {
+        _languageDataCache[languageCode] = response.jsonBody;
+      }
+    } catch (_) {
+      // Silently fail — _handleLanguageSwitch will retry if needed
     }
   }
 

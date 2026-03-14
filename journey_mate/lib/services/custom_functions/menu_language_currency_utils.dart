@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'currency_name_formatter.dart';
+import 'language_currency_config.dart';
 import 'price_formatter.dart' show getCurrencyFormattingRules;
 
 /// Represents a menu option (language or currency) for the 3-dot menu
@@ -82,63 +83,31 @@ List<MenuOption> computeLanguageOptions({
 
 /// Computes which currency options should appear in the menu.
 ///
-/// Rules:
-/// - RULE 1: If user chose USD → offer DKK only
-/// - RULE 2: If user chose GBP → offer DKK only
-/// - RULE 3: If user chose English + DKK → offer USD and GBP
-/// - RULE 4: Other currencies → offer DKK if not already selected
+/// Uses getCurrenciesForLanguage() to determine available currencies for the
+/// user's language, then offers all alternatives except the currently displayed
+/// one. This enables bidirectional switching (e.g., EUR↔DKK for German users)
+/// regardless of which currency is currently active.
 List<MenuOption> computeCurrencyOptions({
   required String currentCurrency,
   required String appLanguage,
   required String Function(String currencyCode) getCurrencyDisplayName,
 }) {
-  final options = <MenuOption>[];
+  final availableCurrencies = getCurrenciesForLanguage(appLanguage);
 
-  // RULE 1: If user chose USD → offer DKK only
-  if (currentCurrency == 'USD') {
-    options.add(MenuOption(
-      type: 'currency',
-      code: 'DKK',
-      displayName: getCurrencyDisplayName('DKK'),
-    ));
-    return options;
+  // Only one currency available (e.g., Danish with DKK only) — no switching
+  if (availableCurrencies.length <= 1) {
+    return [];
   }
 
-  // RULE 2: If user chose GBP → offer DKK only
-  if (currentCurrency == 'GBP') {
-    options.add(MenuOption(
-      type: 'currency',
-      code: 'DKK',
-      displayName: getCurrencyDisplayName('DKK'),
-    ));
-    return options;
-  }
-
-  // RULE 3: If user chose English + DKK → offer USD and GBP
-  if (appLanguage == 'en' && currentCurrency == 'DKK') {
-    options.add(MenuOption(
-      type: 'currency',
-      code: 'USD',
-      displayName: getCurrencyDisplayName('USD'),
-    ));
-    options.add(MenuOption(
-      type: 'currency',
-      code: 'GBP',
-      displayName: getCurrencyDisplayName('GBP'),
-    ));
-    return options;
-  }
-
-  // RULE 4: Other currencies → offer DKK if not already selected
-  if (currentCurrency != 'DKK') {
-    options.add(MenuOption(
-      type: 'currency',
-      code: 'DKK',
-      displayName: getCurrencyDisplayName('DKK'),
-    ));
-  }
-
-  return options;
+  // Offer all available currencies except the one currently displayed
+  return availableCurrencies
+      .where((code) => code != currentCurrency)
+      .map((code) => MenuOption(
+            type: 'currency',
+            code: code,
+            displayName: getCurrencyDisplayName(code),
+          ))
+      .toList();
 }
 
 /// Gets display name for currency (e.g., "Danish Krone (kr.)")
