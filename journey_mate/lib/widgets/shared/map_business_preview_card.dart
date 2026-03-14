@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../models/lat_lng.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../services/custom_functions/business_status.dart';
@@ -150,19 +149,21 @@ class _MapBusinessPreviewCardState
   // ---------------------------------------------------------------------------
 
   String? _getDistanceText() {
-    final userLocation = ref.read(locationProvider).currentPosition;
-    if (userLocation == null || _latitude == null || _longitude == null) {
-      return null;
-    }
+    final rawMeters = getField<int>(widget.businessData, 'distanceFromUser');
+
+    if (rawMeters == null) return null;
 
     final languageCode = Localizations.localeOf(context).languageCode;
     final distanceUnit = languageCode == 'en'
         ? ref.read(localizationProvider).distanceUnit
         : 'metric';
 
-    final userLatLng = LatLng(userLocation.latitude, userLocation.longitude);
-    final distance =
-        returnDistance(userLatLng, _latitude!, _longitude!, distanceUnit);
+    var distance = rawMeters / 1000.0;
+    if (distanceUnit == 'imperial') {
+      distance = distance * 0.621371;
+    }
+    distance = double.parse(distance.toStringAsFixed(1));
+
     return formatDistanceText(distance, distanceUnit);
   }
 
