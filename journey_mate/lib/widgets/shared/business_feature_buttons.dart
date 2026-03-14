@@ -578,7 +578,7 @@ class _BusinessFeatureButtonsState
       // Tier 2 – description only     (not food-related)
       // Tier 3 – rest                 (not food-related)
       // Tier 4-7 – same sub-order for food-related items (parent_id 12/13), always last
-      int _sortTier(Map<String, dynamic> filter) {
+      int sortTier(Map<String, dynamic> filter) {
         final filterId = filter['filter_id'] as int? ?? 0;
         final parentId = filter['parent_id'] as int?;
         final isFood = parentId != null && _foodRelatedParentIds.contains(parentId);
@@ -595,7 +595,7 @@ class _BusinessFeatureButtonsState
       }
 
       visibleFilters.sort((a, b) {
-        final tierCompare = _sortTier(a).compareTo(_sortTier(b));
+        final tierCompare = sortTier(a).compareTo(sortTier(b));
         if (tierCompare != 0) return tierCompare;
         // Within same tier: keep category siblings together, then alphabetical
         final parentCompare =

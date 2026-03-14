@@ -107,8 +107,6 @@ class _MapBusinessPreviewCardState
 
   String? get _profilePicture => getField<String>(widget.businessData, 'profile_picture_url');
   String? get _businessName => getField<String>(widget.businessData, 'business_name');
-  double? get _latitude => getField<double>(widget.businessData, 'latitude');
-  double? get _longitude => getField<double>(widget.businessData, 'longitude');
   int? get _priceRangeMin => getField<int>(widget.businessData, 'price_range_min');
   int? get _priceRangeMax => getField<int>(widget.businessData, 'price_range_max');
   dynamic get _openingHours => getField<dynamic>(widget.businessData, 'business_hours');
