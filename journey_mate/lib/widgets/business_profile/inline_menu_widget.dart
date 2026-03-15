@@ -21,10 +21,12 @@ import '../shared/menu_section_widget.dart';
 ///     "View on full page" + arrow
 class InlineMenuWidget extends ConsumerWidget {
   final int businessId;
+  final void Function(int count, bool hasActiveFilters, int itemsTotal, int itemsVisible, int categoriesEmpty)? onFilterCountChanged;
 
   const InlineMenuWidget({
     super.key,
     required this.businessId,
+    this.onFilterCountChanged,
   });
 
   @override
@@ -35,6 +37,7 @@ class InlineMenuWidget extends ConsumerWidget {
           MenuSectionWidget(
             businessId: businessId,
             isFullPage: false,
+            onFilterCountChanged: onFilterCountChanged,
           ),
 
           // ── "View on full page" button ─────────────────────────────────────

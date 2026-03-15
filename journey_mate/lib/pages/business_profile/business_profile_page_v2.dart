@@ -281,6 +281,38 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     );
   }
 
+  void _trackMenuFilterImpact(int count, bool hasFilters, int itemsTotal, int itemsVisible, int categoriesEmpty) {
+    final businessIdInt = int.tryParse(widget.businessId);
+    if (businessIdInt == null) return;
+
+    final analyticsState = ref.read(analyticsProvider);
+    final menuData = analyticsState.menuSessionData;
+    if (menuData == null) return;
+
+    // Compute filter effectiveness
+    final filterEffectivenessPercent = itemsTotal > 0
+        ? (((itemsTotal - itemsVisible) / itemsTotal) * 100).round()
+        : 0;
+
+    ApiService.instance.postAnalytics(
+      eventType: 'menu_filter_impact',
+      deviceId: _cachedDeviceId,
+      sessionId: _cachedSessionId,
+      userId: '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {
+        'menu_session_id': menuData.menuSessionId,
+        'menu_context': 'profile_tab',
+        'business_id': businessIdInt,
+        'items_total': itemsTotal,
+        'items_visible': itemsVisible,
+        'categories_completely_empty': categoriesEmpty,
+        'filter_effectiveness_percent': filterEffectivenessPercent,
+        'filters_active': hasFilters,
+      },
+    );
+  }
+
   @override
   void dispose() {
     if (_pageStartTime != null) {
@@ -474,6 +506,11 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
                       child: SectionCard(
                         child: InlineMenuWidget(
                           businessId: int.parse(widget.businessId),
+                          onFilterCountChanged: (count, hasFilters, itemsTotal, itemsVisible, categoriesEmpty) {
+                            ref.read(analyticsProvider.notifier)
+                                .updateMenuSessionFilterMetrics(count, hasFilters);
+                            _trackMenuFilterImpact(count, hasFilters, itemsTotal, itemsVisible, categoriesEmpty);
+                          },
                         ),
                       ),
                     ),

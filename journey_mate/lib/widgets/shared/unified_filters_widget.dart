@@ -36,7 +36,7 @@ class UnifiedFiltersWidget extends ConsumerStatefulWidget {
   final double? height;
   final int businessId;
   final Future Function()? onFiltersChanged;
-  final Future Function(int count)? onVisibleItemCountChanged;
+  final Future Function(int count, bool hasFilters, int itemsTotal, int itemsVisible, int categoriesEmpty)? onVisibleItemCountChanged;
 
   @override
   ConsumerState<UnifiedFiltersWidget> createState() =>
@@ -259,17 +259,67 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
   /// VISIBLE COUNT CALCULATION
   /// =========================================================================
 
-  /// Calculates and notifies parent of visible item count
+  /// Calculates and notifies parent of visible item count with rich filter metrics
   void _calculateAndNotifyVisibleCount() {
     // Re-extract in case data changed
     _extractMenuData();
 
-    final count = _calculateVisibleItemCount();
+    final visibleCount = _calculateVisibleItemCount();
+    final totalCount = _calculateTotalItemCount();
+    final categoriesEmpty = _calculateCategoriesCompletelyEmpty();
 
-    if (count != _lastCalculatedCount) {
-      _lastCalculatedCount = count;
-      widget.onVisibleItemCountChanged?.call(count);
+    // Get current filter state
+    final businessState = ref.read(businessProvider);
+    final hasFilters = businessState.selectedDietaryRestrictionIds.isNotEmpty ||
+        businessState.selectedDietaryPreferenceId != null ||
+        businessState.excludedAllergyIds.isNotEmpty;
+
+    if (visibleCount != _lastCalculatedCount) {
+      _lastCalculatedCount = visibleCount;
+      widget.onVisibleItemCountChanged?.call(
+        visibleCount,
+        hasFilters,
+        totalCount,
+        visibleCount,
+        categoriesEmpty,
+      );
     }
+  }
+
+  /// Calculates total count of all items (unfiltered)
+  int _calculateTotalItemCount() {
+    int count = 0;
+    // Count all regular category items
+    for (final category in _regularCategories) {
+      if (category['category_type'] != 'a la carte') continue;
+      final itemIds = category['menu_item_ids'] as List<dynamic>? ?? [];
+      count += itemIds.whereType<int>().length;
+    }
+    // Add all packages
+    count += _menuPackages.length;
+    return count;
+  }
+
+  /// Counts how many categories have zero visible items after filtering
+  int _calculateCategoriesCompletelyEmpty() {
+    int emptyCount = 0;
+    for (final category in _regularCategories) {
+      if (category['category_type'] != 'a la carte') continue;
+      final itemIds = category['menu_item_ids'] as List<dynamic>? ?? [];
+      bool hasVisibleItem = false;
+      for (final itemId in itemIds) {
+        if (itemId is! int) continue;
+        final item = _menuItemMap[itemId];
+        if (item != null && _isItemVisible(item)) {
+          hasVisibleItem = true;
+          break;
+        }
+      }
+      if (!hasVisibleItem) {
+        emptyCount++;
+      }
+    }
+    return emptyCount;
   }
 
   /// Calculates total count of visible items based on current filters

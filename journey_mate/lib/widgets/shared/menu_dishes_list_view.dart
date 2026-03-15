@@ -352,6 +352,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
     final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
     final sessionId = analyticsState.sessionId ?? 'unknown';
     final userId = AnalyticsService.instance.userId ?? 'unknown';
+    final menuData = analyticsState.menuSessionData;
 
     // Track event (fire and forget)
     ApiService.instance.postAnalytics(
@@ -360,6 +361,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
       sessionId: sessionId,
       userId: userId,
       eventData: {
+        'menu_session_id': menuData?.menuSessionId ?? '',
         'business_id': _businessId,
         'item_id': itemId,
         'item_name': itemName,
@@ -392,6 +394,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
     final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
     final sessionId = analyticsState.sessionId ?? 'unknown';
     final userId = AnalyticsService.instance.userId ?? 'unknown';
+    final menuData = analyticsState.menuSessionData;
 
     // Track event (fire and forget)
     ApiService.instance.postAnalytics(
@@ -400,6 +403,7 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
       sessionId: sessionId,
       userId: userId,
       eventData: {
+        'menu_session_id': menuData?.menuSessionId ?? '',
         'business_id': _businessId,
         'package_id': packageId,
         'package_name': packageName,

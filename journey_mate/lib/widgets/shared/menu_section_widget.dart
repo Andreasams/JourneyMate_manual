@@ -49,7 +49,7 @@ class MenuSectionWidget extends ConsumerStatefulWidget {
   final VoidCallback? onItemTapped;
   final VoidCallback? onPackageTapped;
   final void Function(int categoryId)? onCategoryViewed;
-  final void Function(int count, bool hasActiveFilters)? onFilterCountChanged;
+  final void Function(int count, bool hasActiveFilters, int itemsTotal, int itemsVisible, int categoriesEmpty)? onFilterCountChanged;
 
   const MenuSectionWidget({
     super.key,
@@ -245,15 +245,10 @@ class _MenuSectionWidgetState extends ConsumerState<MenuSectionWidget> {
               onFiltersChanged: () async {
                 setState(() {});
               },
-              onVisibleItemCountChanged: (count) async {
+              onVisibleItemCountChanged: (count, hasFilters, itemsTotal, itemsVisible, categoriesEmpty) async {
                 setState(() => _visibleItemCount = count);
                 if (widget.onFilterCountChanged != null) {
-                  final state = ref.read(businessProvider);
-                  final hasFilters =
-                      state.selectedDietaryRestrictionIds.isNotEmpty ||
-                          state.selectedDietaryPreferenceId != null ||
-                          state.excludedAllergyIds.isNotEmpty;
-                  widget.onFilterCountChanged!(count, hasFilters);
+                  widget.onFilterCountChanged!(count, hasFilters, itemsTotal, itemsVisible, categoriesEmpty);
                 }
               },
             ),

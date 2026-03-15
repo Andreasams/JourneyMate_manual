@@ -69,6 +69,39 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
       eventData: {
         'business_id': businessIdInt,
         'menu_context': 'full_page',
+        'menu_session_id': analyticsState.menuSessionData?.menuSessionId ?? '',
+      },
+    );
+  }
+
+  void _trackMenuFilterImpact(int count, bool hasFilters, int itemsTotal, int itemsVisible, int categoriesEmpty) {
+    final businessIdInt = int.tryParse(widget.businessId);
+    if (businessIdInt == null) return;
+
+    final analyticsState = ref.read(analyticsProvider);
+    final menuData = analyticsState.menuSessionData;
+    if (menuData == null) return;
+
+    // Compute filter effectiveness
+    final filterEffectivenessPercent = itemsTotal > 0
+        ? (((itemsTotal - itemsVisible) / itemsTotal) * 100).round()
+        : 0;
+
+    ApiService.instance.postAnalytics(
+      eventType: 'menu_filter_impact',
+      deviceId: _cachedDeviceId,
+      sessionId: _cachedSessionId,
+      userId: '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {
+        'menu_session_id': menuData.menuSessionId,
+        'menu_context': 'full_page',
+        'business_id': businessIdInt,
+        'items_total': itemsTotal,
+        'items_visible': itemsVisible,
+        'categories_completely_empty': categoriesEmpty,
+        'filter_effectiveness_percent': filterEffectivenessPercent,
+        'filters_active': hasFilters,
       },
     );
   }
@@ -244,9 +277,11 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
                 // NOTE: onItemTapped/onPackageTapped/onCategoryViewed are intentionally
                 // NOT wired here — MenuDishesListView already tracks those analytics
                 // internally via analyticsProvider. Wiring them would double-count.
-                onFilterCountChanged: (count, hasFilters) => ref
-                    .read(analyticsProvider.notifier)
-                    .updateMenuSessionFilterMetrics(count, hasFilters),
+                onFilterCountChanged: (count, hasFilters, itemsTotal, itemsVisible, categoriesEmpty) {
+                  ref.read(analyticsProvider.notifier)
+                      .updateMenuSessionFilterMetrics(count, hasFilters);
+                  _trackMenuFilterImpact(count, hasFilters, itemsTotal, itemsVisible, categoriesEmpty);
+                },
               ),
             ),
           ),
