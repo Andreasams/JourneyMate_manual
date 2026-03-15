@@ -34,7 +34,7 @@ class ShimmerCardWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.logoSmall),
             ),
           ),
-          SizedBox(width: AppSpacing.mlg),
+          SizedBox(width: AppSpacing.md), // 12px — matches real card spacing
           // Text content area
           Expanded(
             child: LayoutBuilder(
@@ -43,9 +43,9 @@ class ShimmerCardWidget extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Line 1: Name (70% width)
+                    // Line 1: Name (70% width) — matches AppTypography.bodyHeavy (15 * 1.45 = 22px)
                     Container(
-                      height: 14,
+                      height: 22,
                       width: availableWidth * 0.7,
                       decoration: BoxDecoration(
                         color: AppColors.border.withOpacity(0.3),
@@ -53,9 +53,9 @@ class ShimmerCardWidget extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: AppSpacing.xxs),
-                    // Line 2: Status (50% width)
+                    // Line 2: Status (50% width) — matches AppTypography.bodySm (14 * 1.45 = 20px)
                     Container(
-                      height: 12,
+                      height: 20,
                       width: availableWidth * 0.5,
                       decoration: BoxDecoration(
                         color: AppColors.border.withOpacity(0.3),
@@ -63,9 +63,9 @@ class ShimmerCardWidget extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: AppSpacing.xxs),
-                    // Line 3: Details (40% width)
+                    // Line 3: Details (40% width) — matches AppTypography.bodySm (14 * 1.45 = 20px)
                     Container(
-                      height: 12,
+                      height: 20,
                       width: availableWidth * 0.4,
                       decoration: BoxDecoration(
                         color: AppColors.border.withOpacity(0.3),
