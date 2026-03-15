@@ -31,6 +31,7 @@ class SearchBarWidget extends ConsumerStatefulWidget {
     this.controller,
     this.autofocus = false,
     this.backgroundColor,
+    this.borderColor,
   });
 
   /// Translation key used for the placeholder text.
@@ -49,6 +50,9 @@ class SearchBarWidget extends ConsumerStatefulWidget {
 
   /// Optional background color override. Defaults to [AppColors.bgCard].
   final Color? backgroundColor;
+
+  /// Optional unfocused border color. Defaults to [Colors.transparent].
+  final Color? borderColor;
 
   @override
   ConsumerState<SearchBarWidget> createState() => _SearchBarWidgetState();
@@ -95,7 +99,9 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
         color: widget.backgroundColor ?? AppColors.bgCard,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: _hasFocus ? AppColors.accent : Colors.transparent,
+          color: _hasFocus
+              ? AppColors.accent
+              : (widget.borderColor ?? Colors.transparent),
           width: 1.5,
         ),
       ),

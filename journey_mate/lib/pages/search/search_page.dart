@@ -733,6 +733,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       controller: _searchController,
       onChanged: _onSearchTextChanged,
       onSubmitted: _executeSearch,
+      borderColor: AppColors.border,
     );
   }
 
