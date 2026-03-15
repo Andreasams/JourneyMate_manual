@@ -39,10 +39,10 @@ class _RestaurantShimmerWidgetState extends State<RestaurantShimmerWidget>
   // CONSTANTS
   // =========================================================================
 
-  /// Shimmer animation colors — white tones visible on light page backgrounds
-  static final Color _baseColor = AppColors.white.withValues(alpha: 0.85);
-  static final Color _highlightColor = AppColors.white.withValues(alpha: 0.98);
-  static final Color _placeholderColor = AppColors.white.withValues(alpha: 0.85);
+  /// Shimmer animation colors — grey base sweeps to white for visible animation
+  static const Color _baseColor = AppColors.border;
+  static const Color _highlightColor = AppColors.white;
+  static const Color _placeholderColor = AppColors.border;
 
   /// Layout constants
   static const double _containerPadding = AppSpacing.lg;
