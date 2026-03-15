@@ -238,4 +238,87 @@ void main() {
       expect(state.previousActiveFilters, [10]);
     });
   });
+
+  group('visibleResultCount calculation', () {
+    late ProviderContainer container;
+
+    setUp(() {
+      container = ProviderContainer();
+    });
+
+    tearDown(() {
+      container.dispose();
+    });
+
+    test('shows all results when only open filter is inactive', () {
+      container.read(searchStateProvider.notifier).updateSearchResults(
+        [{'id': 1}, {'id': 2}, {'id': 3}],
+        3, // resultCount
+        0, // fullMatchCount
+        [],
+        isOnlyOpenFilterActive: false,
+        onlyOpenCount: 0,
+      );
+
+      final state = container.read(searchStateProvider);
+      expect(state.visibleResultCount, 3); // Shows all results
+    });
+
+    test('shows onlyOpenCount when filter is active, even if zero', () {
+      container.read(searchStateProvider.notifier).updateSearchResults(
+        [{'id': 1}, {'id': 2}, {'id': 3}],
+        3, // resultCount
+        0, // fullMatchCount
+        [],
+        isOnlyOpenFilterActive: true,
+        onlyOpenCount: 0, // No open restaurants
+      );
+
+      final state = container.read(searchStateProvider);
+      expect(
+        state.visibleResultCount,
+        0, // BUG FIX: Should show 0, not 3
+      );
+    });
+
+    test('shows onlyOpenCount when filter is active with positive count', () {
+      container.read(searchStateProvider.notifier).updateSearchResults(
+        [{'id': 1}, {'id': 2}],
+        3, // Total results
+        0, // fullMatchCount
+        [],
+        isOnlyOpenFilterActive: true,
+        onlyOpenCount: 2, // 2 are open
+      );
+
+      final state = container.read(searchStateProvider);
+      expect(state.visibleResultCount, 2);
+    });
+
+    test('tracks isOnlyOpenFilterActive state correctly', () {
+      container.read(searchStateProvider.notifier).updateSearchResults(
+        [{'id': 1}],
+        1,
+        0,
+        [],
+        isOnlyOpenFilterActive: true,
+        onlyOpenCount: 0,
+      );
+
+      var state = container.read(searchStateProvider);
+      expect(state.isOnlyOpenFilterActive, true);
+
+      container.read(searchStateProvider.notifier).updateSearchResults(
+        [{'id': 1}],
+        1,
+        0,
+        [],
+        isOnlyOpenFilterActive: false,
+        onlyOpenCount: 0,
+      );
+
+      state = container.read(searchStateProvider);
+      expect(state.isOnlyOpenFilterActive, false);
+    });
+  });
 }

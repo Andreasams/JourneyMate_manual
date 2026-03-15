@@ -174,6 +174,7 @@ class SearchState {
   final int visibleResultCount; // Count of documents actually rendered by SearchResultsListView
   final int fullMatchCount; // Count of documents where matchCount === scoringFilterIds.length (all needs met)
   final int onlyOpenCount; // Count of open restaurants when onlyOpen=true (0 otherwise)
+  final bool isOnlyOpenFilterActive; // Whether "show only open" filter is currently applied (affects result count display)
   final bool hasActiveSearch;
   final String currentSearchText;
   final List<int> filtersUsedForSearch; // User's checked filters
@@ -198,6 +199,7 @@ class SearchState {
     required this.visibleResultCount,
     required this.fullMatchCount,
     required this.onlyOpenCount,
+    required this.isOnlyOpenFilterActive,
     required this.hasActiveSearch,
     required this.currentSearchText,
     required this.filtersUsedForSearch,
@@ -224,6 +226,7 @@ class SearchState {
       visibleResultCount: 0,
       fullMatchCount: 0,
       onlyOpenCount: 0,
+      isOnlyOpenFilterActive: false,
       hasActiveSearch: false,
       currentSearchText: '',
       filtersUsedForSearch: [],
@@ -245,6 +248,7 @@ class SearchState {
     int? visibleResultCount,
     int? fullMatchCount,
     int? onlyOpenCount,
+    bool? isOnlyOpenFilterActive,
     bool? hasActiveSearch,
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
@@ -269,6 +273,7 @@ class SearchState {
       visibleResultCount: visibleResultCount ?? this.visibleResultCount,
       fullMatchCount: fullMatchCount ?? this.fullMatchCount,
       onlyOpenCount: onlyOpenCount ?? this.onlyOpenCount,
+      isOnlyOpenFilterActive: isOnlyOpenFilterActive ?? this.isOnlyOpenFilterActive,
       hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
@@ -296,6 +301,7 @@ class SearchState {
     int? visibleResultCount,
     int? fullMatchCount,
     int? onlyOpenCount,
+    bool? isOnlyOpenFilterActive,
     bool? hasActiveSearch,
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
@@ -327,6 +333,7 @@ class SearchState {
       visibleResultCount: visibleResultCount ?? this.visibleResultCount,
       fullMatchCount: fullMatchCount ?? this.fullMatchCount,
       onlyOpenCount: onlyOpenCount ?? this.onlyOpenCount,
+      isOnlyOpenFilterActive: isOnlyOpenFilterActive ?? this.isOnlyOpenFilterActive,
       hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,

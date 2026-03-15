@@ -35,6 +35,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
     bool fetchedWithLocation = false,
     bool hasMore = false,
     int onlyOpenCount = 0,
+    bool isOnlyOpenFilterActive = false,
   }) {
     // Normalize input: extract documents array if full response object passed
     dynamic normalizedResults = results;
@@ -43,14 +44,14 @@ class SearchStateNotifier extends Notifier<SearchState> {
     }
 
     // Compute the display count. Priority:
-    // 1. If onlyOpenCount > 0, API filtered by open status — use the open count
+    // 1. If onlyOpenFilterActive, API filtered by open status — use the open count (even if 0)
     // 2. If filters/search active AND scoring filters exist — use full-match count
     // 3. Otherwise — use total count
     final hasActiveFiltersOrSearch = state.filtersUsedForSearch.isNotEmpty ||
         state.selectedNeighbourhoodId?.isNotEmpty == true ||
         state.selectedShoppingAreaId != null ||
         state.currentSearchText.isNotEmpty;
-    final visibleResultCount = onlyOpenCount > 0
+    final visibleResultCount = isOnlyOpenFilterActive
         ? onlyOpenCount
         : (hasActiveFiltersOrSearch && scoringFilterIds.isNotEmpty)
             ? fullMatchCount
@@ -62,6 +63,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
       visibleResultCount: visibleResultCount,
       fullMatchCount: fullMatchCount,
       onlyOpenCount: onlyOpenCount,
+      isOnlyOpenFilterActive: isOnlyOpenFilterActive,
       scoringFilterIds: List<int>.from(scoringFilterIds),
       hasActiveSearch: true,
       lastFetchTime: DateTime.now(),

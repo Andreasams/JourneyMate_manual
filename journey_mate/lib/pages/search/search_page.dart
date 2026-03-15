@@ -224,6 +224,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           fetchedWithLocation: position != null,
           hasMore: hasMore,
           onlyOpenCount: onlyOpenCount,
+          isOnlyOpenFilterActive: _onlyOpen,
         );
 
         _lastSearchPageSize = effectivePageSize;
