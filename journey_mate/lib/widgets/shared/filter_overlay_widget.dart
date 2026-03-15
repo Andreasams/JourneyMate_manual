@@ -244,7 +244,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
     _handleResultCountChanges(oldWidget);
     _handleActiveFilterChanges(oldWidget);
     _handleTitleChanges(oldWidget);
-    _handleSelectedFilterChanges(oldWidget);
   }
 
   @override
@@ -381,27 +380,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   void _handleTitleChanges(FilterOverlayWidget oldWidget) {
     if (oldWidget.selectedTitleID != widget.selectedTitleID) {
       _selectFirstCategory();
-    }
-  }
-
-  void _handleSelectedFilterChanges(FilterOverlayWidget oldWidget) {
-    if (!listEquals(oldWidget.selectedFilterIds, widget.selectedFilterIds)) {
-      _selectedFilterIds.clear();
-      if (widget.selectedFilterIds != null) {
-        _selectedFilterIds.addAll(widget.selectedFilterIds!);
-      }
-
-      // Re-add routed IDs (neighbourhood, shopping area) from provider
-      // This mirrors logic in _initializeStateFromProps (lines 321-331)
-      // Without this, neighbourhood IDs get orphaned during widget updates
-      final searchState = ref.read(searchStateProvider);
-      if (searchState.selectedNeighbourhoodId != null) {
-        _selectedFilterIds.addAll(searchState.selectedNeighbourhoodId!);
-        _selectedNeighborhoodIds = List<int>.from(searchState.selectedNeighbourhoodId!);
-      }
-      if (searchState.selectedShoppingAreaId != null) {
-        _selectedFilterIds.add(searchState.selectedShoppingAreaId!);
-      }
     }
   }
 
@@ -1252,6 +1230,32 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
 
   @override
   Widget build(BuildContext context) {
+    // Sync local checkbox state when filters change externally
+    // (e.g., "Clear All" or individual chip removal in SelectedFiltersBtns).
+    // This mirrors _handleReset()'s direct setState() pattern.
+    ref.listen(searchStateProvider, (previous, next) {
+      final expectedIds = <int>{
+        ...next.filtersUsedForSearch,
+        if (next.selectedNeighbourhoodId != null) ...next.selectedNeighbourhoodId!,
+        if (next.selectedShoppingAreaId != null) next.selectedShoppingAreaId!,
+      };
+
+      if (!setEquals(_selectedFilterIds, expectedIds)) {
+        setState(() {
+          _selectedFilterIds.clear();
+          _selectedFilterIds.addAll(expectedIds);
+          _selectedNeighborhoodIds = next.selectedNeighbourhoodId != null
+              ? List<int>.from(next.selectedNeighbourhoodId!)
+              : [];
+          if (next.selectedNeighbourhoodId == null &&
+              next.selectedShoppingAreaId == null &&
+              expectedIds.isEmpty) {
+            _currentSelectionType = FilterSelectionType.none;
+          }
+        });
+      }
+    });
+
     if (!widget.mayLoad) {
       return const SizedBox.shrink();
     }
