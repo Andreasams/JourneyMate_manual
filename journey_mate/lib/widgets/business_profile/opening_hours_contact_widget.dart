@@ -533,7 +533,7 @@ class _OpeningHoursContactWidgetState
         Text(
           hoursText,
           style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.accent,
+            color: AppColors.textPrimary,
           ),
         ),
         Text(
