@@ -318,7 +318,7 @@ class _SearchResultsListViewState
       child: ListView.separated(
         controller: _listScrollController,
         primary: false,
-        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.xxxl), // 16px top per JSX
+        padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.xxxl), // 12px top per spacing system
         itemCount: itemCount,
         separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
         itemBuilder: (context, index) {
@@ -600,7 +600,7 @@ class _SearchResultsListViewState
       child: ListView(
         controller: _listScrollController,
         primary: false,
-        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.xxxl),
+        padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.xxxl), // 12px top per spacing system
         children: items,
       ),
     );
