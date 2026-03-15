@@ -220,18 +220,20 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
       return _buildEmptyState();
     }
 
-    return Container(
-      color: Colors.black, // Fullscreen gallery backdrop
-      child: Stack(
-        children: [
-          // Main content (PageView or single image)
-          widget.imageUrls.length == 1
-              ? _buildSingleImageView()
-              : _buildMultiImageView(),
+    return SizedBox.expand(
+      child: Container(
+        color: Colors.black, // Fullscreen gallery backdrop
+        child: Stack(
+          children: [
+            // Main content (PageView or single image)
+            widget.imageUrls.length == 1
+                ? _buildSingleImageView()
+                : _buildMultiImageView(),
 
-          // Close button (top-left)
-          _buildCloseButton(),
-        ],
+            // Close button (top-left)
+            _buildCloseButton(),
+          ],
+        ),
       ),
     );
   }
