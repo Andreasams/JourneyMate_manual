@@ -94,6 +94,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       // Reset dietary filters so each business visit starts fresh
       ref.read(businessProvider.notifier).clearDietaryFilters();
 
+      // Initialize menu session with fresh counters
+      ref.read(analyticsProvider.notifier).startMenuSession();
+
       _trackMenuSessionStart();
       _loadCachedPreview();
       _loadBusinessData();
@@ -262,6 +265,8 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     if (businessIdInt == null) return;
     _menuSessionStarted = true;
     final analyticsState = ref.read(analyticsProvider);
+    final menuData = analyticsState.menuSessionData;
+
     ApiService.instance.postAnalytics(
       eventType: 'menu_session_started',
       deviceId: analyticsState.deviceId,
@@ -271,6 +276,7 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       eventData: {
         'business_id': businessIdInt,
         'menu_context': 'profile_tab',
+        'menu_session_id': menuData?.menuSessionId ?? '',
       },
     );
   }
@@ -295,19 +301,64 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         },
       );
 
-      // Track menu session end (only if session was started)
+      // Track menu session end with full engagement data
       if (_menuSessionStarted) {
-        ApiService.instance.postAnalytics(
-          eventType: 'menu_session_ended',
-          deviceId: _cachedDeviceId,
-          sessionId: _cachedSessionId,
-          userId: '',
-          timestamp: DateTime.now().toIso8601String(),
-          eventData: {
-            'session_duration_seconds': duration.inSeconds,
-            'business_id': businessIdInt,
-          },
-        );
+        final menuData = ref.read(analyticsProvider).menuSessionData;
+        if (menuData != null) {
+          // Compute derived metrics
+          final totalInteractions = menuData.itemClicks +
+                                   menuData.packageClicks +
+                                   menuData.filterInteractions;
+          final avgResultCount = menuData.filterResultHistory.isEmpty
+              ? 0
+              : (menuData.filterResultHistory.reduce((a, b) => a + b) /
+                 menuData.filterResultHistory.length).round();
+          // Check if any dietary filters are active
+          final businessState = ref.read(businessProvider);
+          final filtersActiveAtEnd =
+              businessState.selectedDietaryRestrictionIds.isNotEmpty ||
+              businessState.selectedDietaryPreferenceId != null ||
+              businessState.excludedAllergyIds.isNotEmpty;
+
+          // Filter engagement score (ground truth formula from FlutterFlow end_menu_session.dart)
+          // +10 per interaction, -15 per reset, -5 per zero-result, clamped 0-100
+          final filterEngagementScore = menuData.filterInteractions == 0
+              ? 0
+              : ((menuData.filterInteractions * 10) -
+                 (menuData.filterResets * 15) -
+                 (menuData.zeroResultCount * 5))
+                .clamp(0, 100);
+
+          ApiService.instance.postAnalytics(
+            eventType: 'menu_session_ended',
+            deviceId: _cachedDeviceId,
+            sessionId: _cachedSessionId,
+            userId: '',
+            timestamp: DateTime.now().toIso8601String(),
+            eventData: {
+              'menu_session_id': menuData.menuSessionId,
+              'menu_context': 'profile_tab',
+              'business_id': businessIdInt,
+              'session_duration_seconds': duration.inSeconds,
+              'items_clicked': menuData.itemClicks,
+              'packages_clicked': menuData.packageClicks,
+              'categories_viewed': menuData.categoriesViewed.length,
+              'deepest_scroll_percent': menuData.deepestScrollPercent,
+              'filter_interactions': menuData.filterInteractions,
+              'filter_resets': menuData.filterResets,
+              'ever_had_filters_active': menuData.everHadFiltersActive,
+              'filters_active_at_end': filtersActiveAtEnd,
+              'zero_result_count': menuData.zeroResultCount,
+              'low_result_count': menuData.lowResultCount,
+              'avg_result_count': avgResultCount,
+              'total_interactions': totalInteractions,
+              'filter_engagement_score': filterEngagementScore,
+            },
+          );
+
+          // Clear menu session state to prevent bleed into next visit
+          ref.read(analyticsProvider.notifier).clearMenuSession();
+        }
       }
     }
     super.dispose();

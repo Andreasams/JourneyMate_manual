@@ -123,6 +123,19 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
     );
   }
 
+  /// Start a new menu session with fresh counters
+  void startMenuSession() {
+    final menuSessionId = const Uuid().v4();
+    state = state.copyWith(
+      menuSessionData: MenuSessionData.initial(menuSessionId),
+    );
+  }
+
+  /// Clear menu session data (call after sending menu_session_ended)
+  void clearMenuSession() {
+    state = state.copyWithNullable(clearMenuSession: true);
+  }
+
   // ============================================================
   // MENU SESSION TRACKING (11 fields)
   // ============================================================
