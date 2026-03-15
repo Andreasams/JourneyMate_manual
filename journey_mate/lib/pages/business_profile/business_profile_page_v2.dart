@@ -4,7 +4,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../../providers/app_providers.dart';
 import '../../providers/business_providers.dart';
@@ -386,7 +385,8 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // 6. Gallery — prop-based widget with caller-provided padding.
         SliverToBoxAdapter(
           child: !_isApiLoaded
-              ? _buildSectionShimmer(titleWidth: 80, contentHeight: 120)
+              ? _buildSectionShimmer(
+                  RestaurantShimmerWidget.buildGallerySectionContent())
               : _buildGallerySection(),
         ),
 
@@ -395,7 +395,8 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // 7. Menu (category chips + inline filter panel + items list)
         SliverToBoxAdapter(
           child: !_isApiLoaded
-              ? _buildSectionShimmer(titleWidth: 100, contentHeight: 160)
+              ? _buildSectionShimmer(
+                  RestaurantShimmerWidget.buildMenuSectionContent())
               : _menuLoadFailed
                   ? _buildMenuErrorWidget()
                   : Padding(
@@ -413,7 +414,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // 8. Facilities & Services
         SliverToBoxAdapter(
           child: !_isApiLoaded
-              ? _buildSectionShimmer(titleWidth: 140, contentHeight: 80)
+              ? _buildSectionShimmer(
+                  RestaurantShimmerWidget.buildGenericSectionContent(
+                      titleWidth: 140, contentHeight: 80))
               : _buildFacilitiesSection(),
         ),
 
@@ -422,7 +425,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         // 9. Payment Options
         SliverToBoxAdapter(
           child: !_isApiLoaded
-              ? _buildSectionShimmer(titleWidth: 120, contentHeight: 60)
+              ? _buildSectionShimmer(
+                  RestaurantShimmerWidget.buildGenericSectionContent(
+                      titleWidth: 120, contentHeight: 60))
               : _buildPaymentsSection(),
         ),
 
@@ -430,7 +435,9 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         if (!_isApiLoaded) ...[
           _sectionDivider,
           SliverToBoxAdapter(
-            child: _buildSectionShimmer(titleWidth: 60, contentHeight: 60),
+            child: _buildSectionShimmer(
+                RestaurantShimmerWidget.buildGenericSectionContent(
+                    titleWidth: 60, contentHeight: 60)),
           ),
           _sectionDivider,
         ] else if (_hasAboutContent) ...[
@@ -453,41 +460,11 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         child: SizedBox(height: AppSpacing.xxl),
       );
 
-  /// Shimmer placeholder for a single section while API data loads.
-  /// Shows a title bar + content block matching section visual rhythm.
-  Widget _buildSectionShimmer({
-    required double titleWidth,
-    double titleHeight = 20.0,
-    double contentHeight = 80.0,
-  }) {
+  /// Wraps shimmer section content in a single Shimmer animation + padding.
+  Widget _buildSectionShimmer(Widget content) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Shimmer.fromColors(
-        baseColor: AppColors.bgSurface,
-        highlightColor: AppColors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: titleWidth,
-              height: titleHeight,
-              decoration: BoxDecoration(
-                color: AppColors.bgInput,
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Container(
-              width: double.infinity,
-              height: contentHeight,
-              decoration: BoxDecoration(
-                color: AppColors.bgInput,
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: RestaurantShimmerWidget.wrapWithShimmer(child: content),
     );
   }
 

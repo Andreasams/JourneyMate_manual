@@ -5,18 +5,21 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 
-/// A shimmer loading placeholder for restaurant detail pages.
+/// A shimmer loading placeholder for the business profile page.
 ///
-/// Displays animated skeleton loading states for:
-/// - Restaurant logo and info section
-/// - OK line indicator
-/// - Gallery title and tabs
-/// - Gallery image grid
-/// - Menu section with category buttons
+/// Mirrors the actual page layout:
+/// 1. Hero section (64×64 logo + name + 3 info rows) in a SectionCard
+/// 2. Quick action pills (4 horizontal pill buttons)
+/// 3. Opening hours placeholder card
+/// 4. Gallery section (title + 4 tabs + 4-image grid)
+/// 5. Menu section (title + 3 pill buttons)
 ///
-/// This widget uses the shimmer package to create a smooth loading animation
-/// that guides users' attention while content is being fetched.
-class RestaurantShimmerWidget extends StatefulWidget {
+/// Section content builders are exposed as static methods so the business
+/// profile page can reuse them for per-section loading states, ensuring
+/// identical appearance between full-page and per-section shimmer.
+///
+/// Call [wrapWithShimmer] to add the Shimmer.fromColors animation wrapper.
+class RestaurantShimmerWidget extends StatelessWidget {
   const RestaurantShimmerWidget({
     super.key,
     this.width,
@@ -26,324 +29,255 @@ class RestaurantShimmerWidget extends StatefulWidget {
   final double? width;
   final double? height;
 
-  @override
-  State<RestaurantShimmerWidget> createState() =>
-      _RestaurantShimmerWidgetState();
-}
-
-class _RestaurantShimmerWidgetState extends State<RestaurantShimmerWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
   // =========================================================================
-  // CONSTANTS
+  // SHARED CONSTANTS — used by both full-page and per-section shimmers
   // =========================================================================
 
-  /// Shimmer animation colors — grey base sweeps to white for visible animation
-  static const Color _baseColor = AppColors.border;
-  static const Color _highlightColor = AppColors.white;
-  static const Color _placeholderColor = AppColors.border;
-
-  /// Layout constants
-  static const double _containerPadding = AppSpacing.lg;
-  static const double _defaultBorderRadius = AppRadius.chip;
-
-  /// Logo section dimensions
-  static const double _logoSize = 107.0;
-  static const double _logoToInfoSpacing = AppSpacing.sm;
-  static const double _infoItemSpacing = AppSpacing.sm;
-
-  /// Restaurant info placeholder dimensions
-  static const double _restaurantNameWidth = 200.0;
-  static const double _restaurantNameHeight = 24.0;
-  static const double _infoLineHeight = 16.0;
-  static const double _cuisineWidth = 150.0;
-  static const double _addressWidth = 180.0;
-  static const double _contactWidth = 160.0;
-
-  /// Section spacing
-  static const double _logoToOkLineSpacing = AppSpacing.lg;
-  static const double _okLineToGallerySpacing = AppSpacing.xxl;
-  static const double _galleryTitleToTabsSpacing = AppSpacing.lg;
-  static const double _tabsToImagesSpacing = AppSpacing.lg;
-  static const double _galleryToMenuSpacing = AppSpacing.xxl;
-  static const double _menuTitleToButtonsSpacing = AppSpacing.lg;
-
-  /// OK line dimensions
-  static const double _okLineWidth = 120.0;
-  static const double _okLineHeight = 16.0;
-
-  /// Gallery section dimensions
-  static const double _galleryTitleWidth = 80.0;
-  static const double _galleryTitleHeight = 20.0;
-  static const int _galleryTabCount = 4;
-  static const double _galleryTabWidth = 80.0;
-  static const double _galleryTabHeight = 32.0;
-  static const double _galleryTabBorderRadius = AppRadius.card;
-  static const double _galleryTabSpacing = AppSpacing.sm;
-  static const double _galleryImageHeight = 100.0;
-  static const int _galleryImageCount = 4;
-  static const double _galleryImageSpacing = AppSpacing.sm;
-
-  /// Menu section dimensions
-  static const double _menuTitleWidth = 100.0;
-  static const double _menuTitleHeight = 20.0;
-  static const int _menuButtonCount = 3;
-  static const double _menuButtonWidth = 100.0;
-  static const double _menuButtonHeight = 36.0;
-  static const double _menuButtonBorderRadius = 18.0;
-  static const double _menuButtonSpacing = AppSpacing.sm;
+  static const Color baseColor = AppColors.border;
+  static const Color highlightColor = AppColors.white;
+  static const Color placeholderColor = AppColors.border;
 
   // =========================================================================
-  // LIFECYCLE
+  // SHIMMER WRAPPER — shared by section shimmers on business profile page
   // =========================================================================
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  /// Wraps [child] in a single Shimmer.fromColors with the shared palette.
+  /// Used by business_profile_page_v2.dart to wrap multiple section shimmers
+  /// in one animation (synchronized sweep, single ticker).
+  static Widget wrapWithShimmer({required Widget child}) {
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: child,
+    );
   }
 
   // =========================================================================
-  // UI BUILDERS - MAIN LAYOUT
+  // STATIC SECTION CONTENT BUILDERS — reused by business_profile_page_v2.dart
+  // =========================================================================
+
+  /// Gallery section content: title + 4 category tabs + 4-image grid.
+  /// Returns bare content — caller wraps in [wrapWithShimmer] + Padding.
+  static Widget buildGallerySectionContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _staticPlaceholder(width: 80, height: 20),
+        const SizedBox(height: AppSpacing.lg),
+        Row(
+          children: List.generate(4, (index) {
+            return Container(
+              margin:
+                  EdgeInsets.only(right: index == 3 ? 0 : AppSpacing.sm),
+              width: 80,
+              height: 32,
+              decoration: BoxDecoration(
+                color: placeholderColor,
+                borderRadius: BorderRadius.circular(AppRadius.card),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        SizedBox(
+          height: 100,
+          child: Row(
+            children: List.generate(4, (index) {
+              return Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(
+                      right: index == 3 ? 0 : AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: placeholderColor,
+                    borderRadius: BorderRadius.circular(AppRadius.chip),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Menu section content: title + 3 pill-shaped buttons.
+  /// Returns bare content — caller wraps in [wrapWithShimmer] + Padding.
+  static Widget buildMenuSectionContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _staticPlaceholder(width: 100, height: 20),
+        const SizedBox(height: AppSpacing.lg),
+        Row(
+          children: List.generate(3, (index) {
+            return Container(
+              margin:
+                  EdgeInsets.only(right: index == 2 ? 0 : AppSpacing.sm),
+              width: 100,
+              height: 36,
+              decoration: BoxDecoration(
+                color: placeholderColor,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  /// Generic section content: title bar + content block.
+  /// Used for facilities, payments, about sections.
+  /// Returns bare content — caller wraps in [wrapWithShimmer] + Padding.
+  static Widget buildGenericSectionContent({
+    required double titleWidth,
+    double titleHeight = 20.0,
+    double contentHeight = 80.0,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _staticPlaceholder(width: titleWidth, height: titleHeight),
+        const SizedBox(height: AppSpacing.sm),
+        Container(
+          width: double.infinity,
+          height: contentHeight,
+          decoration: BoxDecoration(
+            color: placeholderColor,
+            borderRadius: BorderRadius.circular(AppRadius.chip),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Shared placeholder builder.
+  static Widget _staticPlaceholder(
+      {required double width, required double height}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: placeholderColor,
+        borderRadius: BorderRadius.circular(AppRadius.chip),
+      ),
+    );
+  }
+
+  // =========================================================================
+  // FULL-PAGE SHIMMER BUILD
   // =========================================================================
 
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: _baseColor,
-      highlightColor: _highlightColor,
-      child: _buildMainContainer(),
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.lg,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeroCard(),
+              const SizedBox(height: AppSpacing.md),
+              _buildQuickActionPills(),
+              const SizedBox(height: AppSpacing.md),
+              _buildOpeningHoursCard(),
+              const SizedBox(height: AppSpacing.xxl),
+              // Reuse shared gallery/menu content builders (no duplication)
+              buildGallerySectionContent(),
+              const SizedBox(height: AppSpacing.xxl),
+              buildMenuSectionContent(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  /// Builds the main container with padding
-  Widget _buildMainContainer() {
+  // =========================================================================
+  // FULL-PAGE ONLY SECTIONS (hero, pills, hours — not needed per-section)
+  // =========================================================================
+
+  Widget _buildHeroCard() {
     return Container(
-      width: widget.width ?? double.infinity,
-      padding: const EdgeInsets.all(_containerPadding),
-      child: Column(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLogoAndInfoSection(),
-          const SizedBox(height: _logoToOkLineSpacing),
-          _buildOkLine(),
-          const SizedBox(height: _okLineToGallerySpacing),
-          _buildGallerySection(),
-          const SizedBox(height: _galleryToMenuSpacing),
-          _buildMenuSection(),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: placeholderColor,
+              borderRadius: BorderRadius.circular(AppRadius.logoLarge),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _staticPlaceholder(width: 160, height: 20),
+                const SizedBox(height: AppSpacing.xs),
+                _staticPlaceholder(width: 120, height: 14),
+                const SizedBox(height: AppSpacing.xxs),
+                _staticPlaceholder(width: 180, height: 14),
+                const SizedBox(height: AppSpacing.xxs),
+                _staticPlaceholder(width: 140, height: 14),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // =========================================================================
-  // UI BUILDERS - LOGO & INFO SECTION
-  // =========================================================================
-
-  /// Builds the restaurant logo and info section
-  Widget _buildLogoAndInfoSection() {
+  Widget _buildQuickActionPills() {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildLogoPlaceholder(),
-        const SizedBox(width: _logoToInfoSpacing),
-        _buildRestaurantInfoColumn(),
-      ],
+      children: List.generate(4, (index) {
+        return Container(
+          margin: EdgeInsets.only(right: index == 3 ? 0 : AppSpacing.sm),
+          width: 80,
+          height: 36,
+          decoration: BoxDecoration(
+            color: placeholderColor,
+            borderRadius: BorderRadius.circular(AppRadius.filter),
+          ),
+        );
+      }),
     );
   }
 
-  /// Builds the restaurant logo placeholder
-  Widget _buildLogoPlaceholder() {
+  Widget _buildOpeningHoursCard() {
     return Container(
-      width: _logoSize,
-      height: _logoSize,
+      width: double.infinity,
+      height: 60,
       decoration: BoxDecoration(
-        color: _placeholderColor,
-        borderRadius: BorderRadius.circular(_defaultBorderRadius),
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.border, width: 1.5),
       ),
-    );
-  }
-
-  /// Builds the restaurant info column
-  Widget _buildRestaurantInfoColumn() {
-    return Expanded(
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildPlaceholder(
-              width: _restaurantNameWidth, height: _restaurantNameHeight),
-          const SizedBox(height: _infoItemSpacing),
-          _buildPlaceholder(width: _cuisineWidth, height: _infoLineHeight),
-          const SizedBox(height: _infoItemSpacing),
-          _buildPlaceholder(width: _addressWidth, height: _infoLineHeight),
-          const SizedBox(height: _infoItemSpacing),
-          _buildPlaceholder(width: _contactWidth, height: _infoLineHeight),
+          _staticPlaceholder(width: 100, height: 14),
+          const SizedBox(height: AppSpacing.xs),
+          _staticPlaceholder(width: 180, height: 12),
         ],
       ),
-    );
-  }
-
-  // =========================================================================
-  // UI BUILDERS - OK LINE
-  // =========================================================================
-
-  /// Builds the OK line placeholder
-  Widget _buildOkLine() {
-    return _buildPlaceholder(width: _okLineWidth, height: _okLineHeight);
-  }
-
-  // =========================================================================
-  // UI BUILDERS - GALLERY SECTION
-  // =========================================================================
-
-  /// Builds the complete gallery section
-  Widget _buildGallerySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildGalleryTitle(),
-        const SizedBox(height: _galleryTitleToTabsSpacing),
-        _buildGallerySectionTitle(),
-        const SizedBox(height: _galleryTitleToTabsSpacing),
-        _buildGalleryTabs(),
-        const SizedBox(height: _tabsToImagesSpacing),
-        _buildGalleryImageGrid(),
-      ],
-    );
-  }
-
-  /// Builds the gallery title placeholder
-  Widget _buildGalleryTitle() {
-    return _buildPlaceholder(
-        width: _galleryTitleWidth, height: _galleryTitleHeight);
-  }
-
-  /// Builds the gallery section title placeholder
-  Widget _buildGallerySectionTitle() {
-    return _buildPlaceholder(
-        width: _galleryTitleWidth, height: _galleryTitleHeight);
-  }
-
-  /// Builds the horizontal scrolling gallery tab buttons
-  Widget _buildGalleryTabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: List.generate(
-          _galleryTabCount,
-          (index) => _buildGalleryTab(index),
-        ),
-      ),
-    );
-  }
-
-  /// Builds a single gallery tab placeholder
-  Widget _buildGalleryTab(int index) {
-    return Container(
-      margin: const EdgeInsets.only(right: _galleryTabSpacing),
-      width: _galleryTabWidth,
-      height: _galleryTabHeight,
-      decoration: BoxDecoration(
-        color: _placeholderColor,
-        borderRadius: BorderRadius.circular(_galleryTabBorderRadius),
-      ),
-    );
-  }
-
-  /// Builds the gallery image grid
-  Widget _buildGalleryImageGrid() {
-    return SizedBox(
-      height: _galleryImageHeight,
-      child: Row(
-        children: List.generate(
-          _galleryImageCount,
-          (index) => _buildGalleryImagePlaceholder(index),
-        ),
-      ),
-    );
-  }
-
-  /// Builds a single gallery image placeholder
-  Widget _buildGalleryImagePlaceholder(int index) {
-    final isLastItem = index == _galleryImageCount - 1;
-
-    return Expanded(
-      child: Container(
-        margin: EdgeInsets.only(right: isLastItem ? 0 : _galleryImageSpacing),
-        decoration: BoxDecoration(
-          color: _placeholderColor,
-          borderRadius: BorderRadius.circular(_defaultBorderRadius),
-        ),
-      ),
-    );
-  }
-
-  // =========================================================================
-  // UI BUILDERS - MENU SECTION
-  // =========================================================================
-
-  /// Builds the complete menu section
-  Widget _buildMenuSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildMenuTitle(),
-        const SizedBox(height: _menuTitleToButtonsSpacing),
-        _buildMenuButtons(),
-      ],
-    );
-  }
-
-  /// Builds the menu title placeholder
-  Widget _buildMenuTitle() {
-    return _buildPlaceholder(width: _menuTitleWidth, height: _menuTitleHeight);
-  }
-
-  /// Builds the row of menu category button placeholders
-  Widget _buildMenuButtons() {
-    return Row(
-      children: List.generate(
-        _menuButtonCount,
-        (index) => _buildMenuButton(index),
-      ),
-    );
-  }
-
-  /// Builds a single menu button placeholder
-  Widget _buildMenuButton(int index) {
-    final isLastItem = index == _menuButtonCount - 1;
-
-    return Container(
-      margin: EdgeInsets.only(right: isLastItem ? 0 : _menuButtonSpacing),
-      width: _menuButtonWidth,
-      height: _menuButtonHeight,
-      decoration: BoxDecoration(
-        color: _placeholderColor,
-        borderRadius: BorderRadius.circular(_menuButtonBorderRadius),
-      ),
-    );
-  }
-
-  // =========================================================================
-  // HELPER BUILDERS
-  // =========================================================================
-
-  /// Builds a generic rectangular placeholder with specified dimensions
-  Widget _buildPlaceholder({required double width, required double height}) {
-    return Container(
-      width: width,
-      height: height,
-      color: _placeholderColor,
     );
   }
 }
