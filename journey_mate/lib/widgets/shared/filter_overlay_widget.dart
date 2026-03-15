@@ -1247,6 +1247,10 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
           _selectedNeighborhoodIds = next.selectedNeighbourhoodId != null
               ? List<int>.from(next.selectedNeighbourhoodId!)
               : [];
+          // Clear expanded searchable parent (mirrors _handleReset logic)
+          if (selectedItemId != null && _isSearchableParentItem(selectedItemId!)) {
+            selectedItemId = null;
+          }
           if (next.selectedNeighbourhoodId == null &&
               next.selectedShoppingAreaId == null &&
               expectedIds.isEmpty) {
