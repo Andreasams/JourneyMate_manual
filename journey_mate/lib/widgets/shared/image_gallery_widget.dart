@@ -259,27 +259,29 @@ class _ImageGalleryWidgetState extends ConsumerState<ImageGalleryWidget> {
 
   /// Builds the single image view with horizontal drag bounce effect
   Widget _buildSingleImageView() {
-    return GestureDetector(
-      onPanUpdate: (details) {
-        setState(() {
-          // CRITICAL: Accumulate delta (don't replace), clamp to ±100px
-          _currentOffset = Offset(
-            (_currentOffset.dx + details.delta.dx).clamp(-100.0, 100.0),
-            0.0,
-          );
-        });
-      },
-      onPanEnd: (details) {
-        setState(() {
-          // Reset to center (AnimatedContainer will animate)
-          _currentOffset = Offset.zero;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-        transform: Matrix4.translationValues(_currentOffset.dx, 0.0, 0.0),
-        child: _buildImageContainer(widget.imageUrls[_currentImageIndex]),
+    return SizedBox.expand(
+      child: GestureDetector(
+        onPanUpdate: (details) {
+          setState(() {
+            // CRITICAL: Accumulate delta (don't replace), clamp to ±100px
+            _currentOffset = Offset(
+              (_currentOffset.dx + details.delta.dx).clamp(-100.0, 100.0),
+              0.0,
+            );
+          });
+        },
+        onPanEnd: (details) {
+          setState(() {
+            // Reset to center (AnimatedContainer will animate)
+            _currentOffset = Offset.zero;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+          transform: Matrix4.translationValues(_currentOffset.dx, 0.0, 0.0),
+          child: _buildImageContainer(widget.imageUrls[_currentImageIndex]),
+        ),
       ),
     );
   }
