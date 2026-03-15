@@ -1467,11 +1467,23 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       final filterId = filter['id'] as int;
       final hasSubitems = _getSubItems(filterId).isNotEmpty;
       if (hasSubitems && !_isSearchableParentItem(filterId)) {
-        final anySubSelected = _getSubItems(filterId).any(
-          (sub) => _selectedFilterIds.contains(sub['id'] as int),
-        );
-        if (!anySubSelected) {
-          showCheckIcon = false;
+        // For neighbourhood parents: show checkmark only if parent itself is selected
+        // (i.e., in _selectedNeighborhoodIds). When a child is selected, parent is removed
+        // from the API list, so we show solid orange instead of checkmark.
+        final category = filter['category'] as int?;
+        if (category == 1) {
+          // Neighbourhood parent: check if parent is actively selected
+          if (!_selectedNeighborhoodIds.contains(filterId)) {
+            showCheckIcon = false;
+          }
+        } else {
+          // Other non-searchable parents: show checkmark only if any child is selected
+          final anySubSelected = _getSubItems(filterId).any(
+            (sub) => _selectedFilterIds.contains(sub['id'] as int),
+          );
+          if (!anySubSelected) {
+            showCheckIcon = false;
+          }
         }
       }
     }
