@@ -532,8 +532,8 @@ class _OpeningHoursContactWidgetState
       children: [
         Text(
           hoursText,
-          style: AppTypography.bodyHeavy.copyWith(
-            color: AppColors.textSecondary,
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.primary,
           ),
         ),
         Text(
