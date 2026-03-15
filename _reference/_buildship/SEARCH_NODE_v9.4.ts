@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * JOURNEYMATE — TYPESENSE SEARCH NODE (v9.3)
+ * JOURNEYMATE — TYPESENSE SEARCH NODE (v9.4)
  * =============================================================================
  *
  * WHAT IT DOES
@@ -38,6 +38,13 @@
  *                        only exists on partial/other restaurants.
  *   resultCount        — Total Typesense matches (pre open-now filtering).
  *   fullMatchCount     — Global count of restaurants matching ALL scoring filters.
+ *   onlyOpenCount      — Count of open restaurants found across all over-fetch rounds.
+ *                        Only populated when onlyOpen=true; 0 otherwise.
+ *                        NOTE: This is a lower-bound count, not an absolute global
+ *                        total. It reflects only the restaurants seen within the
+ *                        over-fetch window (max 5 rounds × chunk size, up to 300
+ *                        documents). If open restaurants are sparse and spread beyond
+ *                        the fetch window, the true total may be higher.
  *   pagination         — { currentPage, totalPages, totalResults, hasMore }
  *
  * DISTANCE FIELDS (v9.3)
@@ -131,6 +138,12 @@
  *
  * =============================================================================
  * CHANGELOG
+ *   v9.4 — Added onlyOpenCount to NodeOutput. When onlyOpen=true, tracks the
+ *          cumulative count of open restaurants found across all over-fetch
+ *          rounds, independently of pagination skip/collect logic. This gives
+ *          the Flutter client a count of open restaurants without requiring a
+ *          separate query. onlyOpenCount is a lower-bound (capped by the
+ *          over-fetch window of max 300 documents); 0 when onlyOpen=false.
  *   v9.3 — Added precomputed distance fields (distanceFromUser, distanceFromStation)
  *          to each document. Haversine calculation moved from Flutter client to node,
  *          eliminating per-card recomputation on widget rebuilds. Enables showing
@@ -293,6 +306,16 @@ interface NodeOutput {
   activeids: number[];
   resultCount: number;
   fullMatchCount: number;
+  /**
+   * Count of open restaurants found across all over-fetch rounds.
+   * Only populated when onlyOpen=true; always 0 otherwise.
+   *
+   * Lower-bound: reflects only what was seen within the over-fetch window
+   * (max 5 rounds × chunk size, up to 300 documents). If open restaurants
+   * are sparse and spread beyond the fetch window, the true global total
+   * may be higher than this value.
+   */
+  onlyOpenCount: number;
   pagination: PaginationResult;
 }
 
@@ -758,7 +781,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
       if (!searchResults.hits || !Array.isArray(searchResults.hits)) {
         return {
           documents: [], scoringFilterIds: deduplicateParentChildCombos(scoringFilters).logicalFilters, activeids: [],
-          resultCount: 0, fullMatchCount: 0, pagination: emptyPagination,
+          resultCount: 0, fullMatchCount: 0, onlyOpenCount: 0, pagination: emptyPagination,
         };
       }
 
@@ -790,6 +813,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
         activeids,
         resultCount: totalResultsFromTypesense,
         fullMatchCount,
+        onlyOpenCount: 0,
         pagination: {
           currentPage: page,
           totalPages,
@@ -808,6 +832,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
       let tsPage = 1;
       let tsFound = 0;
       let facetActiveids: number[] = [];
+      let onlyOpenCount = 0; // cumulative open count across all rounds (lower-bound)
 
       const nowCph = new Date(
         new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' })
@@ -846,6 +871,9 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
           );
         });
 
+        // Accumulate total open count across all rounds, independent of pagination
+        onlyOpenCount += openChunk.length;
+
         for (const doc of openChunk) {
           if (skipped < skipTarget) {
             skipped++;
@@ -874,7 +902,8 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
       fullMatchCount = fullMatchData.fullMatchCount;
       activeids = fullMatchData.activeids;
 
-      const hasMore = documents.length >= collectTarget && tsPage <= Math.ceil(tsFound / Math.min(pageSize * OVERFETCH_MULTIPLIER, 250));
+      const hasMore = documents.length >= collectTarget && tsPage <= Math.ceil(tsFound / Math.min(pageSize *
+        OVERFETCH_MULTIPLIER, 250));
 
       return {
         documents,
@@ -882,6 +911,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
         activeids,
         resultCount: totalResultsFromTypesense,
         fullMatchCount,
+        onlyOpenCount,
         pagination: {
           currentPage: page,
           totalPages: -1,
@@ -895,7 +925,7 @@ export default async function optimizedTypesenseSearch(params: SearchParams): Pr
     console.error('Typesense search error:', error);
     return {
       documents: [], scoringFilterIds: deduplicateParentChildCombos(scoringFilters).logicalFilters, activeids: [],
-      resultCount: 0, fullMatchCount: 0, pagination: emptyPagination,
+      resultCount: 0, fullMatchCount: 0, onlyOpenCount: 0, pagination: emptyPagination,
     };
   }
 }
