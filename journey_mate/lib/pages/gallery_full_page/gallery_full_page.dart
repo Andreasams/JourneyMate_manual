@@ -137,7 +137,10 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
     }
 
     return Padding(
-      padding: EdgeInsets.all(AppSpacing.xl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xl,
+      ),
       child: Column(
         children: [
           Expanded(

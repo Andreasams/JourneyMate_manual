@@ -372,7 +372,7 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
 
     // Full-page mode: tab bar + expanded PageView
     return Container(
-      color: AppColors.bgPage,
+      color: AppColors.bgCard,
       child: Column(
         children: [
           _buildTabBarContainer(),
@@ -389,8 +389,7 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
   Widget _buildTabBarContainer() {
     return Container(
       margin: const EdgeInsets.only(bottom: _tabBarBottomMargin),
-      // Inline mode inherits white from SectionCard; full-page needs bgPage.
-      color: widget.limitToEightImages ? AppColors.bgCard : AppColors.bgPage,
+      color: AppColors.bgCard,
       child: _buildFixedTabBar(),
     );
   }

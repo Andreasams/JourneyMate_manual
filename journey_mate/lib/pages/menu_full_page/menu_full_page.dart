@@ -132,9 +132,9 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
     // Data available — render shared menu section
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        AppSpacing.xxl,
         AppSpacing.md,
-        AppSpacing.xxl,
+        AppSpacing.md,
+        AppSpacing.md,
         0,
       ),
       child: Column(
