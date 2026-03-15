@@ -538,8 +538,8 @@ class _OpeningHoursContactWidgetState
         ),
         Text(
           cutoffText,
-          style: AppTypography.bodyExtraHeavy.copyWith(
-            color: AppColors.textTertiary,
+          style: AppTypography.bodyHeavy.copyWith(
+            color: AppColors.textSecondary,
           ),
         ),
       ],
