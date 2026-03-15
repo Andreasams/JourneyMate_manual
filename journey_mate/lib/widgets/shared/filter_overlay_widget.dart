@@ -1324,6 +1324,13 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
   }
 
   Widget _buildFooter() {
+    // German, Dutch, and Ukrainian have longer "View N results" translations
+    // (22-23 chars vs ~16-18 for most languages) that wrap without extra space.
+    // Give the results button a larger flex share for those languages.
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final needsWiderResultsButton =
+        const {'de', 'nl', 'uk'}.contains(languageCode);
+
     return Container(
       padding: EdgeInsets.only(
         top: 4,
@@ -1331,9 +1338,15 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
       ),
       child: Row(
         children: [
-          Expanded(child: _buildViewResultsButton()),
+          Expanded(
+            flex: needsWiderResultsButton ? 3 : 1,
+            child: _buildViewResultsButton(),
+          ),
           const SizedBox(width: 6),
-          Expanded(child: _buildResetButton()),
+          Expanded(
+            flex: needsWiderResultsButton ? 2 : 1,
+            child: _buildResetButton(),
+          ),
         ],
       ),
     );
