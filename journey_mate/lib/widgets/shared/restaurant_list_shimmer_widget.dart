@@ -40,7 +40,7 @@ class RestaurantListShimmerWidget extends StatelessWidget {
             bottom: AppSpacing.mlg,
           ),
           itemCount: _shimmerItemCount,
-          itemBuilder: (_, index) => ShimmerCardWidget(index: index),
+          itemBuilder: (_, index) => const ShimmerCardWidget(),
         ),
       ),
     );

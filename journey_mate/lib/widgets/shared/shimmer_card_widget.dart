@@ -4,18 +4,12 @@ import 'package:journey_mate/theme/app_radius.dart';
 import 'package:journey_mate/theme/app_spacing.dart';
 
 class ShimmerCardWidget extends StatelessWidget {
-  final int index;
-
   const ShimmerCardWidget({
-    required this.index,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Vary line widths based on index for visual balance
-    final widths = [0.7, 0.5, 0.4]; // 70%, 50%, 40%
-
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: AppSpacing.mlg,
@@ -45,39 +39,44 @@ class ShimmerCardWidget extends StatelessWidget {
           SizedBox(width: AppSpacing.mlg),
           // Text content area
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Line 1: Name (70% width)
-                Container(
-                  height: 14,
-                  width: MediaQuery.of(context).size.width * widths[0] * 0.6,
-                  decoration: BoxDecoration(
-                    color: AppColors.border.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xxs),
-                // Line 2: Status (50% width)
-                Container(
-                  height: 12,
-                  width: MediaQuery.of(context).size.width * widths[1] * 0.6,
-                  decoration: BoxDecoration(
-                    color: AppColors.border.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xxs),
-                // Line 3: Details (40% width)
-                Container(
-                  height: 12,
-                  width: MediaQuery.of(context).size.width * widths[2] * 0.6,
-                  decoration: BoxDecoration(
-                    color: AppColors.border.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final availableWidth = constraints.maxWidth;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Line 1: Name (70% width)
+                    Container(
+                      height: 14,
+                      width: availableWidth * 0.7,
+                      decoration: BoxDecoration(
+                        color: AppColors.border.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.xxs),
+                    // Line 2: Status (50% width)
+                    Container(
+                      height: 12,
+                      width: availableWidth * 0.5,
+                      decoration: BoxDecoration(
+                        color: AppColors.border.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.xxs),
+                    // Line 3: Details (40% width)
+                    Container(
+                      height: 12,
+                      width: availableWidth * 0.4,
+                      decoration: BoxDecoration(
+                        color: AppColors.border.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],
