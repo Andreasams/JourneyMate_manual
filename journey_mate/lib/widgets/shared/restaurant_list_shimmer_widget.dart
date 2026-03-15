@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../theme/app_colors.dart';
 import '../../theme/app_constants.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
@@ -9,8 +8,9 @@ import 'restaurant_shimmer_widget.dart';
 
 /// A shimmer loading placeholder for restaurant list items.
 ///
-/// Displays animated skeleton cards matching the layout of [_BusinessListItem]:
-/// - Card with border and rounded corners
+/// Displays animated skeleton content matching the inner layout of
+/// [_BusinessListItem] — without the card border/background, so the shimmer
+/// elements sit directly on the page background:
 /// - 50×50 logo placeholder with 12px border radius
 /// - 3 info lines: name, status, details (with 2px spacing)
 class RestaurantListShimmerWidget extends StatelessWidget {
@@ -25,10 +25,6 @@ class RestaurantListShimmerWidget extends StatelessWidget {
 
   /// List configuration
   static const int _shimmerItemCount = 6;
-
-  /// Card styling — matches _BusinessListItem
-  static const double _cardBorderWidth = 1.5;
-  static const double _cardPadding = AppSpacing.mlg; // 14px
 
   /// Logo dimensions — matches AppConstants.logoCircleSize (50px)
   static const double _logoSize = AppConstants.logoCircleSize;
@@ -60,15 +56,8 @@ class RestaurantListShimmerWidget extends StatelessWidget {
   }
 
   Widget _buildShimmerCard() {
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(minHeight: _logoSize),
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        border: Border.all(color: AppColors.border, width: _cardBorderWidth),
-        borderRadius: BorderRadius.circular(AppRadius.card),
-      ),
-      padding: const EdgeInsets.all(_cardPadding),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.mlg),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
