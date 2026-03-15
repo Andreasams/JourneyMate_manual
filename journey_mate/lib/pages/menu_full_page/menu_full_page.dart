@@ -54,6 +54,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
         eventData: {
           'pageName': 'menuFullPage',
           'durationSeconds': duration.inSeconds,
+          'businessId': int.parse(widget.businessId),
         },
       )
           .catchError((_) {

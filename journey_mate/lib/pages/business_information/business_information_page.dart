@@ -78,6 +78,7 @@ class _BusinessInformationPageState
         eventData: {
           'pageName': 'businessInformation', // ← EXACT name per BUNDLE.md
           'durationSeconds': duration.inSeconds,
+          'businessId': int.parse(widget.businessId),
         },
       )
           .catchError((_) {

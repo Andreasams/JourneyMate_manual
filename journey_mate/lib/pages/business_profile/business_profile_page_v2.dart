@@ -268,28 +268,47 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       sessionId: analyticsState.sessionId ?? '',
       userId: '',
       timestamp: DateTime.now().toIso8601String(),
-      eventData: {'business_id': businessIdInt},
+      eventData: {
+        'business_id': businessIdInt,
+        'menu_context': 'profile_tab',
+      },
     );
   }
 
   @override
   void dispose() {
-    if (_pageStartTime != null && _menuSessionStarted) {
+    if (_pageStartTime != null) {
       final duration = DateTime.now().difference(_pageStartTime!);
       final businessIdInt = int.tryParse(widget.businessId);
 
-      // Use cached values — ref is unsafe during dispose()
+      // Track overall page visit
       ApiService.instance.postAnalytics(
-        eventType: 'menu_session_ended',
+        eventType: 'page_viewed',
         deviceId: _cachedDeviceId,
         sessionId: _cachedSessionId,
         userId: '',
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
-          'session_duration_seconds': duration.inSeconds,
-          'business_id': businessIdInt,
+          'pageName': 'businessProfile',
+          'durationSeconds': duration.inSeconds,
+          'businessId': businessIdInt,
         },
       );
+
+      // Track menu session end (only if session was started)
+      if (_menuSessionStarted) {
+        ApiService.instance.postAnalytics(
+          eventType: 'menu_session_ended',
+          deviceId: _cachedDeviceId,
+          sessionId: _cachedSessionId,
+          userId: '',
+          timestamp: DateTime.now().toIso8601String(),
+          eventData: {
+            'session_duration_seconds': duration.inSeconds,
+            'business_id': businessIdInt,
+          },
+        );
+      }
     }
     super.dispose();
   }

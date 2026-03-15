@@ -77,6 +77,7 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
         eventData: {
           'pageName': 'galleryFullPage',
           'durationSeconds': duration.inSeconds,
+          'businessId': int.parse(widget.businessId),
         },
       );
     }
