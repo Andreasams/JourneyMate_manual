@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../theme/app_colors.dart';
-import '../../theme/app_constants.dart';
-import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
-import 'restaurant_shimmer_widget.dart';
 import 'shimmer_card_widget.dart';
 
 /// A shimmer loading placeholder for restaurant list items.
@@ -40,8 +37,8 @@ class RestaurantListShimmerWidget extends StatelessWidget {
             bottom: AppSpacing.xxxl, // 32px per JSX
           ),
           itemCount: _shimmerItemCount,
-          separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm), // 8px
-          itemBuilder: (_, __) => const ShimmerCardWidget(),
+          separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm), // 8px
+          itemBuilder: (_, _) => const ShimmerCardWidget(),
         ),
       ),
     );

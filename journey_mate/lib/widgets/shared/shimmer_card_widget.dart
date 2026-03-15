@@ -4,9 +4,7 @@ import 'package:journey_mate/theme/app_radius.dart';
 import 'package:journey_mate/theme/app_spacing.dart';
 
 class ShimmerCardWidget extends StatelessWidget {
-  const ShimmerCardWidget({
-    Key? key,
-  }) : super(key: key);
+  const ShimmerCardWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +28,7 @@ class ShimmerCardWidget extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: AppColors.border.withOpacity(0.3),
+              color: AppColors.border.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(AppRadius.logoSmall),
             ),
           ),
@@ -48,7 +46,7 @@ class ShimmerCardWidget extends StatelessWidget {
                       height: 22,
                       width: availableWidth * 0.7,
                       decoration: BoxDecoration(
-                        color: AppColors.border.withOpacity(0.3),
+                        color: AppColors.border.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -58,7 +56,7 @@ class ShimmerCardWidget extends StatelessWidget {
                       height: 20,
                       width: availableWidth * 0.5,
                       decoration: BoxDecoration(
-                        color: AppColors.border.withOpacity(0.3),
+                        color: AppColors.border.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -68,7 +66,7 @@ class ShimmerCardWidget extends StatelessWidget {
                       height: 20,
                       width: availableWidth * 0.4,
                       decoration: BoxDecoration(
-                        color: AppColors.border.withOpacity(0.3),
+                        color: AppColors.border.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
