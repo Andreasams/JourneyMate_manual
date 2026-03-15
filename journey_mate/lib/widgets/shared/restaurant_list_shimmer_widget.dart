@@ -35,10 +35,10 @@ class _RestaurantListShimmerWidgetState
   /// CONSTANTS
   /// =========================================================================
 
-  /// Shimmer animation colors — white tones for dark page backgrounds
-  static final Color _baseColor = AppColors.white.withValues(alpha: 0.15);
-  static final Color _highlightColor = AppColors.white.withValues(alpha: 0.3);
-  static final Color _placeholderColor = AppColors.white.withValues(alpha: 0.1);
+  /// Shimmer animation colors — white tones visible on light page backgrounds
+  static final Color _baseColor = AppColors.white.withValues(alpha: 0.6);
+  static final Color _highlightColor = AppColors.white.withValues(alpha: 0.9);
+  static final Color _placeholderColor = AppColors.white.withValues(alpha: 0.6);
 
   /// List configuration
   static const int _shimmerItemCount = 6;
