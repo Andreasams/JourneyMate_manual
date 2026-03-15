@@ -840,12 +840,6 @@ class _FilterOverlayWidgetState extends ConsumerState<FilterOverlayWidget>
         }
       }
 
-      // Frederiksberg special rule
-      if (filterId == AppConstants.kFrederiksberg) {
-        _selectedFilterIds.remove(AppConstants.kFrederikbergC);
-        _selectedNeighborhoodIds.remove(AppConstants.kFrederikbergC);
-      }
-
       if (_selectedNeighborhoodIds.isEmpty) {
         _currentSelectionType = FilterSelectionType.none;
       }

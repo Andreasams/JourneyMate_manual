@@ -274,8 +274,11 @@ class _SelectedFiltersBtnsState extends ConsumerState<SelectedFiltersBtns>
     final parentsToHide = _findParentsToHide(allDisplayIds);
     final visibleDisplayIds = allDisplayIds.where((id) => !parentsToHide.contains(id)).toList();
 
+    // Hide Frederiksberg C (635) - it's bundled with Frederiksberg (36) but never shown in UI
+    final displayIds = visibleDisplayIds.where((id) => id != AppConstants.kFrederikbergC).toList();
+
     final selectedFilters = _flattenedFilters!
-        .where((f) => visibleDisplayIds.contains(f['id'] as int))
+        .where((f) => displayIds.contains(f['id'] as int))
         .toList();
 
     final categoryOrder = <int, int>{
