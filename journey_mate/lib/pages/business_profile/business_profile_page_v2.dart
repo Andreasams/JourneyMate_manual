@@ -238,14 +238,14 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
 
     final businessId = business['business_id'] as int?;
     final businessName = business['business_name'] as String?;
-    final analyticsState = ref.read(analyticsProvider);
+    final analytics = AnalyticsService.instance;
 
     if (businessId != null) {
       ApiService.instance.postAnalytics(
         eventType: 'business_profile_viewed',
-        deviceId: analyticsState.deviceId,
-        sessionId: analyticsState.sessionId ?? '',
-        userId: '',
+        deviceId: analytics.deviceId ?? '',
+        sessionId: analytics.currentSessionId ?? '',
+        userId: analytics.userId ?? '',
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
           'business_id': businessId,
