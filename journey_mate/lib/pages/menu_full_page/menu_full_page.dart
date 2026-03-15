@@ -30,20 +30,54 @@ class MenuFullPage extends ConsumerStatefulWidget {
 class _MenuFullPageState extends ConsumerState<MenuFullPage> {
   /// Page start time for analytics duration tracking
   DateTime? _pageStartTime;
+  bool _menuSessionStarted = false;
+
+  // Cached for safe use in dispose() — ref is invalid after unmount
+  String _cachedDeviceId = '';
+  String _cachedSessionId = '';
 
   @override
   void initState() {
     super.initState();
     _pageStartTime = DateTime.now();
+
+    // Cache analytics state for safe use in dispose()
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final analyticsState = ref.read(analyticsProvider);
+      _cachedDeviceId = analyticsState.deviceId;
+      _cachedSessionId = analyticsState.sessionId ?? '';
+
+      _trackMenuSessionStart();
+    });
+  }
+
+  void _trackMenuSessionStart() {
+    final businessIdInt = int.tryParse(widget.businessId);
+    if (businessIdInt == null) return;
+    _menuSessionStarted = true;
+    final analyticsState = ref.read(analyticsProvider);
+    ApiService.instance.postAnalytics(
+      eventType: 'menu_session_started',
+      deviceId: analyticsState.deviceId,
+      sessionId: analyticsState.sessionId ?? '',
+      userId: '',
+      timestamp: DateTime.now().toIso8601String(),
+      eventData: {
+        'business_id': businessIdInt,
+        'menu_context': 'full_page',
+      },
+    );
   }
 
   @override
   void dispose() {
-    // Track page view with duration
     if (_pageStartTime != null) {
       final duration = DateTime.now().difference(_pageStartTime!);
-      final analytics = AnalyticsService.instance;
+      final businessIdInt = int.tryParse(widget.businessId);
 
+      // Track page view with duration
+      final analytics = AnalyticsService.instance;
       ApiService.instance
           .postAnalytics(
         eventType: 'page_viewed',
@@ -54,13 +88,28 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
         eventData: {
           'pageName': 'menuFullPage',
           'durationSeconds': duration.inSeconds,
-          'businessId': int.parse(widget.businessId),
+          'businessId': businessIdInt,
         },
       )
           .catchError((_) {
         // Fire-and-forget, ignore errors
         return ApiCallResponse.failure('Analytics failed');
       });
+
+      // Track menu session end (only if session was started)
+      if (_menuSessionStarted && businessIdInt != null) {
+        ApiService.instance.postAnalytics(
+          eventType: 'menu_session_ended',
+          deviceId: _cachedDeviceId,
+          sessionId: _cachedSessionId,
+          userId: '',
+          timestamp: DateTime.now().toIso8601String(),
+          eventData: {
+            'session_duration_seconds': duration.inSeconds,
+            'business_id': businessIdInt,
+          },
+        );
+      }
     }
     super.dispose();
   }
