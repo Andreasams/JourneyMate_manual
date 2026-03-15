@@ -8,6 +8,7 @@ import '../../theme/app_spacing.dart';
 import '../../utils/filter_count_helper.dart';
 import '../../providers/search_providers.dart';
 import '../../providers/filter_providers.dart';
+import '../../theme/app_constants.dart';
 
 /// FilterTitlesRow - Horizontal row with 3 filter category tabs
 ///
@@ -88,8 +89,13 @@ class FilterTitlesRow extends ConsumerWidget {
     return filterState.when(
       data: (state) {
         // Calculate extra location count for routed filters
+        // Exclude kFrederikbergC (635) — bundled with Frederiksberg (36), hidden from UI
+        final neighbourhoodVisibleCount = searchState.selectedNeighbourhoodId
+                ?.where((id) => id != AppConstants.kFrederikbergC)
+                .length ??
+            0;
         final extraLocationCount = titleId == 1
-            ? (searchState.selectedNeighbourhoodId != null ? 1 : 0) +
+            ? neighbourhoodVisibleCount +
               (searchState.selectedShoppingAreaId != null ? 1 : 0)
             : 0;
 
