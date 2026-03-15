@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../theme/app_colors.dart';
 import '../../theme/app_constants.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import 'restaurant_shimmer_widget.dart';
+import 'shimmer_card_widget.dart';
 
 /// A shimmer loading placeholder for restaurant list items.
 ///
-/// Displays animated skeleton content matching the inner layout of
-/// [_BusinessListItem] — without the card border/background, so the shimmer
-/// elements sit directly on the page background:
-/// - 50×50 logo placeholder with 12px border radius
-/// - 3 info lines: name, status, details (with 2px spacing)
+/// Displays 5 animated skeleton cards with card styling (white background,
+/// border, rounded corners) matching [_BusinessListItem] structure.
+/// Content inside each card shimmers to indicate loading details.
 class RestaurantListShimmerWidget extends StatelessWidget {
   const RestaurantListShimmerWidget({
     super.key,
@@ -23,84 +23,25 @@ class RestaurantListShimmerWidget extends StatelessWidget {
   final double? width;
   final double? height;
 
-  /// List configuration
-  static const int _shimmerItemCount = 6;
-
-  /// Logo dimensions — matches AppConstants.logoCircleSize (50px)
-  static const double _logoSize = AppConstants.logoCircleSize;
-  static const double _logoBorderRadius = AppRadius.logoSmall; // 12px
-  static const double _logoToInfoSpacing = AppSpacing.md; // 12px
-
-  /// Info row spacing — matches _BusinessListItem _rowSpacing (2px)
-  static const double _infoItemSpacing = AppSpacing.xxs; // 2px
-
-  /// Info placeholder dimensions
-  static const double _nameHeight = 14.0;
-  static const double _lineHeight = 12.0;
+  /// List configuration — show 5 cards to ensure bottom isn't visible while loading
+  static const int _shimmerItemCount = 5;
 
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: RestaurantShimmerWidget.baseColor,
-      highlightColor: RestaurantShimmerWidget.highlightColor,
+      baseColor: AppColors.border,
+      highlightColor: Colors.grey[200]!,
       child: SizedBox(
         width: width ?? double.infinity,
         height: height,
-        child: ListView.separated(
+        child: ListView.builder(
+          padding: EdgeInsets.only(
+            top: AppSpacing.mlg,
+            bottom: AppSpacing.mlg,
+          ),
           itemCount: _shimmerItemCount,
-          separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-          itemBuilder: (_, index) => _buildShimmerCard(),
+          itemBuilder: (_, index) => ShimmerCardWidget(index: index),
         ),
       ),
     );
-  }
-
-  Widget _buildShimmerCard() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.mlg),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: _logoSize,
-            height: _logoSize,
-            decoration: BoxDecoration(
-              color: RestaurantShimmerWidget.placeholderColor,
-              borderRadius: BorderRadius.circular(_logoBorderRadius),
-            ),
-          ),
-          const SizedBox(width: _logoToInfoSpacing),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final w = constraints.maxWidth;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPlaceholder(width: w * 0.6, height: _nameHeight),
-                    const SizedBox(height: _infoItemSpacing),
-                    _buildPlaceholder(width: w * 0.4, height: _lineHeight),
-                    const SizedBox(height: _infoItemSpacing),
-                    _buildPlaceholder(width: w * 0.7, height: _lineHeight),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget _buildPlaceholder(
-      {required double width, required double height}) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: RestaurantShimmerWidget.placeholderColor,
-        borderRadius: BorderRadius.circular(AppRadius.chip),
-      ),
-    );
-  }
-}
+  }}
