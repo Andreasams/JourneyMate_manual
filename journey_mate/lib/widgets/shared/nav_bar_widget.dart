@@ -123,12 +123,15 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
 
+        final hasMore = jsonBody['pagination']?['hasMore'] == true;
+
         // Update searchStateProvider (will auto-update SearchPage via watch())
         ref.read(searchStateProvider.notifier).updateSearchResults(
           jsonBody,
           resultCount,
           fullMatchCount,
           scoringFilterIds,
+          hasMore: hasMore,
         );
 
         // Update active filter IDs

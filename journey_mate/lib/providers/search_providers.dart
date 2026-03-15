@@ -33,6 +33,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
     int fullMatchCount,
     List<int> scoringFilterIds, {
     bool fetchedWithLocation = false,
+    bool hasMore = false,
   }) {
     // Normalize input: extract documents array if full response object passed
     dynamic normalizedResults = results;
@@ -61,7 +62,48 @@ class SearchStateNotifier extends Notifier<SearchState> {
       hasActiveSearch: true,
       lastFetchTime: DateTime.now(),
       fetchedWithLocation: fetchedWithLocation,
+      hasMore: hasMore,
+      isLoadingMore: false,
     );
+  }
+
+  /// Append additional page results to existing search results.
+  /// Only updates documents list and pagination flags — does NOT touch
+  /// searchResultsCount, fullMatchCount, activeFilterIds, or scoringFilterIds
+  /// (those reflect the full query from page 1).
+  void appendSearchResults(dynamic newDocuments, bool hasMore) {
+    // Normalize input
+    List<dynamic> newDocs;
+    if (newDocuments is List) {
+      newDocs = newDocuments;
+    } else if (newDocuments is Map && newDocuments.containsKey('documents')) {
+      newDocs = (newDocuments['documents'] as List?) ?? [];
+    } else {
+      newDocs = [];
+    }
+
+    // Get existing docs
+    final existing = state.searchResults;
+    List<dynamic> existingDocs;
+    if (existing is List) {
+      existingDocs = existing;
+    } else {
+      existingDocs = [];
+    }
+
+    // Merge: append new to existing
+    final merged = [...existingDocs, ...newDocs];
+
+    state = state.copyWith(
+      searchResults: merged,
+      hasMore: hasMore,
+      isLoadingMore: false,
+    );
+  }
+
+  /// Set loading-more state (used before/after paginated requests)
+  void setLoadingMore(bool loading) {
+    state = state.copyWith(isLoadingMore: loading);
   }
 
   /// Update active filter IDs from API response
@@ -125,6 +167,8 @@ class SearchStateNotifier extends Notifier<SearchState> {
       searchResultsCount: 0,        // Resets result count
       visibleResultCount: 0,        // Resets visible count
       fullMatchCount: 0,            // Resets full-match count
+      hasMore: false,
+      isLoadingMore: false,
     );
   }
 
@@ -266,6 +310,8 @@ class SearchStateNotifier extends Notifier<SearchState> {
       searchResultsCount: 0,
       visibleResultCount: 0,
       clearResults: true,
+      hasMore: false,
+      isLoadingMore: false,
     );
   }
 }

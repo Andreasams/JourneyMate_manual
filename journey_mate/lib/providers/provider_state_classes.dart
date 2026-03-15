@@ -188,6 +188,8 @@ class SearchState {
   final DateTime? lastRefinementTime;
   final DateTime? lastFetchTime; // Timestamp of most recent search API call
   final bool fetchedWithLocation; // Whether the cached results were fetched with GPS coordinates
+  final bool hasMore; // API has additional pages of results
+  final bool isLoadingMore; // Load-more request in flight
 
   const SearchState({
     required this.searchResults,
@@ -209,6 +211,8 @@ class SearchState {
     this.lastRefinementTime,
     this.lastFetchTime,
     this.fetchedWithLocation = false,
+    this.hasMore = false,
+    this.isLoadingMore = false,
   });
 
   factory SearchState.initial() {
@@ -252,6 +256,8 @@ class SearchState {
     DateTime? lastRefinementTime,
     DateTime? lastFetchTime,
     bool? fetchedWithLocation,
+    bool? hasMore,
+    bool? isLoadingMore,
   }) {
     return SearchState(
       searchResults: searchResults ?? this.searchResults,
@@ -273,6 +279,8 @@ class SearchState {
       lastRefinementTime: lastRefinementTime ?? this.lastRefinementTime,
       lastFetchTime: lastFetchTime ?? this.lastFetchTime,
       fetchedWithLocation: fetchedWithLocation ?? this.fetchedWithLocation,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     );
   }
 
@@ -297,6 +305,8 @@ class SearchState {
     DateTime? lastRefinementTime,
     DateTime? lastFetchTime,
     bool? fetchedWithLocation,
+    bool? hasMore,
+    bool? isLoadingMore,
     bool clearResults = false,
     bool clearActiveFilterIds = false,
     bool clearScoringFilterIds = false,
@@ -325,6 +335,8 @@ class SearchState {
       lastRefinementTime: clearRefinementTime ? null : (lastRefinementTime ?? this.lastRefinementTime),
       lastFetchTime: clearFetchTime ? null : (lastFetchTime ?? this.lastFetchTime),
       fetchedWithLocation: fetchedWithLocation ?? this.fetchedWithLocation,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     );
   }
 }

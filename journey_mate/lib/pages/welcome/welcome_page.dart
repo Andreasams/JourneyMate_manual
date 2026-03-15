@@ -160,6 +160,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
+        final hasMore = response.jsonBody['pagination']?['hasMore'] == true;
         // Use saved notifier (safe even if widget unmounted)
         searchNotifier.updateSearchResults(
           response.jsonBody,
@@ -167,6 +168,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           fullMatchCount,
           scoringFilterIds,
           fetchedWithLocation: userLocation != null,
+          hasMore: hasMore,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
       } else {
@@ -302,6 +304,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         final scoringFilterIds = (response.jsonBody['scoringFilterIds'] as List?)
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
+        final hasMore = response.jsonBody['pagination']?['hasMore'] == true;
         // Use saved notifier (safe even if widget unmounted)
         searchNotifier.updateSearchResults(
           response.jsonBody,
@@ -309,6 +312,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           fullMatchCount,
           scoringFilterIds,
           fetchedWithLocation: userLocation != null,
+          hasMore: hasMore,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
       }

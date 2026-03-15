@@ -49,6 +49,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   bool _isLoading = false;
   String? _errorMessage;
   int _requestId = 0;
+  int _currentPage = 1;
   // Sort state
   String _currentSort = 'nearest';
   bool _onlyOpen = false;
@@ -169,6 +170,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       _isLoading = true;
       _errorMessage = null;
       _matchVisibility = MapMatchVisibility.all;
+      _currentPage = 1;
     });
 
     final searchState = ref.read(searchStateProvider);
@@ -211,6 +213,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         final scoringFilterIds = (jsonBody['scoringFilterIds'] as List?)
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
+        final hasMore = jsonBody['pagination']?['hasMore'] == true;
 
         ref.read(searchStateProvider.notifier).updateSearchResults(
           documents,
@@ -218,6 +221,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           fullMatchCount,
           scoringFilterIds,
           fetchedWithLocation: position != null,
+          hasMore: hasMore,
         );
 
         _lastSearchPageSize = effectivePageSize;
@@ -253,6 +257,64 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// Loads the next page of search results and appends to the existing list.
+  /// Guards against duplicate requests, non-list views, and no-more-pages.
+  Future<void> _loadMoreResults() async {
+    final searchState = ref.read(searchStateProvider);
+    if (searchState.isLoadingMore || !searchState.hasMore) return;
+    if (_viewMode != _ViewMode.list) return;
+
+    final currentRequestId = ++_requestId;
+    ref.read(searchStateProvider.notifier).setLoadingMore(true);
+
+    final position = await ref.read(locationProvider.notifier).getCurrentPosition();
+    // ignore: use_build_context_synchronously
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final nextPage = _currentPage + 1;
+
+    try {
+      final response = await ApiService.instance.search(
+        filters: searchState.filtersUsedForSearch,
+        cityId: AppConstants.kDefaultCityId.toString(),
+        searchInput: searchState.currentSearchText,
+        userLocation: position != null
+            ? 'LatLng(lat: ${position.latitude}, lng: ${position.longitude})'
+            : null,
+        languageCode: languageCode,
+        sortBy: _normalizeSort(_currentSort),
+        sortOrder: 'desc',
+        selectedStation: _selectedStation,
+        onlyOpen: _onlyOpen,
+        pageSize: _listPageSize,
+        page: nextPage,
+        neighbourhoodId: searchState.selectedNeighbourhoodId,
+        shoppingAreaId: searchState.selectedShoppingAreaId,
+      );
+
+      // Discard if a newer request started (user triggered fresh search)
+      if (_requestId != currentRequestId) return;
+
+      if (response.succeeded && mounted) {
+        final jsonBody = response.jsonBody;
+        final documents = jsonBody['documents'] as List? ?? [];
+        final hasMore = jsonBody['pagination']?['hasMore'] == true;
+
+        ref.read(searchStateProvider.notifier).appendSearchResults(
+          documents,
+          hasMore,
+        );
+        _currentPage = nextPage;
+      } else if (mounted) {
+        // Silent failure for load-more — don't show full-page error
+        ref.read(searchStateProvider.notifier).setLoadingMore(false);
+      }
+    } catch (_) {
+      if (mounted) {
+        ref.read(searchStateProvider.notifier).setLoadingMore(false);
       }
     }
   }
@@ -1417,6 +1479,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           // Navigate to business profile
           context.push('/business/$businessId');
         },
+        onLoadMore: _loadMoreResults,
       ),
     );
   }

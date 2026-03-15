@@ -37,11 +37,13 @@ class SearchResultsListView extends ConsumerStatefulWidget {
     this.width,
     this.height,
     this.onBusinessTap,
+    this.onLoadMore,
   });
 
   final double? width;
   final double? height;
   final void Function(int businessId)? onBusinessTap;
+  final VoidCallback? onLoadMore;
 
   @override
   ConsumerState<SearchResultsListView> createState() =>
@@ -102,13 +104,22 @@ class _SearchResultsListViewState
 
     final searchState = ref.read(searchStateProvider);
     if (searchState.searchResults != _lastPreloadedResults) {
-      _visibleBusinessIds.clear();
-      _preloadedBusinessIds.clear();
-      _preloadedProfileIds.clear();
-      _lastPreloadedResults = searchState.searchResults;
+      // Detect fresh search vs page append: if the first document ID changed,
+      // it's a fresh search and we should clear all caches. If unchanged,
+      // it's a page append — skip cache clearing to preserve preloaded data.
+      final oldDocs = extractDocuments(_lastPreloadedResults);
+      final newDocs = extractDocuments(searchState.searchResults);
+      final isFreshSearch = oldDocs.isEmpty ||
+          newDocs.isEmpty ||
+          getBusinessId(oldDocs.first) != getBusinessId(newDocs.first);
 
-      // Clear API cache on new search
-      ApiService.instance.clearCache();
+      if (isFreshSearch) {
+        _visibleBusinessIds.clear();
+        _preloadedBusinessIds.clear();
+        _preloadedProfileIds.clear();
+        ApiService.instance.clearCache();
+      }
+      _lastPreloadedResults = searchState.searchResults;
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -190,6 +201,17 @@ class _SearchResultsListViewState
     _scrollStopTimer = Timer(const Duration(milliseconds: 300), () {
       _preloadVisibleCards();
     });
+
+    // Infinite scroll: trigger load-more when near bottom
+    if (notification is ScrollUpdateNotification) {
+      final metrics = notification.metrics;
+      if (metrics.pixels >= metrics.maxScrollExtent - 300) {
+        final searchState = ref.read(searchStateProvider);
+        if (searchState.hasMore && !searchState.isLoadingMore) {
+          widget.onLoadMore?.call();
+        }
+      }
+    }
   }
 
   void _preloadVisibleCards() {
@@ -285,6 +307,9 @@ class _SearchResultsListViewState
 
   /// Builds a flat list when no filters are active
   Widget _buildFlatList(List<dynamic> documents) {
+    final hasMore = ref.read(searchStateProvider).hasMore;
+    final itemCount = documents.length + (hasMore ? 1 : 0);
+
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
         _onScroll(notification);
@@ -294,9 +319,14 @@ class _SearchResultsListViewState
         controller: _listScrollController,
         primary: false,
         padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.xxxl), // 16px top per JSX
-        itemCount: documents.length,
+        itemCount: itemCount,
         separatorBuilder: (_, _) => SizedBox(height: _itemSeparatorHeight),
         itemBuilder: (context, index) {
+          // Loading indicator at the end
+          if (index == documents.length) {
+            return _buildLoadMoreIndicator();
+          }
+
           final businessData = documents[index];
           final businessId = getBusinessId(businessData);
 
@@ -556,6 +586,12 @@ class _SearchResultsListViewState
       items.add(SizedBox(height: _itemSeparatorHeight));
     }
 
+    // Loading indicator at the end when more pages available
+    final hasMore = ref.read(searchStateProvider).hasMore;
+    if (hasMore) {
+      items.add(_buildLoadMoreIndicator());
+    }
+
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
         _onScroll(notification);
@@ -566,6 +602,22 @@ class _SearchResultsListViewState
         primary: false,
         padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.xxxl),
         children: items,
+      ),
+    );
+  }
+
+  Widget _buildLoadMoreIndicator() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+      child: Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+          ),
+        ),
       ),
     );
   }
