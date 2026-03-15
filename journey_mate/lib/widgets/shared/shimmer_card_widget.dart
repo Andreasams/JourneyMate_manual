@@ -11,10 +11,8 @@ class ShimmerCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: AppSpacing.mlg,
-        vertical: AppSpacing.sm,
-      ),
+      width: double.infinity,
+      constraints: const BoxConstraints(minHeight: 50), // Match logo size minimum
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
@@ -23,7 +21,7 @@ class ShimmerCardWidget extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(AppRadius.card),
       ),
-      padding: EdgeInsets.all(AppSpacing.mlg),
+      padding: const EdgeInsets.all(AppSpacing.mlg),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

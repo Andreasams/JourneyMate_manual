@@ -34,13 +34,14 @@ class RestaurantListShimmerWidget extends StatelessWidget {
       child: SizedBox(
         width: width ?? double.infinity,
         height: height,
-        child: ListView.builder(
-          padding: EdgeInsets.only(
-            top: AppSpacing.mlg,
-            bottom: AppSpacing.mlg,
+        child: ListView.separated(
+          padding: const EdgeInsets.only(
+            top: AppSpacing.lg, // 16px per JSX
+            bottom: AppSpacing.xxxl, // 32px per JSX
           ),
           itemCount: _shimmerItemCount,
-          itemBuilder: (_, index) => const ShimmerCardWidget(),
+          separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm), // 8px
+          itemBuilder: (_, __) => const ShimmerCardWidget(),
         ),
       ),
     );
