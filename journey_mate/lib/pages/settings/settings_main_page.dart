@@ -103,6 +103,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
       if (response.succeeded) {
         final resultCount = response.jsonBody['resultCount'] as int? ?? 0;
         final fullMatchCount = (response.jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final onlyOpenCount = (response.jsonBody['onlyOpenCount'] as num?)?.toInt() ?? 0;
         final activeIds = (response.jsonBody['activeids'] as List?)
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
@@ -115,6 +116,7 @@ class _SettingsMainPageState extends ConsumerState<SettingsMainPage> {
           resultCount,
           fullMatchCount,
           scoringFilterIds,
+          onlyOpenCount: onlyOpenCount,
         );
         searchNotifier.updateActiveFilterIds(activeIds);
       } else {

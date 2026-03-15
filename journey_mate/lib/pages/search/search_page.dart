@@ -207,6 +207,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         final documents = jsonBody['documents'] as List? ?? [];
         final resultCount = jsonBody['resultCount'] as int? ?? documents.length;
         final fullMatchCount = (jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final onlyOpenCount = (jsonBody['onlyOpenCount'] as num?)?.toInt() ?? 0;
         final activeIds = (jsonBody['activeids'] as List?)
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
@@ -222,6 +223,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           scoringFilterIds,
           fetchedWithLocation: position != null,
           hasMore: hasMore,
+          onlyOpenCount: onlyOpenCount,
         );
 
         _lastSearchPageSize = effectivePageSize;
@@ -425,6 +427,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                                   count,
                                   fullMatchCount,
                                   scoringFilterIds,
+                                  onlyOpenCount: 0,
                                 );
 
                                 if (mounted) {

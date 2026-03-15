@@ -34,6 +34,7 @@ class SearchStateNotifier extends Notifier<SearchState> {
     List<int> scoringFilterIds, {
     bool fetchedWithLocation = false,
     bool hasMore = false,
+    int onlyOpenCount = 0,
   }) {
     // Normalize input: extract documents array if full response object passed
     dynamic normalizedResults = results;
@@ -41,23 +42,26 @@ class SearchStateNotifier extends Notifier<SearchState> {
       normalizedResults = results['documents'];
     }
 
-    // Compute the display count using the same logic as the page title and
-    // filter overlay: full-match count when scoring filters are active,
-    // total count otherwise. This equals the number of items in the top
-    // (full-match) section of the ListView when sections are shown.
+    // Compute the display count. Priority:
+    // 1. If onlyOpenCount > 0, API filtered by open status — use the open count
+    // 2. If filters/search active AND scoring filters exist — use full-match count
+    // 3. Otherwise — use total count
     final hasActiveFiltersOrSearch = state.filtersUsedForSearch.isNotEmpty ||
         state.selectedNeighbourhoodId?.isNotEmpty == true ||
         state.selectedShoppingAreaId != null ||
         state.currentSearchText.isNotEmpty;
-    final visibleResultCount = (hasActiveFiltersOrSearch && scoringFilterIds.isNotEmpty)
-        ? fullMatchCount
-        : count;
+    final visibleResultCount = onlyOpenCount > 0
+        ? onlyOpenCount
+        : (hasActiveFiltersOrSearch && scoringFilterIds.isNotEmpty)
+            ? fullMatchCount
+            : count;
 
     state = state.copyWith(
       searchResults: normalizedResults,
       searchResultsCount: count,
       visibleResultCount: visibleResultCount,
       fullMatchCount: fullMatchCount,
+      onlyOpenCount: onlyOpenCount,
       scoringFilterIds: List<int>.from(scoringFilterIds),
       hasActiveSearch: true,
       lastFetchTime: DateTime.now(),

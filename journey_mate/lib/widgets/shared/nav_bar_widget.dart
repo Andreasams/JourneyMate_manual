@@ -116,6 +116,7 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
         final jsonBody = response.jsonBody;
         final resultCount = jsonBody['resultCount'] as int? ?? 0;
         final fullMatchCount = (jsonBody['fullMatchCount'] as num?)?.toInt() ?? 0;
+        final onlyOpenCount = (jsonBody['onlyOpenCount'] as num?)?.toInt() ?? 0;
         final activeIds = (jsonBody['activeids'] as List?)
             ?.map((e) => (e as num).toInt())
             .toList() ?? [];
@@ -132,6 +133,7 @@ class _NavBarWidgetState extends ConsumerState<NavBarWidget> {
           fullMatchCount,
           scoringFilterIds,
           hasMore: hasMore,
+          onlyOpenCount: onlyOpenCount,
         );
 
         // Update active filter IDs

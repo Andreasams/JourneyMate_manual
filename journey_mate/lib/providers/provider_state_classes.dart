@@ -173,6 +173,7 @@ class SearchState {
   final int searchResultsCount;
   final int visibleResultCount; // Count of documents actually rendered by SearchResultsListView
   final int fullMatchCount; // Count of documents where matchCount === scoringFilterIds.length (all needs met)
+  final int onlyOpenCount; // Count of open restaurants when onlyOpen=true (0 otherwise)
   final bool hasActiveSearch;
   final String currentSearchText;
   final List<int> filtersUsedForSearch; // User's checked filters
@@ -196,6 +197,7 @@ class SearchState {
     required this.searchResultsCount,
     required this.visibleResultCount,
     required this.fullMatchCount,
+    required this.onlyOpenCount,
     required this.hasActiveSearch,
     required this.currentSearchText,
     required this.filtersUsedForSearch,
@@ -221,6 +223,7 @@ class SearchState {
       searchResultsCount: 0,
       visibleResultCount: 0,
       fullMatchCount: 0,
+      onlyOpenCount: 0,
       hasActiveSearch: false,
       currentSearchText: '',
       filtersUsedForSearch: [],
@@ -241,6 +244,7 @@ class SearchState {
     int? searchResultsCount,
     int? visibleResultCount,
     int? fullMatchCount,
+    int? onlyOpenCount,
     bool? hasActiveSearch,
     String? currentSearchText,
     List<int>? filtersUsedForSearch,
@@ -264,6 +268,7 @@ class SearchState {
       searchResultsCount: searchResultsCount ?? this.searchResultsCount,
       visibleResultCount: visibleResultCount ?? this.visibleResultCount,
       fullMatchCount: fullMatchCount ?? this.fullMatchCount,
+      onlyOpenCount: onlyOpenCount ?? this.onlyOpenCount,
       hasActiveSearch: hasActiveSearch ?? this.hasActiveSearch,
       currentSearchText: currentSearchText ?? this.currentSearchText,
       filtersUsedForSearch: filtersUsedForSearch ?? this.filtersUsedForSearch,
