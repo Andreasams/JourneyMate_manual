@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:collection/collection.dart';
 
 import '../../providers/business_providers.dart';
+import '../../providers/provider_state_classes.dart';
 import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
@@ -1061,6 +1062,24 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Recalculate visible count when filter state changes externally (e.g. from
+    // the full menu page's UnifiedFiltersWidget instance while this instance is
+    // in Offstage on the business profile page).
+    ref.listen<BusinessState>(businessProvider, (previous, next) {
+      final restrictionsChanged = !const ListEquality<int>()
+          .equals(previous?.selectedDietaryRestrictionIds,
+              next.selectedDietaryRestrictionIds);
+      final preferenceChanged =
+          previous?.selectedDietaryPreferenceId != next.selectedDietaryPreferenceId;
+      final allergiesChanged = !const ListEquality<int>()
+          .equals(previous?.excludedAllergyIds, next.excludedAllergyIds);
+      if (restrictionsChanged || preferenceChanged || allergiesChanged) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _calculateAndNotifyVisibleCount();
+        });
+      }
+    });
+
     final restrictions = _getSortedRestrictions();
     final preferences = _getSortedPreferences();
 
