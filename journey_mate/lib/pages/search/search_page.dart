@@ -590,7 +590,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     // Calculate filter counts per category for badges
     // Include routed neighbourhood/shopping area in Location tab badge count
-    final extraLocationCount = (searchState.selectedNeighbourhoodId?.length ?? 0)
+    // Exclude kFrederikbergC (635) — it's bundled with Frederiksberg (36) and hidden from UI
+    final neighbourhoodVisibleCount = searchState.selectedNeighbourhoodId
+            ?.where((id) => id != AppConstants.kFrederikbergC)
+            .length ??
+        0;
+    final extraLocationCount = neighbourhoodVisibleCount
                              + (searchState.selectedShoppingAreaId != null ? 1 : 0);
     final filterCounts = _calculateFilterCounts(
       searchState.filtersUsedForSearch,
