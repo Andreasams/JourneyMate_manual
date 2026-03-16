@@ -395,12 +395,16 @@ class _MatchCardWidgetState extends ConsumerState<MatchCardWidget> {
 
     // Track analytics
     final analytics = AnalyticsService.instance;
+    final deviceId = analytics.deviceId;
+    final sessionId = analytics.currentSessionId;
+    final userId = analytics.userId;
+    if (deviceId == null || sessionId == null || userId == null) return;
     ApiService.instance
         .postAnalytics(
       eventType: _isExpanded ? 'match_card_expanded' : 'match_card_collapsed',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
+      deviceId: deviceId,
+      sessionId: sessionId,
+      userId: userId,
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
         'action': _isExpanded ? 'expanded' : 'collapsed',

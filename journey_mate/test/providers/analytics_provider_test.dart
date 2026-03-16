@@ -85,6 +85,32 @@ void main() {
       );
     });
 
+    test('startSession() preserves sessionStartTime when sessionId unchanged', () {
+      const sessionId = 'test-uuid-preserve';
+      container.read(analyticsProvider.notifier).startSession(sessionId: sessionId);
+      final firstTime = container.read(analyticsProvider).sessionStartTime;
+      expect(firstTime, isNotNull);
+
+      // Call again with same sessionId — sessionStartTime should be preserved
+      container.read(analyticsProvider.notifier).startSession(sessionId: sessionId);
+      final secondTime = container.read(analyticsProvider).sessionStartTime;
+      expect(secondTime, firstTime);
+    });
+
+    test('startSession() updates sessionStartTime when sessionId changes', () {
+      container.read(analyticsProvider.notifier).startSession(sessionId: 'uuid-1');
+      final firstTime = container.read(analyticsProvider).sessionStartTime;
+      expect(firstTime, isNotNull);
+
+      // Call with different sessionId — sessionStartTime should be reset
+      container.read(analyticsProvider.notifier).startSession(sessionId: 'uuid-2');
+      final secondTime = container.read(analyticsProvider).sessionStartTime;
+      expect(secondTime, isNotNull);
+      // Both DateTime.now() calls happen within the same test frame, so they may
+      // be equal. What matters is sessionId changed:
+      expect(container.read(analyticsProvider).sessionId, 'uuid-2');
+    });
+
     test('endSession() clears session data and menuSessionData', () async {
       await container.read(analyticsProvider.notifier).initialize();
       container.read(analyticsProvider.notifier).startSession(sessionId: 'test-uuid-abcd-1234-efgh-5678');

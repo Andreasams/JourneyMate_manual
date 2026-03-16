@@ -89,7 +89,12 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
       // Cache analytics state for safe use in dispose() (ref is invalid after unmount)
       final analyticsState = ref.read(analyticsProvider);
       _cachedDeviceId = analyticsState.deviceId;
-      _cachedSessionId = analyticsState.sessionId ?? '';
+      final cachedSid = analyticsState.sessionId;
+      if (cachedSid == null) {
+        debugPrint('WARNING: initState cache skipped — sessionId not initialized');
+        return;
+      }
+      _cachedSessionId = cachedSid;
 
       // Reset dietary filters so each business visit starts fresh
       ref.read(businessProvider.notifier).clearDietaryFilters();
@@ -243,12 +248,20 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     final businessName = business['business_name'] as String?;
     final analytics = AnalyticsService.instance;
 
+    final deviceId = analytics.deviceId;
+    final sessionId = analytics.currentSessionId;
+    final userId = analytics.userId;
+    if (deviceId == null || sessionId == null || userId == null) {
+      debugPrint('WARNING: business_profile_viewed skipped — analytics IDs not initialized');
+      return;
+    }
+
     if (businessId != null) {
       ApiService.instance.postAnalytics(
         eventType: 'business_profile_viewed',
-        deviceId: analytics.deviceId ?? '',
-        sessionId: analytics.currentSessionId ?? '',
-        userId: analytics.userId ?? '',
+        deviceId: deviceId,
+        sessionId: sessionId,
+        userId: userId,
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
           'business_id': businessId,
@@ -263,14 +276,19 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   void _trackMenuSessionStart() {
     final businessIdInt = int.tryParse(widget.businessId);
     if (businessIdInt == null) return;
-    _menuSessionStarted = true;
     final analyticsState = ref.read(analyticsProvider);
+    final sessionId = analyticsState.sessionId;
+    if (sessionId == null) {
+      debugPrint('WARNING: menu_session_started skipped — sessionId not initialized');
+      return;
+    }
+    _menuSessionStarted = true;
     final menuData = analyticsState.menuSessionData;
 
     ApiService.instance.postAnalytics(
       eventType: 'menu_session_started',
       deviceId: analyticsState.deviceId,
-      sessionId: analyticsState.sessionId ?? '',
+      sessionId: sessionId,
       userId: '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
@@ -833,18 +851,25 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
         child: TextButton.icon(
           onPressed: () async {
             final analytics = AnalyticsService.instance;
-            ApiService.instance
-                .postAnalytics(
-              eventType: 'report_link_tapped',
-              deviceId: analytics.deviceId ?? '',
-              sessionId: analytics.currentSessionId ?? '',
-              userId: analytics.userId ?? '',
-              timestamp: DateTime.now().toIso8601String(),
-              eventData: {'pageName': 'businessProfile'},
-            )
-                .catchError((e) {
-              return ApiCallResponse.failure('Analytics failed');
-            });
+            final deviceId = analytics.deviceId;
+            final sessionId = analytics.currentSessionId;
+            final userId = analytics.userId;
+            if (deviceId == null || sessionId == null || userId == null) {
+              debugPrint('WARNING: report_link_tapped skipped — analytics IDs not initialized');
+            } else {
+              ApiService.instance
+                  .postAnalytics(
+                eventType: 'report_link_tapped',
+                deviceId: deviceId,
+                sessionId: sessionId,
+                userId: userId,
+                timestamp: DateTime.now().toIso8601String(),
+                eventData: {'pageName': 'businessProfile'},
+              )
+                  .catchError((e) {
+                return ApiCallResponse.failure('Analytics failed');
+              });
+            }
             if (mounted) {
               await showModalBottomSheet(
                 context: context,
@@ -875,12 +900,19 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
   void _trackFacilityInfoOpened(
       String filterName, String? filterDescription) {
     final analytics = AnalyticsService.instance;
+    final deviceId = analytics.deviceId;
+    final sessionId = analytics.currentSessionId;
+    final userId = analytics.userId;
+    if (deviceId == null || sessionId == null || userId == null) {
+      debugPrint('WARNING: facility_info_opened skipped — analytics IDs not initialized');
+      return;
+    }
     ApiService.instance
         .postAnalytics(
       eventType: 'facility_info_opened',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
+      deviceId: deviceId,
+      sessionId: sessionId,
+      userId: userId,
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
         'pageName': 'businessProfile',
@@ -908,10 +940,15 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     SharePlus.instance.share(ShareParams(text: shareText));
 
     // Track share event
+    final sessionId = analyticsState.sessionId;
+    if (sessionId == null) {
+      debugPrint('WARNING: share_button_clicked skipped — sessionId not initialized');
+      return;
+    }
     ApiService.instance.postAnalytics(
       eventType: 'share_button_clicked',
       deviceId: analyticsState.deviceId,
-      sessionId: analyticsState.sessionId ?? '',
+      sessionId: sessionId,
       userId: '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
@@ -929,10 +966,15 @@ class _BusinessProfilePageV2State extends ConsumerState<BusinessProfilePageV2> {
     context.push('/business/$businessId/information');
 
     // Track info button tap
+    final sessionId = analyticsState.sessionId;
+    if (sessionId == null) {
+      debugPrint('WARNING: business_info_button_tapped skipped — sessionId not initialized');
+      return;
+    }
     ApiService.instance.postAnalytics(
       eventType: 'business_info_button_tapped',
       deviceId: analyticsState.deviceId,
-      sessionId: analyticsState.sessionId ?? '',
+      sessionId: sessionId,
       userId: '', // Anonymous user
       timestamp: DateTime.now().toIso8601String(),
       eventData: {

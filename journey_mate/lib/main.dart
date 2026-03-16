@@ -54,15 +54,10 @@ void main() async {
   final isFilterCacheFresh = await FilterNotifier.isCacheFresh(storedLanguage);
 
   // ── 3. Initialize AnalyticsService (capture session UUID) ──
-  late String sessionId;
-  try {
-    sessionId = await AnalyticsService.instance.initializeWithPrefs(prefs);
-    if (sessionId.isEmpty) {
-      throw Exception('Failed to initialize session UUID');
-    }
-  } catch (e) {
-    debugPrint('ERROR: AnalyticsService.initializeWithPrefs() failed: $e');
-    sessionId = '';
+  // initializeWithPrefs() handles its own errors internally, returns '' on failure
+  final sessionId = await AnalyticsService.instance.initializeWithPrefs(prefs);
+  if (sessionId.isEmpty) {
+    debugPrint('WARNING: AnalyticsService failed to initialize session UUID');
   }
 
   // ── 4. Create container + synchronous provider init ──

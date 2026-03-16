@@ -135,11 +135,15 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
 
       // Track page view with duration
       final analytics = AnalyticsService.instance;
+      final deviceId = analytics.deviceId;
+      final sessionId = analytics.currentSessionId;
+      final userId = analytics.userId;
+      if (deviceId != null && sessionId != null && userId != null) {
       ApiService.instance.postAnalytics(
         eventType: 'page_viewed',
-        deviceId: analytics.deviceId ?? '',
-        sessionId: analytics.currentSessionId ?? '',
-        userId: analytics.userId ?? '',
+        deviceId: deviceId,
+        sessionId: sessionId,
+        userId: userId,
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
           'pageName': 'menuFullPage',
@@ -151,6 +155,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
         // Fire-and-forget, ignore errors
         return ApiCallResponse.failure('Analytics failed');
       });
+      }
 
       // Track menu session end with full engagement data
       if (_menuSessionStarted && businessIdInt != null) {

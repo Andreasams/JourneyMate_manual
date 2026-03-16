@@ -67,24 +67,30 @@ class _BusinessInformationPageState
     if (_pageStartTime != null) {
       final duration = DateTime.now().difference(_pageStartTime!);
       final analytics = AnalyticsService.instance;
-
-      ApiService.instance
-          .postAnalytics(
-        eventType: 'page_viewed',
-        deviceId: analytics.deviceId ?? '',
-        sessionId: analytics.currentSessionId ?? '',
-        userId: analytics.userId ?? '',
-        timestamp: DateTime.now().toIso8601String(),
-        eventData: {
-          'pageName': 'businessInformation', // ← EXACT name per BUNDLE.md
-          'durationSeconds': duration.inSeconds,
-          'businessId': int.parse(widget.businessId),
-        },
-      )
-          .catchError((_) {
-        // Fire-and-forget, ignore errors
-        return ApiCallResponse.failure('Analytics failed');
-      });
+      final deviceId = analytics.deviceId;
+      final sessionId = analytics.currentSessionId;
+      final userId = analytics.userId;
+      if (deviceId == null || sessionId == null || userId == null) {
+        debugPrint('WARNING: page_viewed skipped — analytics IDs not initialized');
+      } else {
+        ApiService.instance
+            .postAnalytics(
+          eventType: 'page_viewed',
+          deviceId: deviceId,
+          sessionId: sessionId,
+          userId: userId,
+          timestamp: DateTime.now().toIso8601String(),
+          eventData: {
+            'pageName': 'businessInformation', // ← EXACT name per BUNDLE.md
+            'durationSeconds': duration.inSeconds,
+            'businessId': int.parse(widget.businessId),
+          },
+        )
+            .catchError((_) {
+          // Fire-and-forget, ignore errors
+          return ApiCallResponse.failure('Analytics failed');
+        });
+      }
     }
     super.dispose();
   }
@@ -378,12 +384,19 @@ class _BusinessInformationPageState
   void _trackFacilityInfoOpened(
       String filterName, String? filterDescription) {
     final analytics = AnalyticsService.instance;
+    final deviceId = analytics.deviceId;
+    final sessionId = analytics.currentSessionId;
+    final userId = analytics.userId;
+    if (deviceId == null || sessionId == null || userId == null) {
+      debugPrint('WARNING: facility_info_opened skipped — analytics IDs not initialized');
+      return;
+    }
     ApiService.instance
         .postAnalytics(
       eventType: 'facility_info_opened',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
+      deviceId: deviceId,
+      sessionId: sessionId,
+      userId: userId,
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
         'pageName': 'businessInformation',
@@ -436,18 +449,25 @@ class _BusinessInformationPageState
       child: TextButton(
         onPressed: () async {
           final analytics = AnalyticsService.instance;
-          ApiService.instance
-              .postAnalytics(
-            eventType: 'report_link_tapped',
-            deviceId: analytics.deviceId ?? '',
-            sessionId: analytics.currentSessionId ?? '',
-            userId: analytics.userId ?? '',
-            timestamp: DateTime.now().toIso8601String(),
-            eventData: {'pageName': 'businessInformation'},
-          )
-              .catchError((e) {
-            return ApiCallResponse.failure('Analytics failed');
-          });
+          final deviceId = analytics.deviceId;
+          final sessionId = analytics.currentSessionId;
+          final userId = analytics.userId;
+          if (deviceId == null || sessionId == null || userId == null) {
+            debugPrint('WARNING: report_link_tapped skipped — analytics IDs not initialized');
+          } else {
+            ApiService.instance
+                .postAnalytics(
+              eventType: 'report_link_tapped',
+              deviceId: deviceId,
+              sessionId: sessionId,
+              userId: userId,
+              timestamp: DateTime.now().toIso8601String(),
+              eventData: {'pageName': 'businessInformation'},
+            )
+                .catchError((e) {
+              return ApiCallResponse.failure('Analytics failed');
+            });
+          }
           if (mounted) {
             await showModalBottomSheet(
               context: context,

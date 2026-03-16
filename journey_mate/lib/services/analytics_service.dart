@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'api_service.dart';
@@ -61,6 +62,12 @@ class EngagementTracker {
     await _maybeEndStaleSessionAndStartNew();
     _ensureHeartbeat();
     _ensurePeriodicFlush();
+
+    // Safety: if sessionId is somehow null after session management, recover
+    if (sessionId == null) {
+      debugPrint('WARNING: onAppResumed — sessionId null after session management, recovering');
+      return await startNewSession();
+    }
     return sessionId!;
   }
 
@@ -314,12 +321,22 @@ class EngagementTracker {
   /// Tracks an analytics event (fire and forget)
   Future<void> _trackAnalyticsEvent(
       String eventType, Map<String, dynamic> eventData) async {
+    final currentDeviceId = AnalyticsService.instance.deviceId;
+    final currentSessionId = sessionId;
+    final currentUserId = AnalyticsService.instance.userId;
+
+    // Guard: skip event if session not initialized
+    if (currentDeviceId == null || currentSessionId == null || currentUserId == null) {
+      debugPrint('WARNING: $eventType skipped — analytics IDs not initialized');
+      return;
+    }
+
     try {
       await ApiService.instance.postAnalytics(
         eventType: eventType,
-        deviceId: AnalyticsService.instance.deviceId ?? 'unknown',
-        sessionId: sessionId ?? 'unknown',
-        userId: AnalyticsService.instance.userId ?? 'unknown',
+        deviceId: currentDeviceId,
+        sessionId: currentSessionId,
+        userId: currentUserId,
         eventData: eventData,
         timestamp: DateTime.now().toIso8601String(),
       );

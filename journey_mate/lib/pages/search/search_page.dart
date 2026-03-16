@@ -112,17 +112,22 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final duration = DateTime.now().difference(_pageStartTime!);
 
     final analytics = AnalyticsService.instance;
-    unawaited(ApiService.instance.postAnalytics(
-      eventType: 'page_viewed',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
-      timestamp: DateTime.now().toIso8601String(),
-      eventData: {
-        'pageName': 'searchPage',
-        'durationSeconds': duration.inSeconds,
-      },
-    ));
+    final deviceId = analytics.deviceId;
+    final sessionId = analytics.currentSessionId;
+    final userId = analytics.userId;
+    if (deviceId != null && sessionId != null && userId != null) {
+      unawaited(ApiService.instance.postAnalytics(
+        eventType: 'page_viewed',
+        deviceId: deviceId,
+        sessionId: sessionId,
+        userId: userId,
+        timestamp: DateTime.now().toIso8601String(),
+        eventData: {
+          'pageName': 'searchPage',
+          'durationSeconds': duration.inSeconds,
+        },
+      ));
+    }
   }
 
   Future<void> _initialize() async {
@@ -234,18 +239,23 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
         // Track analytics
         final analytics = AnalyticsService.instance;
-        ApiService.instance.postAnalytics(
-          eventType: 'search_performed',
-          deviceId: analytics.deviceId ?? '',
-          sessionId: analytics.currentSessionId ?? '',
-          userId: analytics.userId ?? '',
-          timestamp: DateTime.now().toIso8601String(),
-          eventData: {
-            'query': query,
-            'resultsCount': resultCount,
-            'filtersActive': searchState.filtersUsedForSearch.isNotEmpty,
-          },
-        );
+        final aDeviceId = analytics.deviceId;
+        final aSessionId = analytics.currentSessionId;
+        final aUserId = analytics.userId;
+        if (aDeviceId != null && aSessionId != null && aUserId != null) {
+          ApiService.instance.postAnalytics(
+            eventType: 'search_performed',
+            deviceId: aDeviceId,
+            sessionId: aSessionId,
+            userId: aUserId,
+            timestamp: DateTime.now().toIso8601String(),
+            eventData: {
+              'query': query,
+              'resultsCount': resultCount,
+              'filtersActive': searchState.filtersUsedForSearch.isNotEmpty,
+            },
+          );
+        }
       } else if (mounted) {
         setState(() {
           _errorMessage = response.error ?? 'Search failed';

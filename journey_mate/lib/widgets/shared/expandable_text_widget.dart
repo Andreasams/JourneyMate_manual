@@ -224,15 +224,19 @@ class _ExpandableTextWidgetState extends ConsumerState<ExpandableTextWidget> {
   }
 
   void _trackTextInteraction(String action) {
+    // Get analytics data
+    final analyticsState = ref.read(analyticsProvider);
+    final sessionId = analyticsState.sessionId;
+    final deviceId = AnalyticsService.instance.deviceId;
+    final userId = AnalyticsService.instance.userId;
+    if (sessionId == null || deviceId == null || userId == null) {
+      debugPrint('WARNING: expandable_text_toggled skipped — analytics IDs not initialized');
+      return;
+    }
+
     // Get language code from context
     final locale = Localizations.localeOf(context);
     final languageCode = locale.languageCode;
-
-    // Get analytics data
-    final analyticsState = ref.read(analyticsProvider);
-    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
-    final sessionId = analyticsState.sessionId ?? 'unknown';
-    final userId = AnalyticsService.instance.userId ?? 'unknown';
 
     // Track event (fire and forget)
     ApiService.instance.postAnalytics(

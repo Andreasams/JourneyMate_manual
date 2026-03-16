@@ -56,8 +56,13 @@ class _GalleryFullPageState extends ConsumerState<GalleryFullPage> {
 
       // Cache analytics state for safe use in dispose() (ref is invalid after unmount)
       final analyticsState = ref.read(analyticsProvider);
+      final sessionId = analyticsState.sessionId;
+      if (sessionId == null) {
+        debugPrint('WARNING: GalleryFullPage — sessionId not initialized');
+        return;
+      }
       _cachedDeviceId = analyticsState.deviceId;
-      _cachedSessionId = analyticsState.sessionId ?? '';
+      _cachedSessionId = sessionId;
     });
   }
 

@@ -169,17 +169,20 @@ class QuickActionsPillsWidget extends ConsumerWidget {
 
         // Track call action
         final analyticsState = ref.read(analyticsProvider);
-        ApiService.instance.postAnalytics(
-          eventType: 'business_call_tapped',
-          deviceId: analyticsState.deviceId,
-          sessionId: analyticsState.sessionId ?? '',
-          userId: '', // Anonymous user
-          timestamp: DateTime.now().toIso8601String(),
-          eventData: {
-            'business_id': businessId ?? 0,
-            'phone_number': phoneNumber,
-          },
-        );
+        final sessionId = analyticsState.sessionId;
+        if (sessionId != null) {
+          ApiService.instance.postAnalytics(
+            eventType: 'business_call_tapped',
+            deviceId: analyticsState.deviceId,
+            sessionId: sessionId,
+            userId: '', // Anonymous user
+            timestamp: DateTime.now().toIso8601String(),
+            eventData: {
+              'business_id': businessId ?? 0,
+              'phone_number': phoneNumber,
+            },
+          );
+        }
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -210,17 +213,20 @@ class QuickActionsPillsWidget extends ConsumerWidget {
 
         // Track website tap
         final analyticsState = ref.read(analyticsProvider);
-        ApiService.instance.postAnalytics(
-          eventType: 'business_website_tapped',
-          deviceId: analyticsState.deviceId,
-          sessionId: analyticsState.sessionId ?? '',
-          userId: '', // Anonymous user
-          timestamp: DateTime.now().toIso8601String(),
-          eventData: {
-            'business_id': businessId ?? 0,
-            'website_url': websiteUrl,
-          },
-        );
+        final sessionId = analyticsState.sessionId;
+        if (sessionId != null) {
+          ApiService.instance.postAnalytics(
+            eventType: 'business_website_tapped',
+            deviceId: analyticsState.deviceId,
+            sessionId: sessionId,
+            userId: '', // Anonymous user
+            timestamp: DateTime.now().toIso8601String(),
+            eventData: {
+              'business_id': businessId ?? 0,
+              'website_url': websiteUrl,
+            },
+          );
+        }
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -251,17 +257,20 @@ class QuickActionsPillsWidget extends ConsumerWidget {
 
         // Track booking tap
         final analyticsState = ref.read(analyticsProvider);
-        ApiService.instance.postAnalytics(
-          eventType: 'business_booking_tapped',
-          deviceId: analyticsState.deviceId,
-          sessionId: analyticsState.sessionId ?? '',
-          userId: '', // Anonymous user
-          timestamp: DateTime.now().toIso8601String(),
-          eventData: {
-            'business_id': businessId ?? 0,
-            'booking_url': bookingUrl,
-          },
-        );
+        final sessionId = analyticsState.sessionId;
+        if (sessionId != null) {
+          ApiService.instance.postAnalytics(
+            eventType: 'business_booking_tapped',
+            deviceId: analyticsState.deviceId,
+            sessionId: sessionId,
+            userId: '', // Anonymous user
+            timestamp: DateTime.now().toIso8601String(),
+            eventData: {
+              'business_id': businessId ?? 0,
+              'booking_url': bookingUrl,
+            },
+          );
+        }
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -366,19 +375,22 @@ class QuickActionsPillsWidget extends ConsumerWidget {
       if (opened) {
         // Track map tap (fire-and-forget)
         final analyticsState = ref.read(analyticsProvider);
-        ApiService.instance.postAnalytics(
-          eventType: 'business_map_tapped',
-          deviceId: analyticsState.deviceId,
-          sessionId: analyticsState.sessionId ?? '',
-          userId: '',
-          timestamp: DateTime.now().toIso8601String(),
-          eventData: {
-            'business_id': businessId ?? 0,
-            'latitude': latitude,
-            'longitude': longitude,
-            'map_app': map.mapName,
-          },
-        );
+        final sessionId = analyticsState.sessionId;
+        if (sessionId != null) {
+          ApiService.instance.postAnalytics(
+            eventType: 'business_map_tapped',
+            deviceId: analyticsState.deviceId,
+            sessionId: sessionId,
+            userId: '',
+            timestamp: DateTime.now().toIso8601String(),
+            eventData: {
+              'business_id': businessId ?? 0,
+              'latitude': latitude,
+              'longitude': longitude,
+              'map_app': map.mapName,
+            },
+          );
+        }
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

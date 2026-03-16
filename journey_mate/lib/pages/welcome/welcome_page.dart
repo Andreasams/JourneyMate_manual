@@ -365,8 +365,12 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
       // Get deviceId and sessionId from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      final deviceId = prefs.getString('analytics_device_id') ?? 'unknown';
-      final sessionId = prefs.getString('current_session_id') ?? 'unknown';
+      final deviceId = prefs.getString('analytics_device_id');
+      final sessionId = prefs.getString('current_session_id');
+      if (deviceId == null || sessionId == null) {
+        debugPrint('WARNING: welcomePage page_viewed skipped — analytics IDs not in SharedPreferences');
+        return;
+      }
 
       // Track event using ApiService directly
       await ApiService.instance.postAnalytics(

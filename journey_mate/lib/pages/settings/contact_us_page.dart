@@ -42,12 +42,20 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
     if (_pageStartTime != null) {
       final durationSeconds = DateTime.now().difference(_pageStartTime!).inSeconds;
       final analytics = AnalyticsService.instance;
+      final deviceId = analytics.deviceId;
+      final sessionId = analytics.currentSessionId;
+      final userId = analytics.userId;
+      if (deviceId == null || sessionId == null || userId == null) {
+        debugPrint('WARNING: page_viewed skipped — analytics IDs not initialized');
+        super.dispose();
+        return;
+      }
       // Fire-and-forget analytics call
       ApiService.instance.postAnalytics(
         eventType: 'page_viewed',
-        deviceId: analytics.deviceId ?? '',
-        sessionId: analytics.currentSessionId ?? '',
-        userId: analytics.userId ?? '',
+        deviceId: deviceId,
+        sessionId: sessionId,
+        userId: userId,
         timestamp: DateTime.now().toIso8601String(),
         eventData: {
           'pageName': 'contactUs',

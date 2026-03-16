@@ -272,12 +272,19 @@ class _OpeningHoursContactWidgetState
 
   void _trackExpandToggle() {
     final analytics = AnalyticsService.instance;
+    final deviceId = analytics.deviceId;
+    final sessionId = analytics.currentSessionId;
+    final userId = analytics.userId;
+    if (deviceId == null || sessionId == null || userId == null) {
+      debugPrint('WARNING: business_contact_toggled skipped — analytics IDs not initialized');
+      return;
+    }
     ApiService.instance
         .postAnalytics(
       eventType: 'business_contact_toggled',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
+      deviceId: deviceId,
+      sessionId: sessionId,
+      userId: userId,
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
         'action': _isExpanded ? 'expanded' : 'collapsed',
@@ -291,14 +298,21 @@ class _OpeningHoursContactWidgetState
 
   void _trackContactLinkTap(String linkType) {
     final analytics = AnalyticsService.instance;
+    final deviceId = analytics.deviceId;
+    final sessionId = analytics.currentSessionId;
+    final userId = analytics.userId;
+    if (deviceId == null || sessionId == null || userId == null) {
+      debugPrint('WARNING: social_link_clicked skipped — analytics IDs not initialized');
+      return;
+    }
     final businessId = ref.read(businessProvider.notifier).getCurrentBusinessId();
 
     ApiService.instance
         .postAnalytics(
       eventType: 'social_link_clicked',
-      deviceId: analytics.deviceId ?? '',
-      sessionId: analytics.currentSessionId ?? '',
-      userId: analytics.userId ?? '',
+      deviceId: deviceId,
+      sessionId: sessionId,
+      userId: userId,
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
         'link_type': linkType, // 'phone', 'email', 'website', 'booking', 'instagram', 'facebook', 'tiktok'

@@ -1092,9 +1092,13 @@ class _BusinessFeatureButtonsState
   /// Tracks expand/collapse interaction to analytics backend.
   void _trackButtonsToggle(String action) {
     final analyticsState = ref.read(analyticsProvider);
-    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
-    final sessionId = analyticsState.sessionId ?? 'unknown';
-    final userId = AnalyticsService.instance.userId ?? 'unknown';
+    final sessionId = analyticsState.sessionId;
+    final deviceId = AnalyticsService.instance.deviceId;
+    final userId = AnalyticsService.instance.userId;
+    if (sessionId == null || deviceId == null || userId == null) {
+      debugPrint('WARNING: feature_buttons_toggled skipped — analytics IDs not initialized');
+      return;
+    }
 
     final businessState = ref.read(businessProvider);
     final businessId = businessState.currentBusiness?['id'];
@@ -1122,9 +1126,13 @@ class _BusinessFeatureButtonsState
       int filterId, String filterName, String? description) {
     // Get analytics data
     final analyticsState = ref.read(analyticsProvider);
-    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
-    final sessionId = analyticsState.sessionId ?? 'unknown';
-    final userId = AnalyticsService.instance.userId ?? 'unknown';
+    final sessionId = analyticsState.sessionId;
+    final deviceId = AnalyticsService.instance.deviceId;
+    final userId = AnalyticsService.instance.userId;
+    if (sessionId == null || deviceId == null || userId == null) {
+      debugPrint('WARNING: filter_info_clicked skipped — analytics IDs not initialized');
+      return;
+    }
 
     // Track event (fire and forget)
     ApiService.instance.postAnalytics(

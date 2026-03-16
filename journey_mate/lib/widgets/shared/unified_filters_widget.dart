@@ -892,9 +892,13 @@ class _UnifiedFiltersWidgetState extends ConsumerState<UnifiedFiltersWidget> {
 
   void _trackAnalyticsEvent(String eventName, Map<String, dynamic> params) {
     // Fire-and-forget (no await)
-    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
-    final sessionId = AnalyticsService.instance.currentSessionId ?? 'unknown';
-    final userId = AnalyticsService.instance.userId ?? 'unknown';
+    final deviceId = AnalyticsService.instance.deviceId;
+    final sessionId = AnalyticsService.instance.currentSessionId;
+    final userId = AnalyticsService.instance.userId;
+    if (deviceId == null || sessionId == null || userId == null) {
+      debugPrint('WARNING: $eventName skipped — analytics IDs not initialized');
+      return;
+    }
 
     ApiService.instance.postAnalytics(
       eventType: eventName,

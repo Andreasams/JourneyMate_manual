@@ -76,12 +76,20 @@ class _SearchResultsListViewState
 
   /// Fires a fire-and-forget `business_clicked` analytics event.
   void _trackBusinessClick(int businessId, int clickPosition) {
+    final deviceId = AnalyticsService.instance.deviceId;
+    final sessionId = AnalyticsService.instance.currentSessionId;
+    final userId = AnalyticsService.instance.userId;
+    if (deviceId == null || sessionId == null || userId == null) {
+      debugPrint('WARNING: business_clicked skipped — analytics IDs not initialized');
+      return;
+    }
+
     final searchState = ref.read(searchStateProvider);
     unawaited(ApiService.instance.postAnalytics(
       eventType: 'business_clicked',
-      deviceId: AnalyticsService.instance.deviceId ?? 'unknown',
-      sessionId: AnalyticsService.instance.currentSessionId ?? 'unknown',
-      userId: AnalyticsService.instance.userId ?? 'unknown',
+      deviceId: deviceId,
+      sessionId: sessionId,
+      userId: userId,
       eventData: {
         'businessId': businessId,
         'clickPosition': clickPosition,

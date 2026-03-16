@@ -36,16 +36,21 @@ class LocationStatusCard extends ConsumerWidget {
         onTap: () {
           // Fire-and-forget analytics
           final analytics = AnalyticsService.instance;
-          ApiService.instance.postAnalytics(
-            eventType: hasPermission
-                ? 'location_manage_tapped'
-                : 'location_enable_tapped',
-            deviceId: analytics.deviceId ?? '',
-            sessionId: analytics.currentSessionId ?? '',
-            userId: analytics.userId ?? '',
-            timestamp: DateTime.now().toIso8601String(),
-            eventData: {'source': 'localization_page'},
-          ).catchError((_) => ApiCallResponse.failure('Analytics failed'));
+          final deviceId = analytics.deviceId;
+          final sessionId = analytics.currentSessionId;
+          final userId = analytics.userId;
+          if (deviceId != null && sessionId != null && userId != null) {
+            ApiService.instance.postAnalytics(
+              eventType: hasPermission
+                  ? 'location_manage_tapped'
+                  : 'location_enable_tapped',
+              deviceId: deviceId,
+              sessionId: sessionId,
+              userId: userId,
+              timestamp: DateTime.now().toIso8601String(),
+              eventData: {'source': 'localization_page'},
+            ).catchError((_) => ApiCallResponse.failure('Analytics failed'));
+          }
 
           // Smart enable: dialog if first time, Settings if denied
           ref.read(locationProvider.notifier).enableLocation();

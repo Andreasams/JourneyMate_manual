@@ -279,11 +279,16 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
   void _trackGalleryOpened() {
     final availableTabs = _categories.map((c) => c.key).toList();
     final analyticsState = ref.read(analyticsProvider);
+    final sessionId = analyticsState.sessionId;
+    if (sessionId == null) {
+      debugPrint('WARNING: gallery_opened skipped — sessionId not initialized');
+      return;
+    }
 
     ApiService.instance.postAnalytics(
       eventType: 'gallery_opened',
       deviceId: analyticsState.deviceId,
-      sessionId: analyticsState.sessionId ?? '',
+      sessionId: sessionId,
       userId: '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
@@ -302,11 +307,16 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
     final toTab = _categories[toIndex].key;
     final availableTabs = _categories.map((c) => c.key).toList();
     final analyticsState = ref.read(analyticsProvider);
+    final sessionId = analyticsState.sessionId;
+    if (sessionId == null) {
+      debugPrint('WARNING: gallery_tab_changed skipped — sessionId not initialized');
+      return;
+    }
 
     ApiService.instance.postAnalytics(
       eventType: 'gallery_tab_changed',
       deviceId: analyticsState.deviceId,
-      sessionId: analyticsState.sessionId ?? '',
+      sessionId: sessionId,
       userId: '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
@@ -323,11 +333,16 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
 
   void _trackGalleryImageTapped(String categoryKey, int imageIndex) {
     final analyticsState = ref.read(analyticsProvider);
+    final sessionId = analyticsState.sessionId;
+    if (sessionId == null) {
+      debugPrint('WARNING: gallery_image_tapped skipped — sessionId not initialized');
+      return;
+    }
 
     ApiService.instance.postAnalytics(
       eventType: 'gallery_image_tapped',
       deviceId: analyticsState.deviceId,
-      sessionId: analyticsState.sessionId ?? '',
+      sessionId: sessionId,
       userId: '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
@@ -340,11 +355,16 @@ class _TabbedGalleryWidgetState extends ConsumerState<TabbedGalleryWidget> {
 
   void _trackGalleryViewAllTapped() {
     final analyticsState = ref.read(analyticsProvider);
+    final sessionId = analyticsState.sessionId;
+    if (sessionId == null) {
+      debugPrint('WARNING: gallery_view_all_tapped skipped — sessionId not initialized');
+      return;
+    }
 
     ApiService.instance.postAnalytics(
       eventType: 'gallery_view_all_tapped',
       deviceId: analyticsState.deviceId,
-      sessionId: analyticsState.sessionId ?? '',
+      sessionId: sessionId,
       userId: '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
