@@ -76,7 +76,7 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
       return;
     }
     final deviceId = analyticsState.deviceId;
-    if (deviceId == null || deviceId.isEmpty) {
+    if (deviceId.isEmpty) {
       debugPrint('WARNING: menu_session_started skipped — deviceId not initialized');
       return;
     }

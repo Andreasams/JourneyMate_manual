@@ -2,6 +2,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/analytics_service.dart';
+import '../providers/app_providers.dart';
 import '../providers/settings_providers.dart';
 
 /// App lifecycle observer
