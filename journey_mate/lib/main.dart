@@ -53,11 +53,25 @@ void main() async {
   final cachedFilters = await FilterNotifier.loadFromCache(storedLanguage);
   final isFilterCacheFresh = await FilterNotifier.isCacheFresh(storedLanguage);
 
-  // ── 3. Initialize AnalyticsService (only async op: UUID write on first launch) ──
-  await AnalyticsService.instance.initializeWithPrefs(prefs);
+  // ── 3. Initialize AnalyticsService (capture session UUID) ──
+  late String sessionId;
+  try {
+    sessionId = await AnalyticsService.instance.initializeWithPrefs(prefs);
+    if (sessionId.isEmpty) {
+      throw Exception('Failed to initialize session UUID');
+    }
+  } catch (e) {
+    debugPrint('ERROR: AnalyticsService.initializeWithPrefs() failed: $e');
+    sessionId = '';
+  }
 
   // ── 4. Create container + synchronous provider init ──
   final container = ProviderContainer();
+
+  // Sync engagement tracker UUID to Riverpod BEFORE widget tree (only if successful)
+  if (sessionId.isNotEmpty) {
+    container.read(analyticsProvider.notifier).startSession(sessionId: sessionId);
+  }
 
   // Pass AnalyticsService's device ID to AnalyticsNotifier (single device ID everywhere)
   container.read(analyticsProvider.notifier).initializeFromPrefs(

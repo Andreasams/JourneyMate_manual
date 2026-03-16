@@ -104,14 +104,19 @@ class AnalyticsNotifier extends Notifier<AnalyticsState> {
     }
   }
 
-  /// Start a new session
-  void startSession() {
-    final sessionId = const Uuid().v4();
-    final sessionStartTime = DateTime.now();
+  /// Start or sync a session
+  /// [sessionId] - Required: the UUID to use (from EngagementTracker)
+  /// Preserves sessionStartTime if sessionId hasn't changed (prevents reset on resume)
+  void startSession({required String sessionId}) {
+    // Only update sessionStartTime if sessionId actually changed
+    DateTime? newStartTime = state.sessionStartTime;
+    if (state.sessionId != sessionId) {
+      newStartTime = DateTime.now();
+    }
 
     state = state.copyWith(
       sessionId: sessionId,
-      sessionStartTime: sessionStartTime,
+      sessionStartTime: newStartTime,
     );
   }
 

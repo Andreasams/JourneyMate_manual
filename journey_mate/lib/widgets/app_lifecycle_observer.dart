@@ -14,7 +14,12 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
-      await AnalyticsService.instance.engagementTracker.onAppResumed();
+      // onAppResumed() returns the current active session UUID
+      // (may be new session or continuing existing session)
+      final currentSessionId = await AnalyticsService.instance.engagementTracker.onAppResumed();
+
+      // Sync current session UUID to Riverpod provider
+      container.read(analyticsProvider.notifier).startSession(sessionId: currentSessionId);
 
       // Check location permission on resume (detect permission/service changes via Settings)
       final locationNotifier = container.read(locationProvider.notifier);

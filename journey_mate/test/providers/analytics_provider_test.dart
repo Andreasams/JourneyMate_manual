@@ -72,12 +72,12 @@ void main() {
       expect(state.deviceId, 'existing-device-id-123');
     });
 
-    test('startSession() creates sessionId and timestamp', () {
-      container.read(analyticsProvider.notifier).startSession();
+    test('startSession() sets sessionId and timestamp', () {
+      const testSessionId = 'test-uuid-1234-5678-abcd-efgh';
+      container.read(analyticsProvider.notifier).startSession(sessionId: testSessionId);
 
       final state = container.read(analyticsProvider);
-      expect(state.sessionId, isNotNull);
-      expect(state.sessionId!.length, 36);
+      expect(state.sessionId, testSessionId);
       expect(state.sessionStartTime, isNotNull);
       expect(
         state.sessionStartTime!.difference(DateTime.now()).inSeconds,
@@ -87,7 +87,7 @@ void main() {
 
     test('endSession() clears session data and menuSessionData', () async {
       await container.read(analyticsProvider.notifier).initialize();
-      container.read(analyticsProvider.notifier).startSession();
+      container.read(analyticsProvider.notifier).startSession(sessionId: 'test-uuid-abcd-1234-efgh-5678');
       _initMenuSession(container);
 
       // Verify session and menu session are active

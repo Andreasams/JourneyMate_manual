@@ -349,9 +349,24 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
 
     // Get analytics data
     final analyticsState = ref.read(analyticsProvider);
-    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
-    final sessionId = analyticsState.sessionId ?? 'unknown';
-    final userId = AnalyticsService.instance.userId ?? 'unknown';
+    final sessionId = analyticsState.sessionId;
+    final deviceId = AnalyticsService.instance.deviceId;
+    final userId = AnalyticsService.instance.userId;
+
+    // Guard: skip event if session not initialized
+    if (sessionId == null || sessionId.isEmpty) {
+      debugPrint('WARNING: menu_item_clicked skipped — sessionId not initialized');
+      return;
+    }
+    if (deviceId == null || deviceId.isEmpty) {
+      debugPrint('WARNING: menu_item_clicked skipped — deviceId not initialized');
+      return;
+    }
+    if (userId == null || userId.isEmpty) {
+      debugPrint('WARNING: menu_item_clicked skipped — userId not initialized');
+      return;
+    }
+
     final menuData = analyticsState.menuSessionData;
 
     // Track event (fire and forget)
@@ -391,9 +406,24 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
 
     // Get analytics data
     final analyticsState = ref.read(analyticsProvider);
-    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
-    final sessionId = analyticsState.sessionId ?? 'unknown';
-    final userId = AnalyticsService.instance.userId ?? 'unknown';
+    final sessionId = analyticsState.sessionId;
+    final deviceId = AnalyticsService.instance.deviceId;
+    final userId = AnalyticsService.instance.userId;
+
+    // Guard: skip event if session not initialized
+    if (sessionId == null || sessionId.isEmpty) {
+      debugPrint('WARNING: menu_package_clicked skipped — sessionId not initialized');
+      return;
+    }
+    if (deviceId == null || deviceId.isEmpty) {
+      debugPrint('WARNING: menu_package_clicked skipped — deviceId not initialized');
+      return;
+    }
+    if (userId == null || userId.isEmpty) {
+      debugPrint('WARNING: menu_package_clicked skipped — userId not initialized');
+      return;
+    }
+
     final menuData = analyticsState.menuSessionData;
 
     // Track event (fire and forget)
@@ -421,9 +451,23 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
 
     // Get analytics data
     final analyticsState = ref.read(analyticsProvider);
-    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
-    final sessionId = analyticsState.sessionId ?? 'unknown';
-    final userId = AnalyticsService.instance.userId ?? 'unknown';
+    final sessionId = analyticsState.sessionId;
+    final deviceId = AnalyticsService.instance.deviceId;
+    final userId = AnalyticsService.instance.userId;
+
+    // Guard: skip event if session not initialized
+    if (sessionId == null || sessionId.isEmpty) {
+      debugPrint('WARNING: category_description_viewed skipped — sessionId not initialized');
+      return;
+    }
+    if (deviceId == null || deviceId.isEmpty) {
+      debugPrint('WARNING: category_description_viewed skipped — deviceId not initialized');
+      return;
+    }
+    if (userId == null || userId.isEmpty) {
+      debugPrint('WARNING: category_description_viewed skipped — userId not initialized');
+      return;
+    }
 
     // Track event (fire and forget)
     ApiService.instance.postAnalytics(
@@ -466,9 +510,23 @@ class _MenuDishesListViewState extends ConsumerState<MenuDishesListView> {
 
     // Get analytics data
     final analyticsState = ref.read(analyticsProvider);
-    final deviceId = AnalyticsService.instance.deviceId ?? 'unknown';
-    final sessionId = analyticsState.sessionId ?? 'unknown';
-    final userId = AnalyticsService.instance.userId ?? 'unknown';
+    final sessionId = analyticsState.sessionId;
+    final deviceId = AnalyticsService.instance.deviceId;
+    final userId = AnalyticsService.instance.userId;
+
+    // Guard: skip event if session not initialized
+    if (sessionId == null || sessionId.isEmpty) {
+      debugPrint('WARNING: menu_scroll_depth skipped — sessionId not initialized');
+      return;
+    }
+    if (deviceId == null || deviceId.isEmpty) {
+      debugPrint('WARNING: menu_scroll_depth skipped — deviceId not initialized');
+      return;
+    }
+    if (userId == null || userId.isEmpty) {
+      debugPrint('WARNING: menu_scroll_depth skipped — userId not initialized');
+      return;
+    }
 
     // Track event (fire and forget)
     ApiService.instance.postAnalytics(

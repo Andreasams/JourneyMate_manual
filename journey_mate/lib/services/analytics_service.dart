@@ -55,11 +55,13 @@ class EngagementTracker {
   // -------------------------------------------------------------------------
 
   /// Called when app comes to foreground
-  Future<void> onAppResumed() async {
+  /// Returns current active session UUID (new or continuing)
+  Future<String> onAppResumed() async {
     _inForeground = true;
     await _maybeEndStaleSessionAndStartNew();
     _ensureHeartbeat();
     _ensurePeriodicFlush();
+    return sessionId!;
   }
 
   /// Called when app goes to background
@@ -160,10 +162,12 @@ class EngagementTracker {
   }
 
   /// Starts a new engagement session
-  Future<void> startNewSession() async {
+  /// Returns the generated session UUID
+  Future<String> startNewSession() async {
     final now = DateTime.now();
 
-    sessionId = const Uuid().v4();
+    final newSessionId = const Uuid().v4();
+    sessionId = newSessionId;
     sessionStartTime = now;
     lastActiveAt = now;
     engagedUntil = now.add(engagedWindow);
@@ -174,16 +178,18 @@ class EngagementTracker {
     // Store in SharedPreferences for access by custom code
     try {
       _cachedPrefs ??= await SharedPreferences.getInstance();
-      await _cachedPrefs!.setString('current_session_id', sessionId!);
+      await _cachedPrefs!.setString('current_session_id', newSessionId);
     } catch (e) {
       // Fail silently
     }
 
     // Track session start (fire and forget)
     unawaited(_trackAnalyticsEvent('session_start', {
-      'sessionId': sessionId,
+      'sessionId': newSessionId,
       'timestamp': now.toIso8601String(),
     }));
+
+    return newSessionId;
   }
 
   /// Ends the current session
@@ -364,7 +370,8 @@ class AnalyticsService {
 
   /// Initialize analytics with an already-loaded SharedPreferences instance.
   /// Eliminates redundant SharedPreferences.getInstance() calls during startup.
-  Future<void> initializeWithPrefs(SharedPreferences prefs) async {
+  /// Returns the session UUID for syncing to Riverpod provider
+  Future<String> initializeWithPrefs(SharedPreferences prefs) async {
     try {
       // Get or create device ID using existing SP instance
       String? deviceId = prefs.getString('analytics_device_id');
@@ -384,24 +391,29 @@ class AnalyticsService {
         _isFirstSession = true;
       }
 
-      // Start engagement tracking
-      await engagementTracker.startNewSession();
+      // Start engagement tracking and capture session UUID
+      final sessionId = await engagementTracker.startNewSession();
+      return sessionId;
     } catch (e) {
-      // Fail silently
+      // Return empty string as signal of failure
+      return '';
     }
   }
 
   /// Initialize analytics and start engagement tracking
-  Future<void> initialize() async {
+  /// Returns the session UUID for syncing to Riverpod provider
+  Future<String> initialize() async {
     try {
       _deviceId = await _getOrCreateDeviceId();
       _userId = _deviceId;
       _isFirstSession = await _detectFirstSession();
 
-      // Start engagement tracking
-      await engagementTracker.startNewSession();
+      // Start engagement tracking and capture session UUID
+      final sessionId = await engagementTracker.startNewSession();
+      return sessionId;
     } catch (e) {
-      // Fail silently
+      // Return empty string as signal of failure
+      return '';
     }
   }
 

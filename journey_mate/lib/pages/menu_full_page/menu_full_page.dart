@@ -45,8 +45,16 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final analyticsState = ref.read(analyticsProvider);
+
+      // Guard: skip if session not initialized
+      final sessionId = analyticsState.sessionId;
+      if (sessionId == null || sessionId.isEmpty) {
+        debugPrint('WARNING: MenuFullPage — sessionId not initialized');
+        return;
+      }
+
       _cachedDeviceId = analyticsState.deviceId;
-      _cachedSessionId = analyticsState.sessionId ?? '';
+      _cachedSessionId = sessionId;
 
       // Initialize menu session with fresh counters
       ref.read(analyticsProvider.notifier).startMenuSession();
@@ -60,10 +68,23 @@ class _MenuFullPageState extends ConsumerState<MenuFullPage> {
     if (businessIdInt == null) return;
     _menuSessionStarted = true;
     final analyticsState = ref.read(analyticsProvider);
+
+    // Guard: skip if session not initialized
+    final sessionId = analyticsState.sessionId;
+    if (sessionId == null || sessionId.isEmpty) {
+      debugPrint('WARNING: menu_session_started skipped — sessionId not initialized');
+      return;
+    }
+    final deviceId = analyticsState.deviceId;
+    if (deviceId == null || deviceId.isEmpty) {
+      debugPrint('WARNING: menu_session_started skipped — deviceId not initialized');
+      return;
+    }
+
     ApiService.instance.postAnalytics(
       eventType: 'menu_session_started',
-      deviceId: analyticsState.deviceId,
-      sessionId: analyticsState.sessionId ?? '',
+      deviceId: deviceId,
+      sessionId: sessionId,
       userId: '',
       timestamp: DateTime.now().toIso8601String(),
       eventData: {
